@@ -10,7 +10,7 @@ import (
 	"github.com/xgodev/boost/errors"
 	"github.com/xgodev/boost/factory/gofiber/fiber.v2"
 	"github.com/xgodev/boost/log"
-	response "github.com/xgodev/boost/rest-response"
+	response "github.com/xgodev/boost/restresponse"
 )
 
 // Register registers a new error handler plugin for fiber.

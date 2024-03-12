@@ -7,7 +7,7 @@ import (
 	e "github.com/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/labstack/echo.v4"
 	"github.com/xgodev/boost/log"
-	response "github.com/xgodev/boost/rest-response"
+	response "github.com/xgodev/boost/restresponse"
 )
 
 // Register registers a new status plugin for echo server.

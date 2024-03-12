@@ -8,7 +8,7 @@ import (
 	"github.com/xgodev/boost/errors"
 	"github.com/xgodev/boost/faas/cloudevents"
 	"github.com/xgodev/boost/log"
-	response "github.com/xgodev/boost/rest-response"
+	response "github.com/xgodev/boost/restresponse"
 	"net/http"
 	"os"
 	"strconv"

@@ -9,7 +9,7 @@ import (
 
 	"github.com/xgodev/boost/factory/go-chi/chi.v5"
 	"github.com/xgodev/boost/log"
-	response "github.com/xgodev/boost/rest-response"
+	response "github.com/xgodev/boost/restresponse"
 )
 
 // Register registers a default status to a new chi config.

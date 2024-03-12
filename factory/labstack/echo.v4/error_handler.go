@@ -8,7 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	e "github.com/labstack/echo/v4"
 	"github.com/xgodev/boost/errors"
-	response "github.com/xgodev/boost/rest-response"
+	response "github.com/xgodev/boost/restresponse"
 )
 
 // ErrorHandlerString implements plain text content type error handler.

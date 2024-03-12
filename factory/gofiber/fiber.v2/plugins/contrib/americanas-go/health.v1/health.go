@@ -6,7 +6,7 @@ import (
 	f "github.com/gofiber/fiber/v2"
 	"github.com/xgodev/boost/factory/gofiber/fiber.v2"
 	"github.com/xgodev/boost/log"
-	response "github.com/xgodev/boost/rest-response"
+	response "github.com/xgodev/boost/restresponse"
 )
 
 // Register registers a new health checker for fiber with options.
