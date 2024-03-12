@@ -4,8 +4,8 @@ import (
 	"sync"
 
 	"github.com/xgodev/boost/faas/cloudevents"
-	pubsub "github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/cloud.google.com/pubsub.v1"
-	"github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/context"
+	pubsub "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/contrib/cloud.google.com/pubsub/v1"
+	"github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/core/context"
 	"go.uber.org/fx"
 )
 

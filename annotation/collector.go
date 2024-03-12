@@ -1,6 +1,7 @@
 package annotation
 
 import (
+	"github.com/xgodev/boost/log"
 	"go/ast"
 	"go/token"
 	"go/types"

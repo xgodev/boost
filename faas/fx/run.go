@@ -1,7 +1,7 @@
 package fx
 
 import (
-	gifx "github.com/xgodev/boost/factory/go.uber.org/fx.v1"
+	gifx "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1"
 	"go.uber.org/fx"
 )
 

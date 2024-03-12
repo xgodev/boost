@@ -4,8 +4,8 @@ import (
 	"sync"
 
 	"github.com/xgodev/boost/faas/cloudevents"
-	"github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/context"
-	ginatsfx "github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/nats-io/nats.go.v1"
+	ginatsfx "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/contrib/nats-io/nats.go/v1"
+	"github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/core/context"
 	"go.uber.org/fx"
 )
 

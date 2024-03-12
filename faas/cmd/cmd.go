@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	cobra "github.com/xgodev/boost/factory/contrib/spf13/v1"
 	"os"
 
 	co "github.com/spf13/cobra"
-	"github.com/xgodev/boost/factory/spf13/cobra.v1"
 	"go.uber.org/fx"
 )
 

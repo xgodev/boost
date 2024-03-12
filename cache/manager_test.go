@@ -2,13 +2,13 @@ package cache
 
 import (
 	"context"
+	"github.com/xgodev/boost/cache/driver/contrib/coocood/freecache/v1"
 	"testing"
 	"time"
 
 	"github.com/coocood/freecache"
 	"github.com/stretchr/testify/suite"
 	"github.com/xgodev/boost/cache/codec/gob"
-	driver "github.com/xgodev/boost/cache/driver/contrib/coocood/freecache.v1"
 )
 
 type ManagerSuite struct {
@@ -55,7 +55,7 @@ func (s *ManagerSuite) Test_manager_Del() {
 			ctx := context.Background()
 
 			fc := freecache.NewCache(1)
-			drv := driver.New(fc, &driver.Options{TTL: 1 * time.Minute})
+			drv := v1.New(fc, &v1.Options{TTL: 1 * time.Minute})
 
 			codec := gob.New[string]()
 
@@ -118,7 +118,7 @@ func (s *ManagerSuite) Test_manager_Get() {
 			codec := gob.New[string]()
 
 			fc1 := freecache.NewCache(1)
-			drv1 := driver.New(fc1, &driver.Options{TTL: 1 * time.Minute})
+			drv1 := v1.New(fc1, &v1.Options{TTL: 1 * time.Minute})
 
 			for key, value := range t.data1 {
 				b, _ := codec.Encode(value)
@@ -126,7 +126,7 @@ func (s *ManagerSuite) Test_manager_Get() {
 			}
 
 			fc2 := freecache.NewCache(1)
-			drv2 := driver.New(fc2, &driver.Options{TTL: 1 * time.Minute})
+			drv2 := v1.New(fc2, &v1.Options{TTL: 1 * time.Minute})
 
 			for key, value := range t.data2 {
 				b, _ := codec.Encode(value)

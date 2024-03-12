@@ -13,7 +13,7 @@ import (
 	"github.com/xgodev/boost/log"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/xgodev/boost/factory/aws/aws-sdk-go.v2/client/sns"
+	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sns"
 )
 
 // Client represents a sns client.

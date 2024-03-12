@@ -7,8 +7,8 @@ import (
 	"github.com/xgodev/boost/config"
 	logger "github.com/xgodev/boost/faas/cloudevents/plugins/contrib/americanas-go/log.v1"
 	"github.com/xgodev/boost/faas/cmd"
-	igce "github.com/xgodev/boost/factory/cloudevents/sdk-go.v2"
-	ilog "github.com/xgodev/boost/factory/xgodev/boost.v1/log"
+	igce "github.com/xgodev/boost/factory/contrib/cloudevents/sdk-go/v2"
+	ilog "github.com/xgodev/boost/factory/local/log"
 	"go.uber.org/fx"
 	"os"
 )

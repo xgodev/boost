@@ -3,8 +3,8 @@ package cloudevents
 import (
 	"sync"
 
-	cloudevents "github.com/xgodev/boost/factory/cloudevents/sdk-go.v2"
-	contextfx "github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/context"
+	cloudevents "github.com/xgodev/boost/factory/contrib/cloudevents/sdk-go/v2"
+	contextfx "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/core/context"
 	"go.uber.org/fx"
 )
 

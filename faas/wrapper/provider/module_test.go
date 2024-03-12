@@ -7,7 +7,7 @@ import (
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/stretchr/testify/suite"
 	"github.com/xgodev/boost/config"
-	iglog "github.com/xgodev/boost/factory/xgodev/boost.v1/log"
+	iglog "github.com/xgodev/boost/factory/local/log"
 	"go.uber.org/fx"
 )
 

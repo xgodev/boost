@@ -4,18 +4,18 @@ import (
 	"context"
 	"fmt"
 	"github.com/xgodev/boost/annotation"
+	"github.com/xgodev/boost/log/contrib/rs/zerolog/v1"
 	"golang.org/x/tools/go/packages"
 	"os"
 	"os/exec"
 
 	"github.com/xgodev/boost/inject"
 	"github.com/xgodev/boost/log"
-	"github.com/xgodev/boost/log/contrib/rs/zerolog.v1"
 )
 
 func main() {
 
-	logger := zerolog.NewLogger(zerolog.WithLevel("INFO"))
+	logger := zerolog.zerolog.NewLogger(zerolog.WithLevel("INFO"))
 
 	inject.WithLogger(logger)
 	annotation.WithLogger(logger)

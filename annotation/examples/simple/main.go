@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/log"
-	"github.com/xgodev/boost/log/contrib/rs/zerolog.v1"
+	"github.com/xgodev/boost/log/contrib/rs/zerolog/v1"
 	"gopkg.in/yaml.v3"
 	"os"
 )
 
 func main() {
 
-	annotation.WithLogger(zerolog.NewLogger(zerolog.WithLevel("TRACE")))
+	zerolog.zerolog.NewLogger(zerolog.WithLevel("TRACE"))
 
 	basePath, err := os.Getwd()
 	if err != nil {

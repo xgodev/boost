@@ -3,7 +3,7 @@ package aws
 import (
 	"sync"
 
-	igaws "github.com/xgodev/boost/factory/aws/aws-sdk-go.v2"
+	igaws "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1"
 	"go.uber.org/fx"
 )
 

@@ -1,10 +1,10 @@
 package nats
 
 import (
-	ginatsfx "github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/nats-io/nats.go.v1"
+	ginatsfx "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/contrib/nats-io/nats.go/v1"
 	"sync"
 
-	"github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/context"
+	"github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/core/context"
 	"go.uber.org/fx"
 )
 

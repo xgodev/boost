@@ -2,14 +2,14 @@ package log_test
 
 import (
 	"context"
+	"github.com/xgodev/boost/log/contrib/sirupsen/logrus/v1"
+	"github.com/xgodev/boost/log/contrib/sirupsen/logrus/v1/formatter/text"
 
 	"github.com/xgodev/boost/log"
-	"github.com/xgodev/boost/log/contrib/sirupsen/logrus.v1"
-	"github.com/xgodev/boost/log/contrib/sirupsen/logrus.v1/formatter/text"
 )
 
 func ExampleNewLogger() {
-	log.SetGlobalLogger(logrus.NewLogger(logrus.WithFormatter(text.New(text.WithDisableTimestamp(true)))))
+	log.SetGlobalLogger(logrus.NewLogger(logrus.logrus.WithFormatter(text.New(text.WithDisableTimestamp(true)))))
 	log.WithField("main_field", "example")
 	log.Info("main method.")
 	// Output: level=info msg="main method."

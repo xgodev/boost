@@ -9,8 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
 	"github.com/xgodev/boost/config"
-	igaws "github.com/xgodev/boost/factory/aws/aws-sdk-go.v2"
-	iglog "github.com/xgodev/boost/factory/xgodev/boost.v1/log"
+	igaws "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1"
+	iglog "github.com/xgodev/boost/factory/local/log"
 	"github.com/xgodev/boost/log"
 )
 

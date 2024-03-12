@@ -8,7 +8,7 @@ import (
 
 type Manager[T any] struct {
 	drivers []Driver
-	mids    []Middleware[T]
+	mids    []Plugin[T]
 	codec   Codec[T]
 	metric  *Metric
 	name    string
@@ -156,7 +156,7 @@ func (m *Manager[T]) GetOrSet(ctx context.Context, key string, cacheable Cacheab
 	return data, err
 }
 
-func (m *Manager[T]) Use(mid Middleware[T]) *Manager[T] {
+func (m *Manager[T]) Use(mid Plugin[T]) *Manager[T] {
 	m.mids = append(m.mids, mid)
 	return m
 }

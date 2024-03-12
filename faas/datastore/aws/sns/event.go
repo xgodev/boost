@@ -2,7 +2,7 @@ package sns
 
 import (
 	"github.com/xgodev/boost/faas/repository"
-	"github.com/xgodev/boost/factory/aws/aws-sdk-go.v2/client/sns"
+	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sns"
 )
 
 // NewEvent returns a initialized client

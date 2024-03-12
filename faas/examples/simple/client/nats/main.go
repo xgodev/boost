@@ -6,8 +6,8 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/xgodev/boost/config"
+	iglog "github.com/xgodev/boost/factory/local/log"
 	ignats "github.com/xgodev/boost/factory/nats-io/nats.go.v1"
-	iglog "github.com/xgodev/boost/factory/xgodev/boost.v1/log"
 	"github.com/xgodev/boost/log"
 )
 

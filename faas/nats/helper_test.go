@@ -3,16 +3,15 @@ package nats
 import (
 	"context"
 	"fmt"
+	"github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
 	"reflect"
 	"testing"
 
 	n "github.com/nats-io/nats.go"
+	"github.com/stretchr/testify/suite"
 	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/faas/cloudevents"
-	"github.com/xgodev/boost/factory/nats-io/nats.go.v1"
-	iglog "github.com/xgodev/boost/factory/xgodev/boost.v1/log"
-
-	"github.com/stretchr/testify/suite"
+	iglog "github.com/xgodev/boost/factory/local/log"
 )
 
 type NatsHelperSuite struct {

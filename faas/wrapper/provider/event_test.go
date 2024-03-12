@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/faas/repository/mocks"
-	iglog "github.com/xgodev/boost/factory/xgodev/boost.v1/log"
+	iglog "github.com/xgodev/boost/factory/local/log"
 )
 
 type WrapperEventSuite struct {

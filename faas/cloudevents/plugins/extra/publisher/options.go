@@ -1,7 +1,7 @@
 package publisher
 
 import (
-	"github.com/xgodev/boost/factory"
+	"github.com/xgodev/boost"
 )
 
 type Options struct {
@@ -17,5 +17,5 @@ type Options struct {
 
 // NewOptions returns options from config file or environment vars.
 func NewOptions() (*Options, error) {
-	return factory.NewOptionsWithPath[Options](root)
+	return boost.NewOptionsWithPath[Options](root)
 }

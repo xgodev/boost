@@ -2,13 +2,13 @@ package cloudevents
 
 import (
 	"context"
+	"github.com/xgodev/boost/log/contrib/sirupsen/logrus/v1"
 	"reflect"
 	"testing"
 
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/stretchr/testify/suite"
 	"github.com/xgodev/boost/config"
-	"github.com/xgodev/boost/log/contrib/sirupsen/logrus.v1"
 )
 
 type CloudEventsHandlerSuite struct {
@@ -21,7 +21,7 @@ func TestCloudEventsHandlerSuite(t *testing.T) {
 
 func (s *CloudEventsHandlerSuite) SetupSuite() {
 	config.Load()
-	logrus.NewLogger()
+	logrus.logrus.NewLogger()
 }
 
 func (s *CloudEventsHandlerSuite) TestCloudEventsNewHandler() {

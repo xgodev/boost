@@ -2,6 +2,7 @@ package annotation
 
 import (
 	"errors"
+	"github.com/xgodev/boost/log"
 	"golang.org/x/tools/go/packages"
 	"path/filepath"
 )

@@ -3,15 +3,14 @@ package nats
 import (
 	"context"
 	"fmt"
+	"github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
 	"testing"
 
 	v2 "github.com/cloudevents/sdk-go/v2"
-	"github.com/xgodev/boost/config"
-	"github.com/xgodev/boost/factory/nats-io/nats.go.v1"
-	iglog "github.com/xgodev/boost/factory/xgodev/boost.v1/log"
-
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
+	"github.com/xgodev/boost/config"
+	iglog "github.com/xgodev/boost/factory/local/log"
 
 	"github.com/stretchr/testify/assert"
 )

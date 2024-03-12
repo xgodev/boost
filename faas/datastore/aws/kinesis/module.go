@@ -5,8 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/kinesis"
 	"github.com/xgodev/boost/faas/datastore/aws"
-	igkinesis "github.com/xgodev/boost/factory/aws/aws-sdk-go.v2/client/kinesis"
-	"github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/context"
+	igkinesis "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/kinesis"
+	"github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/core/context"
 	"go.uber.org/fx"
 )
 

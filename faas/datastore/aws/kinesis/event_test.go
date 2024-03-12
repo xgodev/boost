@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/faas/repository"
-	"github.com/xgodev/boost/factory/aws/aws-sdk-go.v2/client/kinesis/mocks"
-	iglog "github.com/xgodev/boost/factory/xgodev/boost.v1/log"
+	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/kinesis/mocks"
+	iglog "github.com/xgodev/boost/factory/local/log"
 )
 
 type EventSuite struct {

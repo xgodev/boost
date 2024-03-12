@@ -16,8 +16,8 @@ import (
 	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/faas/cloudevents"
 	"github.com/xgodev/boost/faas/cloudevents/plugins/contrib/americanas-go/log.v1"
-	igcloudevents "github.com/xgodev/boost/factory/cloudevents/sdk-go.v2"
-	iglog "github.com/xgodev/boost/factory/xgodev/boost.v1/log"
+	igcloudevents "github.com/xgodev/boost/factory/contrib/cloudevents/sdk-go/v2"
+	iglog "github.com/xgodev/boost/factory/local/log"
 )
 
 type HandlerSuite struct {

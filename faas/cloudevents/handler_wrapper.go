@@ -6,7 +6,7 @@ import (
 
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/xgodev/boost/errors"
-	cloudevents "github.com/xgodev/boost/factory/cloudevents/sdk-go.v2"
+	cloudevents "github.com/xgodev/boost/factory/contrib/cloudevents/sdk-go/v2"
 	"github.com/xgodev/boost/log"
 	"github.com/xgodev/boost/utils/strings"
 )

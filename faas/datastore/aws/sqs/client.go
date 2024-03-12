@@ -11,7 +11,7 @@ import (
 	"github.com/matryer/try"
 	"github.com/xgodev/boost/errors"
 	"github.com/xgodev/boost/faas/util"
-	"github.com/xgodev/boost/factory/aws/aws-sdk-go.v2/client/sqs"
+	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs"
 	"github.com/xgodev/boost/log"
 	"golang.org/x/sync/errgroup"
 )

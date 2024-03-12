@@ -3,7 +3,7 @@ package cloudevents
 import (
 	"context"
 
-	cloudevents "github.com/xgodev/boost/factory/cloudevents/sdk-go.v2"
+	cloudevents "github.com/xgodev/boost/factory/contrib/cloudevents/sdk-go/v2"
 )
 
 // Helper assists in creating event handlers.

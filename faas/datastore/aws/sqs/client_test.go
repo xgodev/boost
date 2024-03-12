@@ -2,6 +2,7 @@ package sqs
 
 import (
 	"context"
+	iglogrus "github.com/xgodev/boost/log/contrib/sirupsen/logrus/v1"
 	"reflect"
 	"testing"
 
@@ -10,9 +11,8 @@ import (
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/xgodev/boost/factory/aws/aws-sdk-go.v2/client/sqs"
-	sqsmock "github.com/xgodev/boost/factory/aws/aws-sdk-go.v2/client/sqs/mocks"
-	iglogrus "github.com/xgodev/boost/log/contrib/sirupsen/logrus.v1"
+	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs"
+	sqsmock "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/mocks"
 )
 
 type SqsClientSuite struct {

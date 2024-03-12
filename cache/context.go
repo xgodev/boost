@@ -4,7 +4,7 @@ import "context"
 
 type Context[R any] struct {
 	ctx    context.Context
-	m      []Middleware[R]
+	m      []Plugin[R]
 	driver Driver
 	name   string
 	index  int
@@ -54,7 +54,7 @@ func (c *Context[R]) hasNext() bool {
 	return false
 
 }
-func (c *Context[R]) getNext() Middleware[R] {
+func (c *Context[R]) getNext() Plugin[R] {
 	if c.hasNext() {
 		m := c.m[c.index]
 		c.index++
@@ -63,6 +63,6 @@ func (c *Context[R]) getNext() Middleware[R] {
 	return nil
 }
 
-func NewContext[R any](name string, d Driver, m ...Middleware[R]) *Context[R] {
+func NewContext[R any](name string, d Driver, m ...Plugin[R]) *Context[R] {
 	return &Context[R]{m: m, name: name, driver: d}
 }
