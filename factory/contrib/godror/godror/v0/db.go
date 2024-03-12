@@ -6,7 +6,7 @@ import (
 	"database/sql/driver"
 
 	"github.com/godror/godror"
-	"github.com/xgodev/boost/factory/time"
+	"github.com/xgodev/boost/factory/core/time"
 	"github.com/xgodev/boost/log"
 )
 

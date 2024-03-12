@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	logger "github.com/xgodev/boost/faas/cloudevents/plugins/local/log"
 	"os"
 
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/xgodev/boost/config"
-	logger "github.com/xgodev/boost/faas/cloudevents/plugins/contrib/americanas-go/log.v1"
 	"github.com/xgodev/boost/faas/cmd"
 	igce "github.com/xgodev/boost/factory/contrib/cloudevents/sdk-go/v2"
 	ilog "github.com/xgodev/boost/factory/local/log"

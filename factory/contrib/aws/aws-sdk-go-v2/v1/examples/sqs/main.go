@@ -5,8 +5,8 @@ import (
 
 	asqs "github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/xgodev/boost/config"
-	"github.com/xgodev/boost/factory/aws/aws-sdk-go.v2"
-	"github.com/xgodev/boost/factory/aws/aws-sdk-go.v2/client/sqs"
+	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1"
+	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs"
 	ilog "github.com/xgodev/boost/factory/local/log"
 	"github.com/xgodev/boost/log"
 )

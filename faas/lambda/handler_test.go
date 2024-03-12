@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/xgodev/boost/faas/cloudevents/plugins/local/log"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -15,7 +16,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/faas/cloudevents"
-	"github.com/xgodev/boost/faas/cloudevents/plugins/contrib/americanas-go/log.v1"
 	igcloudevents "github.com/xgodev/boost/factory/contrib/cloudevents/sdk-go/v2"
 	iglog "github.com/xgodev/boost/factory/local/log"
 )
@@ -40,7 +40,7 @@ func (s *HandlerSuite) TestHandler_Handle() {
 
 	var middlewares []cloudevents.Middleware
 
-	middlewares = append(middlewares, log.NewLogger())
+	middlewares = append(middlewares, log.log.NewLogger())
 
 	options, _ := DefaultOptions()
 

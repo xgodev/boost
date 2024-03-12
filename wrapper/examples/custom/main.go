@@ -23,7 +23,7 @@ func main() {
 
 	ctx := context.Background()
 
-	logrus.logrus.NewLogger()
+	logrus.NewLogger()
 
 	var res string
 	var err error

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/xgodev/boost/cache/driver/contrib/coocood/freecache/v1"
+	cfreecache "github.com/xgodev/boost/cache/driver/contrib/coocood/freecache/v1"
 	"time"
 
 	"github.com/coocood/freecache"
@@ -15,7 +15,7 @@ func main() {
 
 	fc := freecache.NewCache(1)
 
-	drv := v1.New(fc, &v1.Options{
+	drv := cfreecache.New(fc, &cfreecache.Options{
 		TTL: 10 * time.Minute,
 	})
 

@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/xgodev/boost/factory/net/http/client"
+	"github.com/xgodev/boost/factory/core/net/http/client"
 )
 
 type OptionsCustomEndpoint map[string]struct {

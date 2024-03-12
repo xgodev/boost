@@ -2,7 +2,7 @@ package datadog
 
 import (
 	"github.com/xgodev/boost/config"
-	girest "github.com/xgodev/boost/factory/go-resty/resty.v2"
+	girest "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
 )
 
 const (

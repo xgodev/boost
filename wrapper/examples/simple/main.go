@@ -15,7 +15,7 @@ func main() {
 
 	ctx := context.Background()
 
-	logrus.logrus.NewLogger()
+	logrus.NewLogger()
 
 	var r string
 	var err error

@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	a "github.com/panjf2000/ants/v2"
-	ants "github.com/xgodev/boost/factory/panjf2000/ants.v2"
+	ants "github.com/xgodev/boost/factory/contrib/panjf2000/ants/v2"
 	"go.uber.org/fx"
 )
 

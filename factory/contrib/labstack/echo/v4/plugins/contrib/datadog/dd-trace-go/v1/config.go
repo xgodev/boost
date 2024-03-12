@@ -2,6 +2,7 @@ package datadog
 
 import (
 	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 )
 
 const (

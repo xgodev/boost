@@ -2,7 +2,7 @@ package health
 
 import (
 	"github.com/xgodev/boost/config"
-	"github.com/xgodev/boost/factory/godror/godror.v0"
+	"github.com/xgodev/boost/factory/contrib/godror/godror/v0"
 )
 
 const (

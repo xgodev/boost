@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/xgodev/boost/factory/net/http/client"
+	"github.com/xgodev/boost/factory/core/net/http/client"
 	"github.com/xgodev/boost/log"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )

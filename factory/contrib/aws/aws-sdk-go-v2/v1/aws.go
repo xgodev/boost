@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	c "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/xgodev/boost/factory/net/http/client"
+	"github.com/xgodev/boost/factory/core/net/http/client"
 	"github.com/xgodev/boost/log"
 )
 

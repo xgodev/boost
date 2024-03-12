@@ -26,6 +26,7 @@ require (
 	github.com/dubonzi/otelresty v1.3.0
 	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/elastic/go-elasticsearch/v8 v8.12.1
+	github.com/ettle/strcase v0.2.0
 	github.com/globocom/echo-prometheus v0.1.2
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-chi/cors v1.2.1

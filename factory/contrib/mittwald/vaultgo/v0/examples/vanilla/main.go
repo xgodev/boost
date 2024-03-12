@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/vault/api"
 	vault "github.com/mittwald/vaultgo"
 	"github.com/xgodev/boost/config"
-	"github.com/xgodev/boost/factory/go.mongodb.org/mongo-driver.v1"
+	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	ilog "github.com/xgodev/boost/factory/local/log"
 	"github.com/xgodev/boost/log"
 	"go.mongodb.org/mongo-driver/bson"

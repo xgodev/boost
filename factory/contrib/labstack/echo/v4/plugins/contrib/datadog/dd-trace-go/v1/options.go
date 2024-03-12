@@ -2,7 +2,7 @@ package datadog
 
 import (
 	"github.com/xgodev/boost"
-	echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/contrib/labstack/echo/v4"
+	echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/labstack/echo.v4"
 )
 
 type Options struct {

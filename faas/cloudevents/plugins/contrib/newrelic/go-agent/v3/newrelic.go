@@ -6,7 +6,7 @@ import (
 	v2 "github.com/cloudevents/sdk-go/v2"
 	nr "github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/xgodev/boost/faas/cloudevents"
-	newrelic "github.com/xgodev/boost/factory/newrelic/go-agent.v3"
+	newrelic "github.com/xgodev/boost/factory/contrib/newrelic/go-agent/v3"
 )
 
 // NewRelic represents a newrelic agent middleware for events.

@@ -33,7 +33,7 @@ func main() {
 
 	ctx := context.Background()
 
-	logrus.logrus.NewLogger()
+	logrus.NewLogger()
 
 	var r Result
 	var err error

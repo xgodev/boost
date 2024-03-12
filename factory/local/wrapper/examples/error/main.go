@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/xgodev/boost/errors"
-	"github.com/xgodev/boost/factory/local/grapper"
-	"github.com/xgodev/boost/factory/local/grapper/plugins/contrib/afex/hystrix-go.v0"
-	logger "github.com/xgodev/boost/factory/local/grapper/plugins/contrib/local/log"
-	"github.com/xgodev/boost/factory/rs/zerolog.v1"
+	"github.com/xgodev/boost/factory/contrib/rs/zerolog/v1"
+	"github.com/xgodev/boost/factory/local/wrapper"
+	"github.com/xgodev/boost/factory/local/wrapper/plugins/contrib/afex/hystrix-go/v0"
+	logger "github.com/xgodev/boost/factory/local/wrapper/plugins/local/log"
 	"github.com/xgodev/boost/log"
 )
 
@@ -27,7 +27,7 @@ func main() {
 	var r string
 	var err error
 
-	wrp, _ := grapper.NewAnyErrorWrapper[string](ctx, logger.NewAnyError[string], hystrix.NewAnyError[string])
+	wrp, _ := wrapper.NewAnyErrorWrapper[string](ctx, logger.NewAnyError[string], hystrix.NewAnyError[string])
 
 	r, err = wrp.Exec(ctx, "xpto",
 		func(ctx context.Context) (string, error) {

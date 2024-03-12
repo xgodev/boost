@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/xgodev/boost/config"
+	mgo "github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	vault "github.com/xgodev/boost/factory/contrib/mittwald/vaultgo/v0"
-	"github.com/xgodev/boost/factory/contrib/mittwald/vaultgo/v0/managers/contrib/go.mongodb.org/mongo-driver.v1"
-	mgo "github.com/xgodev/boost/factory/go.mongodb.org/mongo-driver.v1"
+	"github.com/xgodev/boost/factory/contrib/mittwald/vaultgo/v0/managers/contrib/go.mongodb.org/mongo-driver/v1"
 	ilog "github.com/xgodev/boost/factory/local/log"
 	"github.com/xgodev/boost/log"
 	"go.mongodb.org/mongo-driver/bson"

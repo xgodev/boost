@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	log2 "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/local/log"
+	logplugin "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/local/log"
 	"os"
 
 	r "github.com/go-resty/resty/v2"
@@ -34,10 +34,10 @@ func init() {
 	os.Setenv("APP_RESTY_ACOM_PLUGINS_LOG_LEVEL", "INFO")
 
 	resty.ConfigAdd(bingConfigPath)
-	log2.ConfigAdd(bingLogPluginConfigPath)
+	logplugin.ConfigAdd(bingLogPluginConfigPath)
 
 	resty.ConfigAdd(googleConfigPath)
-	log2.ConfigAdd(googleLogPluginConfigPath)
+	logplugin.ConfigAdd(googleLogPluginConfigPath)
 }
 
 func main() {
@@ -52,8 +52,8 @@ func main() {
 
 	// ACOM CALL
 
-	var bingLogPlugin *log2.Log
-	bingLogPlugin, err = log2.NewLogWithConfigPath(bingLogPluginConfigPath)
+	var bingLogPlugin *logplugin.Log
+	bingLogPlugin, err = logplugin.NewLogWithConfigPath(bingLogPluginConfigPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,8 +74,8 @@ func main() {
 
 	// GOOGLE CALL
 
-	var googleLogPlugin *log2.Log
-	if googleLogPlugin, err = log2.NewLogWithConfigPath(googleLogPluginConfigPath); err != nil {
+	var googleLogPlugin *logplugin.Log
+	if googleLogPlugin, err = logplugin.NewLogWithConfigPath(googleLogPluginConfigPath); err != nil {
 		log.Fatal(err)
 	}
 

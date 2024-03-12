@@ -18,7 +18,7 @@ func NewAnyError[R any](ctx context.Context, name string) wrapper.AnyErrorMiddle
 	if err := h.ConfigureCommand(name); err != nil {
 		log.Error(err.Error())
 	}
-	return hystrix.hystrix.NewAnyErrorMiddleware[R](ctx, name)
+	return hystrix.NewAnyErrorMiddleware[R](ctx, name)
 }
 
 func NewAny[R any](ctx context.Context, name string) wrapper.AnyMiddleware[R] {

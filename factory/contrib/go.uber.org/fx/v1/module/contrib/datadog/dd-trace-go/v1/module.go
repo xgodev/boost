@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	datadog "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
-	contextfx "github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/context"
+	contextfx "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/core/context"
 	"go.uber.org/fx"
 )
 

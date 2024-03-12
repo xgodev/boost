@@ -4,7 +4,7 @@ import (
 	"context"
 
 	v2 "github.com/cloudevents/sdk-go/v2"
-	igce "github.com/xgodev/boost/factory/cloudevents/sdk-go.v2"
+	igce "github.com/xgodev/boost/factory/contrib/cloudevents/sdk-go/v2"
 )
 
 func ExampleHandler() igce.Handler {

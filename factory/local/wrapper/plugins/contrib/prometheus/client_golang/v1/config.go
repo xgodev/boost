@@ -4,11 +4,11 @@ import (
 	"strings"
 
 	"github.com/xgodev/boost/config"
-	"github.com/xgodev/boost/factory/local/grapper"
+	"github.com/xgodev/boost/factory/local/wrapper"
 )
 
 const (
-	root    = grapper.PluginsRoot + ".prometheus"
+	root    = wrapper.PluginsRoot + ".prometheus"
 	enabled = ".enabled"
 )
 

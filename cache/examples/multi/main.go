@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/xgodev/boost/cache/driver/contrib/coocood/freecache/v1"
+	cfreecache "github.com/xgodev/boost/cache/driver/contrib/coocood/freecache/v1"
 	"github.com/xgodev/boost/log/contrib/rs/zerolog/v1"
 	"time"
 
@@ -10,25 +10,24 @@ import (
 	"github.com/xgodev/boost/cache"
 	"github.com/xgodev/boost/cache/codec/gob"
 	"github.com/xgodev/boost/log"
-	"github.com/xgodev/boost/log/contrib/rs/v1"
 )
 
 func main() {
 
 	ctx := context.Background()
 
-	zerolog.zerolog.NewLogger(zerolog.WithLevel("TRACE"))
+	zerolog.NewLogger(zerolog.WithLevel("TRACE"))
 
 	codec := gob.New[string]()
 
 	fc1 := freecache.NewCache(1)
 	fc2 := freecache.NewCache(1)
 
-	drv1 := v1.New(fc1, &v1.Options{
+	drv1 := cfreecache.New(fc1, &cfreecache.Options{
 		TTL: 10 * time.Minute,
 	})
 
-	drv2 := v1.New(fc2, &v1.Options{
+	drv2 := cfreecache.New(fc2, &cfreecache.Options{
 		TTL: 10 * time.Minute,
 	})
 

@@ -2,10 +2,11 @@ package datadog
 
 import (
 	"context"
+	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 
 	datadog "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
 	"github.com/xgodev/boost/log"
-	echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/contrib/labstack/echo/v4"
+	echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/labstack/echo.v4"
 )
 
 // Register registers a new datadog plugin for echo server.

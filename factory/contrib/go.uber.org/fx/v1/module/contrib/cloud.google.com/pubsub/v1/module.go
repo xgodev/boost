@@ -1,9 +1,10 @@
 package bigquery
 
 import (
+	"github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v1"
 	"sync"
 
-	contextfx "github.com/xgodev/boost/factory/go.uber.org/fx.v1/module/context"
+	contextfx "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/core/context"
 	"go.uber.org/fx"
 )
 

@@ -10,7 +10,7 @@ import (
 	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
 	c "github.com/xgodev/boost/factory/contrib/spf13/v1"
-	ilog "github.com/xgodev/boost/factory/log"
+	ilog "github.com/xgodev/boost/factory/local/log"
 	"github.com/xgodev/boost/log"
 )
 

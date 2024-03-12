@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"github.com/uptrace/opentelemetry-go-extra/otelsql"
-	"github.com/xgodev/boost/factory/go.opentelemetry.io/otel.v1"
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/log"
 )
 

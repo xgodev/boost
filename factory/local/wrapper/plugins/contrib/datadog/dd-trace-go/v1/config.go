@@ -4,11 +4,11 @@ import (
 	"strings"
 
 	"github.com/xgodev/boost/config"
-	"github.com/xgodev/boost/factory/grapper"
+	"github.com/xgodev/boost/factory/local/wrapper"
 )
 
 const (
-	root    = grapper.PluginsRoot + ".datadog"
+	root    = wrapper.PluginsRoot + ".datadog"
 	enabled = ".enabled"
 )
 

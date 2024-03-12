@@ -2,7 +2,7 @@ package cache
 
 import (
 	"context"
-	"github.com/xgodev/boost/cache/driver/contrib/coocood/freecache/v1"
+	cfreecache "github.com/xgodev/boost/cache/driver/contrib/coocood/freecache/v1"
 	"testing"
 	"time"
 
@@ -55,7 +55,7 @@ func (s *ManagerSuite) Test_manager_Del() {
 			ctx := context.Background()
 
 			fc := freecache.NewCache(1)
-			drv := v1.New(fc, &v1.Options{TTL: 1 * time.Minute})
+			drv := cfreecache.New(fc, &cfreecache.Options{TTL: 1 * time.Minute})
 
 			codec := gob.New[string]()
 
@@ -118,7 +118,7 @@ func (s *ManagerSuite) Test_manager_Get() {
 			codec := gob.New[string]()
 
 			fc1 := freecache.NewCache(1)
-			drv1 := v1.New(fc1, &v1.Options{TTL: 1 * time.Minute})
+			drv1 := cfreecache.New(fc1, &cfreecache.Options{TTL: 1 * time.Minute})
 
 			for key, value := range t.data1 {
 				b, _ := codec.Encode(value)
@@ -126,7 +126,7 @@ func (s *ManagerSuite) Test_manager_Get() {
 			}
 
 			fc2 := freecache.NewCache(1)
-			drv2 := v1.New(fc2, &v1.Options{TTL: 1 * time.Minute})
+			drv2 := cfreecache.New(fc2, &cfreecache.Options{TTL: 1 * time.Minute})
 
 			for key, value := range t.data2 {
 				b, _ := codec.Encode(value)
