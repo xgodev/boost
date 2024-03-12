@@ -1,0 +1,179 @@
+- header:
+    title: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    description: // TODO
+  comments:
+    - // LorenMethod Lorem ipsum dolor sit amet, consectetur adipiscing elit
+    - // @Provide (index=0)
+  module: github.com/jpfaria/tests
+  file: annotated
+  path: github.com/jpfaria/tests/annotated
+  package: annotated
+  func:
+    name: LorenMethod
+    parameters:
+      - name: ctx
+        type: context.Context
+      - name: req
+        type: '*http.Request'
+    results:
+      - name: resp
+        type: '*Loren'
+      - name: err
+        type: error
+  struct: ""
+  annotations:
+    - name: Provide
+      value: index=0
+      map:
+        index: 0
+- header:
+    title: title
+    description: // TODO
+  comments:
+    - // Foo title
+    - // @Provide (name=A, index=0)
+    - // @Inject (index=0)
+  module: github.com/xgodev/boost/inject
+  file: main
+  path: github.com/xgodev/boost/inject/examples/simple
+  package: main
+  func:
+    name: Foo
+    parameters:
+      - name: ex1
+        type: '*annotated.Loren'
+    results:
+      - name: ""
+        type: '*Loren'
+  struct: ""
+  annotations:
+    - name: Provide
+      value: name=A,index=0
+      map:
+        index: 0
+        name: A
+    - name: Inject
+      value: index=0
+      map:
+        index: 0
+- header:
+    title: title
+    description: // TODO
+  comments:
+    - // FooBar title
+    - // @Provide (index=0)
+  module: github.com/xgodev/boost/inject
+  file: main
+  path: github.com/xgodev/boost/inject/examples/simple
+  package: main
+  func:
+    name: FooBar
+    parameters: []
+    results:
+      - name: ""
+        type: '*Loren'
+  struct: ""
+  annotations:
+    - name: Provide
+      value: index=0
+      map:
+        index: 0
+- header:
+    title: title
+    description: // TODO
+  comments:
+    - // FooBaz title
+    - // @Provide (name=A, index=0)
+  module: github.com/xgodev/boost/inject
+  file: main
+  path: github.com/xgodev/boost/inject/examples/simple
+  package: main
+  func:
+    name: FooBaz
+    parameters: []
+    results:
+      - name: ""
+        type: '*annotated.Loren'
+  struct: ""
+  annotations:
+    - name: Provide
+      value: name=A,index=0
+      map:
+        index: 0
+        name: A
+- header:
+    title: title
+    description: // TODO
+  comments:
+    - // Bar title
+    - // @Inject (index=0)
+    - // @Invoke
+  module: github.com/xgodev/boost/inject
+  file: main
+  path: github.com/xgodev/boost/inject/examples/simple
+  package: main
+  func:
+    name: Bar
+    parameters:
+      - name: ex
+        type: '*Loren'
+    results: []
+  struct: ""
+  annotations:
+    - name: Inject
+      value: index=0
+      map:
+        index: 0
+    - name: Invoke
+      value: ""
+      map: {}
+- header:
+    title: title
+    description: // TODO
+  comments:
+    - // Foz title
+    - // @Inject (name=A, index=0)
+    - // @Inject (name=A, index=1)
+    - // @Inject (index=2)
+    - // @Inject (index=3)
+    - // @MyAnnotation
+    - // @Invoke
+  module: github.com/xgodev/boost/inject
+  file: main
+  path: github.com/xgodev/boost/inject/examples/simple
+  package: main
+  func:
+    name: Foz
+    parameters:
+      - name: ex1
+        type: '*Loren'
+      - name: ex2
+        type: '*annotated.Loren'
+      - name: ex3
+        type: '*Loren'
+      - name: ex4
+        type: '*annotated.Loren'
+    results: []
+  struct: ""
+  annotations:
+    - name: Inject
+      value: name=A,index=0
+      map:
+        index: 0
+        name: A
+    - name: Inject
+      value: name=A,index=1
+      map:
+        index: 1
+        name: A
+    - name: Inject
+      value: index=2
+      map:
+        index: 2
+    - name: Inject
+      value: index=3
+      map:
+        index: 3
+    - name: Invoke
+      value: ""
+      map: {}

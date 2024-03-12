@@ -1,0 +1,14 @@
+digraph G {
+	"github.com/xgodev/boost/inject/examples/simple_FooBar" [label="github.com/xgodev/boost/inject/examples/simple_FooBar"];
+	"github.com/xgodev/boost/inject/examples/simple_FooBar" -> "github.com/xgodev/boost/inject/examples/simple_Bar";
+	"github.com/xgodev/boost/inject/examples/simple_FooBar" -> "github.com/xgodev/boost/inject/examples/simple_Foz";
+	"github.com/xgodev/boost/inject/examples/simple_FooBaz" [label="github.com/xgodev/boost/inject/examples/simple_FooBaz"];
+	"github.com/xgodev/boost/inject/examples/simple_FooBaz" -> "github.com/xgodev/boost/inject/examples/simple_Foz";
+	"github.com/jpfaria/tests/annotated_LorenMethod" [label="github.com/jpfaria/tests/annotated_LorenMethod"];
+	"github.com/jpfaria/tests/annotated_LorenMethod" -> "github.com/xgodev/boost/inject/examples/simple_Foo";
+	"github.com/jpfaria/tests/annotated_LorenMethod" -> "github.com/xgodev/boost/inject/examples/simple_Foz";
+	"github.com/xgodev/boost/inject/examples/simple_Foz" [label="github.com/xgodev/boost/inject/examples/simple_Foz"];
+	"github.com/xgodev/boost/inject/examples/simple_Bar" [label="github.com/xgodev/boost/inject/examples/simple_Bar"];
+	"github.com/xgodev/boost/inject/examples/simple_Foo" [label="github.com/xgodev/boost/inject/examples/simple_Foo"];
+	"github.com/xgodev/boost/inject/examples/simple_Foo" -> "github.com/xgodev/boost/inject/examples/simple_Foz";
+}

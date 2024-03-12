@@ -1,0 +1,24 @@
+- header:
+    title: title
+    description: // TODO
+  comments:
+    - // Foo title
+    - // @Provide (name=A)
+  module: github.com/xgodev/boost/inject
+  file: main
+  path: github.com/xgodev/boost/inject/examples/simple
+  package: main
+  func:
+    name: Foo
+    parameters:
+      - name: ex1
+        type: '*annotated.Loren'
+    results:
+      - name: ""
+        type: '*Loren'
+  struct: ""
+  annotations:
+    - name: Provide
+      value: name=A
+      map:
+        name: A
