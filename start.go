@@ -10,7 +10,7 @@ import (
 	"github.com/xgodev/boost/config"
 )
 
-func Boot() {
+func Start() {
 	config.Load()
 
 	if config.Bool(bannerEnabled) {

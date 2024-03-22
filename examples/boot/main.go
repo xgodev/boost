@@ -12,6 +12,6 @@ func init() {
 }
 
 func main() {
-	boost.Boot()
+	boost.Start()
 	zap.zap.NewLogger()
 }

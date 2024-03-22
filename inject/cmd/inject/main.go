@@ -15,7 +15,7 @@ import (
 
 func main() {
 
-	logger := zerolog.zerolog.NewLogger(zerolog.WithLevel("INFO"))
+	logger := zerolog.NewLogger(zerolog.WithLevel("INFO"))
 
 	inject.WithLogger(logger)
 	annotation.WithLogger(logger)

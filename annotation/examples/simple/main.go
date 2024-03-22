@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	zerolog.zerolog.NewLogger(zerolog.WithLevel("TRACE"))
+	zerolog.NewLogger(zerolog.WithLevel("TRACE"))
 
 	basePath, err := os.Getwd()
 	if err != nil {
