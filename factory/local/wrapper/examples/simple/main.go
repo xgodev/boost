@@ -20,7 +20,7 @@ func main() {
 
 	ctx := context.Background()
 
-	boost.Boot()
+	boost.Start()
 	zerolog.NewLogger()
 
 	var r string
