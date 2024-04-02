@@ -1,0 +1,28 @@
+package resty
+
+import (
+	"github.com/xgodev/boost"
+	"time"
+)
+
+// Options represents resty client options.
+type Options struct {
+	Debug             bool
+	ConnectionTimeout time.Duration
+	CloseConnection   bool
+	KeepAlive         time.Duration
+	RequestTimeout    time.Duration
+	FallbackDelay     time.Duration
+	Transport         OptionsTransport
+	Host              string
+}
+
+// NewOptions returns options from config file or environment vars.
+func NewOptions() (*Options, error) {
+	return boost.NewOptionsWithPath[Options](root)
+}
+
+// NewOptionsWithPath unmarshals a given key path into options and returns it.
+func NewOptionsWithPath(path string) (opts *Options, err error) {
+	return boost.NewOptionsWithPath[Options](root, path)
+}

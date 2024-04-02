@@ -1,0 +1,56 @@
+package recoverer
+
+import (
+	"context"
+	c "github.com/go-chi/chi/v5"
+	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5"
+	"net/http"
+
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/xgodev/boost/wrapper/log"
+)
+
+// Register registers recoverer middleware for chi.
+func Register(ctx context.Context, mux *c.Mux) (*chi.Config, error) {
+	o, err := NewOptions()
+	if err != nil {
+		return nil, err
+	}
+	n := NewRecovererWithOptions(o)
+	return n.Register(ctx, mux)
+}
+
+// Recoverer struct which represents a recoverer middleware for chi.
+type Recoverer struct {
+	options *Options
+}
+
+// NewRecovererWithConfigPath returns a recoverer middleware with options from config path.
+func NewRecovererWithConfigPath(path string) (*Recoverer, error) {
+	o, err := NewOptionsWithPath(path)
+	if err != nil {
+		return nil, err
+	}
+	return NewRecovererWithOptions(o), nil
+}
+
+// NewRecovererWithOptions returns a recoverer middleware with options.
+func NewRecovererWithOptions(options *Options) *Recoverer {
+	return &Recoverer{options: options}
+}
+
+// Register registers this recoverer middleware on a new chi config.
+func (d *Recoverer) Register(ctx context.Context, mux *c.Mux) (*chi.Config, error) {
+	if !d.options.Enabled {
+		return nil, nil
+	}
+
+	logger := log.FromContext(ctx)
+	logger.Trace("enabling recoverer middleware in chi")
+
+	return &chi.Config{
+		Middlewares: []func(http.Handler) http.Handler{
+			middleware.Recoverer,
+		},
+	}, nil
+}
