@@ -27,7 +27,7 @@ const (
 
 func init() {
 
-	os.Setenv("IGNITE_LOGRUS_CONSOLE_LEVEL", "INFO")
+	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "INFO")
 
 	os.Setenv("APP_RESTY_GOOGLE_HOST", "http://www.google.com")
 	os.Setenv("APP_RESTY_ACOM_HOST", "https://www.bing.com")
