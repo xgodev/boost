@@ -16,12 +16,12 @@ import (
 )
 
 func init() {
-	os.Setenv("IGNITE_MONGO_URI", "mongodb://localhost:27004/database")
-	os.Setenv("IGNITE_VAULT_MANAGERS_MONGO_SECRET__PATH", "v1/database/creds/recency_vault_hml")
-	os.Setenv("IGNITE_VAULT_ADDR", "http://vault.example.com")
-	os.Setenv("IGNITE_VAULT_TOKEN", "s.O12jxPL9bbJhS7laeVP2h6fK")
-	os.Setenv("IGNITE_VAULT_TYPE", "TOKEN")
-	os.Setenv("IGNITE_LOGRUS_CONSOLE_LEVEL", "TRACE")
+	os.Setenv("BOOST_FACTORY_MONGO_URI", "mongodb://localhost:27004/database")
+	os.Setenv("BOOST_FACTORY_VAULT_MANAGERS_MONGO_SECRET__PATH", "v1/database/creds/recency_vault_hml")
+	os.Setenv("BOOST_FACTORY_VAULT_ADDR", "http://vault.example.com")
+	os.Setenv("BOOST_FACTORY_VAULT_TOKEN", "s.O12jxPL9bbJhS7laeVP2h6fK")
+	os.Setenv("BOOST_FACTORY_VAULT_TYPE", "TOKEN")
+	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "TRACE")
 }
 
 var conn *mgo.Conn

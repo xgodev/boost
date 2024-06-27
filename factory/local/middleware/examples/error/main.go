@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	os.Setenv("IGNITE_ZEROLOG_LEVEL", "TRACE")
+	os.Setenv("BOOST_FACTORY_ZEROLOG_LEVEL", "TRACE")
 }
 
 func main() {

@@ -27,7 +27,7 @@ func helloHandler(c e.Context) (err error) {
 
 func main() {
 
-	os.Setenv("IGNITE_LOGRUS_CONSOLE_LEVEL", "TRACE")
+	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "TRACE")
 
 	config.Load()
 	log.New()

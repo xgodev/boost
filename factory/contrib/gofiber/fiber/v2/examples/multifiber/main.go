@@ -36,7 +36,7 @@ func Get(c *f.Ctx) (err error) {
 
 func main() {
 
-	os.Setenv("IGNITE_FIBER2_PORT", "8086")
+	os.Setenv("BOOST_FACTORY_FIBER2_PORT", "8086")
 
 	config.Load()
 

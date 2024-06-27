@@ -27,7 +27,7 @@ func (c *MyChecker) Check(ctx context.Context) error {
 
 func main() {
 
-	os.Setenv("IGNITE_LOGRUS_CONSOLE_LEVEL", "TRACE")
+	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "TRACE")
 
 	config.Load()
 	log.New()
