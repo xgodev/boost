@@ -8,8 +8,8 @@ import (
 )
 
 func init() {
-	os.Setenv("IGNITE_ZAP_CONSOLE_FORMATTER", "JSON")
-	os.Setenv("IGNITE_ZAP_CONSOLE_LEVEL", "DEBUG")
+	os.Setenv("BOOST_FACTORY_ZAP_CONSOLE_FORMATTER", "JSON")
+	os.Setenv("BOOST_FACTORY_ZAP_CONSOLE_LEVEL", "DEBUG")
 }
 
 func main() {
