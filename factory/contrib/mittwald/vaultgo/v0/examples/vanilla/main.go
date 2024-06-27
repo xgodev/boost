@@ -20,7 +20,7 @@ var conn *mongo.Conn
 var username, password string
 
 func init() {
-	os.Setenv("IGNITE_MONGO_URI", "mongodb://localhost:27004/database")
+	os.Setenv("BOOST_FACTORY_MONGO_URI", "mongodb://localhost:27004/database")
 }
 
 func main() {

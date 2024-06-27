@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	os.Setenv("IGNITE_LOGRUS_CONSOLE_LEVEL", "TRACE")
+	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "TRACE")
 }
 
 func main() {
