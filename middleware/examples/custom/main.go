@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/xgodev/boost/wrapper/log/contrib/sirupsen/logrus/v1"
-
 	"github.com/xgodev/boost/middleware"
 )
 
@@ -22,8 +20,6 @@ func NewCustomMiddleware[R any]() middleware.AnyErrorMiddleware[R] {
 func main() {
 
 	ctx := context.Background()
-
-	logrus.NewLogger()
 
 	var res string
 	var err error

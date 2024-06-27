@@ -2,9 +2,9 @@ package mongo
 
 import (
 	"context"
+	"github.com/xgodev/boost/wrapper/log"
 	"strings"
 
-	"github.com/xgodev/boost/wrapper/log"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
