@@ -43,7 +43,7 @@ func Get(c e.Context) (err error) {
 
 func main() {
 
-	os.Setenv("IGNITE_ECHO2_PORT", "8086")
+	os.Setenv("BOOST_FACTORY_ECHO2_PORT", "8086")
 
 	config.Load()
 
