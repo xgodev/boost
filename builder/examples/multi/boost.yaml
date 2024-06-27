@@ -1,0 +1,64 @@
+schema: v1
+spec:
+  name: multi
+  description: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  apps:
+    - type: GRPC
+      spec:
+        name: xpto
+        description: Pellentesque ac dictum ante. Etiam pretium finibus felis eget ultricies
+        options:
+          go_package: github.com/xgodev/boost/boost/examples/multi
+          java_package: com.github.americanas-go/examples/multi
+        methods:
+          - name: lorem
+            type: STREAM
+            handler: github.com/xgodev/boost/boost/examples/multi.ExampleHandler
+            message:
+              input: github.com/xgodev/boost/boost/examples/multi.Request
+              output: github.com/xgodev/boost/boost/examples/multi.Request
+          - name: dictum
+            type: UNARY
+            handler: github.com/xgodev/boost/boost/examples/multi.ExampleHandler
+            message:
+              input: github.com/xgodev/boost/boost/examples/multi.Request
+              output: github.com/xgodev/boost/boost/examples/multi.Request
+    - type: FUNCTION
+      spec:
+        name: xpto
+        description: Pellentesque ac dictum ante. Etiam pretium finibus felis eget ultricies
+        handler: github.com/xgodev/boost/boost/examples/multi.ExampleHandler
+    - type: HTTP
+      spec:
+        name: rest api
+        description: Pellentesque ac dictum ante. Etiam pretium finibus felis eget ultricies
+        endpoints:
+          - path: /example
+            method: POST
+            description: Sed eu lectus dignissim, vehicula urna eu, condimentum mauris.
+            handler: github.com/xgodev/boost/boost/examples/multi.ExampleHandler
+            consumes:
+              - application/json
+            produces:
+              - application/json
+            parameters:
+              - name: example_query
+                description: Donec in nunc a tortor rhoncus venenatis at a libero.
+                source: QUERY
+                type: BOOLEAN
+                required: true
+              - name: example_path
+                description: Suspendisse tempus sed libero sit amet accumsan.
+                source: PATH
+                type: STRING
+                required: true
+              - name: example_header
+                description: In ipsum ligula, lacinia vel neque non, lacinia lobortis odio.
+                source: HEADER
+                type: STRING
+                required: false
+            responses:
+              - 201:
+                  description: Etiam sed efficitur purus, at lacinia magna.
+                  schema: github.com/example/example.Response
+
