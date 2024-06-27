@@ -15,11 +15,11 @@ import (
 )
 
 func init() {
-	os.Setenv("IGNITE_ECHO_PORT", "443")
-	os.Setenv("IGNITE_ECHO_TLS_ENABLED", "true")
-	os.Setenv("IGNITE_ECHO_TLS_TYPE", "AUTO")
-	os.Setenv("IGNITE_ECHO_TLS_AUTO_HOST", "localhost")
-	os.Setenv("IGNITE_LOGRUS_CONSOLE_LEVEL", "TRACE")
+	os.Setenv("BOOST_FACTORY_ECHO_PORT", "443")
+	os.Setenv("BOOST_FACTORY_ECHO_TLS_ENABLED", "true")
+	os.Setenv("BOOST_FACTORY_ECHO_TLS_TYPE", "AUTO")
+	os.Setenv("BOOST_FACTORY_ECHO_TLS_AUTO_HOST", "localhost")
+	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "TRACE")
 }
 
 func main() {
