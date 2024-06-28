@@ -1,9 +1,9 @@
 package prometheus
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"strings"
 
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/local/middleware"
 )
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost/wrapper/config"
 
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/gocql/gocql/v1"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 )

@@ -2,12 +2,12 @@ package boost
 
 import (
 	"fmt"
+	"github.com/xgodev/boost/wrapper/config"
 	"os"
 	"sort"
 
 	"github.com/common-nighthawk/go-figure"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/xgodev/boost/config"
 )
 
 func Start() {

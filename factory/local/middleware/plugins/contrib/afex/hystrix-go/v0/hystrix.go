@@ -2,10 +2,10 @@ package hystrix
 
 import (
 	"context"
-	"github.com/xgodev/boost/config"
 	h "github.com/xgodev/boost/factory/contrib/afex/hystrix-go/v0"
 	"github.com/xgodev/boost/middleware"
 	"github.com/xgodev/boost/middleware/plugins/contrib/afex/hystrix-go/v0"
+	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/log"
 )
 

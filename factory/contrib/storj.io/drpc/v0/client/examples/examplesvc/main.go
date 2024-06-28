@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost/wrapper/config"
 	"os"
 	"time"
 
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/storj.io/drpc/v0/client"
 	"github.com/xgodev/boost/factory/contrib/storj.io/drpc/v0/server/examples/examplesvc/pb"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"

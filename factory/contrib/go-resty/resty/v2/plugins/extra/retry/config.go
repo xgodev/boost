@@ -2,9 +2,8 @@ package retry
 
 import (
 	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
+	"github.com/xgodev/boost/wrapper/config"
 	"time"
-
-	"github.com/xgodev/boost/config"
 )
 
 const (

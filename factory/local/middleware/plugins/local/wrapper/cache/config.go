@@ -2,9 +2,8 @@ package cache
 
 import (
 	"github.com/xgodev/boost/factory/local/middleware"
+	"github.com/xgodev/boost/wrapper/config"
 	"strings"
-
-	"github.com/xgodev/boost/config"
 )
 
 const (

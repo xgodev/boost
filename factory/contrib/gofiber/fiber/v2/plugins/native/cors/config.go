@@ -1,10 +1,10 @@
 package cors
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/xgodev/boost/config"
 	gifiber "github.com/xgodev/boost/factory/contrib/gofiber/fiber/v2"
 )
 

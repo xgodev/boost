@@ -1,8 +1,8 @@
 package newrelic
 
 import (
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

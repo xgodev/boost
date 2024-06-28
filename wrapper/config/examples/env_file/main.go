@@ -1,10 +1,9 @@
 package main
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"log"
 	"os"
-
-	"github.com/xgodev/boost/config"
 )
 
 type AppConfig struct {

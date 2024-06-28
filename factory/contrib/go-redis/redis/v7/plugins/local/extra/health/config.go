@@ -1,8 +1,8 @@
 package health
 
 import (
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/go-redis/redis/v7"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

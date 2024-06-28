@@ -2,7 +2,7 @@ package fiber
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (
