@@ -226,7 +226,7 @@ func parseEnv(s string) string {
 		if strings.Contains(v, "-") {
 
 			sgyl := stringy.New(strings.ToLower(v))
-			sgylc := stringy.New(sgyl.CamelCase())
+			sgylc := stringy.New(sgyl.CamelCase().Get())
 			add = sgylc.LcFirst()
 
 		} else {

@@ -3,7 +3,7 @@ package graphql
 import (
 	"github.com/graphql-go/handler"
 	"github.com/xgodev/boost"
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client/plugins/local/wrapper/log"
+	"github.com/xgodev/boost/wrapper/config"
 	"os"
 	"time"
 
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server/examples/examplesvc/pb"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"

@@ -1,10 +1,9 @@
 package datadog
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"math"
 	"time"
-
-	"github.com/xgodev/boost/config"
 )
 
 const (

@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 	"os"
 
 	e "github.com/labstack/echo/v4"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
 	logplugin "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/wrapper/log"

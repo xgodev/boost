@@ -1,6 +1,8 @@
 package logrus
 
-import "github.com/xgodev/boost/config"
+import (
+	"github.com/xgodev/boost/wrapper/config"
+)
 
 const (
 	root           = "boost.factory.logrus"

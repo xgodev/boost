@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost/wrapper/config"
 	"os"
 	"time"
 
-	"github.com/xgodev/boost/config"
 	mgo "github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	vault "github.com/xgodev/boost/factory/contrib/mittwald/vaultgo/v0"
 	"github.com/xgodev/boost/factory/contrib/mittwald/vaultgo/v0/managers/contrib/go.mongodb.org/mongo-driver/v1"

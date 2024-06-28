@@ -1,8 +1,8 @@
 package echo
 
 import (
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/golang.org/x/net/v0/http2/server"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

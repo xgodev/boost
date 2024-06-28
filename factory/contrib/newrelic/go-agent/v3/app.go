@@ -2,10 +2,10 @@ package newrelic
 
 import (
 	"context"
+	"github.com/xgodev/boost/wrapper/config"
 	"time"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/wrapper/log"
 )
 

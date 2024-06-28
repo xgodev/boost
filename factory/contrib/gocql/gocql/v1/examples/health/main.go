@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/xgodev/boost/factory/contrib/gocql/gocql/v1"
+	"github.com/xgodev/boost/wrapper/config"
 
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/extra/health"
 	h "github.com/xgodev/boost/factory/contrib/gocql/gocql/v1/plugins/local/extra/health"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"

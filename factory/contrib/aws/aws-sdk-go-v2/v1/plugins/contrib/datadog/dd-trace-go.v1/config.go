@@ -1,8 +1,8 @@
 package datadog
 
 import (
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

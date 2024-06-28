@@ -2,12 +2,12 @@ package elasticsearch
 
 import (
 	"context"
+	"github.com/xgodev/boost/wrapper/config"
 	"strings"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/wrapper/log"
 )
 

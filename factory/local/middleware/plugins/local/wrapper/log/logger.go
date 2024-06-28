@@ -2,9 +2,9 @@ package log
 
 import (
 	"context"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/middleware"
 	"github.com/xgodev/boost/middleware/plugins/local/wrapper/log"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 func NewAnyError[R any](ctx context.Context, name string) middleware.AnyErrorMiddleware[R] {

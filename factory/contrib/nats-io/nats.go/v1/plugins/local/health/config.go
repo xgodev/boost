@@ -1,8 +1,8 @@
 package health
 
 import (
-	"github.com/xgodev/boost/config"
 	ginats "github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

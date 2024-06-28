@@ -1,6 +1,8 @@
 package boost
 
-import "github.com/xgodev/boost/config"
+import (
+	"github.com/xgodev/boost/wrapper/config"
+)
 
 // NewOptionsWithPath unmarshal options based a given multi key paths.
 func NewOptionsWithPath[O any](paths ...string) (opts *O, err error) {

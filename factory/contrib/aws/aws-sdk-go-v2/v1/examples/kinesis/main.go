@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost/wrapper/config"
 
 	akinesis "github.com/aws/aws-sdk-go-v2/service/kinesis"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1"
 	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/kinesis"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"

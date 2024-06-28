@@ -1,10 +1,9 @@
 package elasticsearch
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"runtime"
 	"time"
-
-	"github.com/xgodev/boost/config"
 )
 
 const (
