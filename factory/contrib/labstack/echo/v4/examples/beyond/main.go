@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost/wrapper/config"
 
 	"github.com/wesovilabs/beyond/api"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
 	status "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/model/restresponse"

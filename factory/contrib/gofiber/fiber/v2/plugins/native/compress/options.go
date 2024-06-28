@@ -3,7 +3,7 @@ package compress
 import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/xgodev/boost"
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 // Options compress plugin for fiber options.

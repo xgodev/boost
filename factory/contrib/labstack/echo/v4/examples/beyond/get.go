@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 
 	e "github.com/labstack/echo/v4"
-	"github.com/xgodev/boost/config"
 )
 
 func Get(c e.Context) (err error) {

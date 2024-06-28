@@ -1,9 +1,8 @@
 package otel
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"os"
-
-	"github.com/xgodev/boost/config"
 )
 
 type Options struct {

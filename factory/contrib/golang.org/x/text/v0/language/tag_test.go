@@ -1,11 +1,11 @@
 package language
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/xgodev/boost/config"
 	"golang.org/x/text/language"
 )
 

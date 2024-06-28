@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"github.com/xgodev/boost/extra/health"
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 	"os"
 
 	e "github.com/labstack/echo/v4"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	h "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
 	"github.com/xgodev/boost/factory/local/wrapper/log"

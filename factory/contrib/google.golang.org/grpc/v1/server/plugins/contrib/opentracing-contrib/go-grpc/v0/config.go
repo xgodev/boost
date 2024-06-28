@@ -1,8 +1,8 @@
 package opentracing
 
 import (
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

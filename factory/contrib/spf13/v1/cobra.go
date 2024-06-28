@@ -2,11 +2,11 @@ package cobra
 
 import (
 	"fmt"
+	"github.com/xgodev/boost/wrapper/config"
 	"net"
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/wrapper/log"
 )
 

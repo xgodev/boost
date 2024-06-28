@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"github.com/xgodev/boost/factory/contrib/gofiber/fiber/v2"
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 	"os"
 
 	f "github.com/gofiber/fiber/v2"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/extra/multiserver"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 )

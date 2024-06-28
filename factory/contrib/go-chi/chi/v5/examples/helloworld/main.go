@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5"
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5/plugins/local/wrapper/log"
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5/plugins/local/extra/health"
 	status "github.com/xgodev/boost/factory/contrib/go-chi/chi/v5/plugins/local/model/restresponse"
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5/plugins/native/realip"

@@ -1,7 +1,7 @@
 package datadog
 
 import (
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/log"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 )
