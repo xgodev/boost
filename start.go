@@ -3,6 +3,7 @@ package boost
 import (
 	"fmt"
 	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost/wrapper/config/contrib/knadh/koanf/v1"
 	"os"
 	"sort"
 
@@ -11,6 +12,7 @@ import (
 )
 
 func Start() {
+	koanf.New()
 	config.Load()
 
 	if config.Bool(bannerEnabled) {

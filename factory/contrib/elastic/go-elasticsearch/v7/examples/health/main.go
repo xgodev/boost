@@ -3,12 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/xgodev/boost/factory/contrib/elastic/go-elasticsearch/v7/plugins/local/extra/health"
-	"github.com/xgodev/boost/wrapper/config"
-
 	h "github.com/xgodev/boost/extra/health"
 	"github.com/xgodev/boost/factory/contrib/elastic/go-elasticsearch/v7"
+	"github.com/xgodev/boost/factory/contrib/elastic/go-elasticsearch/v7/plugins/local/extra/health"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
+	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/log"
 )
 

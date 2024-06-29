@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	logplugin "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log"
-	"github.com/xgodev/boost/wrapper/config"
 	"os"
 
 	r "github.com/go-resty/resty/v2"
@@ -30,8 +29,8 @@ func init() {
 	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "INFO")
 
 	os.Setenv("APP_RESTY_GOOGLE_HOST", "http://www.google.com")
-	os.Setenv("APP_RESTY_ACOM_HOST", "https://www.bing.com.br")
-	os.Setenv("APP_RESTY_ACOM_PLUGINS_LOG_LEVEL", "INFO")
+	os.Setenv("APP_RESTY_SITE_HOST", "https://www.bing.com.br")
+	os.Setenv("APP_RESTY_SITE_PLUGINS_LOG_LEVEL", "INFO")
 
 	resty.ConfigAdd(bingConfigPath)
 	logplugin.ConfigAdd(bingLogPluginConfigPath)
@@ -50,7 +49,7 @@ func main() {
 
 	var err error
 
-	// ACOM CALL
+	// SITE CALL
 
 	var bingLogPlugin *logplugin.Log
 	bingLogPlugin, err = logplugin.NewLogWithConfigPath(bingLogPluginConfigPath)
@@ -58,18 +57,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var clientAcom *r.Client
-	if clientAcom, err = resty.NewClientWithConfigPath(ctx, bingConfigPath, bingLogPlugin.Register); err != nil {
+	var clientSite *r.Client
+	if clientSite, err = resty.NewClientWithConfigPath(ctx, bingConfigPath, bingLogPlugin.Register); err != nil {
 		log.Fatal(err)
 	}
 
-	var responseAcom *r.Response
-	if responseAcom, err = clientAcom.R().Get("/"); err != nil {
+	var responseSite *r.Response
+	if responseSite, err = clientSite.R().Get("/"); err != nil {
 		log.Fatal(err)
 	}
 
-	if responseAcom != nil {
-		logger.Infof(responseAcom.String())
+	if responseSite != nil {
+		logger.Infof(responseSite.String())
 	}
 
 	// GOOGLE CALL

@@ -3,9 +3,8 @@ package main
 import (
 	"context"
 	"github.com/xgodev/boost/factory/contrib/gocql/gocql/v0"
-	"github.com/xgodev/boost/wrapper/config"
-
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 func main() {

@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/xgodev/boost/wrapper/config"
-
 	"github.com/wesovilabs/beyond/api"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
@@ -13,6 +11,7 @@ import (
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/gzip"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/requestid"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const Endpoint = "app.endpoint.google"

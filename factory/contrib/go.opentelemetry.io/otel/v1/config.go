@@ -1,8 +1,6 @@
 package otel
 
-import (
-	"github.com/xgodev/boost/wrapper/config"
-)
+import "github.com/xgodev/boost/wrapper/config"
 
 const (
 	root     = "boost.factory.otel"

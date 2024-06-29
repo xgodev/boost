@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/xgodev/boost/wrapper/config"
 	"os"
 
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"

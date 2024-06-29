@@ -2,7 +2,6 @@ package compress
 
 import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
@@ -28,10 +27,10 @@ func (o *Options) GetLevel() compress.Level {
 
 // NewOptions returns options from config file or environment vars.
 func NewOptions() (*Options, error) {
-	return boost.NewOptionsWithPath[Options](root)
+	return config.NewOptionsWithPath[Options](root)
 }
 
 // NewOptionsWithPath unmarshals a given key path into options and returns it.
 func NewOptionsWithPath(path string) (opts *Options, err error) {
-	return boost.NewOptionsWithPath[Options](root, path)
+	return config.NewOptionsWithPath[Options](root, path)
 }

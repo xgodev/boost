@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	log2 "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log"
-	"github.com/xgodev/boost/wrapper/config"
 	"os"
 
 	r "github.com/go-resty/resty/v2"
@@ -30,8 +29,8 @@ func init() {
 	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "INFO")
 
 	os.Setenv("APP_RESTY_GOOGLE_HOST", "http://www.google.com")
-	os.Setenv("APP_RESTY_ACOM_HOST", "https://www.bing.com")
-	os.Setenv("APP_RESTY_ACOM_PLUGINS_LOG_LEVEL", "INFO")
+	os.Setenv("APP_RESTY_SITE_HOST", "https://www.bing.com")
+	os.Setenv("APP_RESTY_SITE_PLUGINS_LOG_LEVEL", "INFO")
 
 	resty.ConfigAdd(google)
 	resty.ConfigAdd(bing)

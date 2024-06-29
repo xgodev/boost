@@ -1,7 +1,8 @@
-package config
+package koanf
 
 import (
 	"fmt"
+	"github.com/xgodev/boost/wrapper/config"
 	"net"
 	"os"
 	"path/filepath"
@@ -22,9 +23,6 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/posflag"
 )
-
-const ConfArgument = "conf"
-const ConfEnvironment = "CONF"
 
 var (
 	instance *koanf.Koanf
@@ -55,7 +53,7 @@ func Load() {
 
 	m := make(map[string]interface{})
 
-	for _, v := range entries {
+	for _, v := range config.Entries() {
 
 		switch v.Value.(type) {
 
@@ -87,13 +85,13 @@ func Load() {
 
 	var files []string
 
-	confEnv := os.Getenv(ConfEnvironment)
+	confEnv := os.Getenv(config.ConfEnvironment)
 	if confEnv != "" {
 		// Load the config files provided in the environment var.
 		files = strings.Split(confEnv, ",")
 	} else {
 		// Load the config files provided in the commandline.
-		files, _ = f.GetStringSlice(ConfArgument)
+		files, _ = f.GetStringSlice(config.ConfArgument)
 	}
 
 	for _, c := range files {
@@ -134,7 +132,7 @@ func Load() {
 
 func parseFlags() {
 
-	for _, v := range entries {
+	for _, v := range config.Entries() {
 
 		fl := f.Lookup(v.Key)
 		if fl != nil {
@@ -201,10 +199,10 @@ func parseFlags() {
 
 	}
 
-	flc := f.Lookup(ConfArgument)
+	flc := f.Lookup(config.ConfArgument)
 	if flc == nil {
 		// Path to one or more config files to load into koanf along with some config params.
-		f.StringSlice(ConfArgument, nil, "path to one or more config files")
+		f.StringSlice(config.ConfArgument, nil, "path to one or more config files")
 	}
 
 	err := f.Parse(os.Args[0:])

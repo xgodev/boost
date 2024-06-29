@@ -1,18 +1,19 @@
 package config
 
 import (
+	"github.com/xgodev/boost/wrapper/config/contrib/knadh/koanf/v1"
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 )
 
-type ConfigsSuite struct {
+type EntriesSuite struct {
 	suite.Suite
 }
 
-func TestConfigsSuite(t *testing.T) {
-	suite.Run(t, new(ConfigsSuite))
+func TestEntriesSuite(t *testing.T) {
+	suite.Run(t, new(EntriesSuite))
 }
 
 func (s *WrapperSuite) TestAdd() {
@@ -47,7 +48,7 @@ func (s *WrapperSuite) TestAdd() {
 	}
 }
 
-func (s *ConfigsSuite) TestEntries() {
+func (s *EntriesSuite) TestEntries() {
 
 	tt := []struct {
 		name string
@@ -92,6 +93,7 @@ func (s *ConfigsSuite) TestEntries() {
 
 	for _, t := range tt {
 		s.Run(t.name, func() {
+			koanf.New()
 			Load()
 			got := t.got()
 			want := t.want()
