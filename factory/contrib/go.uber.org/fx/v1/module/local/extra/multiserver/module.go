@@ -3,7 +3,7 @@ package multiserver
 import (
 	"context"
 	contextfx "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1/module/core/context"
-	"github.com/xgodev/boost/factory/contrib/spf13/v1"
+	"github.com/xgodev/boost/factory/contrib/spf13/cobra/v1"
 	"sync"
 
 	c "github.com/spf13/cobra"
