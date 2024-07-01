@@ -19,6 +19,7 @@ func main() {
 
 	//example use zap
 	logger := zap.NewLogger()
+	log.Set(logger)
 
 	logger = logger.WithField("main_field", "example")
 

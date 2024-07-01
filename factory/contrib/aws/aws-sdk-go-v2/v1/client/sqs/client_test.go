@@ -2,7 +2,7 @@ package sqs
 
 import (
 	"context"
-	iglogrus "github.com/xgodev/boost/wrapper/log/contrib/sirupsen/logrus/v1"
+	"github.com/xgodev/boost"
 	"reflect"
 	"testing"
 
@@ -22,7 +22,7 @@ func TestServiceProductSuite(t *testing.T) {
 }
 
 func (s *SqsClientSuite) SetupSuite() {
-	iglogrus.NewLogger()
+	boost.Start()
 }
 
 func (s *SqsClientSuite) TestNewClient() {
