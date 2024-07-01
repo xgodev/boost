@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/extra/health"
 	"github.com/xgodev/boost/factory/contrib/gocql/gocql/v0"
 	h "github.com/xgodev/boost/factory/contrib/gocql/gocql/v0/plugins/local/extra/health"
@@ -12,7 +13,7 @@ import (
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 

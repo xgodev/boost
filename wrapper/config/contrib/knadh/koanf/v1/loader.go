@@ -85,13 +85,13 @@ func Load() {
 
 	var files []string
 
-	confEnv := os.Getenv(config.ConfEnvironment)
+	confEnv := os.Getenv(ConfEnvironment)
 	if confEnv != "" {
 		// Load the config files provided in the environment var.
 		files = strings.Split(confEnv, ",")
 	} else {
 		// Load the config files provided in the commandline.
-		files, _ = f.GetStringSlice(config.ConfArgument)
+		files, _ = f.GetStringSlice(ConfArgument)
 	}
 
 	for _, c := range files {
