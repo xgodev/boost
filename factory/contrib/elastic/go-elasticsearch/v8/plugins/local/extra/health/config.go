@@ -1,8 +1,8 @@
 package health
 
 import (
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/elastic/go-elasticsearch/v8"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

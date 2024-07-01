@@ -1,7 +1,7 @@
 package datadog
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	awstrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/aws/aws-sdk-go-v2/aws"
 )
 
@@ -14,7 +14,7 @@ type Options struct {
 // NewOptions returns options from config file or environment vars.
 func NewOptions(traceOptions ...awstrace.Option) (*Options, error) {
 	opts := &Options{TraceOptions: traceOptions}
-	return boost.MergeOptionsWithPath[Options](opts, root)
+	return config.MergeOptionsWithPath[Options](opts, root)
 }
 
 // NewOptionsWithPath unmarshals options based a given key path.
@@ -24,5 +24,5 @@ func NewOptionsWithPath(path string, traceOptions ...awstrace.Option) (opts *Opt
 		return nil, err
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, path)
+	return config.MergeOptionsWithPath[Options](opts, path)
 }

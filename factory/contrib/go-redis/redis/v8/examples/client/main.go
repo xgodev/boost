@@ -3,10 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/xgodev/boost/factory/contrib/go-redis/redis/v8"
-
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost"
 	h "github.com/xgodev/boost/extra/health"
+	"github.com/xgodev/boost/factory/contrib/go-redis/redis/v8"
 	"github.com/xgodev/boost/factory/contrib/go-redis/redis/v8/plugins/local/extra/health"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
@@ -14,7 +13,7 @@ import (
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 

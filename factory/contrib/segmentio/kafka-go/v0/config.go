@@ -2,7 +2,7 @@ package kafka
 
 import (
 	"github.com/segmentio/kafka-go"
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

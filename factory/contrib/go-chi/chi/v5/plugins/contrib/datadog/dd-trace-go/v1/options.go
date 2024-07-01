@@ -1,7 +1,7 @@
 package datadog
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	chitrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/go-chi/chi.v5"
 )
 
@@ -15,7 +15,7 @@ type Options struct {
 func NewOptions(traceOptions ...chitrace.Option) (*Options, error) {
 	opts := &Options{TraceOptions: traceOptions}
 
-	return boost.MergeOptionsWithPath[Options](opts, root)
+	return config.MergeOptionsWithPath[Options](opts, root)
 }
 
 // NewOptionsWithPath returns options from config path.
@@ -25,5 +25,5 @@ func NewOptionsWithPath(path string, traceOptions ...chitrace.Option) (opts *Opt
 		return nil, err
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, path)
+	return config.MergeOptionsWithPath[Options](opts, path)
 }

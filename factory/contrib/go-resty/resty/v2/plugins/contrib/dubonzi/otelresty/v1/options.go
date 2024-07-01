@@ -2,7 +2,7 @@ package otelresty // import "github.com/xgodev/boost/factory/go-resty/resty.v2/p
 
 import (
 	dubresty "github.com/dubonzi/otelresty"
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 type Options struct {
@@ -17,7 +17,7 @@ func NewOptions(tracingOptions ...dubresty.Option) (*Options, error) {
 		TracingOptions: tracingOptions,
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, root)
+	return config.MergeOptionsWithPath[Options](opts, root)
 }
 
 // NewOptionsWithPath unmarshals options based a given key path.
@@ -27,5 +27,5 @@ func NewOptionsWithPath(path string, tracingOptions ...dubresty.Option) (opts *O
 		return nil, err
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, path)
+	return config.MergeOptionsWithPath[Options](opts, path)
 }

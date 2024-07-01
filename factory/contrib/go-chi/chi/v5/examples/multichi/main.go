@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5"
 	"net/http"
 
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/extra/multiserver"
 	multiserverplugin "github.com/xgodev/boost/factory/contrib/go-chi/chi/v5/plugins/local/extra/multiserver"
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5/plugins/native/recoverer"
@@ -29,7 +29,7 @@ func Get(ctx context.Context) http.HandlerFunc {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 	log.New()
 
 	chi1Ctx := context.Background()

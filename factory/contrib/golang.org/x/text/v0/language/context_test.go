@@ -2,11 +2,11 @@ package language
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/xgodev/boost/config"
 	"golang.org/x/text/language"
 )
 
@@ -19,7 +19,7 @@ func TestContextSuite(t *testing.T) {
 }
 
 func (suite *ContextSuite) SetupTest() {
-	config.Load()
+	boost.Start()
 }
 
 func (suite *ContextSuite) TestToContext() {

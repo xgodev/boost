@@ -1,7 +1,7 @@
 package text
 
 import (
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

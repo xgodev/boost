@@ -1,7 +1,7 @@
 package freecache
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 // Options represents cache options.
@@ -21,11 +21,11 @@ func WithCacheSize(cacheSize int) Option {
 
 // NewOptions returns options from config file or environment vars.
 func NewOptions() (*Options, error) {
-	return boost.NewOptionsWithPath[Options](root)
+	return config.NewOptionsWithPath[Options](root)
 }
 
 // NewOptionsWithPath unmarshals a given key path into options and returns it.
 // NewOptionsWithPath unmarshals a given key path into options and returns it.
 func NewOptionsWithPath(path string) (opts *Options, err error) {
-	return boost.NewOptionsWithPath[Options](root, path)
+	return config.NewOptionsWithPath[Options](root, path)
 }

@@ -1,7 +1,7 @@
 package hystrix
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	"strings"
 )
 
@@ -15,5 +15,5 @@ func NewOptions(name string) (opts *Options, err error) {
 	opts = &Options{}
 	path := strings.Join([]string{root, ".", name}, "")
 
-	return boost.NewOptionsWithPath[Options](path)
+	return config.NewOptionsWithPath[Options](path)
 }

@@ -1,8 +1,8 @@
 package recover
 
 import (
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

@@ -1,6 +1,8 @@
 package client
 
-import "github.com/xgodev/boost/config"
+import (
+	"github.com/xgodev/boost/wrapper/config"
+)
 
 const (
 	root              = "boost.factory.k8s"

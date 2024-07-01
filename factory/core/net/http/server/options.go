@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	"time"
 )
 
@@ -17,10 +17,10 @@ type Options struct {
 
 // NewOptions returns options from config file or environment vars.
 func NewOptions() (*Options, error) {
-	return boost.NewOptionsWithPath[Options](root)
+	return config.NewOptionsWithPath[Options](root)
 }
 
 // NewOptionsWithPath unmarshals options based a given key path.
 func NewOptionsWithPath(path string) (opts *Options, err error) {
-	return boost.NewOptionsWithPath[Options](root, path)
+	return config.NewOptionsWithPath[Options](root, path)
 }

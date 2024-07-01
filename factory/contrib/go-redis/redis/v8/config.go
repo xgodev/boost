@@ -3,7 +3,7 @@ package redis
 import (
 	"time"
 
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

@@ -1,8 +1,8 @@
 package otelresty
 
 import (
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (
