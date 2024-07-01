@@ -11,7 +11,6 @@ require (
 	cloud.google.com/go/pubsub v1.40.0
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/allegro/bigcache/v3 v3.1.0
-	github.com/ansrivas/fiberprometheus/v2 v2.6.1
 	github.com/aws/aws-sdk-go v1.54.11
 	github.com/aws/aws-sdk-go-v2 v1.30.1
 	github.com/aws/aws-sdk-go-v2/config v1.27.23
@@ -25,11 +24,8 @@ require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/coocood/freecache v1.2.4
 	github.com/dubonzi/otelresty v1.3.0
-	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/elastic/go-elasticsearch/v8 v8.14.0
 	github.com/globocom/echo-prometheus v0.1.2
-	github.com/go-chi/chi/v5 v5.0.14
-	github.com/go-chi/cors v1.2.1
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/go-redis/redis/v7 v7.4.1
 	github.com/go-redis/redis/v8 v8.11.5
@@ -38,7 +34,6 @@ require (
 	github.com/goccy/go-json v0.10.3
 	github.com/gocql/gocql v1.6.0
 	github.com/godror/godror v0.44.1
-	github.com/gofiber/fiber/v2 v2.52.4
 	github.com/google/uuid v1.6.0
 	github.com/graphql-go/graphql v0.8.1
 	github.com/graphql-go/handler v0.2.4
@@ -54,12 +49,6 @@ require (
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
 	github.com/mittwald/vaultgo v0.1.7
 	github.com/nats-io/nats.go v1.36.0
-	github.com/newrelic/go-agent/v3 v3.33.0
-	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.0
-	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.3
-	github.com/newrelic/go-agent/v3/integrations/nrmongo v1.1.3
-	github.com/newrelic/go-agent/v3/integrations/nrredis-v7 v1.0.1
-	github.com/newrelic/go-agent/v3/integrations/nrredis-v8 v1.0.1
 	github.com/opentracing-contrib/echo v0.0.0-20190807091611-5fe2e1308f06
 	github.com/opentracing-contrib/go-grpc v0.0.0-20210225150812-73cb765af46e
 	github.com/opentracing/opentracing-go v1.2.0
@@ -68,7 +57,6 @@ require (
 	github.com/prometheus/client_golang v1.19.1
 	github.com/ravernkoh/cwlogsfmt v0.0.0-20180121032441-917bad983b4c
 	github.com/redis/go-redis/v9 v9.5.3
-	github.com/riandyrn/otelchi v0.8.0
 	github.com/rs/zerolog v1.33.0
 	github.com/segmentio/kafka-go v0.4.47
 	github.com/sirupsen/logrus v1.9.3
@@ -78,7 +66,6 @@ require (
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/tidwall/buntdb v1.3.1
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.3.1
-	github.com/valyala/fasthttp v1.55.0
 	github.com/wesovilabs/beyond v1.0.1
 	go.mongodb.org/mongo-driver v1.16.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.52.0
@@ -103,7 +90,6 @@ require (
 	gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	k8s.io/client-go v0.30.2
-	storj.io/drpc v0.0.34
 )
 
 require (
@@ -124,7 +110,6 @@ require (
 	github.com/IBM/sarama v1.43.2 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/apache/arrow/go/v15 v15.0.2 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.3 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.9 // indirect
@@ -177,7 +162,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/godror/knownpb v0.1.1 // indirect
-	github.com/gofiber/adaptor/v2 v2.2.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -234,7 +218,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
-	github.com/newrelic/csec-go-agent v1.0.0 // indirect
 	github.com/outcaste-io/ristretto v0.2.3 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/philhofer/fwd v1.1.2 // indirect
@@ -264,12 +247,10 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/valyala/tcplisten v1.0.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240424034433-3c2c7870ae76 // indirect
-	github.com/zeebo/errs v1.3.0 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.52.0 // indirect
