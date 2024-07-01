@@ -1,0 +1,18 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.0",
+      "eventSubscriptionArn": "",
+      "eventSource": "aws:kinesis",
+      "eventName": "aws:kinesis:record",
+      "eventID": "shardId-000000000000:49605839166456958751963512635287057480797596998808109058",
+      "kinesis": {
+        "approximateArrivalTimestamp": 1586221947.866,
+        "data": "eyJkYXRhIjp7ImlkIjoiMTIzIiwic291cmNlIjoic2t5aHViIiwibmFtZSI6IklwaG9uZSAxMSBYUyIsImRlc2NyaXB0aW9uIjoiVGhpcyBkZXZpY2UgaXMgaW4gRVhDRUxMRU5UIGNvc21ldGljIGNvbmRpdGlvbiwgSXQgaXMgMTAwJSBmdWxseSBmdW5jdGlvbmFsIGFzIHRlc3RlZCBieSBvdXIgZXhwZXJ0IHRlY2huaWNpYW5zIGFuZCBwYXNzZWQgYW4gaW5kdXN0cnkgbGVhZGluZyA2NS1wb2ludCBpbnNwZWN0aW9uLiBUaGUgZGV2aWNlIG1heSBoYXZlIG1pbm9yIGNvc21ldGljIHdlYXIgc3VjaCBhcyBtaW5pbWFsIGxpZ2h0IHNjcmF0Y2hlcyBvbiB0aGUgc2NyZWVuIGFuZCBtaW5vciBpbXBlcmZlY3Rpb25zIG9uIHNpZGVzIGFuZC9vciBiYWNrLiBUaGUgZGV2aWNlIGhhcyBiZWVuIHRob3JvdWdobHkgaW5zcGVjdGVkLCBjbGVhbmVkIGFuZCByZWZ1cmJpc2hlZCAoaWYgbmVjZXNzYXJ5KSBhdCBvdXIgTWFudWZhY3R1cmVyIGFwcHJvdmVkIHJlcGFpciBjZW50ZXIuIEluY2x1ZGVzIG5ldyBPRU0gYS9DIEFkYXB0ZXIgXHUwMDI2IERhdGEgY2FibGUuIERldmljZXMgZG8gbm90IGluY2x1ZGUgYSBTSU0gY2FyZCwgaGVhZHBob25lcywgb3JpZ2luYWwgYm94LCBhbmQgYSBtYW51ZmFjdHVyZXLigJlzIHdhcnJhbnR5LiIsInVwZGF0ZWRBdCI6IjAwMDEtMDEtMDFUMDA6MDA6MDBaIn0sImlkIjoiNmFlZThkNDktNzZmZC00OTAwLWE0OWItZWVjYWMzNTUyYzVhIiwic291cmNlIjoicmVjZWl2ZXItcmVjZWl2ZXIiLCJzcGVjdmVyc2lvbiI6IjEuMCIsInN1YmplY3QiOiJyZWNlaXZlci1yZWNlaXZlZCIsInR5cGUiOiJyZWNlaXZlci9pbnRlcm5hbC9hcHAvcmVjZWl2ZXIvZG9tYWluL21vZGVsL2l0ZW0ifQo=",
+        "partitionKey": "skyhub-25345864000176-123",
+        "sequenceNumber": "49605839166456958751963512635287057480797596998808109058",
+        "kinesisSchemaVersion": "1.0"
+      }
+    }
+  ]
+}
