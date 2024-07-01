@@ -1,7 +1,7 @@
 package language
 
 import (
-	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,7 @@ func TestTagSuite(t *testing.T) {
 }
 
 func (suite *TagSuite) SetupTest() {
-	config.Load()
+	boost.Start()
 }
 
 func (suite *TagSuite) TestDefaultTag() {

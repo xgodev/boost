@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/gofiber/fiber/v2"
 	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
@@ -38,7 +39,7 @@ func main() {
 
 	os.Setenv("BOOST_FACTORY_FIBER2_PORT", "8086")
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 

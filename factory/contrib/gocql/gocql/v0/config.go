@@ -1,8 +1,9 @@
 package gocql
 
 import (
-	"github.com/xgodev/boost/wrapper/config"
 	"time"
+
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

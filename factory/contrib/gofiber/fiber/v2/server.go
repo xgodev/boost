@@ -2,7 +2,7 @@ package fiber
 
 import (
 	"context"
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -26,7 +26,7 @@ type Server struct {
 
 // NewServerWithConfigPath new fiber server with options from config path.
 func NewServerWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*Server, error) {
-	opts, err := boost.NewOptionsWithPath[Options](root, path)
+	opts, err := config.NewOptionsWithPath[Options](root, path)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func NewServerWithConfigPath(ctx context.Context, path string, plugins ...Plugin
 
 // NewServer new fiber server with default options.
 func NewServer(ctx context.Context, plugins ...Plugin) *Server {
-	options, err := boost.NewOptionsWithPath[Options](root)
+	options, err := config.NewOptionsWithPath[Options](root)
 	if err != nil {
 		panic(err)
 	}

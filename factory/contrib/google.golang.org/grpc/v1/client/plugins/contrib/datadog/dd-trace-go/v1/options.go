@@ -1,7 +1,7 @@
 package datadog
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	grpctrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/google.golang.org/grpc"
 )
 
@@ -17,7 +17,7 @@ func NewOptions(traceOptions ...grpctrace.Option) (*Options, error) {
 		traceOptions: traceOptions,
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, root)
+	return config.MergeOptionsWithPath[Options](opts, root)
 }
 
 // NewOptionsWithPath unmarshals options based a given key path.
@@ -28,5 +28,5 @@ func NewOptionsWithPath(path string, grpcOptions ...grpctrace.Option) (opts *Opt
 		return nil, err
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, path)
+	return config.MergeOptionsWithPath[Options](opts, path)
 }

@@ -1,7 +1,7 @@
 package otelsql
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 // Options represents datadog plugin for go driver for oracle options.
@@ -13,7 +13,7 @@ type Options struct {
 func NewOptions() (*Options, error) {
 	opts := &Options{}
 
-	return boost.MergeOptionsWithPath[Options](opts, root)
+	return config.MergeOptionsWithPath[Options](opts, root)
 }
 
 // NewOptionsWithPath unmarshals options based a given key path.
@@ -23,5 +23,5 @@ func NewOptionsWithPath(path string) (opts *Options, err error) {
 		return nil, err
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, path)
+	return config.MergeOptionsWithPath[Options](opts, path)
 }

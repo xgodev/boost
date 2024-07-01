@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost"
 	"os"
 	"time"
 
@@ -28,7 +28,7 @@ var conn *mgo.Conn
 
 func main() {
 
-	config.Load()
+	boost.Start()
 	ilog.New()
 
 	ctx := context.Background()

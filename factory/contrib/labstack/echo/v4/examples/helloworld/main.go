@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 
@@ -50,7 +51,7 @@ func Get(c e.Context) (err error) {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 

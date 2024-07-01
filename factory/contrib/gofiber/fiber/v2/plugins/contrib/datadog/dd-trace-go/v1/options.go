@@ -1,7 +1,7 @@
 package datadog
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	fibertrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gofiber/fiber.v2"
 )
 
@@ -17,7 +17,7 @@ func NewOptions(traceOptions ...fibertrace.Option) (*Options, error) {
 		TraceOptions: traceOptions,
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, root)
+	return config.MergeOptionsWithPath[Options](opts, root)
 }
 
 // NewOptionsWithPath unmarshals options based a given key path.
@@ -27,5 +27,5 @@ func NewOptionsWithPath(path string, traceOptions ...fibertrace.Option) (opts *O
 		return nil, err
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, path)
+	return config.MergeOptionsWithPath[Options](opts, path)
 }

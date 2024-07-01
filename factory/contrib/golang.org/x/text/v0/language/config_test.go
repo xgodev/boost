@@ -1,7 +1,7 @@
 package language
 
 import (
-	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ func TestConfigSuite(t *testing.T) {
 }
 
 func (suite *ConfigSuite) SetupTest() {
-	config.Load()
+	boost.Start()
 }
 
 func (suite *ConfigSuite) TestDefault() {
