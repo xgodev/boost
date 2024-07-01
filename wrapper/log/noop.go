@@ -11,7 +11,7 @@ type Noop struct{}
 // NewNoop create a Noop Logger
 func NewNoop() Noop {
 	i := Noop{}
-	SetGlobalLogger(i)
+	Set(i)
 	return i
 }
 

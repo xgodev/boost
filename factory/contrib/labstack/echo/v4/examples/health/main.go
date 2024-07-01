@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/extra/health"
-	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 	"os"
 
@@ -29,7 +29,7 @@ func main() {
 
 	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "TRACE")
 
-	config.Load()
+	boost.Start()
 	log.New()
 
 	ctx := context.Background()

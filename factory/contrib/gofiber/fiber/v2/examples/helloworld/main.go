@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost"
 	"net/http"
 
 	f "github.com/gofiber/fiber/v2"
@@ -19,7 +19,7 @@ func Get(c *f.Ctx) (err error) {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 	log.New()
 
 	ctx := context.Background()

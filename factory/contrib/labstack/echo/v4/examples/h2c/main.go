@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost"
 	"net/http"
 	"os"
 
@@ -21,7 +21,7 @@ func init() {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 	log.New()
 
 	ctx := context.Background()

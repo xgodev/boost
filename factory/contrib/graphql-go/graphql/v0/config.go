@@ -2,7 +2,6 @@ package graphql
 
 import (
 	"github.com/graphql-go/handler"
-	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
@@ -22,5 +21,5 @@ func init() {
 
 // DefaultHandlerConfig unmarshals the default graphql handler config.
 func DefaultHandlerConfig() (*handler.Config, error) {
-	return boost.NewOptionsWithPath[handler.Config](handlerConfig)
+	return config.NewOptionsWithPath[handler.Config](handlerConfig)
 }

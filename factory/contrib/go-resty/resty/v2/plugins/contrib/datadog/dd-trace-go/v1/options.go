@@ -1,7 +1,7 @@
 package datadog
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 )
 
@@ -18,7 +18,7 @@ func NewOptions(spanOptions ...ddtrace.StartSpanOption) (*Options, error) {
 		SpanOptions: spanOptions,
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, root)
+	return config.MergeOptionsWithPath[Options](opts, root)
 }
 
 // NewOptionsWithPath unmarshals options based a given key path.
@@ -28,5 +28,5 @@ func NewOptionsWithPath(path string, spanOptions ...ddtrace.StartSpanOption) (op
 		return nil, err
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, path)
+	return config.MergeOptionsWithPath[Options](opts, path)
 }

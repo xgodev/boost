@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost"
 	"os"
 
 	"github.com/xgodev/boost/factory/contrib/storj.io/drpc/v0/server"
@@ -19,7 +19,7 @@ func main() {
 
 	ctx := context.Background()
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 

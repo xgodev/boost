@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5"
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5/plugins/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/config"
@@ -48,7 +49,7 @@ func Get(ctx context.Context) http.HandlerFunc {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	c := Config{}
 

@@ -18,7 +18,7 @@ func main() {
 	ctx := context.Background()
 
 	//example use logrus
-	log.SetGlobalLogger(logrus.NewLogger())
+	log.Set(logrus.NewLogger())
 
 	logger := log.WithField("main_field", "example")
 

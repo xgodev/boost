@@ -1,7 +1,7 @@
 package datadog
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	"net"
 	"os"
 
@@ -35,7 +35,7 @@ type Options struct {
 
 // NewOptions returns options from config file or environment vars.
 func NewOptions() (*Options, error) {
-	opts, err := boost.NewOptionsWithPath[Options](root)
+	opts, err := config.NewOptionsWithPath[Options](root)
 	if err != nil {
 		return nil, err
 	}

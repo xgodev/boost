@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client/plugins/local/wrapper/log"
-	"github.com/xgodev/boost/wrapper/config"
 	"os"
 	"time"
 
@@ -21,7 +21,7 @@ func main() {
 
 	ctx := context.Background()
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 
