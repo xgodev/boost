@@ -1,9 +1,8 @@
 package newrelic
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
-
-	"github.com/xgodev/boost/config"
 )
 
 const (

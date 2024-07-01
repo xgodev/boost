@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/xgodev/boost"
 	"os"
 	"time"
 
 	"github.com/hashicorp/vault/api"
 	vault "github.com/mittwald/vaultgo"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
@@ -25,7 +25,7 @@ func init() {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 	ilog.New()
 
 	mongoConn()

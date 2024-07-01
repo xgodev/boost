@@ -1,9 +1,8 @@
 package resty
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"time"
-
-	"github.com/xgodev/boost/config"
 )
 
 const (

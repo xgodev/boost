@@ -1,8 +1,8 @@
 package newrelic
 
 import (
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/go-redis/redis/v8"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

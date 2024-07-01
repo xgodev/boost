@@ -1,7 +1,7 @@
 package vault
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 // ManagerOptions represents a vault client options.
@@ -16,5 +16,5 @@ type ManagerOptions struct {
 
 // NewManagerOptionsWithPath unmarshals manager options based a given key path.
 func NewManagerOptionsWithPath(path string) (opts *ManagerOptions, err error) {
-	return boost.NewOptionsWithPath[ManagerOptions](path)
+	return config.NewOptionsWithPath[ManagerOptions](path)
 }

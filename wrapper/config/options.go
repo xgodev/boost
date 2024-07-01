@@ -1,6 +1,4 @@
-package boost
-
-import "github.com/xgodev/boost/config"
+package config
 
 // NewOptionsWithPath unmarshal options based a given multi key paths.
 func NewOptionsWithPath[O any](paths ...string) (opts *O, err error) {
@@ -14,7 +12,7 @@ func MergeOptionsWithPath[O any](opts *O, paths ...string) (*O, error) {
 
 func unmarshall[O any](opts *O, paths ...string) (*O, error) {
 	for _, path := range paths {
-		err := config.UnmarshalWithPath(path, opts)
+		err := UnmarshalWithPath(path, opts)
 		if err != nil {
 			return nil, err
 		}

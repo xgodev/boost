@@ -13,3 +13,11 @@ func WithHide() Option {
 		options.Hide = true
 	}
 }
+
+// Config represents a flag configuration.
+type Config struct {
+	Key         string
+	Value       interface{}
+	Description string
+	Options     *Options
+}

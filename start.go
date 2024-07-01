@@ -2,15 +2,17 @@ package boost
 
 import (
 	"fmt"
+	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost/wrapper/config/contrib/knadh/koanf/v1"
 	"os"
 	"sort"
 
 	"github.com/common-nighthawk/go-figure"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/xgodev/boost/config"
 )
 
 func Start() {
+	config.Set(koanf.New())
 	config.Load()
 
 	if config.Bool(bannerEnabled) {

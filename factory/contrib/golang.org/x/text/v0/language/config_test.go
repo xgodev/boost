@@ -1,11 +1,11 @@
 package language
 
 import (
+	"github.com/xgodev/boost"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"github.com/xgodev/boost/config"
 )
 
 type ConfigSuite struct {
@@ -17,7 +17,7 @@ func TestConfigSuite(t *testing.T) {
 }
 
 func (suite *ConfigSuite) SetupTest() {
-	config.Load()
+	boost.Start()
 }
 
 func (suite *ConfigSuite) TestDefault() {

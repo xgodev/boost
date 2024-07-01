@@ -8,6 +8,16 @@ import (
 	"io"
 )
 
+// A global variable so that l functions can be directly accessed.
+var (
+	l Logger = Noop{}
+)
+
+// Set returns an instance of logger.
+func Set(logger Logger) {
+	l = logger
+}
+
 // Logger is our contract for the logger.
 type Logger interface {
 	Printf(format string, args ...interface{})

@@ -1,9 +1,8 @@
 package hystrix
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"strings"
-
-	"github.com/xgodev/boost/config"
 )
 
 const (

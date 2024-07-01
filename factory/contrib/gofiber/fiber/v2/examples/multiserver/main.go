@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/gofiber/fiber/v2"
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 	"time"
 
 	f "github.com/gofiber/fiber/v2"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/extra/multiserver"
 	mserver "github.com/xgodev/boost/factory/contrib/gofiber/fiber/v2/plugins/local/multi-server"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
@@ -34,7 +35,7 @@ func Get(c *f.Ctx) (err error) {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 

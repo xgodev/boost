@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-
 	"github.com/wesovilabs/beyond/api"
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
 	status "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/model/restresponse"
@@ -13,6 +12,7 @@ import (
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/gzip"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/requestid"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const Endpoint = "app.endpoint.google"
@@ -31,7 +31,7 @@ func main() {
 
 	var err error
 
-	config.Load()
+	boost.Start()
 
 	c := Config{}
 

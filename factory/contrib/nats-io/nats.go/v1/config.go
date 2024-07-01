@@ -2,7 +2,7 @@ package nats
 
 import (
 	"github.com/nats-io/nats.go"
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (

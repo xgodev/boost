@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	"log"
 	"os"
-
-	"github.com/xgodev/boost/config"
 )
 
 type AppConfig struct {
@@ -15,17 +15,18 @@ type AppConfig struct {
 }
 
 func init() {
+
+	os.Setenv("APP_APPLICATION_NAME", "app_test_env")
+	os.Setenv("APP_APPLICATION_MY-NAME-TEST", "my_name_test_env")
+	os.Setenv("CONF", "./wrapper/config/examples/env_file/config.yaml")
+
 	config.Add("app.application.name", "app_test", "name of application")
 	config.Add("app.application.myName", "my_name_test", "name of application")
 }
 
 func main() {
 
-	os.Setenv("APP_APPLICATION_NAME", "app_test_env")
-	os.Setenv("APP_APPLICATION_MY-NAME-TEST", "my_name_test_env")
-	os.Setenv("CONF", "./core/config/examples/env_file/config.yaml")
-
-	config.Load()
+	boost.Start()
 
 	c := AppConfig{}
 

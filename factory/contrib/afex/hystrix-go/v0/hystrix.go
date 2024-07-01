@@ -2,7 +2,7 @@ package hystrix
 
 import (
 	"github.com/afex/hystrix-go/hystrix"
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/log"
 )
 

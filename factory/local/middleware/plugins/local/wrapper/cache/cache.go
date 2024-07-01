@@ -2,10 +2,10 @@ package cache
 
 import (
 	"context"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/middleware"
 	gcache "github.com/xgodev/boost/middleware/plugins/local/wrapper/cache"
 	"github.com/xgodev/boost/wrapper/cache"
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 type Cache[T any] struct {

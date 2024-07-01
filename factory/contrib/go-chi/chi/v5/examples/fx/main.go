@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"net/http"
 
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5"
 	datadog "github.com/xgodev/boost/factory/contrib/go-chi/chi/v5/plugins/contrib/datadog/dd-trace-go/v1"
 	newrelic "github.com/xgodev/boost/factory/contrib/go-chi/chi/v5/plugins/contrib/newrelic/go-agent/v3"
@@ -32,7 +32,7 @@ func Get(ctx context.Context) http.HandlerFunc {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 	ilog.New()
 
 	ifx.NewApp(

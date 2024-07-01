@@ -1,7 +1,7 @@
 package datadog
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	sqltrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
 )
 
@@ -17,7 +17,7 @@ func NewOptions(traceOptions ...sqltrace.Option) (*Options, error) {
 		TraceOptions: traceOptions,
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, root)
+	return config.MergeOptionsWithPath[Options](opts, root)
 }
 
 // NewOptionsWithPath unmarshals options based a given key path.
@@ -27,5 +27,5 @@ func NewOptionsWithPath(path string, traceOptions ...sqltrace.Option) (opts *Opt
 		return nil, err
 	}
 
-	return boost.MergeOptionsWithPath[Options](opts, path)
+	return config.MergeOptionsWithPath[Options](opts, path)
 }
