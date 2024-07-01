@@ -1,7 +1,7 @@
 package config
 
 var (
-	entries []Config
+	configs []Config
 )
 
 // Add adds a flag configuration to Entries.
@@ -13,7 +13,7 @@ func Add(key string, value interface{}, description string, opts ...Option) {
 		opt(o)
 	}
 
-	entries = append(entries, Config{
+	configs = append(configs, Config{
 		Key:         key,
 		Value:       value,
 		Description: description,
@@ -23,10 +23,10 @@ func Add(key string, value interface{}, description string, opts ...Option) {
 
 // Entries returns the flag configuration list as an array.
 func Entries() []Config {
-	return entries
+	return configs
 }
 
 // SetEntries
 func SetEntries(v []Config) {
-	entries = v
+	configs = v
 }

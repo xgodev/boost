@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server/examples/examplesvc/pb"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server/plugins/local/wrapper/log"
-	"github.com/xgodev/boost/wrapper/config"
 	"os"
 
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
@@ -20,7 +20,7 @@ func main() {
 
 	ctx := context.Background()
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 

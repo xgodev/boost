@@ -5,7 +5,7 @@ import (
 )
 
 type Provider interface {
-	Load()
+	Load([]Config)
 
 	// UnmarshalWithPath unmarshals a given key path into the given struct using the mapstructure lib.
 	UnmarshalWithPath(path string, o interface{}) error

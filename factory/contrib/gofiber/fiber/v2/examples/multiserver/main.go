@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/gofiber/fiber/v2"
 	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
@@ -34,7 +35,7 @@ func Get(c *f.Ctx) (err error) {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 

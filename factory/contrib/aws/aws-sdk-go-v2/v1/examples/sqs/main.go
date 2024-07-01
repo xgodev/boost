@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	asqs "github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1"
 	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
@@ -18,7 +19,7 @@ func init() {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	// create background context
 	ctx := context.Background()

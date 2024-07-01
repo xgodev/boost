@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost"
 	"net/http"
 
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5"
@@ -32,7 +32,7 @@ func Get(ctx context.Context) http.HandlerFunc {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 	ilog.New()
 
 	ifx.NewApp(

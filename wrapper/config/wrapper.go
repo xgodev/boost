@@ -14,7 +14,7 @@ func Set(provider Provider) {
 }
 
 func Load() {
-	p.Load()
+	p.Load(configs)
 }
 
 // UnmarshalWithPath unmarshals a given key path into the given struct using the mapstructure lib.

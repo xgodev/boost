@@ -12,7 +12,7 @@ import (
 )
 
 func Start() {
-	koanf.New()
+	config.Set(koanf.New())
 	config.Load()
 
 	if config.Bool(bannerEnabled) {

@@ -145,7 +145,8 @@ func (s *ConfigSuite) TestConfigMethods() {
 	for _, t := range tt {
 		s.Run(t.name, func() {
 			t.init()
-			Load()
+			config.Set(New())
+			config.Load()
 			got := t.got()
 			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
 		})

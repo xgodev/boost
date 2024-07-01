@@ -2,16 +2,16 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/gocloud.dev/pubsub/v0"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
-	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/log"
 	p "gocloud.dev/pubsub"
 )
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	ctx := context.Background()
 

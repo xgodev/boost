@@ -4,6 +4,7 @@ import (
 	"context"
 	a "github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/config"
@@ -18,7 +19,7 @@ func init() {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	// create background context
 	ctx := context.Background()

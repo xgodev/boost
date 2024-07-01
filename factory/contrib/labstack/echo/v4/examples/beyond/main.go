@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/wesovilabs/beyond/api"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
 	status "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/model/restresponse"
@@ -30,7 +31,7 @@ func main() {
 
 	var err error
 
-	config.Load()
+	boost.Start()
 
 	c := Config{}
 

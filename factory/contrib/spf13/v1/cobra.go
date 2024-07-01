@@ -3,6 +3,7 @@ package cobra
 import (
 	"fmt"
 	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost/wrapper/config/model"
 	"net"
 	"time"
 
@@ -30,7 +31,7 @@ func Run(rootCmd *cobra.Command, cmds ...*cobra.Command) error {
 		parseFlag(rootCmd, entry)
 	}
 
-	rootCmd.PersistentFlags().StringSlice(config.ConfArgument, nil, "path to one or more config files")
+	rootCmd.PersistentFlags().StringSlice(model.ConfArgument, nil, "path to one or more config files")
 
 	return rootCmd.Execute()
 }

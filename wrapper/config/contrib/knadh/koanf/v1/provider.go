@@ -7,15 +7,15 @@ import (
 	k "github.com/knadh/koanf"
 )
 
-func New() {
-	config.Set(&provider{})
+func New() *provider {
+	return &provider{}
 }
 
 type provider struct {
 }
 
-func (p *provider) Load() {
-	Load()
+func (p *provider) Load(cfgs []config.Config) {
+	Load(cfgs)
 }
 
 // UnmarshalWithPath unmarshals a given key path into the given struct using the mapstructure lib.

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost"
 	"os"
 	"time"
 
@@ -25,7 +25,7 @@ func init() {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 	ilog.New()
 
 	mongoConn()

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
@@ -45,7 +46,7 @@ func main() {
 
 	os.Setenv("BOOST_FACTORY_ECHO2_PORT", "8086")
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 
