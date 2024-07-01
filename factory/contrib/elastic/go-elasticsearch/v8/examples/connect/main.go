@@ -4,15 +4,12 @@ import (
 	"context"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/elastic/go-elasticsearch/v8"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 func main() {
 
 	boost.Start()
-
-	ilog.New()
 
 	client, err := elasticsearch.NewClient(context.Background())
 	if err != nil {

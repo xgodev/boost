@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost"
 )
 
 // Options grpc server options.
@@ -32,10 +32,10 @@ type TLSFileOptions struct {
 
 // NewOptions returns options from config file or environment vars.
 func NewOptions() (*Options, error) {
-	return config.NewOptionsWithPath[Options](root)
+	return boost.NewOptionsWithPath[Options](root)
 }
 
 // NewOptionsWithPath unmarshals a given key path into options and returns it.
 func NewOptionsWithPath(path string) (opts *Options, err error) {
-	return config.NewOptionsWithPath[Options](root, path)
+	return boost.NewOptionsWithPath[Options](root, path)
 }
