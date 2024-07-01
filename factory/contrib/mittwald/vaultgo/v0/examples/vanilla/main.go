@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/vault/api"
 	vault "github.com/mittwald/vaultgo"
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -26,7 +25,6 @@ func init() {
 func main() {
 
 	boost.Start()
-	ilog.New()
 
 	mongoConn()
 

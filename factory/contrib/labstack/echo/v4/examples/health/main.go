@@ -10,7 +10,6 @@ import (
 	e "github.com/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	h "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
-	"github.com/xgodev/boost/factory/local/wrapper/log"
 )
 
 func helloHandler(c e.Context) (err error) {
@@ -30,7 +29,6 @@ func main() {
 	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "TRACE")
 
 	boost.Start()
-	log.New()
 
 	ctx := context.Background()
 

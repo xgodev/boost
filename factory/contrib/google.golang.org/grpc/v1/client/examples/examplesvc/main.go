@@ -9,7 +9,6 @@ import (
 
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server/examples/examplesvc/pb"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	alog "github.com/xgodev/boost/wrapper/log"
 )
 
@@ -22,8 +21,6 @@ func main() {
 	ctx := context.Background()
 
 	boost.Start()
-
-	ilog.New()
 
 	request := &pb.TestRequest{
 		Message: "mensagem da requisição",

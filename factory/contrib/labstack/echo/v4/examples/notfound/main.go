@@ -12,7 +12,6 @@ import (
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
 	logplugin "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/wrapper/log"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/cors"
-	"github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/model/errors"
 )
 
@@ -30,7 +29,6 @@ func main() {
 	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "TRACE")
 
 	boost.Start()
-	log.New()
 
 	ctx := context.Background()
 
