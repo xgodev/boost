@@ -1,7 +1,7 @@
 package hystrix
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	"strings"
 )
 
@@ -17,5 +17,5 @@ type Options struct {
 // NewOptionsFromCommand unmarshals options based a given key path.
 func NewOptionsFromCommand(cmd string) (*Options, error) {
 	path := strings.Join([]string{cmdRoot, cmd}, ".")
-	return boost.NewOptionsWithPath[Options](path)
+	return config.NewOptionsWithPath[Options](path)
 }

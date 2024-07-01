@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
 
 	r "github.com/go-resty/resty/v2"
 	e "github.com/labstack/echo/v4"
-	"github.com/xgodev/boost/config"
 	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
@@ -67,7 +68,7 @@ func (h *Handler) Get(c e.Context) (err error) {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	c := Config{}
 

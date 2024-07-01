@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-
-	"github.com/xgodev/boost/config"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/elastic/go-elasticsearch/v8"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
@@ -11,7 +10,7 @@ import (
 
 func main() {
 
-	config.Load()
+	boost.Start()
 
 	ilog.New()
 

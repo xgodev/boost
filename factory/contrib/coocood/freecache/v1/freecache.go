@@ -7,7 +7,7 @@ import (
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-// NewCacheWithOptions returns a cache with options from config path .
+// NewCacheWithConfigPath returns a cache with options from config path .
 func NewCacheWithConfigPath(ctx context.Context, path string, opts ...Option) (*freecache.Cache, error) {
 	options, err := NewOptionsWithPath(path)
 	if err != nil {

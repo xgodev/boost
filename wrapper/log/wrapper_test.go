@@ -131,7 +131,7 @@ func (s *WrapperSuite) TestWrapperWrappedMethods() {
 			} else {
 				t.mock(l)
 			}
-			SetGlobalLogger(l)
+			Set(l)
 			t.method()
 			l.AssertExpectations(s.T())
 		})
@@ -152,7 +152,7 @@ func (s *WrapperSuite) TestWrapperGetLogger() {
 
 	for _, t := range tt {
 		s.Run(t.name, func() {
-			SetGlobalLogger(t.want)
+			Set(t.want)
 			got := GetLogger()
 			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
 		})

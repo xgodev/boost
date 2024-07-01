@@ -1,20 +1,5 @@
 package log
 
-// A global variable so that l functions can be directly accessed.
-var (
-	l Logger = Noop{}
-)
-
-// NewLogger returns an instance of logger.
-// Deprecated: prefer SetGlobalLogger
-func NewLogger(logger Logger) {
-	l = logger
-}
-
-func SetGlobalLogger(logger Logger) {
-	l = logger
-}
-
 // Printf logs a templated message.
 //
 // For templating details see implementation doc.

@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"net/http"
 	"os"
 
 	e "github.com/labstack/echo/v4"
-	"github.com/xgodev/boost/config"
 	prometheus "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
 	logplugin "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/wrapper/log"
@@ -29,7 +29,7 @@ func main() {
 
 	os.Setenv("BOOST_FACTORY_LOGRUS_CONSOLE_LEVEL", "TRACE")
 
-	config.Load()
+	boost.Start()
 	log.New()
 
 	ctx := context.Background()

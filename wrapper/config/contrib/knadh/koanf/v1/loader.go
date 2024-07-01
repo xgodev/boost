@@ -1,7 +1,9 @@
-package config
+package koanf
 
 import (
 	"fmt"
+	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost/wrapper/config/model"
 	"net"
 	"os"
 	"path/filepath"
@@ -23,21 +25,17 @@ import (
 	"github.com/knadh/koanf/providers/posflag"
 )
 
-const ConfArgument = "conf"
-const ConfEnvironment = "CONF"
-
 var (
 	instance *koanf.Koanf
 	f        *flag.FlagSet
 )
 
 func init() {
+	instance = koanf.New(".")
 	flagLoad()
 }
 
 func flagLoad() {
-	instance = koanf.New(".")
-
 	// Use the POSIX compliant pflag lib instead of Go's flag lib.
 	f = flag.NewFlagSet("config", flag.ContinueOnError)
 
@@ -48,14 +46,14 @@ func flagLoad() {
 }
 
 // Load parsing and load flags, files and environments.
-func Load() {
+func Load(cfs []config.Config) {
 
 	// Load flags
-	parseFlags()
+	parseFlags(cfs)
 
 	m := make(map[string]interface{})
 
-	for _, v := range entries {
+	for _, v := range cfs {
 
 		switch v.Value.(type) {
 
@@ -87,13 +85,13 @@ func Load() {
 
 	var files []string
 
-	confEnv := os.Getenv(ConfEnvironment)
+	confEnv := os.Getenv(model.ConfEnvironment)
 	if confEnv != "" {
 		// Load the config files provided in the environment var.
 		files = strings.Split(confEnv, ",")
 	} else {
 		// Load the config files provided in the commandline.
-		files, _ = f.GetStringSlice(ConfArgument)
+		files, _ = f.GetStringSlice(model.ConfArgument)
 	}
 
 	for _, c := range files {
@@ -132,9 +130,9 @@ func Load() {
 
 }
 
-func parseFlags() {
+func parseFlags(cfs []config.Config) {
 
-	for _, v := range entries {
+	for _, v := range cfs {
 
 		fl := f.Lookup(v.Key)
 		if fl != nil {
@@ -201,10 +199,10 @@ func parseFlags() {
 
 	}
 
-	flc := f.Lookup(ConfArgument)
+	flc := f.Lookup(model.ConfArgument)
 	if flc == nil {
 		// Path to one or more config files to load into koanf along with some config params.
-		f.StringSlice(ConfArgument, nil, "path to one or more config files")
+		f.StringSlice(model.ConfArgument, nil, "path to one or more config files")
 	}
 
 	err := f.Parse(os.Args[0:])
@@ -226,7 +224,7 @@ func parseEnv(s string) string {
 		if strings.Contains(v, "-") {
 
 			sgyl := stringy.New(strings.ToLower(v))
-			sgylc := stringy.New(sgyl.CamelCase())
+			sgylc := stringy.New(sgyl.CamelCase().Get())
 			add = sgylc.LcFirst()
 
 		} else {

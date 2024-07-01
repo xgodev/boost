@@ -2,9 +2,8 @@ package cors
 
 import (
 	"github.com/xgodev/boost/factory/contrib/go-chi/chi/v5"
+	"github.com/xgodev/boost/wrapper/config"
 	"net/http"
-
-	"github.com/xgodev/boost/config"
 )
 
 const (

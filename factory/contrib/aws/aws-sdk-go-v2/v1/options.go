@@ -1,7 +1,7 @@
 package aws
 
 import (
-	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/wrapper/config"
 	"os"
 	"time"
 
@@ -36,12 +36,12 @@ type Options struct {
 
 // NewOptionsWithPath unmarshals a given key path into options and returns it.
 func NewOptionsWithPath(path string) (opts *Options, err error) {
-	return boost.NewOptionsWithPath[Options](root, path)
+	return config.NewOptionsWithPath[Options](root, path)
 }
 
 // NewOptions returns options from config file or environment vars.
 func NewOptions() (*Options, error) {
-	opts, err := boost.NewOptionsWithPath[Options](root)
+	opts, err := config.NewOptionsWithPath[Options](root)
 	if err != nil {
 		return nil, err
 	}

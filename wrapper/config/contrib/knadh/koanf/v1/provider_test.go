@@ -1,6 +1,7 @@
-package config
+package koanf
 
 import (
+	"github.com/xgodev/boost/wrapper/config"
 	"os"
 	"reflect"
 	"testing"
@@ -29,7 +30,7 @@ type MyConfig struct {
 	} `config:"red"`
 }
 
-func (s *WrapperSuite) TestConfigMethods() {
+func (s *ConfigSuite) TestConfigMethods() {
 
 	tt := []struct {
 		name string
@@ -41,7 +42,7 @@ func (s *WrapperSuite) TestConfigMethods() {
 			name: "Pflag config returns the value (string) from the key",
 			init: func() {
 				flagLoad()
-				Add("key", "value", "test")
+				config.Add("key", "value", "test")
 			},
 			got:  func() interface{} { return instance.String("key") },
 			want: "value",
@@ -96,7 +97,7 @@ func (s *WrapperSuite) TestConfigMethods() {
 			},
 			got: func() interface{} {
 				c := MyConfig{}
-				return Unmarshal(&c)
+				return config.Unmarshal(&c)
 			},
 			want: nil,
 		},
@@ -108,7 +109,7 @@ func (s *WrapperSuite) TestConfigMethods() {
 			},
 			got: func() interface{} {
 				c := MyConfig{}
-				Unmarshal(&c)
+				config.Unmarshal(&c)
 				return c.Addr
 			},
 			want: ":8083",
@@ -121,7 +122,7 @@ func (s *WrapperSuite) TestConfigMethods() {
 			},
 			got: func() interface{} {
 				c := MyConfig{}
-				Unmarshal(&c)
+				config.Unmarshal(&c)
 				return c.DB.Username
 			},
 			want: "foosss",
@@ -134,7 +135,7 @@ func (s *WrapperSuite) TestConfigMethods() {
 			},
 			got: func() interface{} {
 				c := MyConfig{}
-				Unmarshal(&c)
+				config.Unmarshal(&c)
 				return c.Redis.Host
 			},
 			want: "127.0.0.14",
@@ -144,7 +145,8 @@ func (s *WrapperSuite) TestConfigMethods() {
 	for _, t := range tt {
 		s.Run(t.name, func() {
 			t.init()
-			Load()
+			config.Set(New())
+			config.Load()
 			got := t.got()
 			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
 		})
