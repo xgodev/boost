@@ -4,12 +4,12 @@ import (
 	"context"
 	"github.com/xgodev/boost"
 	log2 "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log"
+	c "github.com/xgodev/boost/factory/contrib/spf13/cobra/v1"
 	"os"
 
 	r "github.com/go-resty/resty/v2"
 	"github.com/spf13/cobra"
 	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
-	c "github.com/xgodev/boost/factory/contrib/spf13/v1"
 	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
 )
