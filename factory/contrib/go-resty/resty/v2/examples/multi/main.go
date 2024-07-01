@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/xgodev/boost"
 	logplugin "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log"
 	"os"
 
@@ -41,7 +42,7 @@ func init() {
 
 func main() {
 
-	config.Load()
+	boost.Start()
 	ilog.New()
 
 	ctx := context.Background()

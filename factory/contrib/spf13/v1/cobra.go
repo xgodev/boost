@@ -3,7 +3,6 @@ package cobra
 import (
 	"fmt"
 	"github.com/xgodev/boost/wrapper/config"
-	"github.com/xgodev/boost/wrapper/config/contrib/knadh/koanf/v1"
 	"net"
 	"time"
 
@@ -31,7 +30,7 @@ func Run(rootCmd *cobra.Command, cmds ...*cobra.Command) error {
 		parseFlag(rootCmd, entry)
 	}
 
-	rootCmd.PersistentFlags().StringSlice(koanf.ConfArgument, nil, "path to one or more config files")
+	rootCmd.PersistentFlags().StringSlice(config.ConfArgument, nil, "path to one or more config files")
 
 	return rootCmd.Execute()
 }
