@@ -1,20 +1,22 @@
-package cloudevents
+package nats
 
 import (
-	"github.com/cloudevents/sdk-go/v2/client"
+	"github.com/nats-io/nats.go"
 	co "github.com/spf13/cobra"
 	"github.com/xgodev/boost/bootstrap/function"
 )
 
 // New returns CmdFunc for cloudevents command.
-func New(opts ...client.Option) function.CmdFunc {
+func New(conn *nats.Conn) function.CmdFunc {
 	return func(fn function.Handler) *co.Command {
 		return &co.Command{
-			Use:   "cloudevents",
-			Short: "cloudevents",
+			Use:   "cenats",
+			Short: "cenats",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				return Run(fn, opts...)
+				helper := NewDefaultHelper(conn, fn)
+				helper.Start()
+				return nil
 			},
 		}
 	}

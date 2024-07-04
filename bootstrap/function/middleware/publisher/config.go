@@ -11,7 +11,7 @@ const (
 )
 
 func init() {
-	config.Add(enabled, "", "default cmd")
+	config.Add(enabled, true, "default cmd")
 }
 
 func IsEnabled() bool {

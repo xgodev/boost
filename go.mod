@@ -20,6 +20,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sns v1.31.1
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.34.1
 	github.com/bytedance/sonic v1.11.9
+	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.15.2
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/coocood/freecache v1.2.4
@@ -104,7 +105,7 @@ require (
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.54.0 // indirect
 	github.com/DataDog/datadog-agent/pkg/remoteconfig/state v0.54.0 // indirect
 	github.com/DataDog/datadog-go/v5 v5.5.0 // indirect
-	github.com/DataDog/go-libddwaf/v3 v3.2.1 // indirect
+	github.com/DataDog/go-libddwaf/v3 v3.3.0 // indirect
 	github.com/DataDog/go-sqllexer v0.0.12 // indirect
 	github.com/DataDog/go-tuf v1.1.0-0.5.2 // indirect
 	github.com/DataDog/gostackparse v0.7.0 // indirect
@@ -237,7 +238,7 @@ require (
 	github.com/smartystreets/goconvey v1.8.1 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/swaggo/files/v2 v2.0.0 // indirect
+	github.com/swaggo/files/v2 v2.0.1 // indirect
 	github.com/swaggo/swag v1.16.3 // indirect
 	github.com/tidwall/btree v1.7.0 // indirect
 	github.com/tidwall/gjson v1.17.1 // indirect

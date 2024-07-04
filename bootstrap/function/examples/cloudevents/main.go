@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
-	ce "github.com/xgodev/boost/bootstrap/function/adapter/cloudevents"
+	ce "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http"
 	"github.com/xgodev/boost/bootstrap/function/middleware/publisher"
 	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/extra/noop"
 	"github.com/xgodev/boost/middleware/plugins/local/wrapper/log"

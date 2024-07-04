@@ -1,4 +1,4 @@
-package cloudevents
+package http
 
 import (
 	"context"
@@ -12,17 +12,19 @@ func Run(fn function.Handler, opts ...client.Option) error {
 
 	ctx := context.Background()
 
+	logger := log.FromContext(ctx)
+
 	p, err := cloudevents.NewHTTP(cloudevents.WithPort(Port()), cloudevents.WithPath(Path()))
 	if err != nil {
-		log.Errorf("failed to create protocol: %s", err.Error())
+		logger.Errorf("failed to create protocol: %s", err.Error())
 	}
 	c, err := cloudevents.NewClient(p, opts...)
 	if err != nil {
-		log.Errorf("failed to create client: %s", err.Error())
+		logger.Errorf("failed to create client: %s", err.Error())
 		return err
 	}
 
-	log.Infof("listening on :%d%s\n", 8080, "/")
+	logger.Infof("listening on :%d%s\n", 8080, "/")
 
 	return c.StartReceiver(ctx, fn)
 }

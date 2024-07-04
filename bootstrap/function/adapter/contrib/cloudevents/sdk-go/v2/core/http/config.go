@@ -1,12 +1,12 @@
-package cloudevents
+package http
 
 import (
-	"github.com/xgodev/boost/bootstrap/function"
+	cloudevents "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (
-	root = function.Root + ".cloudevents"
+	root = cloudevents.Root + ".http"
 	port = root + ".port"
 	path = root + ".path"
 )
