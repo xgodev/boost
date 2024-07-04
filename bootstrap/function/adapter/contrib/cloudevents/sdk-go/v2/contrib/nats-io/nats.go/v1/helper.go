@@ -54,7 +54,7 @@ func (h *Helper) subscribe(ctx context.Context, subject string) {
 
 	logger := log.FromContext(ctx)
 
-	p, err := cenats.NewConsumerFromConn(h.conn, subject)
+	p, err := cenats.NewConsumerFromConn(h.conn, subject, cenats.WithQueueSubscriber(h.queue))
 	if err != nil {
 		logger.Fatalf("failed to create nats protocol, %s", err.Error())
 	}
@@ -64,12 +64,11 @@ func (h *Helper) subscribe(ctx context.Context, subject string) {
 	c, err := cloudevents.NewClient(p)
 	if err != nil {
 		logger.Fatalf("failed to create client, %s", err.Error())
+		return
 	}
 
-	for {
-		if err := c.StartReceiver(ctx, h.handler); err != nil {
-			logger.Printf("failed to start nats receiver, %s", err.Error())
-		}
+	if err := c.StartReceiver(ctx, h.handler); err != nil {
+		logger.Printf("failed to start nats receiver, %s", err.Error())
 	}
 
 }
