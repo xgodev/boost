@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	h "github.com/xgodev/boost/middleware/plugins/contrib/afex/hystrix-go/v0"
-	"github.com/xgodev/boost/middleware/plugins/local/wrapper/log"
+	l "github.com/xgodev/boost/middleware/plugins/local/wrapper/log"
+	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log/contrib/sirupsen/logrus/v1"
 
 	"github.com/afex/hystrix-go/hystrix"
@@ -33,13 +34,13 @@ func main() {
 
 	ctx := context.Background()
 
-	logrus.NewLogger()
+	log.Set(logrus.NewLogger())
 
 	var r Result
 	var err error
 
 	middlewares := []middleware.AnyErrorMiddleware[Result]{
-		log.NewAnyErrorMiddleware[Result](ctx),
+		l.NewAnyErrorMiddleware[Result](ctx),
 		h.NewAnyErrorMiddlewareWithConfig[Result](ctx, "XPTO", hystrix.CommandConfig{
 			Timeout:                10,
 			MaxConcurrentRequests:  6000,

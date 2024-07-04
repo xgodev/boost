@@ -8,7 +8,7 @@ import (
 
 // New returns CmdFunc for cloudevents command.
 func New(opts ...client.Option) function.CmdFunc {
-	return func(fn interface{}) *co.Command {
+	return func(fn function.Handler) *co.Command {
 		return &co.Command{
 			Use:   "cloudevents",
 			Short: "cloudevents",
