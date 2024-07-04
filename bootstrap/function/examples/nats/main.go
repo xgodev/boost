@@ -6,9 +6,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
-	ce "github.com/xgodev/boost/bootstrap/function/adapter/cloudevents"
+	anats "github.com/xgodev/boost/bootstrap/function/adapter/nats"
 	"github.com/xgodev/boost/bootstrap/function/middleware/publisher"
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/extra/noop"
+	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/contrib/nats-io/nats.go/v1"
+	fnats "github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
 	"github.com/xgodev/boost/middleware/plugins/local/wrapper/log"
 	"os"
 )
@@ -34,12 +35,17 @@ func main() {
 
 	ctx := context.Background()
 
-	fn := function.New(publisher.New(noop.New()), log.NewAnyErrorMiddleware[*cloudevents.Event](ctx))
+	conn, err := fnats.NewConn(ctx)
+	if err != nil {
+		panic(err)
+	}
 
-	err := fn.Run(ctx, Handle, ce.New(
-		cloudevents.WithUUIDs(),
-		cloudevents.WithTimeNow(),
-	))
+	fn := function.New(
+		publisher.New(nats.New(conn)),
+		log.NewAnyErrorMiddleware[*cloudevents.Event](ctx),
+	)
+
+	err = fn.Run(ctx, Handle, anats.New(conn))
 	if err != nil {
 		panic(err)
 	}
