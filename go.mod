@@ -47,6 +47,7 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/labstack/gommon v0.4.2
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
+	github.com/matryer/try v0.0.0-20161228173917-9ac251b645a2
 	github.com/mittwald/vaultgo v0.1.7
 	github.com/nats-io/nats.go v1.36.0
 	github.com/opentracing-contrib/echo v0.0.0-20190807091611-5fe2e1308f06
@@ -204,7 +205,6 @@ require (
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/matryer/try v0.0.0-20161228173917-9ac251b645a2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
