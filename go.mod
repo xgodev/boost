@@ -20,6 +20,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sns v1.31.1
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.34.1
 	github.com/bytedance/sonic v1.11.9
+	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.15.2
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/coocood/freecache v1.2.4

@@ -37,6 +37,10 @@ func (l *Subscriber) Subscribe(ctx context.Context) (*nats.Subscription, error) 
 
 func (l *Subscriber) h(msg *nats.Msg) {
 
+	logger := log.WithTypeOf(*l).
+		WithField("subject", l.subject).
+		WithField("queue", l.queue)
+
 	in := event.New()
 	err := json.Unmarshal(msg.Data, &in)
 	if err != nil {
@@ -44,20 +48,16 @@ func (l *Subscriber) h(msg *nats.Msg) {
 		var data interface{}
 
 		if err := json.Unmarshal(msg.Data, &data); err != nil {
-			log.Errorf("could not decode nats record. %s", err.Error())
+			logger.Errorf("could not decode nats record. %s", err.Error())
 		} else {
 			err := in.SetData("", data)
 			if err != nil {
-				log.Errorf("could set data from nats record. %s", err.Error())
+				logger.Errorf("could set data from nats record. %s", err.Error())
 				return
 			}
 		}
 
 	}
-
-	logger := log.WithTypeOf(*l).
-		WithField("subject", l.subject).
-		WithField("queue", l.queue)
 
 	ctx := logger.ToContext(context.Background())
 
