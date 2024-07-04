@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
-	anats "github.com/xgodev/boost/bootstrap/function/adapter/nats"
+	anats "github.com/xgodev/boost/bootstrap/function/adapter/contrib/nats-io/nats.go/v1"
 	"github.com/xgodev/boost/bootstrap/function/middleware/publisher"
 	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/contrib/nats-io/nats.go/v1"
 	fnats "github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
