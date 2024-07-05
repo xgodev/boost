@@ -11,10 +11,6 @@ type Publisher struct {
 }
 
 func (c *Publisher) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middleware.AnyErrorExecFunc[*event.Event], fallbackFunc middleware.AnyErrorReturnFunc[*event.Event]) (*event.Event, error) {
-	if !IsEnabled() {
-		return ctx.Next(exec, fallbackFunc)
-	}
-
 	log.Tracef("publishing event")
 	e, err := ctx.Next(exec, fallbackFunc)
 	if err == nil {
