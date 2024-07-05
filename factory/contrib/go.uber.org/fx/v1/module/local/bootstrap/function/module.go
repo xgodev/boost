@@ -18,7 +18,7 @@ const (
 type params struct {
 	fx.In
 	Adapters    []function.CmdFunc                            `group:"boostrap.function.adapters"`
-	Middlewares []middleware.AnyErrorMiddleware[*event.Event] `group:"boostrap.function.middlewares" optional:"true"`
+	Middlewares []middleware.AnyErrorMiddleware[*event.Event] `group:"boostrap.function.middlewares"`
 }
 
 var once sync.Once
