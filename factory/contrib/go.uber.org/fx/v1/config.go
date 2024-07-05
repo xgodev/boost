@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	root     = "boost.factory.fx"
-	logLevel = root + ".log.level"
+	Root     = "boost.factory.fx"
+	logLevel = Root + ".log.level"
 )
 
 func init() {

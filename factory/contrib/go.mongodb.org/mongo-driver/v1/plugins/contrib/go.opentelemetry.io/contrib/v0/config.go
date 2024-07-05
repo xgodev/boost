@@ -1,4 +1,4 @@
-package contrib
+package contrib // import "github.com/xgodev/boost/factory/go.mongodb.org/mongo-driver.v1/plugins/contrib/opentelemetry/otelmongo.v1
 
 import (
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
