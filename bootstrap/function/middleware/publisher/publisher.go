@@ -13,7 +13,7 @@ type Publisher struct {
 func (c *Publisher) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middleware.AnyErrorExecFunc[*event.Event], fallbackFunc middleware.AnyErrorReturnFunc[*event.Event]) (*event.Event, error) {
 	log.Tracef("publishing event")
 	e, err := ctx.Next(exec, fallbackFunc)
-	if err == nil {
+	if err == nil && e != nil {
 		err = c.driver.Publish(ctx.GetContext(), []*event.Event{e})
 		if err != nil {
 			return nil, err
