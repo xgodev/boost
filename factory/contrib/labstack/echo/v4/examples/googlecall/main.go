@@ -16,7 +16,6 @@ import (
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/cors"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/gzip"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/requestid"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 )
 
 const Endpoint = "app.endpoint.google"
@@ -78,8 +77,6 @@ func main() {
 	}
 
 	ctx := context.Background()
-
-	ilog.New()
 
 	srv := echo.NewServer(ctx,
 		cors.Register,

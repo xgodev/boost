@@ -5,7 +5,6 @@ import (
 	"github.com/xgodev/boost"
 	"os"
 
-	"github.com/xgodev/boost/factory/contrib/rs/zerolog/v1"
 	"github.com/xgodev/boost/factory/local/middleware"
 	"github.com/xgodev/boost/factory/local/middleware/plugins/contrib/afex/hystrix-go/v0"
 	logger "github.com/xgodev/boost/factory/local/middleware/plugins/local/wrapper/log"
@@ -21,7 +20,6 @@ func main() {
 	ctx := context.Background()
 
 	boost.Start()
-	zerolog.NewLogger()
 
 	var r string
 	var err error
