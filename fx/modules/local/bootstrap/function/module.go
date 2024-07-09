@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/bootstrap/function"
+	"github.com/xgodev/boost/extra/middleware"
 	fxcontext "github.com/xgodev/boost/fx/modules/core/context"
-	"github.com/xgodev/boost/middleware"
 	"go.uber.org/fx"
 	"sync"
 )
