@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/gocloud.dev/pubsub/v0"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
 	p "gocloud.dev/pubsub"
 )
@@ -14,8 +13,6 @@ func main() {
 	boost.Start()
 
 	ctx := context.Background()
-
-	ilog.New()
 
 	logger := log.FromContext(ctx)
 

@@ -14,7 +14,7 @@ func init() {
 
 func main() {
 	boost.Start()
-	zap.NewLogger()
+	log.Set(zap.NewLogger())
 
 	log.Infof("hello world!!")
 }

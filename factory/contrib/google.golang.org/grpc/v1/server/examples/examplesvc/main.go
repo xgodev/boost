@@ -8,7 +8,6 @@ import (
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server/plugins/local/wrapper/log"
 	"os"
 
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	alog "github.com/xgodev/boost/wrapper/log"
 )
 
@@ -21,8 +20,6 @@ func main() {
 	ctx := context.Background()
 
 	boost.Start()
-
-	ilog.New()
 
 	options, _ := server.NewOptions()
 	options.Port = 8080

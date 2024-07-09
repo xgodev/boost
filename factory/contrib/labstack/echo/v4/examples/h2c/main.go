@@ -11,7 +11,6 @@ import (
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
 	logplugin "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/wrapper/log"
-	"github.com/xgodev/boost/factory/local/wrapper/log"
 )
 
 func init() {
@@ -22,7 +21,6 @@ func init() {
 func main() {
 
 	boost.Start()
-	log.New()
 
 	ctx := context.Background()
 
