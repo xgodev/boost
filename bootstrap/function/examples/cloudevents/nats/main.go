@@ -9,8 +9,8 @@ import (
 	ce "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1"
 	"github.com/xgodev/boost/bootstrap/function/middleware/publisher"
 	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/extra/noop"
+	"github.com/xgodev/boost/extra/middleware/plugins/local/wrapper/log"
 	"github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
-	"github.com/xgodev/boost/middleware/plugins/local/wrapper/log"
 	"os"
 )
 

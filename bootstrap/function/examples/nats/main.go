@@ -8,9 +8,8 @@ import (
 	"github.com/xgodev/boost/bootstrap/function"
 	anats "github.com/xgodev/boost/bootstrap/function/adapter/contrib/nats-io/nats.go/v1"
 	"github.com/xgodev/boost/bootstrap/function/middleware/publisher"
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/contrib/nats-io/nats.go/v1"
+	"github.com/xgodev/boost/extra/middleware/plugins/local/wrapper/log"
 	fnats "github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
-	"github.com/xgodev/boost/middleware/plugins/local/wrapper/log"
 	"os"
 )
 
