@@ -3,8 +3,8 @@ package function
 import (
 	"context"
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/factory/contrib/spf13/cobra/v1"
-	"github.com/xgodev/boost/middleware"
 	"os"
 
 	co "github.com/spf13/cobra"
