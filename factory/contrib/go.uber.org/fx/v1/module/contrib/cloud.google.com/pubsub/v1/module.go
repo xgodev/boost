@@ -1,4 +1,4 @@
-package bigquery
+package pubsub
 
 import (
 	"github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v1"

@@ -18,7 +18,6 @@ import (
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/cors"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/gzip"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/requestid"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 )
 
 type Response struct {
@@ -42,8 +41,6 @@ func Get(c e.Context) (err error) {
 func main() {
 
 	boost.Start()
-
-	ilog.New()
 
 	ctx1 := context.Background()
 

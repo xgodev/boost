@@ -69,7 +69,10 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 		}
 	}
 
-	co := clientOptions(ctx, o)
+	co, err := clientOptions(ctx, o)
+	if err != nil {
+		logger.Fatalf(err.Error())
+	}
 
 	for _, clientOptionsPlugin := range clientOptionsPlugins {
 		if err := clientOptionsPlugin(ctx, co); err != nil {
@@ -122,7 +125,6 @@ func newClient(ctx context.Context, co *options.ClientOptions) (client *mongo.Cl
 	var connFields *connstring.ConnString
 
 	connFields, err = connstring.Parse(co.GetURI())
-
 	if err != nil {
 		return nil, nil, err
 	}
@@ -134,7 +136,7 @@ func newClient(ctx context.Context, co *options.ClientOptions) (client *mongo.Cl
 	return client, database, err
 }
 
-func clientOptions(ctx context.Context, o *Options) *options.ClientOptions {
+func clientOptions(ctx context.Context, o *Options) (*options.ClientOptions, error) {
 
 	logger := log.FromContext(ctx)
 
@@ -157,16 +159,19 @@ func clientOptions(ctx context.Context, o *Options) *options.ClientOptions {
 	})
 
 	if o.Auth != nil {
-		setAuthOptions(o, clientOptions)
+		if err := setAuthOptions(o, clientOptions); err != nil {
+			return nil, err
+		}
+
 	}
 
-	return clientOptions
+	return clientOptions, nil
 }
 
-func setAuthOptions(o *Options, clientOptions *options.ClientOptions) {
+func setAuthOptions(o *Options, clientOptions *options.ClientOptions) error {
 
 	if o.Auth.Password == "" && o.Auth.Username == "" {
-		return
+		return nil
 	}
 
 	if clientOptions.Auth == nil {
@@ -183,7 +188,12 @@ func setAuthOptions(o *Options, clientOptions *options.ClientOptions) {
 	}
 
 	if clientOptions.Auth.AuthSource == "" {
-		connFields, _ := connstring.Parse(clientOptions.GetURI())
+		connFields, err := connstring.Parse(clientOptions.GetURI())
+		if err != nil {
+			return err
+		}
 		clientOptions.Auth.AuthSource = connFields.Database
 	}
+
+	return nil
 }

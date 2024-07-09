@@ -6,7 +6,6 @@ import (
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
 	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/local/extra/health"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
@@ -17,8 +16,6 @@ func main() {
 	boost.Start()
 
 	ctx := context.Background()
-
-	ilog.New()
 
 	logger := log.FromContext(ctx)
 
