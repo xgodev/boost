@@ -7,7 +7,7 @@ import (
 )
 
 type Publisher struct {
-	publisher publisher.Publisher
+	publisher *publisher.Publisher
 }
 
 func (c *Publisher) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middleware.AnyErrorExecFunc[*event.Event], fallbackFunc middleware.AnyErrorReturnFunc[*event.Event]) (*event.Event, error) {
@@ -21,6 +21,6 @@ func (c *Publisher) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec mid
 	return e, err
 }
 
-func New(publisher publisher.Publisher) middleware.AnyErrorMiddleware[*event.Event] {
+func New(publisher *publisher.Publisher) middleware.AnyErrorMiddleware[*event.Event] {
 	return &Publisher{publisher: publisher}
 }
