@@ -17,7 +17,6 @@ import (
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/cors"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/gzip"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/requestid"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 )
 
 func init() {
@@ -47,8 +46,6 @@ func main() {
 	os.Setenv("BOOST_FACTORY_ECHO2_PORT", "8086")
 
 	boost.Start()
-
-	ilog.New()
 
 	ctx1 := context.Background()
 

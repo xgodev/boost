@@ -6,7 +6,6 @@ import (
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1"
 	"github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sns"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/log"
 )
@@ -23,8 +22,6 @@ func main() {
 
 	// create background context
 	ctx := context.Background()
-
-	ilog.New()
 
 	// get logrus instance from context
 	logger := log.FromContext(ctx)

@@ -1,5 +1,5 @@
 package bootstrap
 
 const (
-	Root = "boost.boostrap"
+	Root = "boost.bootstrap"
 )

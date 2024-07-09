@@ -10,7 +10,6 @@ import (
 	r "github.com/go-resty/resty/v2"
 	"github.com/spf13/cobra"
 	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
@@ -42,7 +41,6 @@ func init() {
 func main() {
 
 	boost.Start()
-	ilog.New()
 
 	ctx := context.Background()
 	logger := log.FromContext(ctx)

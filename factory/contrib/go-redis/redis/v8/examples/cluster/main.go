@@ -7,15 +7,12 @@ import (
 	h "github.com/xgodev/boost/extra/health"
 	"github.com/xgodev/boost/factory/contrib/go-redis/redis/v8"
 	"github.com/xgodev/boost/factory/contrib/go-redis/redis/v8/plugins/local/extra/health"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 func main() {
 
 	boost.Start()
-
-	ilog.New()
 
 	var err error
 

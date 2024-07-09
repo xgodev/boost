@@ -2,8 +2,10 @@ package boost
 
 import (
 	"fmt"
+	"github.com/xgodev/boost/factory/contrib/rs/zerolog/v1"
 	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/config/contrib/knadh/koanf/v1"
+	"github.com/xgodev/boost/wrapper/log"
 	"os"
 	"sort"
 
@@ -14,6 +16,7 @@ import (
 func Start() {
 	config.Set(koanf.New())
 	config.Load()
+	log.Set(zerolog.NewLogger())
 
 	if config.Bool(bannerEnabled) {
 		fig := figure.NewColorFigure(config.String(phrase), config.String(fontName), config.String(color), config.Bool(strict))

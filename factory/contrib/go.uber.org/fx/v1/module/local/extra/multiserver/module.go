@@ -12,12 +12,12 @@ import (
 )
 
 const (
-	ServersGroupKey = "_gi_server_servers_"
+	ServersGroupKey = "extra.multiserver.servers"
 )
 
-type srvParams struct {
+type params struct {
 	fx.In
-	Servers []server.Server `group:"_gi_server_servers_"`
+	Servers []server.Server `group:"extra.multiserver.servers"`
 }
 
 var once sync.Once
@@ -31,7 +31,7 @@ func Module() fx.Option {
 		options = fx.Options(
 			contextfx.Module(),
 			fx.Invoke(
-				func(ctx context.Context, p srvParams) error {
+				func(ctx context.Context, p params) error {
 
 					return cobra.Run(
 						&c.Command{

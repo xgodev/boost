@@ -9,7 +9,6 @@ import (
 	mgo "github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	vault "github.com/xgodev/boost/factory/contrib/mittwald/vaultgo/v0"
 	"github.com/xgodev/boost/factory/contrib/mittwald/vaultgo/v0/managers/contrib/go.mongodb.org/mongo-driver/v1"
-	ilog "github.com/xgodev/boost/factory/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -29,7 +28,6 @@ var conn *mgo.Conn
 func main() {
 
 	boost.Start()
-	ilog.New()
 
 	ctx := context.Background()
 
