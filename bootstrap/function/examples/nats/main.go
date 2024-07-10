@@ -7,9 +7,11 @@ import (
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
 	anats "github.com/xgodev/boost/bootstrap/function/adapter/contrib/nats-io/nats.go/v1"
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher"
+	pm "github.com/xgodev/boost/bootstrap/function/middleware/publisher"
 	"github.com/xgodev/boost/extra/middleware/plugins/local/wrapper/log"
 	fnats "github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
+	"github.com/xgodev/boost/wrapper/publisher"
+	"github.com/xgodev/boost/wrapper/publisher/driver/contrib/nats-io/nats.go/v1"
 	"os"
 )
 
@@ -39,8 +41,10 @@ func main() {
 		panic(err)
 	}
 
+	p := publisher.New(nats.New(conn))
+
 	fn := function.New(
-		publisher.New(nats.New(conn)),
+		pm.New(p),
 		log.NewAnyErrorMiddleware[*cloudevents.Event](ctx),
 	)
 

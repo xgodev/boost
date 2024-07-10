@@ -7,10 +7,11 @@ import (
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
 	ce "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1"
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher"
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/extra/noop"
+	pm "github.com/xgodev/boost/bootstrap/function/middleware/publisher"
 	"github.com/xgodev/boost/extra/middleware/plugins/local/wrapper/log"
 	"github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
+	"github.com/xgodev/boost/wrapper/publisher"
+	"github.com/xgodev/boost/wrapper/publisher/driver/extra/noop"
 	"os"
 )
 
@@ -36,8 +37,10 @@ func main() {
 
 	ctx := context.Background()
 
+	p := publisher.New(noop.New())
+
 	fn := function.New(
-		publisher.New(noop.New()),
+		pm.New(p),
 		log.NewAnyErrorMiddleware[*cloudevents.Event](ctx),
 	)
 

@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	h "github.com/xgodev/boost/middleware/plugins/contrib/afex/hystrix-go/v0"
-	"github.com/xgodev/boost/middleware/plugins/local/wrapper/log"
+	h "github.com/xgodev/boost/extra/middleware/plugins/contrib/afex/hystrix-go/v0"
+	"github.com/xgodev/boost/extra/middleware/plugins/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log/contrib/sirupsen/logrus/v1"
 
 	"github.com/afex/hystrix-go/hystrix"
-	"github.com/xgodev/boost/middleware"
+	"github.com/xgodev/boost/extra/middleware"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 package noop
 
 import (
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/extra/noop"
+	"github.com/xgodev/boost/wrapper/publisher/driver/extra/noop"
 	"go.uber.org/fx"
 	"sync"
 )

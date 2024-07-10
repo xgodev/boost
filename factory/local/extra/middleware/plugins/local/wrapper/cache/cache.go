@@ -2,8 +2,8 @@ package cache
 
 import (
 	"context"
-	"github.com/xgodev/boost/middleware"
-	gcache "github.com/xgodev/boost/middleware/plugins/local/wrapper/cache"
+	"github.com/xgodev/boost/extra/middleware"
+	gcache "github.com/xgodev/boost/extra/middleware/plugins/local/wrapper/cache"
 	"github.com/xgodev/boost/wrapper/cache"
 	"github.com/xgodev/boost/wrapper/config"
 )

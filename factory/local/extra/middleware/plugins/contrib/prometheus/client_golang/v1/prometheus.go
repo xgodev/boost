@@ -2,8 +2,8 @@ package prometheus
 
 import (
 	"context"
-	"github.com/xgodev/boost/middleware"
-	"github.com/xgodev/boost/middleware/plugins/contrib/prometheus/client_golang/v1"
+	"github.com/xgodev/boost/extra/middleware"
+	"github.com/xgodev/boost/extra/middleware/plugins/contrib/prometheus/client_golang/v1"
 	"github.com/xgodev/boost/wrapper/config"
 )
 

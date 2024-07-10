@@ -5,7 +5,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/xgodev/boost/middleware"
+	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/model/errors"
 )
 

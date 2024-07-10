@@ -5,9 +5,9 @@ import (
 	"github.com/xgodev/boost"
 	"os"
 
-	"github.com/xgodev/boost/factory/local/middleware"
-	"github.com/xgodev/boost/factory/local/middleware/plugins/contrib/afex/hystrix-go/v0"
-	logger "github.com/xgodev/boost/factory/local/middleware/plugins/local/wrapper/log"
+	"github.com/xgodev/boost/extra/middleware"
+	"github.com/xgodev/boost/extra/middleware/plugins/contrib/afex/hystrix-go/v0"
+	logger "github.com/xgodev/boost/extra/middleware/plugins/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
@@ -24,7 +24,7 @@ func main() {
 	var r string
 	var err error
 
-	wrp, _ := middleware.NewAnyErrorWrapper[string](ctx, logger.NewAnyError[string], hystrix.NewAnyError[string])
+	wrp := middleware.NewAnyErrorWrapper[string](ctx, "test", logger.NewAnyErrorMiddleware[string](ctx), hystrix.NewAnyErrorMiddleware[string](ctx, "test"))
 
 	r, err = wrp.Exec(ctx, "xpto",
 		func(ctx context.Context) (string, error) {

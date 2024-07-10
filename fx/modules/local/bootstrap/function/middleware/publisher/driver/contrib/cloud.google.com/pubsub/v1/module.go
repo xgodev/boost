@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	fxpubsub "github.com/xgodev/boost/fx/modules/contrib/cloud.google.com/pubsub/v1"
+	"github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v1"
 	"go.uber.org/fx"
 	"sync"
 )

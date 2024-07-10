@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	mid_grapper_cache "github.com/xgodev/boost/middleware/plugins/local/wrapper/cache"
+	mid_grapper_cache "github.com/xgodev/boost/extra/middleware/plugins/local/wrapper/cache"
 	cfreecache "github.com/xgodev/boost/wrapper/cache/driver/contrib/coocood/freecache/v1"
 	mid_cache_log "github.com/xgodev/boost/wrapper/cache/plugins/local/wrapper/log"
 	"github.com/xgodev/boost/wrapper/log/contrib/rs/zerolog/v1"
@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/coocood/freecache"
-	"github.com/xgodev/boost/middleware"
-	mid_grapper_fallback "github.com/xgodev/boost/middleware/plugins/native/fallback"
+	"github.com/xgodev/boost/extra/middleware"
+	mid_grapper_fallback "github.com/xgodev/boost/extra/middleware/plugins/native/fallback"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/cache"
 	codec_cache_gob "github.com/xgodev/boost/wrapper/cache/codec/gob"

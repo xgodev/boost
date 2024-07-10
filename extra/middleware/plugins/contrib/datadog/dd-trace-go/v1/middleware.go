@@ -2,7 +2,7 @@ package datadog
 
 import (
 	"context"
-	"github.com/xgodev/boost/middleware"
+	"github.com/xgodev/boost/extra/middleware"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 

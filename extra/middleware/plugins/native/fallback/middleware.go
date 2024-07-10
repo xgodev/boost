@@ -1,7 +1,7 @@
 package fallback
 
 import (
-	"github.com/xgodev/boost/middleware"
+	"github.com/xgodev/boost/extra/middleware"
 )
 
 type anyErrorMiddleware[R any] struct {

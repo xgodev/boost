@@ -2,7 +2,7 @@ package log
 
 import (
 	"context"
-	"github.com/xgodev/boost/middleware"
+	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/wrapper/log"
 )
 

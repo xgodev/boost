@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"github.com/xgodev/boost/middleware"
+	"github.com/xgodev/boost/extra/middleware"
 )
 
 func NewAnyErrorWrapper[R any](ctx context.Context, plugins ...func(ctx context.Context, name string) middleware.AnyErrorMiddleware[R]) (*middleware.AnyErrorWrapper[R], error) {
