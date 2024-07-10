@@ -19,6 +19,7 @@ func Module() fx.Option {
 	once.Do(func() {
 		options = fx.Options(
 			publisher.Module(),
+			fx.Provide(p.NewOptions),
 			fx.Provide(
 				fx.Annotated{
 					Group:  function.BSFunctionMiddlewaresGroupKey,
