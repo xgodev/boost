@@ -14,7 +14,9 @@ type Publisher struct {
 func (c *Publisher) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middleware.AnyErrorExecFunc[*event.Event], fallbackFunc middleware.AnyErrorReturnFunc[*event.Event]) (*event.Event, error) {
 	e, err := ctx.Next(exec, fallbackFunc)
 	if err == nil && e != nil {
-		e.SetSubject(c.options.Subject)
+		if e.Subject() == "" {
+			e.SetSubject(c.options.Subject)
+		}
 		err = c.publisher.Publish(ctx.GetContext(), []*event.Event{e})
 		if err != nil {
 			return nil, err
