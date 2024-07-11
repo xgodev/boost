@@ -4,7 +4,6 @@ import (
 	ce "github.com/cloudevents/sdk-go/v2"
 	fn "github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http"
-	fxnats "github.com/xgodev/boost/fx/modules/contrib/nats-io/nats.go/v1"
 	"github.com/xgodev/boost/fx/modules/local/bootstrap/function"
 	"go.uber.org/fx"
 	"sync"
@@ -20,7 +19,6 @@ func Module() fx.Option {
 
 	once.Do(func() {
 		options = fx.Options(
-			fxnats.Module(),
 			fx.Provide(
 				fx.Annotated{
 					Group: function.BSFunctionAdaptersGroupKey,
