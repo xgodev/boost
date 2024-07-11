@@ -1,4 +1,4 @@
-package kafka
+package goka
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
@@ -6,11 +6,8 @@ import (
 
 // Options kafka connection options.
 type Options struct {
-	Address   string
+	Brokers   []string
 	Topic     string
-	Partition int
-	Network   string
-	ConnType  string
 }
 
 // NewOptions returns options from config file or environment vars.

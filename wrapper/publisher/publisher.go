@@ -15,7 +15,7 @@ func New(driver Driver) *Publisher {
 }
 
 func (p *Publisher) Publish(ctx context.Context, events []*cloudevents.Event) error {
-	logger := log.FromContext(ctx)
+	logger := log.FromContext(ctx).WithTypeOf(*p)
 	logger.Tracef("publishing event")
 	return p.driver.Publish(ctx, events)
 }

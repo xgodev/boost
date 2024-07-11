@@ -48,6 +48,7 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/labstack/gommon v0.4.2
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
+	github.com/lovoo/goka v1.1.12
 	github.com/matryer/try v0.0.0-20161228173917-9ac251b645a2
 	github.com/mittwald/vaultgo v0.1.7
 	github.com/nats-io/nats-server/v2 v2.10.17
@@ -164,10 +165,12 @@ require (
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/godror/knownpb v0.1.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v24.3.25+incompatible // indirect
@@ -240,6 +243,7 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/swaggo/files/v2 v2.0.1 // indirect
 	github.com/swaggo/swag v1.16.3 // indirect
+	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d // indirect
 	github.com/tidwall/btree v1.7.0 // indirect
 	github.com/tidwall/gjson v1.17.1 // indirect
 	github.com/tidwall/grect v0.1.4 // indirect

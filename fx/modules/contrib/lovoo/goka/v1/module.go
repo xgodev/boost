@@ -1,7 +1,7 @@
-package kafka
+package goka
 
 import (
-	"github.com/xgodev/boost/factory/contrib/segmentio/kafka-go/v0"
+	"github.com/xgodev/boost/factory/contrib/lovoo/goka/v1"
 	"sync"
 
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
@@ -18,7 +18,7 @@ func Module() fx.Option {
 		options = fx.Options(
 			contextfx.Module(),
 			fx.Provide(
-				kafka.NewConn,
+				goka.NewEmitter,
 			),
 		)
 	})
