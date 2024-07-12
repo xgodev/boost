@@ -22,7 +22,7 @@ func (c *Logger) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middle
 		return e, err
 	}
 
-	if e == nil {
+	if e != nil {
 		j, err := json.Marshal(e)
 		if err != nil {
 			logger.Error(errors.ErrorStack(err))
