@@ -27,7 +27,7 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 	logger := log.FromContext(ctx).WithTypeOf(*p)
 
-	logger.Tracef("publishing to nats")
+	logger.Tracef("publishing to kafka")
 
 	for _, out := range outs {
 
