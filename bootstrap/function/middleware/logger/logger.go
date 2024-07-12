@@ -22,11 +22,13 @@ func (c *Logger) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middle
 		return e, err
 	}
 
-	j, err := json.Marshal(e)
-	if err != nil {
-		logger.Error(errors.ErrorStack(err))
-	} else {
-		lm(string(j))
+	if e == nil {
+		j, err := json.Marshal(e)
+		if err != nil {
+			logger.Error(errors.ErrorStack(err))
+		} else {
+			lm(string(j))
+		}
 	}
 
 	return e, err
