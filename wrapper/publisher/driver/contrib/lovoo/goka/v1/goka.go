@@ -2,14 +2,11 @@ package goka
 
 import (
 	"context"
-	"encoding/json"
+	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/xgodev/boost/factory/contrib/lovoo/goka/v1"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
-	"github.com/xgodev/boost/wrapper/publisher/util"
-
-	v2 "github.com/cloudevents/sdk-go/v2"
 )
 
 // client represents a Kafka client that implements.
@@ -37,34 +34,9 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 		var rawMessage []byte
 
-		exts := out.Extensions()
-
-		source, ok := exts["target"]
-
-		if ok {
-
-			s := source.(string)
-
-			if s == "data" {
-				var data interface{}
-
-				err = out.DataAs(&data)
-				if err != nil {
-					return errors.Wrap(err, errors.Internalf("error on data as. %s", err.Error()))
-				}
-
-				rawMessage, err = json.Marshal(data)
-
-			} else {
-				rawMessage, err = util.JSONBytes(*out)
-			}
-
-		} else {
-			rawMessage, err = util.JSONBytes(*out)
-		}
-
+		rawMessage, err = out.MarshalJSON()
 		if err != nil {
-			return errors.Wrap(err, errors.Internalf("error when transforming json into bytes"))
+			return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
 		}
 
 		pk, err := p.partitionKey(out)
