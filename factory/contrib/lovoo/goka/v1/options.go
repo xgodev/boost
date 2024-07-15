@@ -6,8 +6,7 @@ import (
 
 // Options kafka connection options.
 type Options struct {
-	Brokers   []string
-	Topic     string
+	Brokers []string
 }
 
 // NewOptions returns options from config file or environment vars.

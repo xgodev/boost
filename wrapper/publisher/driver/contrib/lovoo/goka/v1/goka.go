@@ -3,7 +3,7 @@ package goka
 import (
 	"context"
 	"encoding/json"
-	"github.com/lovoo/goka"
+	"github.com/xgodev/boost/factory/contrib/lovoo/goka/v1"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
@@ -72,7 +72,7 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 			return errors.Wrap(err, errors.Internalf("unable to gets partition key"))
 		}
 
-		err = p.emitter.EmitSync(pk, rawMessage)
+		err = p.emitter.EmitSync(ctx, out.Subject(), pk, rawMessage)
 		if err != nil {
 			return errors.Wrap(err, errors.Internalf("unable to publish to kafka"))
 		}
