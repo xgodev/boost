@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	Root    = middleware.Root + ".log"
+	Root    = middleware.Root + ".logger"
 	enabled = Root + ".enabled"
 )
 
