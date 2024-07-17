@@ -11,5 +11,5 @@ const (
 )
 
 func init() {
-	config.Add(subject, "changemw", "defines output subject")
+	config.Add(subject, "changeme", "defines output subject")
 }
