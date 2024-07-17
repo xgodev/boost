@@ -58,6 +58,7 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 			"content-type":   []byte(out.DataContentType()),
 			"ce_time":        []byte(out.Time().String()),
 			"ce_path":        []byte("/"),
+			"ce_subject":     []byte(out.Subject()),
 		}
 
 		err = p.emitter.EmitSyncWithHeaders(ctx, out.Subject(), pk, rawMessage, headers)
