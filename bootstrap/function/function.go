@@ -23,6 +23,8 @@ func New(m ...middleware.AnyErrorMiddleware[*event.Event]) *Function {
 
 func (f *Function) Run(ctx context.Context, fn Handler, c ...CmdFunc) error {
 
+	// TODO: github.com/alecthomas/kong
+
 	wrp := middleware.NewAnyErrorWrapper[*event.Event](ctx, "bootstrap", f.middlewares...)
 
 	var cmds []*co.Command
