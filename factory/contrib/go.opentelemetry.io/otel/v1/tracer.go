@@ -20,7 +20,7 @@ import (
 
 var tracerProvider trace.TracerProvider
 
-// StartMetricProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
+// StartTracerProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
 func StartTracerProvider(ctx context.Context, startOptions ...sdktrace.TracerProviderOption) {
 
 	o, err := NewOptions()
@@ -33,7 +33,7 @@ func StartTracerProvider(ctx context.Context, startOptions ...sdktrace.TracerPro
 
 var tracerOnce sync.Once
 
-// StartMetricProviderWithOptions starts the tracer provider with the given set of options. Calling
+// StartTracerProviderWithOptions starts the tracer provider with the given set of options. Calling
 // it multiple times will have no effect. If an error occours during tracer initialization,
 // a Noop trace provider will be used instead.
 func StartTracerProviderWithOptions(ctx context.Context, options *Options, startOptions ...sdktrace.TracerProviderOption) {
