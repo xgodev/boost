@@ -4,6 +4,7 @@ import (
 	"context"
 	ce "github.com/cloudevents/sdk-go/v2"
 	cehttp "github.com/cloudevents/sdk-go/v2/protocol/http"
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"net/http"
 
@@ -58,6 +59,9 @@ func (i *Otel) Register(ctx context.Context, opts []cehttp.Option) []cehttp.Opti
 	logger := log.FromContext(ctx)
 
 	logger.Trace("enabling opentelemetry middleware in http cloudevents server")
+
+	otel.StartMetricProvider(ctx)
+	otel.StartTracerProvider(ctx)
 
 	optsotel := append(opts,
 		ce.WithRoundTripper(otelhttp.NewTransport(http.DefaultTransport)),
