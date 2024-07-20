@@ -9,20 +9,18 @@ import (
 	"github.com/pkg/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"google.golang.org/grpc/credentials"
 )
 
-var tracerProvider = trace.NewNoopTracerProvider()
+var tracerProvider trace.TracerProvider
 
-// StartTracerProvider starts the tracer provider like StartTracerProviderWithOptions but with default Options.
+// StartMetricProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
 func StartTracerProvider(ctx context.Context, startOptions ...sdktrace.TracerProviderOption) {
 
 	o, err := NewOptions()
@@ -35,16 +33,19 @@ func StartTracerProvider(ctx context.Context, startOptions ...sdktrace.TracerPro
 
 var tracerOnce sync.Once
 
-// StartTracerProviderWithOptions starts the tracer provider with the given set of options. Calling
+// StartMetricProviderWithOptions starts the tracer provider with the given set of options. Calling
 // it multiple times will have no effect. If an error occours during tracer initialization,
 // a Noop trace provider will be used instead.
 func StartTracerProviderWithOptions(ctx context.Context, options *Options, startOptions ...sdktrace.TracerProviderOption) {
 
-	if !IsTracerEnabled() {
+	if !IsTraceEnabled() {
 		return
 	}
 
 	tracerOnce.Do(func() {
+
+		tracerProvider = noop.NewTracerProvider()
+
 		logger := log.FromContext(ctx)
 
 		var exporter *otlptrace.Exporter
@@ -61,30 +62,14 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		if err != nil {
 			logger.Error("error creating opentelemetry exporter: ", err)
-			otel.SetTracerProvider(trace.NewNoopTracerProvider())
+			otel.SetTracerProvider(noop.NewTracerProvider())
 			return
 		}
 
-		attrs := make([]attribute.KeyValue, len(options.Tags))
-		for k, v := range options.Tags {
-			attrs = append(attrs, attribute.KeyValue{
-				Key:   attribute.Key(k),
-				Value: attribute.StringValue(v),
-			})
-		}
-
-		rs, err := resource.New(ctx,
-			resource.WithSchemaURL(semconv.SchemaURL),
-			resource.WithAttributes(
-				semconv.ServiceNameKey.String(options.Service),
-				semconv.ServiceVersionKey.String(options.Version),
-				attribute.String("env", options.Env),
-			),
-			resource.WithAttributes(attrs...),
-		)
+		rs, err := NewResource(ctx, options)
 		if err != nil {
 			logger.Error("error creating opentelemetry resource: ", err)
-			otel.SetTracerProvider(trace.NewNoopTracerProvider())
+			otel.SetTracerProvider(noop.NewTracerProvider())
 			return
 		}
 
@@ -154,7 +139,7 @@ func startGRPCTracer(ctx context.Context, options *Options) (*otlptrace.Exporter
 // NewTracer creates a Tracer with the provided name and options. A Tracer
 // allows the creation of spans for custom instrumentation.
 //
-// StartTracerProvider should be called before to setup the tracer provider, otherwise a Noop
+// StartMetricProvider should be called before to setup the tracer provider, otherwise a Noop
 // tracer provider will be used.
 func NewTracer(name string, options ...trace.TracerOption) trace.Tracer {
 	return tracerProvider.Tracer(name, options...)
