@@ -48,17 +48,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		logger := log.FromContext(ctx)
 
-		var exporter *otlptrace.Exporter
-		var err error
-
-		switch options.Protocol {
-		case "grpc":
-			exporter, err = startGRPCTracer(ctx, options)
-		case "http":
-			exporter, err = startHTTPTracer(ctx, options)
-		default:
-			exporter, err = startHTTPTracer(ctx, options)
-		}
+		exporter, err := NewTracerExporter(ctx, options)
 
 		if err != nil {
 			logger.Error("error creating opentelemetry exporter: ", err)
@@ -88,7 +78,20 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 	})
 }
 
-func startHTTPTracer(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
+func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
+	var exporter *otlptrace.Exporter
+	var err error
+
+	switch options.Protocol {
+	case "grpc":
+		exporter, err = NewGRPCTracerExporter(ctx, options)
+	default:
+		exporter, err = NewHTTPTracerExporter(ctx, options)
+	}
+	return exporter, err
+}
+
+func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	var exporterOpts []otlptracehttp.Option
 	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
 		exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730
@@ -109,7 +112,7 @@ func startHTTPTracer(ctx context.Context, options *Options) (*otlptrace.Exporter
 	return exporter, nil
 }
 
-func startGRPCTracer(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
+func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	var exporterOpts []otlptracegrpc.Option
 	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
 		exporterOpts = append(exporterOpts, otlptracegrpc.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730

@@ -2,18 +2,17 @@ package otel
 
 import (
 	"context"
-	"go.opentelemetry.io/otel/metric"
-	"os"
-	"sync"
-
 	"github.com/pkg/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"google.golang.org/grpc/credentials"
+	"os"
+	"sync"
 )
 
 var meterProvider metric.MeterProvider
@@ -46,18 +45,7 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 
 		logger := log.FromContext(ctx)
 
-		var exporter sdkmetric.Exporter
-		var err error
-
-		switch options.Protocol {
-		case "grpc":
-			exporter, err = startGRPCMeter(ctx, options)
-		case "http":
-			exporter, err = startHTTPMeter(ctx, options)
-		default:
-			exporter, err = startHTTPMeter(ctx, options)
-		}
-
+		exporter, err := NewMeterExporter(ctx, options)
 		if err != nil {
 			logger.Error("error creating opentelemetry exporter: ", err)
 			otel.SetMeterProvider(noop.NewMeterProvider())
@@ -71,8 +59,10 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 			return
 		}
 
+		periodicReader := NewReader(options, exporter)
+
 		startOptions = append(startOptions,
-			sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter)),
+			sdkmetric.WithReader(periodicReader),
 			sdkmetric.WithResource(rs),
 		)
 
@@ -85,7 +75,35 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 	})
 }
 
-func startHTTPMeter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
+func NewReader(options *Options, exporter sdkmetric.Exporter) *sdkmetric.PeriodicReader {
+	var periodicReaderOpts []sdkmetric.PeriodicReaderOption
+
+	if _, ok := os.LookupEnv("OTEL_METRIC_EXPORT_INTERVAL"); !ok {
+		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithInterval(options.Export.Interval))
+	}
+
+	if _, ok := os.LookupEnv("OTEL_METRIC_EXPORT_TIMEOUT"); !ok {
+		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithTimeout(options.Export.Timeout))
+	}
+
+	periodicReader := sdkmetric.NewPeriodicReader(exporter, periodicReaderOpts...)
+	return periodicReader
+}
+
+func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
+	var exporter sdkmetric.Exporter
+	var err error
+
+	switch options.Protocol {
+	case "grpc":
+		exporter, err = NewGPRCMeterExporter(ctx, options)
+	default:
+		exporter, err = NewHTTPMeterExporter(ctx, options)
+	}
+	return exporter, err
+}
+
+func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
 	var exporterOpts []otlpmetrichttp.Option
 	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
 		exporterOpts = append(exporterOpts, otlpmetrichttp.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730
@@ -106,7 +124,7 @@ func startHTTPMeter(ctx context.Context, options *Options) (sdkmetric.Exporter, 
 	return exporter, nil
 }
 
-func startGRPCMeter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
+func NewGPRCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
 	var exporterOpts []otlpmetricgrpc.Option
 	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
 		exporterOpts = append(exporterOpts, otlpmetricgrpc.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730

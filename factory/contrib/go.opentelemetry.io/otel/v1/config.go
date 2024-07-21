@@ -1,19 +1,25 @@
 package otel
 
-import "github.com/xgodev/boost/wrapper/config"
+import (
+	"github.com/xgodev/boost/wrapper/config"
+	"time"
+)
 
 const (
-	root          = "boost.factory.otel"
-	metricEnabled = root + ".metric.enabled"
-	traceEnabled  = root + ".trace.enabled"
-	service       = root + ".service"
-	env           = root + ".env"
-	version       = root + ".version"
-	protocol      = root + ".protocol"
-	endpoint      = root + ".endpoint"
-	insecure      = root + ".insecure"
-	tags          = root + ".tags"
-	tlsCert       = root + ".tls.cert"
+	root           = "boost.factory.otel"
+	metricEnabled  = root + ".metric.enabled"
+	traceEnabled   = root + ".trace.enabled"
+	service        = root + ".service"
+	env            = root + ".env"
+	version        = root + ".version"
+	protocol       = root + ".protocol"
+	endpoint       = root + ".endpoint"
+	insecure       = root + ".insecure"
+	export         = root + ".export"
+	exportInterval = export + ".interval"
+	exportTimeout  = export + ".timeout"
+	tags           = root + ".tags"
+	tlsCert        = root + ".tls.cert"
 )
 
 func init() {
@@ -25,7 +31,9 @@ func init() {
 	config.Add(protocol, "grpc", "protocol to be used, http/grpc")
 	config.Add(endpoint, "localhost:4317", `host address of the opentelemetry agent, note that this parameter will be ignored if 'OTEL_EXPORTER_OTLP_ENDPOINT' is set, 
 	and the environment variable value will be used instead. See https://github.com/open-telemetry/opentelemetry-go/issues/3730`)
-	config.Add(insecure, false, "enable/disable insecure connection to agent")
+	config.Add(insecure, true, "enable/disable insecure connection to agent")
+	config.Add(exportInterval, time.Millisecond*60000, "defines periodic reader timing for metrics")
+	config.Add(exportTimeout, time.Millisecond*30000, "defines periodic reader timeout for metrics")
 	config.Add(tags, map[string]string{}, "sets a key/value pair which will be set as a tag on all spans created by tracer. This option may be used multiple times")
 	config.Add(tlsCert, "", "path to certificate to be used for tls")
 }

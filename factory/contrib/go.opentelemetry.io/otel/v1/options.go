@@ -2,15 +2,20 @@ package otel
 
 import (
 	"os"
+	"time"
 
 	"github.com/xgodev/boost/wrapper/config"
 )
 
 type Options struct {
-	Enabled  bool
-	Service  string
-	Env      string
-	Version  string
+	Enabled bool
+	Service string
+	Env     string
+	Version string
+	Export  struct {
+		Interval time.Duration
+		Timeout  time.Duration
+	}
 	Protocol string
 	Endpoint string
 	Insecure bool
@@ -56,6 +61,10 @@ func NewOptions() (*Options, error) {
 
 	if v := os.Getenv("OTEL_SERVICE_VERSION"); v != "" {
 		opts.Version = v
+	}
+
+	if v := os.Getenv("OTEL_ENV"); v != "" {
+		opts.Env = v
 	}
 
 	if v := os.Getenv("OTEL_ENV"); v != "" {
