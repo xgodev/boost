@@ -2,6 +2,7 @@ package otel
 
 import (
 	"context"
+	"github.com/go-logr/logr"
 	"go.opentelemetry.io/otel/propagation"
 	"os"
 	"sync"
@@ -47,6 +48,8 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 		tracerProvider = noop.NewTracerProvider()
 
 		logger := log.FromContext(ctx)
+
+		otel.SetLogger(logr.New(&Logger{}))
 
 		exporter, err := NewTracerExporter(ctx, options)
 

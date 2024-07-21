@@ -2,6 +2,7 @@ package otel
 
 import (
 	"context"
+	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"go.opentelemetry.io/otel"
@@ -44,6 +45,8 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 		meterProvider = noop.NewMeterProvider()
 
 		logger := log.FromContext(ctx)
+
+		otel.SetLogger(logr.New(&Logger{}))
 
 		exporter, err := NewMeterExporter(ctx, options)
 		if err != nil {
