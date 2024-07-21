@@ -22,9 +22,9 @@ func NewResource(ctx context.Context, options *Options) (*resource.Resource, err
 		})
 	}
 
-	return resource.New(ctx,
-		resource.WithSchemaURL(semconv.SchemaURL),
-		resource.WithAttributes(attrs...),
-	)
+	return resource.NewWithAttributes(
+		semconv.SchemaURL,
+		attrs...,
+	), nil
 
 }
