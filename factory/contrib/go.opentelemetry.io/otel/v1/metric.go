@@ -99,7 +99,7 @@ func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter
 
 	switch options.Protocol {
 	case "grpc":
-		exporter, err = NewGPRCMeterExporter(ctx, options)
+		exporter, err = NewGRPCMeterExporter(ctx, options)
 	default:
 		exporter, err = NewHTTPMeterExporter(ctx, options)
 	}
@@ -127,7 +127,7 @@ func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Expo
 	return exporter, nil
 }
 
-func NewGPRCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
+func NewGRPCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
 	var exporterOpts []otlpmetricgrpc.Option
 	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
 		exporterOpts = append(exporterOpts, otlpmetricgrpc.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730

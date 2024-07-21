@@ -9,7 +9,12 @@ import (
 
 func NewResource(ctx context.Context, options *Options) (*resource.Resource, error) {
 
-	attrs := make([]attribute.KeyValue, len(options.Tags))
+	attrs := []attribute.KeyValue{
+		semconv.ServiceNameKey.String(options.Service),
+		semconv.ServiceVersionKey.String(options.Version),
+		attribute.String("env", options.Env),
+	}
+
 	for k, v := range options.Tags {
 		attrs = append(attrs, attribute.KeyValue{
 			Key:   attribute.Key(k),
@@ -19,11 +24,6 @@ func NewResource(ctx context.Context, options *Options) (*resource.Resource, err
 
 	return resource.New(ctx,
 		resource.WithSchemaURL(semconv.SchemaURL),
-		resource.WithAttributes(
-			semconv.ServiceNameKey.String(options.Service),
-			semconv.ServiceVersionKey.String(options.Version),
-			attribute.String("env", options.Env),
-		),
 		resource.WithAttributes(attrs...),
 	)
 
