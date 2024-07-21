@@ -17,8 +17,8 @@ import (
 
 var meterProvider metric.MeterProvider
 
-// StartMetricProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
-func StartMetricProvider(ctx context.Context, startOptions ...sdkmetric.Option) {
+// StartMeterProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
+func StartMeterProvider(ctx context.Context, startOptions ...sdkmetric.Option) {
 
 	o, err := NewOptions()
 	if err != nil {
@@ -151,10 +151,10 @@ func NewGPRCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Expo
 	return exporter, nil
 }
 
-// NewMeter creates a Tracer with the provided name and options. A Tracer
-// allows the creation of spans for custom instrumentation.
+// NewMeter creates a Metric with the provided name and options. A Meter
+// allows for the custom instrumentation.
 //
-// StartMetricProvider should be called before to setup the meter provider, otherwise a Noop
+// StartMeterProvider should be called before to setup the meter provider, otherwise a Noop
 // tracer provider will be used.
 func NewMeter(name string, options ...metric.MeterOption) metric.Meter {
 	return meterProvider.Meter(name, options...)

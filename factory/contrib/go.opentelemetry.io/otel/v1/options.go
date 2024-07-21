@@ -67,9 +67,5 @@ func NewOptions() (*Options, error) {
 		opts.Env = v
 	}
 
-	if v := os.Getenv("OTEL_ENV"); v != "" {
-		opts.Env = v
-	}
-
 	return opts, nil
 }

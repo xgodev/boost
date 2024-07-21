@@ -60,7 +60,7 @@ func (i *Otel) Register(ctx context.Context, opts []cehttp.Option) []cehttp.Opti
 
 	logger.Trace("enabling opentelemetry middleware in http cloudevents server")
 
-	otel.StartMetricProvider(ctx)
+	otel.StartMeterProvider(ctx)
 	otel.StartTracerProvider(ctx)
 
 	optsotel := append(opts,

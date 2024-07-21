@@ -142,7 +142,7 @@ func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Ex
 // NewTracer creates a Tracer with the provided name and options. A Tracer
 // allows the creation of spans for custom instrumentation.
 //
-// StartMetricProvider should be called before to setup the tracer provider, otherwise a Noop
+// StartTracerProvider should be called before to setup the tracer provider, otherwise a Noop
 // tracer provider will be used.
 func NewTracer(name string, options ...trace.TracerOption) trace.Tracer {
 	return tracerProvider.Tracer(name, options...)
