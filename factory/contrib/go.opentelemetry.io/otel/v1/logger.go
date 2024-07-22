@@ -16,11 +16,11 @@ func (l Logger) Enabled(level int) bool {
 }
 
 func (l Logger) Info(level int, msg string, keysAndValues ...any) {
-	log.Infof(msg, keysAndValues...)
+	log.Infof("%s %v", msg, keysAndValues)
 }
 
 func (l Logger) Error(err error, msg string, keysAndValues ...any) {
-	log.Errorf(msg, keysAndValues...)
+	log.Errorf("%s %v", msg, keysAndValues)
 }
 
 func (l Logger) WithValues(keysAndValues ...any) logr.LogSink {
