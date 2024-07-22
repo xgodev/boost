@@ -60,11 +60,13 @@ func (i *Otel) Register(ctx context.Context, opts []cehttp.Option) []cehttp.Opti
 
 	logger.Trace("enabling opentelemetry middleware in http cloudevents server")
 
-	otel.StartMeterProvider(ctx)
 	otel.StartTracerProvider(ctx)
+	otel.StartMeterProvider(ctx)
 
 	optsotel := append(opts,
-		ce.WithRoundTripper(otelhttp.NewTransport(http.DefaultTransport)),
+		ce.WithRoundTripper(otelhttp.NewTransport(http.DefaultTransport,
+			otelhttp.WithTracerProvider(otel.TracerProvider),
+			otelhttp.WithMeterProvider(otel.MeterProvider))),
 		ce.WithMiddleware(func(next http.Handler) http.Handler {
 			return otelhttp.NewHandler(next, "ce.http.receiver")
 		}),
