@@ -103,15 +103,12 @@ func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Ex
 		exporterOpts = append(exporterOpts, otlptracehttp.WithInsecure())
 	}
 
-	exporter, err := otlptracehttp.New(
+	return otlptrace.New(
 		ctx,
-		exporterOpts...,
+		otlptracehttp.NewClient(
+			exporterOpts...,
+		),
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	return exporter, nil
 }
 
 func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
@@ -130,15 +127,12 @@ func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Ex
 		exporterOpts = append(exporterOpts, otlptracegrpc.WithTLSCredentials(creds))
 	}
 
-	exporter, err := otlptracegrpc.New(
+	return otlptrace.New(
 		ctx,
-		exporterOpts...,
+		otlptracegrpc.NewClient(
+			exporterOpts...,
+		),
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	return exporter, nil
 }
 
 // NewTracer creates a Tracer with the provided name and options. A Tracer
