@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-var tracerProvider trace.TracerProvider
+var TracerProvider trace.TracerProvider
 
 // StartTracerProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
 func StartTracerProvider(ctx context.Context, startOptions ...sdktrace.TracerProviderOption) {
@@ -45,7 +45,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 	tracerOnce.Do(func() {
 
-		tracerProvider = noop.NewTracerProvider()
+		TracerProvider = noop.NewTracerProvider()
 
 		logger := log.FromContext(ctx)
 
@@ -55,14 +55,12 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		if err != nil {
 			logger.Error("error creating opentelemetry exporter: ", err)
-			otel.SetTracerProvider(noop.NewTracerProvider())
 			return
 		}
 
 		rs, err := NewResource(ctx, options)
 		if err != nil {
 			logger.Error("error creating opentelemetry resource: ", err)
-			otel.SetTracerProvider(noop.NewTracerProvider())
 			return
 		}
 
@@ -75,7 +73,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		otel.SetTracerProvider(prov)
 		otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-		tracerProvider = prov
+		TracerProvider = prov
 
 		log.Infof("started opentelemetry tracer: %s", options.Service)
 	})
@@ -148,5 +146,5 @@ func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Ex
 // StartTracerProvider should be called before to setup the tracer provider, otherwise a Noop
 // tracer provider will be used.
 func NewTracer(name string, options ...trace.TracerOption) trace.Tracer {
-	return tracerProvider.Tracer(name, options...)
+	return TracerProvider.Tracer(name, options...)
 }

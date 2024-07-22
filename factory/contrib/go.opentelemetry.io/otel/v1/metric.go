@@ -16,7 +16,7 @@ import (
 	"sync"
 )
 
-var meterProvider metric.MeterProvider
+var MeterProvider metric.MeterProvider
 
 // StartMeterProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
 func StartMeterProvider(ctx context.Context, startOptions ...sdkmetric.Option) {
@@ -42,7 +42,7 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 
 	metricOnce.Do(func() {
 
-		meterProvider = noop.NewMeterProvider()
+		MeterProvider = noop.NewMeterProvider()
 
 		logger := log.FromContext(ctx)
 
@@ -51,14 +51,12 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 		exporter, err := NewMeterExporter(ctx, options)
 		if err != nil {
 			logger.Error("error creating opentelemetry exporter: ", err)
-			otel.SetMeterProvider(noop.NewMeterProvider())
 			return
 		}
 
 		rs, err := NewResource(ctx, options)
 		if err != nil {
 			logger.Error("error creating opentelemetry resource: ", err)
-			otel.SetMeterProvider(noop.NewMeterProvider())
 			return
 		}
 
@@ -72,7 +70,7 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 		prov := sdkmetric.NewMeterProvider(startOptions...)
 
 		otel.SetMeterProvider(prov)
-		meterProvider = prov
+		MeterProvider = prov
 
 		log.Infof("started opentelemetry meter: %s", options.Service)
 	})
@@ -160,5 +158,5 @@ func NewGRPCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Expo
 // StartMeterProvider should be called before to setup the meter provider, otherwise a Noop
 // tracer provider will be used.
 func NewMeter(name string, options ...metric.MeterOption) metric.Meter {
-	return meterProvider.Meter(name, options...)
+	return MeterProvider.Meter(name, options...)
 }
