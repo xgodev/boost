@@ -16,11 +16,11 @@ type Options struct {
 		Interval time.Duration
 		Timeout  time.Duration
 	}
-	Protocol string
-	Endpoint string
-	Insecure bool
-	Tags     map[string]string
-	TLS      struct {
+	Protocol   string
+	Endpoint   string
+	Insecure   bool
+	Attributes map[string]string
+	TLS        struct {
 		Cert string
 	}
 }

@@ -12,19 +12,18 @@ func NewResource(ctx context.Context, options *Options) (*resource.Resource, err
 	attrs := []attribute.KeyValue{
 		semconv.ServiceNameKey.String(options.Service),
 		semconv.ServiceVersionKey.String(options.Version),
-		// attribute.String("env", options.Env),
-		// attribute.String("service.env", options.Env),
-		// attribute.String("library.language", "go"),
+		attribute.String("env", options.Env),
+		attribute.String("service.env", options.Env),
+		attribute.String("deployment.environment", options.Env),
+		attribute.String("library.language", "go"),
 	}
 
-	/*
-		for k, v := range options.Tags {
-			attrs = append(attrs, attribute.KeyValue{
-				Key:   attribute.Key(k),
-				Value: attribute.StringValue(v),
-			})
-		}
-	*/
+	for k, v := range options.Attributes {
+		attrs = append(attrs, attribute.KeyValue{
+			Key:   attribute.Key(k),
+			Value: attribute.StringValue(v),
+		})
+	}
 
 	return resource.NewWithAttributes(
 		semconv.SchemaURL,
