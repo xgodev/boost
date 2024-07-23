@@ -78,17 +78,15 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 
 func NewReader(options *Options, exporter sdkmetric.Exporter) sdkmetric.Reader {
 
-	/*
-		var periodicReaderOpts []sdkmetric.PeriodicReaderOption
+	var periodicReaderOpts []sdkmetric.PeriodicReaderOption
 
-		if _, ok := os.LookupEnv("OTEL_METRIC_EXPORT_INTERVAL"); !ok {
-			periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithInterval(options.Export.Interval))
-		}
+	if _, ok := os.LookupEnv("OTEL_METRIC_EXPORT_INTERVAL"); !ok {
+		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithInterval(options.Export.Interval))
+	}
 
-		if _, ok := os.LookupEnv("OTEL_METRIC_EXPORT_TIMEOUT"); !ok {
-			periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithTimeout(options.Export.Timeout))
-		}
-	*/
+	if _, ok := os.LookupEnv("OTEL_METRIC_EXPORT_TIMEOUT"); !ok {
+		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithTimeout(options.Export.Timeout))
+	}
 
 	periodicReader := sdkmetric.NewPeriodicReader(exporter)
 	return periodicReader
