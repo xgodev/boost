@@ -50,7 +50,7 @@ func NewOTel() *OTel {
 
 // Register registers this otel plugin on sql DB.
 func (i *OTel) Register(ctx context.Context, db *sql.DB, connector driver.Connector) (d *sql.DB, err error) {
-	if !i.options.Enabled || !otel.IsTracerEnabled() {
+	if !i.options.Enabled || !otel.IsTraceEnabled() {
 		return nil, nil
 	}
 
