@@ -3,7 +3,7 @@ package function
 import (
 	"context"
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/xgodev/boost/middleware"
+	"github.com/xgodev/boost/extra/middleware"
 )
 
 func Wrapper(wrp *middleware.AnyErrorWrapper[*event.Event], fn Handler) Handler {

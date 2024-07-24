@@ -6,9 +6,10 @@ import (
 )
 
 const (
-	root = cloudevents.Root + ".http"
-	port = root + ".port"
-	path = root + ".path"
+	root        = cloudevents.Root + ".http"
+	port        = root + ".port"
+	path        = root + ".path"
+	PluginsRoot = root + ".plugins"
 )
 
 func init() {
