@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"os"
 	"sync"
+	"time"
 )
 
 var MeterProvider metric.MeterProvider
@@ -50,17 +51,21 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 
 		exporter, err := NewMeterExporter(ctx, options)
 		if err != nil {
-			logger.Error("error creating opentelemetry exporter: ", err)
+			logger.WithError(err).Errorf("error creating opentelemetry exporter")
 			return
 		}
 
 		rs, err := NewResource(ctx, options)
 		if err != nil {
-			logger.Error("error creating opentelemetry resource: ", err)
+			logger.WithError(err).Errorf("error creating opentelemetry resource")
 			return
 		}
 
-		periodicReader := NewReader(options, exporter)
+		periodicReader, err := NewReader(options, exporter)
+		if err != nil {
+			logger.WithError(err).Errorf("error creating opentelemetry reader")
+			return
+		}
 
 		startOptions = append(startOptions,
 			sdkmetric.WithReader(periodicReader),
@@ -76,20 +81,33 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 	})
 }
 
-func NewReader(options *Options, exporter sdkmetric.Exporter) sdkmetric.Reader {
+func NewReader(options *Options, exporter sdkmetric.Exporter) (sdkmetric.Reader, error) {
 
 	var periodicReaderOpts []sdkmetric.PeriodicReaderOption
 
-	if _, ok := os.LookupEnv("OTEL_METRIC_EXPORT_INTERVAL"); !ok {
+	exportIntervalStr := os.Getenv("OTEL_METRIC_EXPORT_INTERVAL")
+	if exportIntervalStr != "" {
+		exportInterval, err := time.ParseDuration(os.Getenv("OTEL_METRIC_EXPORT_INTERVAL"))
+		if err != nil {
+			return nil, err
+		}
+		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithInterval(exportInterval))
+	} else {
 		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithInterval(options.Export.Interval))
 	}
 
-	if _, ok := os.LookupEnv("OTEL_METRIC_EXPORT_TIMEOUT"); !ok {
+	exportTimeoutStr := os.Getenv("OTEL_METRIC_EXPORT_TIMEOUT")
+	if exportTimeoutStr != "" {
+		exportTimeout, err := time.ParseDuration(os.Getenv("OTEL_METRIC_EXPORT_INTERVAL"))
+		if err != nil {
+			return nil, err
+		}
+		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithTimeout(exportTimeout))
+	} else {
 		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithTimeout(options.Export.Timeout))
 	}
 
-	periodicReader := sdkmetric.NewPeriodicReader(exporter)
-	return periodicReader
+	return sdkmetric.NewPeriodicReader(exporter), nil
 }
 
 func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
@@ -107,9 +125,13 @@ func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter
 
 func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
 	var exporterOpts []otlpmetrichttp.Option
-	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
-		exporterOpts = append(exporterOpts, otlpmetrichttp.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730
+
+	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	if endpoint == "" {
+		endpoint = options.Endpoint
 	}
+
+	exporterOpts = append(exporterOpts, otlpmetrichttp.WithEndpoint(endpoint))
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlpmetrichttp.WithInsecure())
@@ -128,9 +150,13 @@ func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Expo
 
 func NewGRPCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
 	var exporterOpts []otlpmetricgrpc.Option
-	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
-		exporterOpts = append(exporterOpts, otlpmetricgrpc.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730
+
+	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	if endpoint == "" {
+		endpoint = options.Endpoint
 	}
+
+	exporterOpts = append(exporterOpts, otlpmetricgrpc.WithEndpoint(endpoint))
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlpmetricgrpc.WithInsecure())
