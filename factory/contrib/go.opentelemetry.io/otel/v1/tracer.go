@@ -84,7 +84,12 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 	var exporter *otlptrace.Exporter
 	var err error
 
-	switch options.Protocol {
+	protocol := os.Getenv("OTEL_EXPORTER_OTLP_PROTOCOL")
+	if protocol == "" {
+		protocol = options.Protocol
+	}
+
+	switch protocol {
 	case "grpc":
 		exporter, err = NewGRPCTracerExporter(ctx, options)
 	default:
@@ -96,9 +101,12 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	var exporterOpts []otlptracehttp.Option
 
-	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
-		exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730
+	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	if endpoint == "" {
+		endpoint = options.Endpoint
 	}
+
+	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(endpoint))
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlptracehttp.WithInsecure())
