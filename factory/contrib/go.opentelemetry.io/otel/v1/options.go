@@ -51,6 +51,10 @@ func NewOptions() (*Options, error) {
 		return nil, err
 	}
 
+	if v := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"); v != "" {
+		opts.Endpoint = v
+	}
+
 	if v := os.Getenv("OTEL_EXPORTER_OTLP_PROTOCOL"); v != "" {
 		opts.Protocol = v
 	}
@@ -65,6 +69,24 @@ func NewOptions() (*Options, error) {
 
 	if v := os.Getenv("OTEL_ENV"); v != "" {
 		opts.Env = v
+	}
+
+	if v := os.Getenv("OTEL_METRIC_EXPORT_INTERVAL"); v != "" {
+		exportInterval, err := time.ParseDuration(v)
+		if err != nil {
+			return nil, err
+		}
+
+		opts.Export.Interval = exportInterval
+	}
+
+	if v := os.Getenv("OTEL_METRIC_EXPORT_TIMEOUT"); v != "" {
+		exportTimeout, err := time.ParseDuration(v)
+		if err != nil {
+			return nil, err
+		}
+
+		opts.Export.Timeout = exportTimeout
 	}
 
 	return opts, nil

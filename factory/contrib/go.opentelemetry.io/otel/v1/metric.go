@@ -12,9 +12,7 @@ import (
 	"go.opentelemetry.io/otel/metric/noop"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"google.golang.org/grpc/credentials"
-	"os"
 	"sync"
-	"time"
 )
 
 var MeterProvider metric.MeterProvider
@@ -83,31 +81,12 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 
 func NewReader(options *Options, exporter sdkmetric.Exporter) (sdkmetric.Reader, error) {
 
-	var periodicReaderOpts []sdkmetric.PeriodicReaderOption
-
-	exportIntervalStr := os.Getenv("OTEL_METRIC_EXPORT_INTERVAL")
-	if exportIntervalStr != "" {
-		exportInterval, err := time.ParseDuration(os.Getenv("OTEL_METRIC_EXPORT_INTERVAL"))
-		if err != nil {
-			return nil, err
-		}
-		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithInterval(exportInterval))
-	} else {
-		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithInterval(options.Export.Interval))
+	periodicReaderOpts := []sdkmetric.PeriodicReaderOption{
+		sdkmetric.WithInterval(options.Export.Interval),
+		sdkmetric.WithTimeout(options.Export.Timeout),
 	}
 
-	exportTimeoutStr := os.Getenv("OTEL_METRIC_EXPORT_TIMEOUT")
-	if exportTimeoutStr != "" {
-		exportTimeout, err := time.ParseDuration(os.Getenv("OTEL_METRIC_EXPORT_INTERVAL"))
-		if err != nil {
-			return nil, err
-		}
-		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithTimeout(exportTimeout))
-	} else {
-		periodicReaderOpts = append(periodicReaderOpts, sdkmetric.WithTimeout(options.Export.Timeout))
-	}
-
-	return sdkmetric.NewPeriodicReader(exporter), nil
+	return sdkmetric.NewPeriodicReader(exporter, periodicReaderOpts...), nil
 }
 
 func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
@@ -124,14 +103,9 @@ func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter
 }
 
 func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
-	var exporterOpts []otlpmetrichttp.Option
-
-	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-	if endpoint == "" {
-		endpoint = options.Endpoint
+	exporterOpts := []otlpmetrichttp.Option{
+		otlpmetrichttp.WithEndpoint(options.Endpoint),
 	}
-
-	exporterOpts = append(exporterOpts, otlpmetrichttp.WithEndpoint(endpoint))
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlpmetrichttp.WithInsecure())
@@ -149,14 +123,9 @@ func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Expo
 }
 
 func NewGRPCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
-	var exporterOpts []otlpmetricgrpc.Option
-
-	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-	if endpoint == "" {
-		endpoint = options.Endpoint
+	exporterOpts := []otlpmetricgrpc.Option{
+		otlpmetricgrpc.WithEndpoint(options.Endpoint),
 	}
-
-	exporterOpts = append(exporterOpts, otlpmetricgrpc.WithEndpoint(endpoint))
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlpmetricgrpc.WithInsecure())

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/go-logr/logr"
 	"go.opentelemetry.io/otel/propagation"
-	"os"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -84,12 +83,7 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 	var exporter *otlptrace.Exporter
 	var err error
 
-	protocol := os.Getenv("OTEL_EXPORTER_OTLP_PROTOCOL")
-	if protocol == "" {
-		protocol = options.Protocol
-	}
-
-	switch protocol {
+	switch options.Protocol {
 	case "grpc":
 		exporter, err = NewGRPCTracerExporter(ctx, options)
 	default:
@@ -101,12 +95,7 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	var exporterOpts []otlptracehttp.Option
 
-	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-	if endpoint == "" {
-		endpoint = options.Endpoint
-	}
-
-	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(endpoint))
+	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Endpoint))
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlptracehttp.WithInsecure())
@@ -121,18 +110,13 @@ func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Ex
 }
 
 func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
-	var exporterOpts []otlptracegrpc.Option
-
-	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-	if endpoint == "" {
-		endpoint = options.Endpoint
+	exporterOpts := []otlptracegrpc.Option{
+		otlptracegrpc.WithEndpoint(options.Endpoint),
 	}
-
-	exporterOpts = append(exporterOpts, otlptracegrpc.WithEndpoint(endpoint))
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlptracegrpc.WithInsecure())
-	} else {
+	} else if options.TLS.Cert != "" {
 		creds, err := credentials.NewClientTLSFromFile(options.TLS.Cert, "")
 		if err != nil {
 			return nil, errors.Wrap(err, "error creating tls credentials")
