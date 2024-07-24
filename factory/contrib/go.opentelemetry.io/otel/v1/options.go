@@ -53,14 +53,20 @@ func NewOptions() (*Options, error) {
 
 	if v := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"); v != "" {
 		opts.Endpoint = v
+	} else {
+		os.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", opts.Endpoint)
 	}
 
 	if v := os.Getenv("OTEL_EXPORTER_OTLP_PROTOCOL"); v != "" {
 		opts.Protocol = v
+	} else {
+		os.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", opts.Protocol)
 	}
 
 	if v := os.Getenv("OTEL_SERVICE_NAME"); v != "" {
 		opts.Service = v
+	} else {
+		os.Setenv("OTEL_SERVICE_NAME", opts.Service)
 	}
 
 	if v := os.Getenv("OTEL_SERVICE_VERSION"); v != "" {
