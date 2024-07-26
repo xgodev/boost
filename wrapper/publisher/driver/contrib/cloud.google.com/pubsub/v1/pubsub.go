@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
@@ -53,9 +54,13 @@ func (p *client) send(ctx context.Context, events []*v2.Event) (err error) {
 
 		g.Go(func() (err error) {
 
-			var rawMessage []byte
+			var data map[string]interface{}
+			if err := event.DataAs(&data); err != nil {
+				return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
+			}
 
-			rawMessage, err = event.MarshalJSON()
+			var rawMessage []byte
+			rawMessage, err = json.Marshal(data)
 			if err != nil {
 				return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
 			}
