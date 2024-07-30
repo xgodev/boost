@@ -10,8 +10,8 @@ import (
 func New(conn *nats.Conn) function.CmdFunc {
 	return func(fn function.Handler) *co.Command {
 		return &co.Command{
-			Use:   "cenats",
-			Short: "cenats",
+			Use:   "cloudevents_nats",
+			Short: "cloudevents_nats",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
 				helper := NewDefaultHelper(conn, fn)

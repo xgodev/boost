@@ -3,8 +3,8 @@ package function
 import (
 	"context"
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/factory/contrib/spf13/cobra/v1"
-	"github.com/xgodev/boost/middleware"
 	"os"
 
 	co "github.com/spf13/cobra"
@@ -22,6 +22,8 @@ func New(m ...middleware.AnyErrorMiddleware[*event.Event]) *Function {
 }
 
 func (f *Function) Run(ctx context.Context, fn Handler, c ...CmdFunc) error {
+
+	// TODO: github.com/alecthomas/kong
 
 	wrp := middleware.NewAnyErrorWrapper[*event.Event](ctx, "bootstrap", f.middlewares...)
 

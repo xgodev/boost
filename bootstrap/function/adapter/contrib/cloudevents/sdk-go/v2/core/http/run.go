@@ -2,23 +2,34 @@ package http
 
 import (
 	"context"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
+	ce "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
+	cehttp "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-func Run(fn function.Handler, opts ...client.Option) error {
+// Plugin defines a function to process plugin.
+type Plugin func(context.Context, []cehttp.Option) []cehttp.Option
+
+func Run(fn function.Handler, opts []client.Option, plugins ...Plugin) (err error) {
 
 	ctx := context.Background()
 
 	logger := log.FromContext(ctx)
 
-	p, err := cloudevents.NewHTTP(cloudevents.WithPort(Port()), cloudevents.WithPath(Path()))
+	httpOpts := []cehttp.Option{ce.WithPort(Port()), ce.WithPath(Path())}
+
+	for _, plugin := range plugins {
+		httpOpts = plugin(ctx, httpOpts)
+	}
+
+	p, err := ce.NewHTTP(httpOpts...)
 	if err != nil {
 		logger.Errorf("failed to create protocol: %s", err.Error())
 	}
-	c, err := cloudevents.NewClient(p, opts...)
+
+	c, err := ce.NewClient(p, opts...)
 	if err != nil {
 		logger.Errorf("failed to create client: %s", err.Error())
 		return err

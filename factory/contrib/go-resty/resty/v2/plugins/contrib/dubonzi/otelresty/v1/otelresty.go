@@ -49,7 +49,7 @@ func Register(ctx context.Context, client *resty.Client) error {
 }
 
 func (o *Otelresty) Register(ctx context.Context, client *resty.Client) error {
-	if !o.options.Enabled || !otel.IsTracerEnabled() {
+	if !o.options.Enabled || !otel.IsTraceEnabled() {
 		return nil
 	}
 

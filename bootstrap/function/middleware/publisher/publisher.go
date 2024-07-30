@@ -2,19 +2,22 @@ package publisher
 
 import (
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/xgodev/boost/middleware"
-	"github.com/xgodev/boost/wrapper/log"
+	"github.com/xgodev/boost/extra/middleware"
+	"github.com/xgodev/boost/wrapper/publisher"
 )
 
 type Publisher struct {
-	driver Driver
+	publisher *publisher.Publisher
+	options   *Options
 }
 
 func (c *Publisher) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middleware.AnyErrorExecFunc[*event.Event], fallbackFunc middleware.AnyErrorReturnFunc[*event.Event]) (*event.Event, error) {
-	log.Tracef("publishing event")
 	e, err := ctx.Next(exec, fallbackFunc)
 	if err == nil && e != nil {
-		err = c.driver.Publish(ctx.GetContext(), []*event.Event{e})
+		if e.Subject() == "" {
+			e.SetSubject(c.options.Subject)
+		}
+		err = c.publisher.Publish(ctx.GetContext(), []*event.Event{e})
 		if err != nil {
 			return nil, err
 		}
@@ -22,6 +25,6 @@ func (c *Publisher) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec mid
 	return e, err
 }
 
-func New(driver Driver) middleware.AnyErrorMiddleware[*event.Event] {
-	return &Publisher{driver: driver}
+func New(publisher *publisher.Publisher, options *Options) middleware.AnyErrorMiddleware[*event.Event] {
+	return &Publisher{publisher: publisher, options: options}
 }
