@@ -20,8 +20,8 @@ type Helper struct {
 	service common.Service
 }
 
-// NewHelper returns a new Helper with options.
-func NewHelper(service common.Service, options *Options, handler function.Handler) *Helper {
+// NewHelperWithOptions returns a new Helper with options.
+func NewHelperWithOptions(service common.Service, handler function.Handler, options *Options) *Helper {
 
 	return &Helper{
 		handler: handler,
@@ -30,15 +30,15 @@ func NewHelper(service common.Service, options *Options, handler function.Handle
 	}
 }
 
-// NewDefaultHelper returns a new Helper with default options.
-func NewDefaultHelper(service common.Service, handler function.Handler) *Helper {
+// NewHelper returns a new Helper with default options.
+func NewHelper(service common.Service, handler function.Handler) *Helper {
 
 	opt, err := DefaultOptions()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	return NewHelper(service, opt, handler)
+	return NewHelperWithOptions(service, handler, opt)
 }
 
 func (h *Helper) Start() {

@@ -14,7 +14,7 @@ func New(service common.Service) function.CmdFunc {
 			Short: "dapr",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				helper := NewDefaultHelper(service, fn)
+				helper := NewHelper(service, fn)
 				helper.Start()
 				return nil
 			},

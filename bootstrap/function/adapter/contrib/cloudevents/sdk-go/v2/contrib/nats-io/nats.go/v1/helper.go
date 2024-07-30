@@ -17,9 +17,9 @@ type Helper struct {
 	conn     *nats.Conn
 }
 
-// NewHelper returns a new Helper with options.
-func NewHelper(conn *nats.Conn, options *Options,
-	handler function.Handler) *Helper {
+// NewHelperWithOptions returns a new Helper with options.
+func NewHelperWithOptions(conn *nats.Conn,
+	handler function.Handler, options *Options) *Helper {
 
 	return &Helper{
 		handler:  handler,
@@ -29,15 +29,15 @@ func NewHelper(conn *nats.Conn, options *Options,
 	}
 }
 
-// NewDefaultHelper returns a new Helper with default options.
-func NewDefaultHelper(conn *nats.Conn, handler function.Handler) *Helper {
+// NewHelper returns a new Helper with default options.
+func NewHelper(conn *nats.Conn, handler function.Handler) *Helper {
 
 	opt, err := DefaultOptions()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	return NewHelper(conn, opt, handler)
+	return NewHelperWithOptions(conn, handler, opt)
 }
 
 func (h *Helper) Start() {

@@ -14,7 +14,7 @@ func New(conn *nats.Conn) function.CmdFunc {
 			Short: "nats",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				helper := NewDefaultHelper(conn, fn)
+				helper := NewHelper(conn, fn)
 				helper.Start()
 				return nil
 			},

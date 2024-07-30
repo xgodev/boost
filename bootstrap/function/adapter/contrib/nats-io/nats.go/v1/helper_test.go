@@ -60,8 +60,8 @@ func (s *NatsHelperSuite) TestNatsNewHelper() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			got := NewHelper(tt.args.conn, tt.args.options, tt.args.handler)
-			s.Assert().True(reflect.DeepEqual(got, tt.want), "NewHelper() = %v, want %v")
+			got := NewHelperWithOptions(tt.args.conn, tt.args.options, tt.args.handler)
+			s.Assert().True(reflect.DeepEqual(got, tt.want), "NewHelperWithOptions() = %v, want %v")
 		})
 	}
 }
@@ -100,8 +100,8 @@ func (s *NatsHelperSuite) TestNatsNewDefaultHelper() {
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			got := NewDefaultHelper(tt.args.conn, tt.args.handler)
-			s.Assert().True(reflect.DeepEqual(got, tt.want), "NewHelper() = %v, want %v")
+			got := NewHelper(tt.args.conn, tt.args.handler)
+			s.Assert().True(reflect.DeepEqual(got, tt.want), "NewHelperWithOptions() = %v, want %v")
 		})
 	}
 }
