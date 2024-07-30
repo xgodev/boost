@@ -1,10 +1,13 @@
 package service
 
-import "github.com/xgodev/boost/wrapper/config"
+import (
+	"github.com/dapr/go-sdk/service/common"
+	"github.com/xgodev/boost/wrapper/config"
+)
 
 // Options can be used to create customized handler.
 type Options struct {
-	Topics []string
+	Subscriptions []common.Subscription
 }
 
 // DefaultOptions returns options based in config.

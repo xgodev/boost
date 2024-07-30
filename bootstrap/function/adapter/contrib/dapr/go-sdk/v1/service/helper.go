@@ -3,10 +3,9 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/bootstrap/function"
+	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"net/http"
 
@@ -15,18 +14,18 @@ import (
 
 // Helper assists in creating event handlers.
 type Helper struct {
-	handler function.Handler
-	topics  []string
-	service common.Service
+	handler       function.Handler
+	subscriptions []common.Subscription
+	service       common.Service
 }
 
 // NewHelperWithOptions returns a new Helper with options.
 func NewHelperWithOptions(service common.Service, handler function.Handler, options *Options) *Helper {
 
 	return &Helper{
-		handler: handler,
-		topics:  options.Topics,
-		service: service,
+		handler:       handler,
+		subscriptions: options.Subscriptions,
+		service:       service,
 	}
 }
 
@@ -43,14 +42,10 @@ func NewHelper(service common.Service, handler function.Handler) *Helper {
 
 func (h *Helper) Start() {
 
-	// add some topic subscriptions
-	sub := &common.Subscription{
-		PubsubName: "messages",
-		Topic:      "topic1",
-		Route:      "/events",
-	}
-	if err := h.service.AddTopicEventHandler(sub, h.eventHandler); err != nil {
-		log.Fatalf("error adding topic subscription: %v", err)
+	for _, sub := range h.subscriptions {
+		if err := h.service.AddTopicEventHandler(&sub, h.eventHandler); err != nil {
+			log.Fatalf("error adding topic subscription: %v", err)
+		}
 	}
 
 	if err := h.service.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -59,29 +54,37 @@ func (h *Helper) Start() {
 
 }
 
-func (h *Helper) eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-	data, err := json.Marshal(e.Data)
+func (h *Helper) eventHandler(ctx context.Context, topicEvent *common.TopicEvent) (retry bool, err error) {
+
+	logger := log.FromContext(ctx)
+
+	data, err := json.Marshal(topicEvent.Data)
 	if err != nil {
-		return false, fmt.Errorf("error parsing CloudEvent: %w", err)
+		return false, errors.Errorf("error parsing CloudEvent: %w", err)
 	}
 
-	var event cloudevents.Event
+	in := event.New()
+	err = json.Unmarshal(data, &in)
+	if err != nil {
 
-	if err := json.Unmarshal(data, &event); err != nil {
-		log.Printf("error parsing CloudEvent: %v", err)
-		return false, fmt.Errorf("error parsing CloudEvent: %w", err)
+		var data interface{}
+		err := in.SetData("", data)
+		if err != nil {
+			return false, errors.Errorf("could set data: %w", err)
+		}
+
 	}
 
-	log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
+	logger.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", topicEvent.PubsubName, topicEvent.Topic, topicEvent.ID, topicEvent.Data)
 
-	responseEvent, err := h.handler(ctx, event)
+	responseEvent, err := h.handler(ctx, in)
 	if err != nil {
 		return false, err
 	}
 
 	if responseEvent != nil {
 		// Handle response event if needed
-		log.Printf("response event - ID: %s, Data: %s", responseEvent.ID(), responseEvent.Data())
+		logger.Printf("response event - ID: %s, Data: %s", responseEvent.ID(), responseEvent.Data())
 	}
 
 	return false, nil
