@@ -6,10 +6,10 @@ import (
 	"github.com/xgodev/boost/extra/middleware"
 )
 
-func Wrapper(wrp *middleware.AnyErrorWrapper[*event.Event], fn Handler) Handler {
-	return func(ctx context.Context, in event.Event) (*event.Event, error) {
-		return wrp.Exec(ctx, "func",
-			func(ctx context.Context) (*event.Event, error) {
+func Wrapper(wrp *middleware.AnyErrorWrapper[any], fn Handler) Handler {
+	return func(ctx context.Context, in event.Event) (any, error) {
+		return wrp.Exec(ctx, Name(),
+			func(ctx context.Context) (any, error) {
 				return fn(ctx, in)
 			}, nil)
 	}

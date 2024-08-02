@@ -2,7 +2,6 @@ package function
 
 import (
 	"context"
-	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/factory/contrib/spf13/cobra/v1"
 	"os"
@@ -11,13 +10,13 @@ import (
 )
 
 // CmdFunc defines a function that return a command.
-type CmdFunc func(fn Handler) *co.Command
+type CmdFunc func(fn interface{}) *co.Command
 
 type Function struct {
-	middlewares []middleware.AnyErrorMiddleware[*event.Event]
+	middlewares []middleware.AnyErrorMiddleware[any]
 }
 
-func New(m ...middleware.AnyErrorMiddleware[*event.Event]) *Function {
+func New(m ...middleware.AnyErrorMiddleware[any]) *Function {
 	return &Function{middlewares: m}
 }
 
@@ -25,10 +24,9 @@ func (f *Function) Run(ctx context.Context, fn Handler, c ...CmdFunc) error {
 
 	// TODO: github.com/alecthomas/kong
 
-	wrp := middleware.NewAnyErrorWrapper[*event.Event](ctx, "bootstrap", f.middlewares...)
-
 	var cmds []*co.Command
 
+	wrp := middleware.NewAnyErrorWrapper[any](ctx, "bootstrap", f.middlewares...)
 	for _, v := range c {
 		cmds = append(cmds, v(Wrapper(wrp, fn)))
 	}

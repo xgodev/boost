@@ -2,7 +2,6 @@ package function
 
 import (
 	"context"
-	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/extra/middleware"
 	fxcontext "github.com/xgodev/boost/fx/modules/core/context"
@@ -17,8 +16,8 @@ const (
 
 type params struct {
 	fx.In
-	Adapters    []function.CmdFunc                            `group:"boostrap.function.adapters"`
-	Middlewares []middleware.AnyErrorMiddleware[*event.Event] `group:"boostrap.function.middlewares"`
+	Adapters    []function.CmdFunc                   `group:"boostrap.function.adapters"`
+	Middlewares []middleware.AnyErrorMiddleware[any] `group:"boostrap.function.middlewares"`
 }
 
 var once sync.Once

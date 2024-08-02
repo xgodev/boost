@@ -12,7 +12,7 @@ type Logger struct {
 	options *Options
 }
 
-func (c *Logger) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middleware.AnyErrorExecFunc[*event.Event], fallbackFunc middleware.AnyErrorReturnFunc[*event.Event]) (*event.Event, error) {
+func (c *Logger) Exec(ctx *middleware.AnyErrorContext[any], exec middleware.AnyErrorExecFunc[any], fallbackFunc middleware.AnyErrorReturnFunc[any]) (any, error) {
 	logger := log.FromContext(ctx.GetContext()).WithTypeOf(*c)
 	lm := c.logger(logger)
 
@@ -23,18 +23,33 @@ func (c *Logger) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middle
 	}
 
 	if e != nil {
-		j, err := json.Marshal(e)
-		if err != nil {
-			logger.Error(errors.ErrorStack(err))
-		} else {
-			lm(string(j))
+
+		var events []*event.Event
+
+		switch r := e.(type) {
+		case []*event.Event:
+			events = r
+		case *event.Event:
+			events = []*event.Event{r}
+		default:
+			return nil, errors.Errorf("unsupported handler type")
 		}
+
+		for _, ev := range events {
+			j, err := json.Marshal(ev)
+			if err != nil {
+				logger.Error(errors.ErrorStack(err))
+			} else {
+				lm(string(j))
+			}
+		}
+
 	}
 
 	return e, err
 }
 
-func New(options *Options) middleware.AnyErrorMiddleware[*event.Event] {
+func New(options *Options) middleware.AnyErrorMiddleware[any] {
 	return &Logger{options: options}
 }
 
