@@ -46,6 +46,8 @@ func (h *Helper) Start() {
 		if err := h.service.AddTopicEventHandler(&sub, h.eventHandler); err != nil {
 			log.Fatalf("error adding topic subscription: %v", err)
 		}
+
+		log.Debugf("Added topic subscription: %v", sub)
 	}
 
 	if err := h.service.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -58,7 +60,7 @@ func (h *Helper) eventHandler(ctx context.Context, topicEvent *common.TopicEvent
 
 	logger := log.FromContext(ctx)
 
-	data, err := json.Marshal(topicEvent.Data)
+	data, err := json.Marshal(topicEvent)
 	if err != nil {
 		return false, errors.Errorf("error parsing CloudEvent: %w", err)
 	}
@@ -66,16 +68,10 @@ func (h *Helper) eventHandler(ctx context.Context, topicEvent *common.TopicEvent
 	in := event.New()
 	err = json.Unmarshal(data, &in)
 	if err != nil {
-
-		var data interface{}
-		err := in.SetData("", data)
-		if err != nil {
-			return false, errors.Errorf("could set data: %w", err)
-		}
-
+		return false, errors.Errorf("could set data: %w", err)
 	}
 
-	logger.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", topicEvent.PubsubName, topicEvent.Topic, topicEvent.ID, topicEvent.Data)
+	logger.Tracef("dapr - event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", topicEvent.PubsubName, topicEvent.Topic, topicEvent.ID, topicEvent.Data)
 
 	responseEvent, err := h.handler(ctx, in)
 	if err != nil {
@@ -83,8 +79,7 @@ func (h *Helper) eventHandler(ctx context.Context, topicEvent *common.TopicEvent
 	}
 
 	if responseEvent != nil {
-		// Handle response event if needed
-		logger.Printf("response event - ID: %s, Data: %s", responseEvent.ID(), responseEvent.Data())
+		logger.Tracef("response event - ID: %s, Data: %s", responseEvent.ID(), responseEvent.Data())
 	}
 
 	return false, nil
