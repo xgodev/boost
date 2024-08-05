@@ -12,7 +12,7 @@ import (
 	pm "github.com/xgodev/boost/bootstrap/function/middleware/publisher"
 	fnats "github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
 	"github.com/xgodev/boost/wrapper/publisher"
-	"github.com/xgodev/boost/wrapper/publisher/driver/contrib/nats-io/nats.go/v1"
+	"github.com/xgodev/boost/wrapper/publisher/driver/extra/noop"
 	"os"
 )
 
@@ -54,6 +54,7 @@ func main() {
 
 func init() {
 	os.Setenv("BOOST_FACTORY_ZEROLOG_LEVEL", "TRACE")
+	os.Setenv("BOOST_BOOTSTRAP_FUNCTION_DEFAULT", "nats")
 }
 
 func main() {
@@ -67,7 +68,7 @@ func main() {
 		panic(err)
 	}
 
-	p := publisher.New(nats.New(conn))
+	p := publisher.New(noop.New())
 	pmi, err := pm.NewAnyErrorMiddleware[*cloudevents.Event](p)
 	if err != nil {
 		panic(err)
