@@ -10,18 +10,18 @@ import (
 )
 
 // Helper assists in creating event handlers.
-type Helper struct {
-	handler  function.Handler
+type Helper[T any] struct {
+	handler  function.Handler[T]
 	queue    string
 	subjects []string
 	conn     *nats.Conn
 }
 
 // NewHelperWithOptions returns a new Helper with options.
-func NewHelperWithOptions(conn *nats.Conn,
-	handler function.Handler, options *Options) *Helper {
+func NewHelperWithOptions[T any](conn *nats.Conn,
+	handler function.Handler[T], options *Options) *Helper[T] {
 
-	return &Helper{
+	return &Helper[T]{
 		handler:  handler,
 		queue:    options.Queue,
 		subjects: options.Subjects,
@@ -30,7 +30,7 @@ func NewHelperWithOptions(conn *nats.Conn,
 }
 
 // NewHelper returns a new Helper with default options.
-func NewHelper(conn *nats.Conn, handler function.Handler) *Helper {
+func NewHelper[T any](conn *nats.Conn, handler function.Handler[T]) *Helper[T] {
 
 	opt, err := DefaultOptions()
 	if err != nil {
@@ -40,7 +40,7 @@ func NewHelper(conn *nats.Conn, handler function.Handler) *Helper {
 	return NewHelperWithOptions(conn, handler, opt)
 }
 
-func (h *Helper) Start() {
+func (h *Helper[T]) Start() {
 
 	for i := range h.subjects {
 		go h.subscribe(context.Background(), h.subjects[i])
@@ -50,7 +50,7 @@ func (h *Helper) Start() {
 	<-c
 }
 
-func (h *Helper) subscribe(ctx context.Context, subject string) {
+func (h *Helper[T]) subscribe(ctx context.Context, subject string) {
 
 	logger := log.FromContext(ctx)
 

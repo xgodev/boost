@@ -36,31 +36,31 @@ func (s *NatsHelperSuite) TestNatsNewHelper() {
 	options.Url = sUrl
 	conn, _ := nats.NewConnWithOptions(ctx, options)
 
-	type args struct {
+	type args[T any] struct {
 		ctx     context.Context
 		conn    *n.Conn
 		options *Options
-		handler function.Handler
+		handler function.Handler[T]
 	}
 	tests := []struct {
 		name string
-		args args
-		want *Helper
+		args args[string]
+		want *Helper[string]
 	}{
 		{
 			name: "success",
-			args: args{
+			args: args[string]{
 				ctx:     ctx,
 				conn:    conn,
 				options: defaultOptions,
 				handler: nil,
 			},
-			want: &Helper{nil, "changeme", []string{"changeme"}, conn},
+			want: &Helper[string]{nil, "changeme", []string{"changeme"}, conn},
 		},
 	}
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			got := NewHelperWithOptions(tt.args.conn, tt.args.options, tt.args.handler)
+			got := NewHelperWithOptions[string](tt.args.conn, tt.args.handler, tt.args.options)
 			s.Assert().True(reflect.DeepEqual(got, tt.want), "NewHelperWithOptions() = %v, want %v")
 		})
 	}
@@ -76,26 +76,26 @@ func (s *NatsHelperSuite) TestNatsNewDefaultHelper() {
 	options.Url = sUrl
 	conn, _ := nats.NewConnWithOptions(ctx, options)
 
-	type args struct {
+	type args[T any] struct {
 		ctx     context.Context
 		conn    *n.Conn
 		options *Options
-		handler function.Handler
+		handler function.Handler[T]
 	}
 	tests := []struct {
 		name string
-		args args
-		want *Helper
+		args args[string]
+		want *Helper[string]
 	}{
 		{
 			name: "success",
-			args: args{
+			args: args[string]{
 				ctx:     ctx,
 				conn:    conn,
 				options: defaultOptions,
 				handler: nil,
 			},
-			want: &Helper{nil, "changeme", []string{"changeme"}, conn},
+			want: &Helper[string]{nil, "changeme", []string{"changeme"}, conn},
 		},
 	}
 	for _, tt := range tests {

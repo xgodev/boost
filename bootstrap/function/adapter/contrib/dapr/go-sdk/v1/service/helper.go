@@ -62,13 +62,13 @@ func (h *Helper[T]) eventHandler(ctx context.Context, topicEvent *common.TopicEv
 
 	data, err := json.Marshal(topicEvent)
 	if err != nil {
-		return false, errors.Errorf("error parsing CloudEvent: %w", err)
+		return false, errors.Wrap(err, errors.New("error parsing CloudEvent"))
 	}
 
 	in := event.New()
 	err = json.Unmarshal(data, &in)
 	if err != nil {
-		return false, errors.Errorf("could set data: %w", err)
+		return false, errors.Wrap(err, errors.New("could set data"))
 	}
 
 	logger.Tracef("dapr - event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", topicEvent.PubsubName, topicEvent.Topic, topicEvent.ID, topicEvent.Data)
