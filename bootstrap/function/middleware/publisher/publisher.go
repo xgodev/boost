@@ -7,24 +7,24 @@ import (
 	"github.com/xgodev/boost/wrapper/publisher"
 )
 
-type Publisher struct {
+type Publisher[T any] struct {
 	publisher *publisher.Publisher
 	options   *Options
 }
 
-func (c *Publisher) Exec(ctx *middleware.AnyErrorContext[any], exec middleware.AnyErrorExecFunc[any], fallbackFunc middleware.AnyErrorReturnFunc[any]) (any, error) {
+func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
 	e, err := ctx.Next(exec, fallbackFunc)
-	if err == nil && e != nil {
+	if err == nil && &e != nil {
 
 		var events []*event.Event
 
-		switch r := e.(type) {
+		switch r := any(e).(type) {
 		case []*event.Event:
 			events = r
 		case *event.Event:
 			events = []*event.Event{r}
 		default:
-			return nil, errors.Errorf("unsupported handler type")
+			return e, errors.Errorf("unsupported handler type")
 		}
 
 		for _, ev := range events {
@@ -33,14 +33,19 @@ func (c *Publisher) Exec(ctx *middleware.AnyErrorContext[any], exec middleware.A
 			}
 		}
 
-		err = c.publisher.Publish(ctx.GetContext(), events)
-		if err != nil {
-			return nil, err
-		}
+		return e, c.publisher.Publish(ctx.GetContext(), events)
 	}
 	return e, err
 }
 
-func New(publisher *publisher.Publisher, options *Options) middleware.AnyErrorMiddleware[any] {
-	return &Publisher{publisher: publisher, options: options}
+func NewAnyErrorMiddleware[T any](publisher *publisher.Publisher) (middleware.AnyErrorMiddleware[T], error) {
+	opts, err := NewOptions()
+	if err != nil {
+		return nil, err
+	}
+	return NewAnyErrorMiddlewareWithOptions[T](publisher, opts), nil
+}
+
+func NewAnyErrorMiddlewareWithOptions[T any](publisher *publisher.Publisher, options *Options) middleware.AnyErrorMiddleware[T] {
+	return &Publisher[T]{publisher: publisher, options: options}
 }

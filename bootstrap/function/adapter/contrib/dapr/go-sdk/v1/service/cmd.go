@@ -7,14 +7,14 @@ import (
 )
 
 // New returns CmdFunc for cloudevents command.
-func New(service common.Service) function.CmdFunc {
-	return func(fn function.Handler) *co.Command {
+func New[T any](service common.Service) function.CmdFunc[T] {
+	return func(fn function.Handler[T]) *co.Command {
 		return &co.Command{
 			Use:   "dapr",
 			Short: "dapr",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				helper := NewHelper(service, fn)
+				helper := NewHelper[T](service, fn)
 				helper.Start()
 				return nil
 			},

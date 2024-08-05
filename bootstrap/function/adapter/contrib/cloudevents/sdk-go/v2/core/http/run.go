@@ -12,7 +12,7 @@ import (
 // Plugin defines a function to process plugin.
 type Plugin func(context.Context, []cehttp.Option) []cehttp.Option
 
-func Run(fn function.Handler, opts []client.Option, plugins ...Plugin) (err error) {
+func Run[T any](fn function.Handler[T], opts []client.Option, plugins ...Plugin) (err error) {
 
 	ctx := context.Background()
 

@@ -13,16 +13,16 @@ import (
 )
 
 // Helper assists in creating event handlers.
-type Helper struct {
-	handler       function.Handler
+type Helper[T any] struct {
+	handler       function.Handler[T]
 	subscriptions []common.Subscription
 	service       common.Service
 }
 
 // NewHelperWithOptions returns a new Helper with options.
-func NewHelperWithOptions(service common.Service, handler function.Handler, options *Options) *Helper {
+func NewHelperWithOptions[T any](service common.Service, handler function.Handler[T], options *Options) *Helper[T] {
 
-	return &Helper{
+	return &Helper[T]{
 		handler:       handler,
 		subscriptions: options.Subscriptions,
 		service:       service,
@@ -30,7 +30,7 @@ func NewHelperWithOptions(service common.Service, handler function.Handler, opti
 }
 
 // NewHelper returns a new Helper with default options.
-func NewHelper(service common.Service, handler function.Handler) *Helper {
+func NewHelper[T any](service common.Service, handler function.Handler[T]) *Helper[T] {
 
 	opt, err := DefaultOptions()
 	if err != nil {
@@ -40,7 +40,7 @@ func NewHelper(service common.Service, handler function.Handler) *Helper {
 	return NewHelperWithOptions(service, handler, opt)
 }
 
-func (h *Helper) Start() {
+func (h *Helper[T]) Start() {
 
 	for _, sub := range h.subscriptions {
 		if err := h.service.AddTopicEventHandler(&sub, h.eventHandler); err != nil {
@@ -56,7 +56,7 @@ func (h *Helper) Start() {
 
 }
 
-func (h *Helper) eventHandler(ctx context.Context, topicEvent *common.TopicEvent) (retry bool, err error) {
+func (h *Helper[T]) eventHandler(ctx context.Context, topicEvent *common.TopicEvent) (retry bool, err error) {
 
 	logger := log.FromContext(ctx)
 
@@ -73,13 +73,9 @@ func (h *Helper) eventHandler(ctx context.Context, topicEvent *common.TopicEvent
 
 	logger.Tracef("dapr - event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", topicEvent.PubsubName, topicEvent.Topic, topicEvent.ID, topicEvent.Data)
 
-	responseEvent, err := h.handler(ctx, in)
+	_, err = h.handler(ctx, in)
 	if err != nil {
 		return false, err
-	}
-
-	if responseEvent != nil {
-		logger.Tracef("response event - ID: %s, Data: %s", responseEvent.ID(), responseEvent.Data())
 	}
 
 	return false, nil

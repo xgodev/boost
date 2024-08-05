@@ -10,25 +10,25 @@ import (
 )
 
 // CmdFunc defines a function that return a command.
-type CmdFunc func(fn interface{}) *co.Command
+type CmdFunc[T any] func(fn Handler[T]) *co.Command
 
-type Function struct {
-	middlewares []middleware.AnyErrorMiddleware[any]
+type Function[T any] struct {
+	middlewares []middleware.AnyErrorMiddleware[T]
 }
 
-func New(m ...middleware.AnyErrorMiddleware[any]) *Function {
-	return &Function{middlewares: m}
+func New[T any](m ...middleware.AnyErrorMiddleware[T]) *Function[T] {
+	return &Function[T]{middlewares: m}
 }
 
-func (f *Function) Run(ctx context.Context, fn Handler, c ...CmdFunc) error {
+func (f *Function[T]) Run(ctx context.Context, fn Handler[T], c ...CmdFunc[T]) error {
 
 	// TODO: github.com/alecthomas/kong
 
 	var cmds []*co.Command
 
-	wrp := middleware.NewAnyErrorWrapper[any](ctx, "bootstrap", f.middlewares...)
+	wrp := middleware.NewAnyErrorWrapper[T](ctx, "bootstrap", f.middlewares...)
 	for _, v := range c {
-		cmds = append(cmds, v(Wrapper(wrp, fn)))
+		cmds = append(cmds, v(Wrapper[T](wrp, fn)))
 	}
 
 	rootCmd := &co.Command{

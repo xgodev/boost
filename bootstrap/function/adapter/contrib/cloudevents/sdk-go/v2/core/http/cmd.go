@@ -7,14 +7,14 @@ import (
 )
 
 // New returns CmdFunc for cloudevents command.
-func New(opts []client.Option, plugins ...Plugin) function.CmdFunc {
-	return func(fn function.Handler) *co.Command {
+func New[T any](opts []client.Option, plugins ...Plugin) function.CmdFunc[T] {
+	return func(fn function.Handler[T]) *co.Command {
 		return &co.Command{
 			Use:   "cloudevents_http",
 			Short: "cloudevents_http",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				return Run(fn, opts, plugins...)
+				return Run[T](fn, opts, plugins...)
 			},
 		}
 	}

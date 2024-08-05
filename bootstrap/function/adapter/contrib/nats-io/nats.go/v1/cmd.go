@@ -7,14 +7,14 @@ import (
 )
 
 // New returns CmdFunc for cloudevents command.
-func New(conn *nats.Conn) function.CmdFunc {
-	return func(fn function.Handler) *co.Command {
+func New[T any](conn *nats.Conn) function.CmdFunc[T] {
+	return func(fn function.Handler[T]) *co.Command {
 		return &co.Command{
 			Use:   "nats",
 			Short: "nats",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				helper := NewHelper(conn, fn)
+				helper := NewHelper[T](conn, fn)
 				helper.Start()
 				return nil
 			},

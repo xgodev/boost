@@ -8,11 +8,23 @@ import (
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-type Logger struct {
+type Logger[T any] struct {
 	options *Options
 }
 
-func (c *Logger) Exec(ctx *middleware.AnyErrorContext[any], exec middleware.AnyErrorExecFunc[any], fallbackFunc middleware.AnyErrorReturnFunc[any]) (any, error) {
+func NewAnyErrorMiddleware[T any]() (middleware.AnyErrorMiddleware[T], error) {
+	opts, err := NewOptions()
+	if err != nil {
+		return nil, err
+	}
+	return NewAnyErrorMiddlewareWithOptions[T](opts), nil
+}
+
+func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErrorMiddleware[T] {
+	return &Logger[T]{options: options}
+}
+
+func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
 	logger := log.FromContext(ctx.GetContext()).WithTypeOf(*c)
 	lm := c.logger(logger)
 
@@ -22,17 +34,17 @@ func (c *Logger) Exec(ctx *middleware.AnyErrorContext[any], exec middleware.AnyE
 		return e, err
 	}
 
-	if e != nil {
+	if &e != nil {
 
 		var events []*event.Event
 
-		switch r := e.(type) {
+		switch r := any(e).(type) {
 		case []*event.Event:
 			events = r
 		case *event.Event:
 			events = []*event.Event{r}
 		default:
-			return nil, errors.Errorf("unsupported handler type")
+			return e, errors.Errorf("unsupported handler type")
 		}
 
 		for _, ev := range events {
@@ -49,11 +61,7 @@ func (c *Logger) Exec(ctx *middleware.AnyErrorContext[any], exec middleware.AnyE
 	return e, err
 }
 
-func New(options *Options) middleware.AnyErrorMiddleware[any] {
-	return &Logger{options: options}
-}
-
-func (c *Logger) logger(logger log.Logger) func(format string, args ...interface{}) {
+func (c *Logger[T]) logger(logger log.Logger) func(format string, args ...interface{}) {
 
 	var method func(format string, args ...interface{})
 
