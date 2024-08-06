@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/model/errors"
@@ -60,17 +59,19 @@ func (h *Helper[T]) eventHandler(ctx context.Context, topicEvent *common.TopicEv
 
 	logger := log.FromContext(ctx)
 
-	data, err := json.Marshal(topicEvent)
-	if err != nil {
-		return false, errors.Wrap(err, errors.New("error parsing CloudEvent"))
-	}
-
 	in := event.New()
-	err = json.Unmarshal(data, &in)
+	in.SetSubject(topicEvent.Subject)
+	in.SetSource(topicEvent.Source)
+	in.SetSpecVersion(topicEvent.SpecVersion)
+	for key, value := range topicEvent.Metadata {
+		in.SetExtension(key, value)
+	}
+	in.SetType(topicEvent.Type)
+	err = in.SetData(topicEvent.DataContentType, topicEvent.Data)
 	if err != nil {
 		return false, errors.Wrap(err, errors.New("could set data"))
 	}
-
+	
 	logger.Tracef("dapr - event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", topicEvent.PubsubName, topicEvent.Topic, topicEvent.ID, topicEvent.Data)
 
 	_, err = h.handler(ctx, in)
