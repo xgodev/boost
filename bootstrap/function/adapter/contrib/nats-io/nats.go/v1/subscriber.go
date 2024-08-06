@@ -12,17 +12,17 @@ import (
 )
 
 // Subscriber represents a subscriber listener.
-type Subscriber struct {
+type Subscriber[T any] struct {
 	q       *nats.Conn
-	handler function.Handler
+	handler function.Handler[T]
 	subject string
 	queue   string
 }
 
 // NewSubscriber returns a subscriber listener.
-func NewSubscriber(q *nats.Conn, handler function.Handler, subject string,
-	queue string) *Subscriber {
-	return &Subscriber{
+func NewSubscriber[T any](q *nats.Conn, handler function.Handler[T], subject string,
+	queue string) *Subscriber[T] {
+	return &Subscriber[T]{
 		q:       q,
 		handler: handler,
 		subject: subject,
@@ -31,11 +31,11 @@ func NewSubscriber(q *nats.Conn, handler function.Handler, subject string,
 }
 
 // Subscribe subscribes to a particular subject in the listening subscriber's queue.
-func (l *Subscriber) Subscribe(ctx context.Context) (*nats.Subscription, error) {
+func (l *Subscriber[T]) Subscribe(ctx context.Context) (*nats.Subscription, error) {
 	return l.q.QueueSubscribe(l.subject, l.queue, l.h)
 }
 
-func (l *Subscriber) h(msg *nats.Msg) {
+func (l *Subscriber[T]) h(msg *nats.Msg) {
 
 	logger := log.WithTypeOf(*l).
 		WithField("subject", l.subject).

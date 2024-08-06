@@ -2,9 +2,11 @@ package pubsub
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
+	"time"
 
 	"cloud.google.com/go/pubsub"
 	v2 "github.com/cloudevents/sdk-go/v2"
@@ -49,26 +51,54 @@ func (p *client) send(ctx context.Context, events []*v2.Event) (err error) {
 
 	for _, e := range events {
 
-		event := e
+		out := e
 
 		g.Go(func() (err error) {
 
-			var rawMessage []byte
+			var data map[string]interface{}
+			if err := out.DataAs(&data); err != nil {
+				return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
+			}
 
-			rawMessage, err = event.MarshalJSON()
+			var rawMessage []byte
+			rawMessage, err = json.Marshal(data)
 			if err != nil {
 				return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
 			}
 
-			message := &pubsub.Message{
-				Data: rawMessage,
+			attrs := map[string]string{
+				"ce_specversion": out.SpecVersion(),
+				"ce_id":          out.ID(),
+				"ce_source":      out.Source(),
+				"ce_type":        out.Type(),
+				"content-type":   out.DataContentType(),
+				"ce_time":        out.Time().String(),
+				"ce_path":        "/",
+				"ce_subject":     out.Subject(),
 			}
 
-			topic := p.client.Topic(event.Subject())
+			// TODO: adds ordering
+			/*
+				pk, err := p.partitionKey(out)
+				if err != nil {
+					return errors.Wrap(err, errors.Internalf("unable to gets partition key"))
+				}
+			*/
+
+			message := &pubsub.Message{
+				ID:              out.ID(),
+				Data:            rawMessage,
+				Attributes:      attrs,
+				PublishTime:     time.Now(),
+				DeliveryAttempt: nil,
+				// OrderingKey:     pk,
+			}
+
+			topic := p.client.Topic(out.Subject())
 			defer topic.Stop()
 
-			logger.WithField("subject", event.Subject()).
-				WithField("id", event.ID()).
+			logger.WithField("subject", out.Subject()).
+				WithField("id", out.ID()).
 				Info(string(rawMessage))
 
 			err = try.Do(func(attempt int) (bool, error) {
@@ -87,4 +117,18 @@ func (p *client) send(ctx context.Context, events []*v2.Event) (err error) {
 	}
 
 	return g.Wait()
+}
+
+func (p *client) partitionKey(out *v2.Event) (string, error) {
+
+	var pk string
+	exts := out.Extensions()
+
+	if key, ok := exts["key"]; ok {
+		pk = key.(string)
+	} else {
+		pk = out.ID()
+	}
+
+	return pk, nil
 }
