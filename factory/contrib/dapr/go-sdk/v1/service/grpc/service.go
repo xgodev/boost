@@ -27,7 +27,7 @@ func NewServiceWithOptions(ctx context.Context, o *Options) (common.Service, err
 		return nil, err
 	}
 
-	logger.Infof("Created dapr http service on address %v", o.Address)
+	logger.Infof("Created dapr grpc service on address %v", o.Address)
 
 	return s, nil
 }

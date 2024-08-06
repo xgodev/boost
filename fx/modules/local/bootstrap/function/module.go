@@ -2,7 +2,6 @@ package function
 
 import (
 	"context"
-	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/extra/middleware"
 	fxcontext "github.com/xgodev/boost/fx/modules/core/context"
@@ -15,26 +14,26 @@ const (
 	BSFunctionMiddlewaresGroupKey = "boostrap.function.middlewares"
 )
 
-type params struct {
+type params[T any] struct {
 	fx.In
-	Adapters    []function.CmdFunc                            `group:"boostrap.function.adapters"`
-	Middlewares []middleware.AnyErrorMiddleware[*event.Event] `group:"boostrap.function.middlewares"`
+	Adapters    []function.CmdFunc[T]              `group:"boostrap.function.adapters"`
+	Middlewares []middleware.AnyErrorMiddleware[T] `group:"boostrap.function.middlewares"`
 }
 
 var once sync.Once
 
-func Module() fx.Option {
+func Module[T any]() fx.Option {
 	options := fx.Options()
 
 	once.Do(func() {
 		options = fx.Options(
 			fxcontext.Module(),
 			fx.Provide(
-				func(ctx context.Context, p params) *function.Function {
-					return function.New(p.Middlewares...)
+				func(ctx context.Context, p params[T]) *function.Function[T] {
+					return function.New[T](p.Middlewares...)
 				}),
 			fx.Invoke(
-				func(ctx context.Context, p params, hdl function.Handler, fn *function.Function) error {
+				func(ctx context.Context, p params[T], hdl function.Handler[T], fn *function.Function[T]) error {
 					return fn.Run(ctx, hdl, p.Adapters...)
 				},
 			),

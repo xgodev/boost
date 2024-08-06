@@ -9,7 +9,7 @@ import (
 
 var once sync.Once
 
-func Module() fx.Option {
+func Module[T any]() fx.Option {
 	options := fx.Options()
 	if !IsEnabled() {
 		return options
@@ -21,7 +21,7 @@ func Module() fx.Option {
 			fx.Provide(
 				fx.Annotated{
 					Group:  function.BSFunctionMiddlewaresGroupKey,
-					Target: logger.New,
+					Target: logger.NewAnyErrorMiddlewareWithOptions[T],
 				},
 			),
 		)
