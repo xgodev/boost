@@ -79,7 +79,10 @@ func main() {
 		panic(err)
 	}
 
-	fn := function.New[*cloudevents.Event](pmi, lmi)
+	fn, err := function.New[*cloudevents.Event](pmi, lmi)
+	if err != nil {
+		panic(err)
+	}
 
 	err = fn.Run(ctx, UniqueHandler, anats.New[*cloudevents.Event](conn))
 	if err != nil {

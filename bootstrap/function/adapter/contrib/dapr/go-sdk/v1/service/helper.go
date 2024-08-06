@@ -71,7 +71,7 @@ func (h *Helper[T]) eventHandler(ctx context.Context, topicEvent *common.TopicEv
 	if err != nil {
 		return false, errors.Wrap(err, errors.New("could set data"))
 	}
-	
+
 	logger.Tracef("dapr - event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", topicEvent.PubsubName, topicEvent.Topic, topicEvent.ID, topicEvent.Data)
 
 	_, err = h.handler(ctx, in)

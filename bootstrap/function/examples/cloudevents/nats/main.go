@@ -48,7 +48,10 @@ func main() {
 		panic(err)
 	}
 
-	fn := function.New[*cloudevents.Event](pmi, lmi)
+	fn, err := function.New[*cloudevents.Event](pmi, lmi)
+	if err != nil {
+		panic(err)
+	}
 
 	conn, err := nats.NewConn(ctx)
 	if err != nil {

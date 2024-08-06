@@ -2,8 +2,10 @@ package function
 
 import (
 	"context"
+	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/factory/contrib/spf13/cobra/v1"
+	"github.com/xgodev/boost/model/errors"
 	"os"
 
 	co "github.com/spf13/cobra"
@@ -16,8 +18,17 @@ type Function[T any] struct {
 	middlewares []middleware.AnyErrorMiddleware[T]
 }
 
-func New[T any](m ...middleware.AnyErrorMiddleware[T]) *Function[T] {
-	return &Function[T]{middlewares: m}
+func New[T any](m ...middleware.AnyErrorMiddleware[T]) (*Function[T], error) {
+	var e T
+
+	switch any(e).(type) {
+	case []*event.Event, *event.Event:
+		// Tipo válido
+	default:
+		return nil, errors.New("unsupported handler type")
+	}
+
+	return &Function[T]{middlewares: m}, nil
 }
 
 func (f *Function[T]) Run(ctx context.Context, fn Handler[T], c ...CmdFunc[T]) error {
