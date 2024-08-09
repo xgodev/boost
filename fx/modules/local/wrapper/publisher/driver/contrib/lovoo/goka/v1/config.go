@@ -1,4 +1,4 @@
-package nats
+package goka
 
 import (
 	"github.com/xgodev/boost/fx/modules/local/wrapper/publisher/driver"

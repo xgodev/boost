@@ -1,4 +1,4 @@
-package nats
+package goka
 
 import (
 	fxgoka "github.com/xgodev/boost/fx/modules/contrib/lovoo/goka/v1"
