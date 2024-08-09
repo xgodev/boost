@@ -27,19 +27,25 @@ func NewWithConfigPath(ctx context.Context, producer *kafka.Producer, path strin
 }
 
 // NewWithOptions returns connection with options.
-func NewWithOptions(ctx context.Context, producer *kafka.Producer, o *Options) publisher.Driver {
-	return &client{producer: producer, options: o}
+func NewWithOptions(ctx context.Context, producer *kafka.Producer, options *Options) publisher.Driver {
+
+	if options != nil && options.Log.Enabled {
+		logger := NewLogger(producer, options.Log.Level)
+		logger.Start()
+	}
+
+	return &client{producer: producer, options: options}
 }
 
 // New returns connection with default options.
 func New(ctx context.Context, producer *kafka.Producer) (publisher.Driver, error) {
 
-	o, err := NewOptions()
+	options, err := NewOptions()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewWithOptions(ctx, producer, o), nil
+	return NewWithOptions(ctx, producer, options), nil
 }
 
 // Publish publishes an event slice.
