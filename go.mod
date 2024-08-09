@@ -23,6 +23,7 @@ require (
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.15.2
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
+	github.com/confluentinc/confluent-kafka-go/v2 v2.2.0
 	github.com/coocood/freecache v1.2.4
 	github.com/dapr/go-sdk v1.10.1
 	github.com/dubonzi/otelresty v1.3.0
