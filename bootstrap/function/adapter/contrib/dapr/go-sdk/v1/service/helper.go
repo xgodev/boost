@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/model/errors"
@@ -49,10 +50,60 @@ func (h *Helper[T]) Start() {
 		log.Debugf("Added topic subscription: %v", sub)
 	}
 
+	if err := h.service.AddServiceInvocationHandler("/events", h.serviceHandler); err != nil {
+		log.Fatalf("error adding service invocation handler: %v", err)
+	}
+
 	if err := h.service.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("error listenning: %v", err)
 	}
 
+}
+
+func (h *Helper[T]) serviceHandler(ctx context.Context, inv *common.InvocationEvent) (out *common.Content, err error) {
+	logger := log.FromContext(ctx)
+	if inv == nil {
+		err = errors.New("nil inv parameter")
+		return
+	}
+	logger.Tracef(
+		"echo - ContentType:%s, Verb:%s, QueryString:%s, %s",
+		inv.ContentType, inv.Verb, inv.QueryString, inv.Data,
+	)
+
+	in := event.New()
+	in.SetSubject("changeme")     // TODO: set subject
+	in.SetSource("changeme")      // TODO: set source
+	in.SetSpecVersion("changeme") // TODO: set spec version
+	//for key, value := range topicEvent.Metadata {
+	//	in.SetExtension(key, value)
+	//}
+	//in.SetType(topicEvent.Type)
+	err = in.SetData("", inv.Data)
+	if err != nil {
+		return nil, errors.Wrap(err, errors.New("could set data"))
+	}
+
+	ev, err := h.handler(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+
+	var data []byte
+
+	switch x := any(ev).(type) {
+	case []*event.Event, *event.Event:
+		data, err = json.Marshal(x)
+	default:
+		return nil, errors.New("unsupported handler type")
+	}
+
+	out = &common.Content{
+		Data:        data,
+		ContentType: "application/json",
+		//DataTypeURL: inv.DataTypeURL,
+	}
+	return
 }
 
 func (h *Helper[T]) eventHandler(ctx context.Context, topicEvent *common.TopicEvent) (retry bool, err error) {
