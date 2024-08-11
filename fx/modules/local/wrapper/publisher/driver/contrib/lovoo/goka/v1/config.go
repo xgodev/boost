@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	Root    = driver.Root + ".goka"
+	Root    = driver.Root + ".kafka_goka"
 	enabled = Root + ".enabled"
 )
 
