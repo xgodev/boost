@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	Root    = driver.Root + ".confluent"
+	Root    = driver.Root + ".kafka_confluent"
 	enabled = Root + ".enabled"
 )
 

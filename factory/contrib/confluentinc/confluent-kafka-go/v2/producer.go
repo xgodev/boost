@@ -17,7 +17,12 @@ func NewProducerWithConfigPath(ctx context.Context, path string) (*kafka.Produce
 // NewProducerWithOptions returns connection with options.
 func NewProducerWithOptions(ctx context.Context, o *Options) (*kafka.Producer, error) {
 
-	p, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": o.Brokers})
+	p, err := kafka.NewProducer(
+		&kafka.ConfigMap{
+			// https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
+			"bootstrap.servers": o.Brokers,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -25,3 +25,19 @@ func ProducerModule() fx.Option {
 
 	return options
 }
+
+// ConsumerModule fx module for kafka connection.
+func ConsumerModule() fx.Option {
+	options := fx.Options()
+
+	once.Do(func() {
+		options = fx.Options(
+			contextfx.Module(),
+			fx.Provide(
+				confluent.NewConsumer,
+			),
+		)
+	})
+
+	return options
+}
