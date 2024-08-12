@@ -8,6 +8,7 @@ import (
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
+	"golang.org/x/sync/errgroup"
 	"time"
 )
 
@@ -53,26 +54,48 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 	logger := log.FromContext(ctx).WithTypeOf(*p)
 
-	logger.Tracef("publishing to kafka")
+	logger.Tracef("publishing to kafka %d events", len(outs))
+
+	deliveryChan := make(chan kafka.Event, len(outs))
+	var g errgroup.Group
 
 	for _, out := range outs {
 
-		logger = logger.
-			WithField("subject", out.Subject()).
-			WithField("id", out.ID())
+		out := out
+		g.Go(func() error {
+			logger := logger.WithField("subject", out.Subject()).WithField("id", out.ID())
 
-		msg, err := p.convert(ctx, out)
-		if err != nil {
-			return err
-		}
+			msg, err := p.convert(ctx, out)
+			if err != nil {
+				return err
+			}
 
-		if err := p.producer.Produce(msg, nil); err != nil {
-			return errors.Wrap(err, errors.Internalf("unable to publish to kafka"))
-		}
+			if err := p.producer.Produce(msg, deliveryChan); err != nil {
+				return errors.Wrap(err, errors.Internalf("unable to publish to kafka"))
+			}
+
+			logger.Debugf("message produced, awaiting delivery confirmation")
+			return nil
+		})
 
 	}
 
-	return nil
+	go func() {
+		err = g.Wait()
+		close(deliveryChan)
+	}()
+
+	for e := range deliveryChan {
+		m := e.(*kafka.Message)
+
+		if m.TopicPartition.Error != nil {
+			return errors.Wrap(m.TopicPartition.Error, errors.Internalf("delivery failed"))
+		}
+
+		logger.Infof("message delivered to %s [%d] at offset %v", *m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
+	}
+
+	return err
 }
 
 func (p *client) convert(ctx context.Context, out *v2.Event) (*kafka.Message, error) {
