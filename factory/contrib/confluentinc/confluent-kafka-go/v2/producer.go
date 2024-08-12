@@ -20,7 +20,10 @@ func NewProducerWithOptions(ctx context.Context, o *Options) (*kafka.Producer, e
 	p, err := kafka.NewProducer(
 		&kafka.ConfigMap{
 			// https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md
-			"bootstrap.servers": o.Brokers,
+			"bootstrap.servers":  o.Brokers,
+			"batch.num.messages": o.Producer.Batch.NumMessages,
+			"batch.size":         o.Producer.Batch.Size,
+			"acks":               o.Acks,
 		},
 	)
 	if err != nil {

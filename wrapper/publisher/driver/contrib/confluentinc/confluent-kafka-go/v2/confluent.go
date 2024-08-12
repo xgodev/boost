@@ -61,52 +61,62 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 			WithField("subject", out.Subject()).
 			WithField("id", out.ID())
 
-		var data map[string]interface{}
-		if err := out.DataAs(&data); err != nil {
-			return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
-		}
-
-		var rawMessage []byte
-		rawMessage, err = json.Marshal(data)
+		msg, err := p.convert(ctx, out)
 		if err != nil {
-			return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
+			return err
 		}
 
-		pk, err := p.partitionKey(out)
-		if err != nil {
-			return errors.Wrap(err, errors.Internalf("unable to gets partition key"))
-		}
-
-		headers := []kafka.Header{
-			{Key: "content-type", Value: []byte(out.DataContentType())},
-			{Key: "ce_specversion", Value: []byte(out.SpecVersion())},
-			{Key: "ce_id", Value: []byte(out.ID())},
-			{Key: "ce_source", Value: []byte(out.Source())},
-			{Key: "ce_type", Value: []byte(out.Type())},
-			{Key: "ce_time", Value: []byte(out.Time().String())},
-			{Key: "ce_path", Value: []byte("/")},
-			{Key: "ce_subject", Value: []byte(out.Subject())},
-		}
-
-		topic := out.Subject()
-
-		err = p.producer.Produce(&kafka.Message{
-			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Value:          rawMessage,
-			Key:            []byte(pk),
-			Headers:        headers,
-			Timestamp:      time.Now(),
-		}, nil)
-
-		if err != nil {
+		if err := p.producer.Produce(msg, nil); err != nil {
 			return errors.Wrap(err, errors.Internalf("unable to publish to kafka"))
 		}
-
-		logger.Info(string(rawMessage))
 
 	}
 
 	return nil
+}
+
+func (p *client) convert(ctx context.Context, out *v2.Event) (*kafka.Message, error) {
+	var data map[string]interface{}
+	if err := out.DataAs(&data); err != nil {
+		return nil, errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
+	}
+
+	var rawMessage []byte
+	rawMessage, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
+	}
+
+	pk, err := p.partitionKey(out)
+	if err != nil {
+		return nil, errors.Wrap(err, errors.Internalf("unable to gets partition key"))
+	}
+
+	headers := p.headers(out)
+
+	topic := out.Subject()
+
+	return &kafka.Message{
+		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+		Value:          rawMessage,
+		Key:            []byte(pk),
+		Headers:        headers,
+		Timestamp:      time.Now(),
+	}, nil
+}
+
+func (p *client) headers(out *v2.Event) []kafka.Header {
+	headers := []kafka.Header{
+		{Key: "content-type", Value: []byte(out.DataContentType())},
+		{Key: "ce_specversion", Value: []byte(out.SpecVersion())},
+		{Key: "ce_id", Value: []byte(out.ID())},
+		{Key: "ce_source", Value: []byte(out.Source())},
+		{Key: "ce_type", Value: []byte(out.Type())},
+		{Key: "ce_time", Value: []byte(out.Time().String())},
+		{Key: "ce_path", Value: []byte("/")},
+		{Key: "ce_subject", Value: []byte(out.Subject())},
+	}
+	return headers
 }
 
 func (p *client) partitionKey(out *v2.Event) (string, error) {

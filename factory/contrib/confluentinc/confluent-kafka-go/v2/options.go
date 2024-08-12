@@ -7,6 +7,18 @@ import (
 // Options kafka connection options.
 type Options struct {
 	Brokers  string
+	Producer struct {
+		Acks    int
+		Timeout struct {
+			Request  int
+			Message  int
+			Delivery int
+		}
+		Batch struct {
+			Size        int
+			NumMessages int
+		}
+	}
 	Consumer struct {
 		Topics          []string
 		GroupId         string
