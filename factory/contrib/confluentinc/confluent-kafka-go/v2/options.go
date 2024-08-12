@@ -10,9 +10,8 @@ type Options struct {
 	Producer struct {
 		Acks    int
 		Timeout struct {
-			Request  int
-			Message  int
-			Delivery int
+			Request int
+			Message int
 		}
 		Batch struct {
 			Size        int

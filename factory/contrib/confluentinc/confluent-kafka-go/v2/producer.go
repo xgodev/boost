@@ -23,7 +23,9 @@ func NewProducerWithOptions(ctx context.Context, o *Options) (*kafka.Producer, e
 			"bootstrap.servers":  o.Brokers,
 			"batch.num.messages": o.Producer.Batch.NumMessages,
 			"batch.size":         o.Producer.Batch.Size,
-			"acks":               o.Acks,
+			"acks":               o.Producer.Acks,
+			"request.timeout.ms": o.Producer.Timeout.Request,
+			"message.timeout.ms": o.Producer.Timeout.Message,
 		},
 	)
 	if err != nil {
