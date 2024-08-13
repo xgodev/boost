@@ -56,12 +56,30 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 	logger.Tracef("publishing to kafka %d events", len(outs))
 
+	go func() {
+		for e := range producer.Events() {
+
+			switch ev := e.(type) {
+			case *kafka.Message:
+				if ev.TopicPartition.Error != nil {
+					err = errors.Wrap(ev.TopicPartition.Error, errors.Internalf("delivery failed"))
+				}
+				p.log("message delivered to %s [%d] at offset %v", *ev.TopicPartition.Topic, ev.TopicPartition.Partition, ev.TopicPartition.Offset)
+			case kafka.Error:
+				log.Errorf("Error: %v\n", ev)
+			default:
+				log.Warnf("Ignored event: %s\n", ev)
+			}
+
+		}
+	}()
+
 	for _, out := range outs {
 
 		if out.ID() == "" {
 			out.SetID(uuid.NewString())
 		}
-		
+
 		msg, err := p.convert(ctx, out)
 		if err != nil {
 			return err
@@ -74,20 +92,8 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 		p.log("message produced, awaiting delivery confirmation")
 	}
 
-	for e := range producer.Events() {
-
-		switch ev := e.(type) {
-		case *kafka.Message:
-			if ev.TopicPartition.Error != nil {
-				return errors.Wrap(ev.TopicPartition.Error, errors.Internalf("delivery failed"))
-			}
-			p.log("message delivered to %s [%d] at offset %v", *ev.TopicPartition.Topic, ev.TopicPartition.Partition, ev.TopicPartition.Offset)
-		case kafka.Error:
-			log.Errorf("Error: %v\n", ev)
-		default:
-			log.Warnf("Ignored event: %s\n", ev)
-		}
-
+	for producer.Flush(10000) > 0 {
+		p.log("Still waiting to flush outstanding messages")
 	}
 
 	return err
