@@ -33,7 +33,7 @@ func NewWithOptions(ctx context.Context, options *Options) publisher.Driver {
 }
 
 // New returns connection with default options.
-func New(ctx context.Context, producer *kafka.Producer) (publisher.Driver, error) {
+func New(ctx context.Context) (publisher.Driver, error) {
 
 	options, err := NewOptions()
 	if err != nil {
