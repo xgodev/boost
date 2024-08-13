@@ -35,6 +35,9 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 	case []*event.Event:
 		events = r
 	case *event.Event:
+		if r != nil {
+			events = []*event.Event{r}
+		}
 		events = []*event.Event{r}
 	default:
 		return e, err

@@ -20,7 +20,9 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 	case []*event.Event:
 		events = r
 	case *event.Event:
-		events = []*event.Event{r}
+		if r != nil {
+			events = []*event.Event{r}
+		}
 	default:
 		return e, err
 	}
