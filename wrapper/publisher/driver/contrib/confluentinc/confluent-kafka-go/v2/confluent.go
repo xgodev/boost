@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/xgodev/boost/factory/contrib/confluentinc/confluent-kafka-go/v2"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
@@ -14,28 +15,21 @@ import (
 
 // client represents a Kafka client that implements.
 type client struct {
-	producer *kafka.Producer
-	options  *Options
+	options *Options
 }
 
 // NewWithConfigPath returns connection with options from config path.
-func NewWithConfigPath(ctx context.Context, producer *kafka.Producer, path string) (publisher.Driver, error) {
+func NewWithConfigPath(ctx context.Context, path string) (publisher.Driver, error) {
 	options, err := NewOptionsWithPath(path)
 	if err != nil {
 		return nil, err
 	}
-	return NewWithOptions(ctx, producer, options), nil
+	return NewWithOptions(ctx, options), nil
 }
 
 // NewWithOptions returns connection with options.
-func NewWithOptions(ctx context.Context, producer *kafka.Producer, options *Options) publisher.Driver {
-
-	if options != nil && options.Log.Enabled {
-		logger := NewLogger(producer, options.Log.Level)
-		logger.Start()
-	}
-
-	return &client{producer: producer, options: options}
+func NewWithOptions(ctx context.Context, options *Options) publisher.Driver {
+	return &client{options: options}
 }
 
 // New returns connection with default options.
@@ -46,11 +40,16 @@ func New(ctx context.Context, producer *kafka.Producer) (publisher.Driver, error
 		return nil, err
 	}
 
-	return NewWithOptions(ctx, producer, options), nil
+	return NewWithOptions(ctx, options), nil
 }
 
 // Publish publishes an event slice.
 func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
+
+	producer, err := confluent.NewProducer(ctx)
+	if err != nil {
+		return err
+	}
 
 	logger := log.FromContext(ctx).WithTypeOf(*p)
 
@@ -70,7 +69,7 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 				return err
 			}
 
-			if err := p.producer.Produce(msg, deliveryChan); err != nil {
+			if err := producer.Produce(msg, deliveryChan); err != nil {
 				return errors.Wrap(err, errors.Internalf("unable to publish to kafka"))
 			}
 
@@ -82,17 +81,24 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 	go func() {
 		err = g.Wait()
+		producer.Flush(15 * 1000)
 		close(deliveryChan)
 	}()
 
 	for e := range deliveryChan {
-		m := e.(*kafka.Message)
 
-		if m.TopicPartition.Error != nil {
-			return errors.Wrap(m.TopicPartition.Error, errors.Internalf("delivery failed"))
+		switch ev := e.(type) {
+		case *kafka.Message:
+			if ev.TopicPartition.Error != nil {
+				return errors.Wrap(ev.TopicPartition.Error, errors.Internalf("delivery failed"))
+			}
+			logger.Debugf("message delivered to %s [%d] at offset %v", *ev.TopicPartition.Topic, ev.TopicPartition.Partition, ev.TopicPartition.Offset)
+		case kafka.Error:
+			log.Errorf("Error: %v\n", ev)
+		default:
+			log.Warnf("Ignored event: %s\n", ev)
 		}
 
-		logger.Infof("message delivered to %s [%d] at offset %v", *m.TopicPartition.Topic, m.TopicPartition.Partition, m.TopicPartition.Offset)
 	}
 
 	return err
