@@ -29,33 +29,27 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 	lm := c.logger(logger)
 
 	e, err := ctx.Next(exec, fallbackFunc)
-	if err != nil {
-		logger.Errorf(errors.ErrorStack(err))
+	var events []*event.Event
+
+	switch r := any(e).(type) {
+	case []*event.Event:
+		events = r
+	case *event.Event:
+		events = []*event.Event{r}
+	default:
 		return e, err
 	}
 
-	if &e != nil {
-
-		var events []*event.Event
-
-		switch r := any(e).(type) {
-		case []*event.Event:
-			events = r
-		case *event.Event:
-			events = []*event.Event{r}
-		default:
-			return e, errors.Errorf("unsupported handler type")
+	for _, ev := range events {
+		if ev == nil {
+			continue
 		}
-
-		for _, ev := range events {
-			j, err := json.Marshal(ev)
-			if err != nil {
-				logger.Error(errors.ErrorStack(err))
-			} else {
-				lm(string(j))
-			}
+		j, err := json.Marshal(ev)
+		if err != nil {
+			logger.Error(errors.ErrorStack(err))
+		} else {
+			lm(string(j))
 		}
-
 	}
 
 	return e, err
