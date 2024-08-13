@@ -7,8 +7,7 @@ import (
 // Options kafka connection options.
 type Options struct {
 	Log struct {
-		Enabled bool
-		Level   string
+		Level string
 	}
 }
 

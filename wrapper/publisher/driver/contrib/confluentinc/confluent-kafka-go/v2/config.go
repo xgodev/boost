@@ -7,7 +7,6 @@ import (
 const (
 	root    = "boost.wrapper.driver.kafka_confluent"
 	logRoot = ".log"
-	enabled = logRoot + ".enabled"
 	level   = logRoot + ".level"
 )
 
@@ -16,6 +15,5 @@ func init() {
 }
 
 func ConfigAdd(path string) {
-	config.Add(path+enabled, true, "enables logging")
 	config.Add(path+level, "DEBUG", "defines log level")
 }
