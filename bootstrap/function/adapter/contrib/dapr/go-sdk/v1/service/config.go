@@ -9,7 +9,7 @@ import (
 const (
 	root          = adapter.Root + ".dapr.service"
 	subs          = root + ".subscriptions"
-	srvInv        = root + ".service.invocation"
+	srvInv        = root + ".invocation"
 	srvInvEnabled = srvInv + ".enabled"
 	srvInvName    = srvInv + ".name"
 )
