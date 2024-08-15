@@ -2,8 +2,8 @@ package nats
 
 import (
 	"github.com/xgodev/boost/bootstrap/function/adapter/contrib/nats-io/nats.go/v1"
-	fxnats "github.com/xgodev/boost/fx/modules/contrib/nats-io/nats.go/v1"
-	"github.com/xgodev/boost/fx/modules/local/bootstrap/function"
+	"github.com/xgodev/boost/fx/modules/bootstrap/function"
+	fxnats "github.com/xgodev/boost/fx/modules/factory/contrib/nats-io/nats.go/v1"
 	"go.uber.org/fx"
 	"sync"
 )

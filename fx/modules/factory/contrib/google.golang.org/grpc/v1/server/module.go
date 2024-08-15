@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
-	"github.com/xgodev/boost/fx/modules/local/extra/multiserver"
+	"github.com/xgodev/boost/fx/modules/extra/multiserver"
 	"sync"
 
 	s "github.com/xgodev/boost/extra/multiserver"

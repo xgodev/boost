@@ -1,7 +1,7 @@
 package pubsub
 
 import (
-	"github.com/xgodev/boost/fx/modules/local/wrapper/publisher/driver"
+	"github.com/xgodev/boost/fx/modules/wrapper/publisher/driver"
 	"github.com/xgodev/boost/wrapper/config"
 )
 

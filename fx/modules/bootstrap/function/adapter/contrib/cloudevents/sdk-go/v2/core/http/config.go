@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/xgodev/boost/fx/modules/local/bootstrap/function/adapter/contrib/cloudevents"
+	"github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/cloudevents"
 	"github.com/xgodev/boost/wrapper/config"
 )
 

@@ -1,7 +1,7 @@
 package goka
 
 import (
-	fxgoka "github.com/xgodev/boost/fx/modules/contrib/lovoo/goka/v1"
+	fxgoka "github.com/xgodev/boost/fx/modules/factory/contrib/lovoo/goka/v1"
 	"github.com/xgodev/boost/wrapper/publisher/driver/contrib/lovoo/goka/v1"
 	"go.uber.org/fx"
 	"sync"

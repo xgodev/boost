@@ -1,7 +1,7 @@
 package driver
 
 import (
-	"github.com/xgodev/boost/fx/modules/local/wrapper/publisher"
+	"github.com/xgodev/boost/fx/modules/wrapper/publisher"
 )
 
 const (

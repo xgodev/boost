@@ -2,7 +2,7 @@ package logger
 
 import (
 	"github.com/xgodev/boost/bootstrap/function/middleware/logger"
-	"github.com/xgodev/boost/fx/modules/local/bootstrap/function"
+	"github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"go.uber.org/fx"
 	"sync"
 )

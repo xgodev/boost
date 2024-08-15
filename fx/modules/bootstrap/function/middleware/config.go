@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/xgodev/boost/fx/modules/local/bootstrap/function"
+	"github.com/xgodev/boost/fx/modules/bootstrap/function"
 )
 
 const (

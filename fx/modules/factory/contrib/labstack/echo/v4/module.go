@@ -8,7 +8,7 @@ import (
 	server "github.com/xgodev/boost/extra/multiserver"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
-	"github.com/xgodev/boost/fx/modules/local/extra/multiserver"
+	"github.com/xgodev/boost/fx/modules/extra/multiserver"
 	"go.uber.org/fx"
 )
 
