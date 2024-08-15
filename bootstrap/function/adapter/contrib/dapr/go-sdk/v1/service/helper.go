@@ -10,6 +10,7 @@ import (
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"net/http"
+	"time"
 
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -135,7 +136,27 @@ func (h *Helper[T]) eventHandler(ctx context.Context, topicEvent *common.TopicEv
 	in.SetSource(topicEvent.Source)
 	in.SetSpecVersion(topicEvent.SpecVersion)
 	for key, value := range topicEvent.Metadata {
-		in.SetExtension(key, value)
+		switch key {
+		case "ce_subject":
+			in.SetSubject(value)
+		case "ce_source":
+			in.SetSource(value)
+		case "ce_specversion":
+			in.SetSpecVersion(value)
+		case "ce_type":
+			in.SetType(value)
+		case "ce_id":
+			in.SetID(value)
+		case "ce_time":
+			if parsedTime, err := time.Parse("2006-01-02 15:04:05 -0700 MST", value); err != nil {
+				in.SetTime(parsedTime)
+			}
+		case "content-type":
+			in.SetDataContentType(value)
+		default:
+			in.SetExtension(key, value)
+		}
+
 	}
 	in.SetType(topicEvent.Type)
 	err = in.SetData(topicEvent.DataContentType, topicEvent.Data)
