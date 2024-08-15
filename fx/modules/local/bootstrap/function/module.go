@@ -29,7 +29,7 @@ func Module[T any]() fx.Option {
 		options = fx.Options(
 			fxcontext.Module(),
 			fx.Provide(
-				func(ctx context.Context, p params[T]) *function.Function[T] {
+				func(ctx context.Context, p params[T]) (*function.Function[T], error) {
 					return function.New[T](p.Middlewares...)
 				}),
 			fx.Invoke(

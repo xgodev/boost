@@ -1,4 +1,4 @@
-package nats
+package goka
 
 import (
 	"github.com/xgodev/boost/fx/modules/local/wrapper/publisher/driver"
@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	Root    = driver.Root + ".goka"
+	Root    = driver.Root + ".kafka_goka"
 	enabled = Root + ".enabled"
 )
 
