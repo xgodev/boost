@@ -1,15 +1,15 @@
-package goka
+package health
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
 )
 
-// Options kafka connection options.
+// Options represents a health plugin for redis options.
 type Options struct {
-	Brokers []string
-	Log     struct {
-		Level string
-	}
+	Name        string
+	Enabled     bool
+	Description string
+	Required    bool
 }
 
 // NewOptions returns options from config file or environment vars.

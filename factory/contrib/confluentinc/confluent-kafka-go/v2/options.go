@@ -1,4 +1,4 @@
-package goka
+package confluent
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
@@ -6,9 +6,22 @@ import (
 
 // Options kafka connection options.
 type Options struct {
-	Brokers []string
-	Log     struct {
-		Level string
+	Brokers  string
+	Producer struct {
+		Acks    int
+		Timeout struct {
+			Request int
+			Message int
+		}
+		Batch struct {
+			Size        int
+			NumMessages int
+		}
+	}
+	Consumer struct {
+		Topics          []string
+		GroupId         string
+		AutoOffsetReset string
 	}
 }
 

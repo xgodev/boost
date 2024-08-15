@@ -1,4 +1,4 @@
-package goka
+package confluent
 
 import (
 	"github.com/xgodev/boost/fx/modules/local/wrapper/publisher/driver"
@@ -6,12 +6,12 @@ import (
 )
 
 const (
-	Root    = driver.Root + ".kafka_goka"
+	Root    = driver.Root + ".kafka_confluent"
 	enabled = Root + ".enabled"
 )
 
 func init() {
-	config.Add(enabled, true, "enables/disables the goka driver")
+	config.Add(enabled, true, "enables/disables the confluent driver")
 }
 
 func IsEnabled() bool {

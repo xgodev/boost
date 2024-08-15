@@ -1,8 +1,7 @@
-package goka
+package confluent
 
 import (
-	fxgoka "github.com/xgodev/boost/fx/modules/contrib/lovoo/goka/v1"
-	"github.com/xgodev/boost/wrapper/publisher/driver/contrib/lovoo/goka/v1"
+	"github.com/xgodev/boost/wrapper/publisher/driver/contrib/confluentinc/confluent-kafka-go/v2"
 	"go.uber.org/fx"
 	"sync"
 )
@@ -17,9 +16,9 @@ func Module() fx.Option {
 
 	once.Do(func() {
 		options = fx.Options(
-			fxgoka.Module(),
+			// fxconfluent.ProducerModule(),
 			fx.Provide(
-				goka.New,
+				confluent.New,
 			),
 		)
 	})
