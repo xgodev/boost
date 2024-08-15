@@ -2,8 +2,8 @@ package publisher
 
 import (
 	p "github.com/xgodev/boost/bootstrap/function/middleware/publisher"
-	"github.com/xgodev/boost/fx/modules/local/bootstrap/function"
-	"github.com/xgodev/boost/fx/modules/local/wrapper/publisher"
+	"github.com/xgodev/boost/fx/modules/bootstrap/function"
+	"github.com/xgodev/boost/fx/modules/wrapper/publisher"
 	"go.uber.org/fx"
 	"sync"
 )

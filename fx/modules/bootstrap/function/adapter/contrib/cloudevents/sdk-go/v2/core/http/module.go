@@ -5,7 +5,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/client"
 	fn "github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http"
-	"github.com/xgodev/boost/fx/modules/local/bootstrap/function"
+	"github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"go.uber.org/fx"
 	"sync"
 )

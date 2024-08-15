@@ -2,8 +2,8 @@ package confluent
 
 import (
 	"github.com/xgodev/boost/bootstrap/function/adapter/contrib/confluentinc/confluent-kafka-go/v2"
-	fxconfluent "github.com/xgodev/boost/fx/modules/contrib/confluentinc/confluent-kafka-go/v2"
-	"github.com/xgodev/boost/fx/modules/local/bootstrap/function"
+	"github.com/xgodev/boost/fx/modules/bootstrap/function"
+	fxconfluent "github.com/xgodev/boost/fx/modules/factory/contrib/confluentinc/confluent-kafka-go/v2"
 	"go.uber.org/fx"
 	"sync"
 )

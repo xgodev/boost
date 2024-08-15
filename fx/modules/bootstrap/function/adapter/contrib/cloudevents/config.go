@@ -1,7 +1,7 @@
 package cloudevents
 
 import (
-	"github.com/xgodev/boost/fx/modules/local/bootstrap/function/adapter"
+	"github.com/xgodev/boost/fx/modules/bootstrap/function/adapter"
 )
 
 const (
