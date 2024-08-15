@@ -32,8 +32,8 @@ func NewWithOptions(ctx context.Context, o *Options) (common.Service, error) {
 	return s, nil
 }
 
-// NewService returns a cache.
-func NewService(ctx context.Context) (common.Service, error) {
+// New returns a cache.
+func New(ctx context.Context) (common.Service, error) {
 
 	o, err := NewOptions()
 	if err != nil {
