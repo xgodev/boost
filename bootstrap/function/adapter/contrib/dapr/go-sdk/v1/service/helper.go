@@ -16,18 +16,18 @@ import (
 
 // Helper assists in creating event handlers.
 type Helper[T any] struct {
-	handler       function.Handler[T]
-	subscriptions []common.Subscription
-	service       common.Service
+	handler function.Handler[T]
+	options *Options
+	service common.Service
 }
 
 // NewHelperWithOptions returns a new Helper with options.
 func NewHelperWithOptions[T any](service common.Service, handler function.Handler[T], options *Options) *Helper[T] {
 
 	return &Helper[T]{
-		handler:       handler,
-		subscriptions: options.Subscriptions,
-		service:       service,
+		handler: handler,
+		options: options,
+		service: service,
 	}
 }
 
@@ -44,7 +44,7 @@ func NewHelper[T any](service common.Service, handler function.Handler[T]) *Help
 
 func (h *Helper[T]) Start() {
 
-	for _, sub := range h.subscriptions {
+	for _, sub := range h.options.Subscriptions {
 		if err := h.service.AddTopicEventHandler(&sub, h.eventHandler); err != nil {
 			log.Fatalf("error adding topic subscription: %v", err)
 		}
@@ -52,8 +52,10 @@ func (h *Helper[T]) Start() {
 		log.Debugf("Added topic subscription: %v", sub)
 	}
 
-	if err := h.service.AddServiceInvocationHandler("invoke", h.serviceHandler); err != nil {
-		log.Fatalf("error adding service invocation handler: %v", err)
+	if h.options.Service.Invocation.Enabled {
+		if err := h.service.AddServiceInvocationHandler(h.options.Service.Invocation.Name, h.serviceHandler); err != nil {
+			log.Fatalf("error adding service invocation handler: %v", err)
+		}
 	}
 
 	if err := h.service.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {

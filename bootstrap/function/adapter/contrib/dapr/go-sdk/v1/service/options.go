@@ -8,6 +8,12 @@ import (
 // Options can be used to create customized handler.
 type Options struct {
 	Subscriptions []common.Subscription
+	Service       struct {
+		Invocation struct {
+			Enabled bool
+			Name    string
+		}
+	}
 }
 
 // DefaultOptions returns options based in config.
