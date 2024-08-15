@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"encoding/json"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/binding/format"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/model/errors"
@@ -50,7 +52,7 @@ func (h *Helper[T]) Start() {
 		log.Debugf("Added topic subscription: %v", sub)
 	}
 
-	if err := h.service.AddServiceInvocationHandler("/events", h.serviceHandler); err != nil {
+	if err := h.service.AddServiceInvocationHandler("invoke", h.serviceHandler); err != nil {
 		log.Fatalf("error adding service invocation handler: %v", err)
 	}
 
@@ -63,25 +65,29 @@ func (h *Helper[T]) Start() {
 func (h *Helper[T]) serviceHandler(ctx context.Context, inv *common.InvocationEvent) (out *common.Content, err error) {
 	logger := log.FromContext(ctx)
 	if inv == nil {
-		err = errors.New("nil inv parameter")
+		err = errors.Wrap(err, errors.New("nil inv parameter"))
 		return
 	}
 	logger.Tracef(
-		"echo - ContentType:%s, Verb:%s, QueryString:%s, %s",
+		"ContentType: %s, Verb: %s, QueryString: %s, %s",
 		inv.ContentType, inv.Verb, inv.QueryString, inv.Data,
 	)
 
-	in := event.New()
-	in.SetSubject("changeme")     // TODO: set subject
-	in.SetSource("changeme")      // TODO: set source
-	in.SetSpecVersion("changeme") // TODO: set spec version
-	//for key, value := range topicEvent.Metadata {
-	//	in.SetExtension(key, value)
-	//}
-	//in.SetType(topicEvent.Type)
-	err = in.SetData("", inv.Data)
-	if err != nil {
-		return nil, errors.Wrap(err, errors.New("could set data"))
+	if inv.ContentType != event.ApplicationCloudEventsJSON {
+		err = errors.Wrap(err, errors.NotSupportedf("unsupported content type"))
+		return
+	}
+
+	in := cloudevents.NewEvent()
+
+	if err = format.JSON.Unmarshal(inv.Data, &in); err != nil {
+		err = errors.Wrap(err, errors.NotValidf("failed to unmarshal data"))
+		return
+	}
+
+	if err = in.Validate(); err != nil {
+		err = errors.Wrap(err, errors.NotValidf("failed to validate data"))
+		return
 	}
 
 	ev, err := h.handler(ctx, in)
@@ -90,17 +96,27 @@ func (h *Helper[T]) serviceHandler(ctx context.Context, inv *common.InvocationEv
 	}
 
 	var data []byte
-
+	var contentType string
 	switch x := any(ev).(type) {
-	case []*event.Event, *event.Event:
-		data, err = json.Marshal(x)
+	case []*event.Event:
+		if data, err = json.Marshal(x); err != nil {
+			err = errors.Wrap(err, errors.NotValidf("failed to marshal data"))
+			return
+		}
+		contentType = event.ApplicationCloudEventsBatchJSON
+	case *event.Event:
+		if data, err = json.Marshal(x); err != nil {
+			err = errors.Wrap(err, errors.NotValidf("failed to marshal data"))
+			return
+		}
+		contentType = event.ApplicationCloudEventsJSON
 	default:
-		return nil, errors.New("unsupported handler type")
+		return nil, errors.Wrap(err, errors.NotSupportedf("unsupported handler type"))
 	}
 
 	out = &common.Content{
 		Data:        data,
-		ContentType: "application/json",
+		ContentType: contentType,
 		//DataTypeURL: inv.DataTypeURL,
 	}
 	return
@@ -109,6 +125,8 @@ func (h *Helper[T]) serviceHandler(ctx context.Context, inv *common.InvocationEv
 func (h *Helper[T]) eventHandler(ctx context.Context, topicEvent *common.TopicEvent) (retry bool, err error) {
 
 	logger := log.FromContext(ctx)
+
+	logger.Tracef("dapr - event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", topicEvent.PubsubName, topicEvent.Topic, topicEvent.ID, topicEvent.Data)
 
 	in := event.New()
 	in.SetSubject(topicEvent.Subject)
@@ -122,8 +140,6 @@ func (h *Helper[T]) eventHandler(ctx context.Context, topicEvent *common.TopicEv
 	if err != nil {
 		return false, errors.Wrap(err, errors.New("could set data"))
 	}
-
-	logger.Tracef("dapr - event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", topicEvent.PubsubName, topicEvent.Topic, topicEvent.ID, topicEvent.Data)
 
 	_, err = h.handler(ctx, in)
 	if err != nil {
