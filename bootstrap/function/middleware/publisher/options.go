@@ -5,7 +5,17 @@ import (
 )
 
 type Options struct {
-	Subject string
+	Subject    string
+	Deadletter struct {
+		Enabled bool
+		Subject string
+		Errors  []error
+	}
+	Retry struct {
+		Enabled bool
+		Backoff int
+		Errors  []error
+	}
 }
 
 func NewOptions() (*Options, error) {
