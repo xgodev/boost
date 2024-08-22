@@ -10,6 +10,7 @@ type Options struct {
 	Debug             bool
 	Accept            string
 	Authorization     string
+	Headers           map[string]string
 	ConnectionTimeout time.Duration
 	CloseConnection   bool
 	KeepAlive         time.Duration

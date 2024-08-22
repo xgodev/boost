@@ -4,6 +4,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
 	berrors "github.com/xgodev/boost/model/errors"
+	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
 	"reflect"
 )
@@ -14,6 +15,8 @@ type Publisher[T any] struct {
 }
 
 func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
+
+	logger := log.FromContext(ctx.GetContext())
 
 	e, err := ctx.Next(exec, fallbackFunc)
 	if &e != nil {
@@ -32,22 +35,27 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 		var deadLetterSubject string
 		var errorType string
 
-		if err != nil && c.options.Deadletter.Enabled {
+		if err != nil {
 
-			errType := reflect.TypeOf(err).Elem().Name()
+			if c.options.Deadletter.Enabled {
 
-			for _, allowedErrorType := range c.options.Deadletter.Errors {
-				if errType == allowedErrorType {
-					deadLetterSubject = c.options.Deadletter.Subject
-					errorType = errType
-					break
+				errType := reflect.TypeOf(err).Elem().Name()
+
+				for _, allowedErrorType := range c.options.Deadletter.Errors {
+					if errType == allowedErrorType {
+						logger.Tracef("Error type %s is allowed to be sent to dead letter", errType)
+						deadLetterSubject = c.options.Deadletter.Subject
+						errorType = errType
+						break
+					}
 				}
+
 			}
 
-		}
+			if deadLetterSubject == "" {
+				return e, err
+			}
 
-		if err != nil && deadLetterSubject == "" {
-			return e, err
 		}
 
 		for _, ev := range events {
@@ -60,8 +68,12 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 				ev.SetSubject(c.options.Subject)
 			}
 		}
+		
+		if errr := c.publisher.Publish(ctx.GetContext(), events); errr != nil {
+			return e, errr
+		}
 
-		return e, c.publisher.Publish(ctx.GetContext(), events)
+		return e, err
 	}
 	return e, err
 }

@@ -19,7 +19,10 @@ func (c *IgnoreErrors[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middlewa
 
 		errType := reflect.TypeOf(err).Elem().Name()
 
+		logger.Tracef("error type %s", errType)
+
 		for _, allowedErrorType := range c.options.Errors {
+
 			if errType == allowedErrorType {
 				logger.Warnf("ignoring error type %s.  %s", errType, err.Error())
 				return e, nil

@@ -10,6 +10,7 @@ const (
 	host                           = ".host"
 	debug                          = ".debug"
 	accept                         = ".accept"
+	headers                        = ".headers"
 	authorization                  = ".authorization"
 	closeConnection                = ".closeConnection"
 	connectionTimeout              = ".connectionTimeout"
@@ -37,6 +38,7 @@ func ConfigAdd(path string) {
 	config.Add(path+host, "http://localhost", "defines host request")
 	config.Add(path+debug, false, "defines debug request")
 	config.Add(path+accept, "application/json", "defines accept request")
+	config.Add(path+headers, map[string]string{}, "defines accept request")
 	config.Add(path+authorization, "", "defines authorization request")
 	config.Add(path+closeConnection, false, "defines http close connection")
 	config.Add(path+connectionTimeout, 3*time.Minute, "defines http connection timeout")

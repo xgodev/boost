@@ -72,6 +72,10 @@ func NewClientWithOptions(ctx context.Context, options *Options, plugins ...Plug
 		client.SetHeader("Authorization", options.Authorization)
 	}
 
+	for k, v := range options.Headers {
+		client.SetHeader(k, v)
+	}
+
 	for _, plugin := range plugins {
 		if err := plugin(ctx, client); err != nil {
 			panic(err)
