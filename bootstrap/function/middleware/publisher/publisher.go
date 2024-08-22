@@ -68,8 +68,12 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 				ev.SetSubject(c.options.Subject)
 			}
 		}
+		
+		if errr := c.publisher.Publish(ctx.GetContext(), events); errr != nil {
+			return e, errr
+		}
 
-		return e, c.publisher.Publish(ctx.GetContext(), events)
+		return e, err
 	}
 	return e, err
 }
