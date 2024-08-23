@@ -6,7 +6,11 @@ import (
 
 // Options kafka connection options.
 type Options struct {
-	Brokers  string
+	Brokers string
+	Log     struct {
+		Level   string
+		Enabled bool
+	}
 	Producer struct {
 		Acks    int
 		Timeout struct {
