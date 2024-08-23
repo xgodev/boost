@@ -21,17 +21,17 @@ type client struct {
 }
 
 // NewWithConfigPath returns connection with options from config path.
-func NewWithConfigPath(ctx context.Context, path string) (publisher.Driver, error) {
+func NewWithConfigPath(ctx context.Context, c *pubsub.Client, path string) (publisher.Driver, error) {
 	options, err := NewOptionsWithPath(path)
 	if err != nil {
 		return nil, err
 	}
-	return NewWithOptions(ctx, options), nil
+	return NewWithOptions(ctx, c, options), nil
 }
 
 // NewWithOptions returns connection with options.
-func NewWithOptions(ctx context.Context, options *Options) publisher.Driver {
-	return &client{options: options}
+func NewWithOptions(ctx context.Context, c *pubsub.Client, options *Options) publisher.Driver {
+	return &client{options: options, client: c}
 }
 
 // New creates a new pubsub client.
@@ -42,7 +42,7 @@ func New(ctx context.Context, c *pubsub.Client) (publisher.Driver, error) {
 		return nil, err
 	}
 
-	return NewWithOptions(ctx, options), nil
+	return NewWithOptions(ctx, c, options), nil
 }
 
 // Publish publishes an event slice.
