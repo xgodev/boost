@@ -5,7 +5,8 @@ import (
 )
 
 type Options struct {
-	Level string
+	Level      string
+	ErrorStack bool
 }
 
 func NewOptions() (*Options, error) {
