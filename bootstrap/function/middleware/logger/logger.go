@@ -2,6 +2,7 @@ package logger
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/model/errors"
@@ -49,7 +50,10 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 		}
 		j, err := json.Marshal(ev)
 		if err != nil {
-			logger.Error(errors.ErrorStack(err))
+			logger.Error(err.Error())
+			if c.options.ErrorStack {
+				fmt.Println(errors.ErrorStack(err))
+			}
 		} else {
 			lm(string(j))
 		}
