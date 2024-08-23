@@ -62,10 +62,19 @@ func NewClientWithOptions(ctx context.Context, options *Options, plugins ...Plug
 
 	client.
 		SetTransport(transport).
+		SetHeader("accept", options.Accept).
 		SetTimeout(options.RequestTimeout).
 		SetDebug(options.Debug).
 		SetBaseURL(options.Host).
 		SetCloseConnection(options.CloseConnection)
+
+	if options.Authorization != "" {
+		client.SetHeader("Authorization", options.Authorization)
+	}
+
+	for k, v := range options.Headers {
+		client.SetHeader(k, v)
+	}
 
 	for _, plugin := range plugins {
 		if err := plugin(ctx, client); err != nil {

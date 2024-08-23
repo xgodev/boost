@@ -53,7 +53,7 @@ func TestSubscriberListenerSubscribe(t *testing.T) {
 	conn, err := nats.NewConnWithOptions(context.Background(), options)
 	assert.Nil(t, err)
 
-	lis := NewSubscriber(conn, nil, "subject", "queue")
+	lis := NewSubscriber[*v2.Event](conn, nil, "subject", "queue")
 	subscribe, err := lis.Subscribe(context.Background())
 	assert.Nil(t, err)
 
