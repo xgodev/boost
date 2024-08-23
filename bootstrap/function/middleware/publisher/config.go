@@ -6,14 +6,17 @@ import (
 )
 
 const (
-	Root    = middleware.Root + ".publisher"
-	enabled = Root + ".enabled"
+	root       = middleware.Root + ".publisher"
+	subject    = root + ".subject"
+	deadletter = root + ".deadletter"
+	dlenabled  = deadletter + ".enabled"
+	dlsubject  = deadletter + ".subject"
+	dlerrors   = deadletter + ".errors"
 )
 
 func init() {
-	config.Add(enabled, true, "default cmd")
-}
-
-func IsEnabled() bool {
-	return config.Bool(enabled)
+	config.Add(subject, "changeme", "defines output subject")
+	config.Add(dlenabled, false, "enables dead letter")
+	config.Add(dlsubject, "changeme", "defines dead letter output subject")
+	config.Add(dlerrors, []string{"internal"}, "defines dead letter errors list")
 }

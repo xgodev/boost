@@ -3,13 +3,15 @@ package main
 import (
 	"context"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/google/uuid"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
 	ce "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http"
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher"
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/extra/noop"
-	"github.com/xgodev/boost/middleware/plugins/local/wrapper/log"
+	lm "github.com/xgodev/boost/bootstrap/function/middleware/logger"
+	pm "github.com/xgodev/boost/bootstrap/function/middleware/publisher"
+	"github.com/xgodev/boost/wrapper/publisher"
+	"github.com/xgodev/boost/wrapper/publisher/driver/extra/noop"
 	"os"
 )
 
@@ -34,14 +36,27 @@ func main() {
 
 	ctx := context.Background()
 
-	fn := function.New(
-		publisher.New(noop.New()),
-		log.NewAnyErrorMiddleware[*cloudevents.Event](ctx),
-	)
+	p := publisher.New(noop.New())
+	pmi, err := pm.NewAnyErrorMiddleware[*cloudevents.Event](p)
+	if err != nil {
+		panic(err)
+	}
 
-	err := fn.Run(ctx, Handle, ce.New(
-		cloudevents.WithUUIDs(),
-		cloudevents.WithTimeNow(),
+	lmi, err := lm.NewAnyErrorMiddleware[*cloudevents.Event]()
+	if err != nil {
+		panic(err)
+	}
+
+	fn, err := function.New[*cloudevents.Event](pmi, lmi)
+	if err != nil {
+		panic(err)
+	}
+
+	err = fn.Run(ctx, Handle, ce.New[*cloudevents.Event](
+		[]client.Option{
+			cloudevents.WithUUIDs(),
+			cloudevents.WithTimeNow(),
+		},
 	))
 	if err != nil {
 		panic(err)

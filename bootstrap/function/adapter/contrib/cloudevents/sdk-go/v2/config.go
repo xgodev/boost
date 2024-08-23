@@ -1,9 +1,9 @@
 package cloudevents
 
 import (
-	"github.com/xgodev/boost/bootstrap/function"
+	"github.com/xgodev/boost/bootstrap/function/adapter"
 )
 
 const (
-	Root = function.Root + ".cloudevents"
+	Root = adapter.Root + ".cloudevents"
 )
