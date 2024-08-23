@@ -16,12 +16,33 @@ import (
 
 // client represents a pubsub client.
 type client struct {
-	client *pubsub.Client
+	client  *pubsub.Client
+	options *Options
+}
+
+// NewWithConfigPath returns connection with options from config path.
+func NewWithConfigPath(ctx context.Context, path string) (publisher.Driver, error) {
+	options, err := NewOptionsWithPath(path)
+	if err != nil {
+		return nil, err
+	}
+	return NewWithOptions(ctx, options), nil
+}
+
+// NewWithOptions returns connection with options.
+func NewWithOptions(ctx context.Context, options *Options) publisher.Driver {
+	return &client{options: options}
 }
 
 // New creates a new pubsub client.
-func New(c *pubsub.Client) publisher.Driver {
-	return &client{client: c}
+func New(ctx context.Context, c *pubsub.Client) (publisher.Driver, error) {
+
+	options, err := NewOptions()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewWithOptions(ctx, options), nil
 }
 
 // Publish publishes an event slice.
