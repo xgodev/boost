@@ -351,6 +351,11 @@ func fieldsFromContext(ctx context.Context) log.Fields {
 }
 
 func mapToSlice(m log.Fields) []interface{} {
+
+	if len(m) > 50 {
+		return nil
+	}
+
 	f := make([]interface{}, 2*len(m))
 	i := 0
 	for k, v := range m {
