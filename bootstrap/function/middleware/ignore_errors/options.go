@@ -1,18 +1,11 @@
-package publisher
+package ignore_errors
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
 )
 
-type DeadletterOptions struct {
-	Enabled bool
-	Subject string
-	Errors  []string
-}
-
 type Options struct {
-	Subject    string
-	Deadletter DeadletterOptions
+	Errors []string
 }
 
 func NewOptions() (*Options, error) {
