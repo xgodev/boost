@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"github.com/xgodev/boost/factory/local/extra/middleware"
+	"github.com/xgodev/boost/factory/local/wrapper/middleware"
 	"github.com/xgodev/boost/wrapper/config"
 	"strings"
 )
