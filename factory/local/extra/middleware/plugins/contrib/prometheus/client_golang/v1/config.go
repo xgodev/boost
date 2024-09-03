@@ -4,7 +4,7 @@ import (
 	"github.com/xgodev/boost/wrapper/config"
 	"strings"
 
-	"github.com/xgodev/boost/factory/local/wrapper/middleware"
+	"github.com/xgodev/boost/factory/local/extra/middleware"
 )
 
 const (

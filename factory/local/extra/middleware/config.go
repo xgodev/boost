@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	root        = "boost.factory.local.wrapper.middleware"
+	root        = "boost.factory.local.extra.middleware"
 	PluginsRoot = root + ".plugins"
 	name        = ".name"
 )
