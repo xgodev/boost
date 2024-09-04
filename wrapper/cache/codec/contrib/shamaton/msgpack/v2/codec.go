@@ -1,6 +1,8 @@
 package msgpack
 
-import "github.com/vmihailenco/msgpack/v5"
+import (
+	"github.com/shamaton/msgpack/v2"
+)
 
 type Codec[T any] struct {
 }
