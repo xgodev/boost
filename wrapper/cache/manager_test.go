@@ -558,6 +558,353 @@ func (s *ManagerSuite) Test_manager_Codecs_Struct() {
 	}
 }
 
+func (s *ManagerSuite) Test_manager_Codecs_BigData() {
+
+	type MyStruct struct {
+		ID        string
+		CreatedAt int
+		Name      string
+	}
+
+	tt := []struct {
+		name string
+		key  string
+		data map[string][]MyStruct
+	}{
+		{
+			name: "when exists key",
+			key:  "key1",
+			data: map[string][]MyStruct{
+				"key1": {
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+					{
+						ID:        "123",
+						CreatedAt: 2,
+						Name:      "123",
+					},
+				},
+			},
+		},
+	}
+
+	fc := freecache.NewCache(10 * 1024 * 1024)
+	drv := cfreecache.New(fc, &cfreecache.Options{TTL: 1 * time.Minute})
+
+	for _, t := range tt {
+		s.Run(t.name, func() {
+
+			ctx := context.Background()
+
+			codecs := map[string]Codec[[]MyStruct]{
+				"gob":                 codec_gob.New[[]MyStruct](),
+				"msgpack_vmihailenco": codec_vmihailenco_msgpack.New[[]MyStruct](),
+				"msgpack_shamaton":    codec_shamaton_msgpack.New[[]MyStruct](),
+				"json":                codec_json.New[[]MyStruct](),
+				"goccy":               codec_goccy.New[[]MyStruct](),
+			}
+
+			// Variables to store the best results
+			var fastestCodec string
+			var smallestCodec string
+			var minTime time.Duration = time.Hour // Set to a high value initially
+			var minSize int = int(^uint(0) >> 1)  // Set to the maximum possible int value
+
+			// Map to store the time and size results of each codec
+			results := make(map[string]struct {
+				Time time.Duration
+				Size int
+			})
+
+			for key, value := range t.data {
+				for name, codec := range codecs {
+					start := time.Now()
+
+					// Encode the value
+					b, err := codec.Encode(value)
+					duration := time.Since(start)
+
+					if err != nil {
+						s.Assert().Failf(err.Error(), "error on encode codec: %s", name)
+					}
+
+					// Measure the size of the encoded result
+					size := len(b)
+
+					// Store the results for each codec
+					results[name] = struct {
+						Time time.Duration
+						Size int
+					}{
+						Time: duration,
+						Size: size,
+					}
+
+					// Track the fastest codec
+					if duration < minTime {
+						minTime = duration
+						fastestCodec = name
+					}
+
+					// Track the codec with the smallest size
+					if size < minSize {
+						minSize = size
+						smallestCodec = name
+					}
+
+					s.Assert().Nilf(drv.Set(ctx, key, b), "codec: %s", name)
+					res, err := drv.Get(ctx, key)
+					s.Assert().Nilf(err, "codec: %s", name)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+				}
+			}
+
+			// Print results for all codecs
+			fmt.Println("Codec Performance Results:")
+			for name, result := range results {
+				fmt.Printf("Codec: %s - Time: %v - Size: %d bytes\n", name, result.Time, result.Size)
+			}
+
+			// Print the fastest and most compact results
+			fmt.Printf("\nFastest codec: %s (%v)\n", fastestCodec, minTime)
+			fmt.Printf("Codec with smallest size: %s (%d bytes)\n", smallestCodec, minSize)
+
+			for name, codec := range codecs {
+				manager := NewManager[[]MyStruct]("foo", codec, drv)
+				for key, value := range t.data {
+					s.Assert().Nilf(manager.Set(ctx, key, value), "codec: %s", name)
+					res, err := drv.Get(ctx, key)
+					s.Assert().Nilf(err, "codec: %s", name)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+				}
+			}
+		})
+	}
+}
+
 func (s *ManagerSuite) Test_manager_Set() {
 
 	tt := []struct {
