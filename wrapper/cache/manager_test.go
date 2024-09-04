@@ -6,7 +6,8 @@ import (
 	"github.com/allegro/bigcache/v3"
 	codec_binary "github.com/xgodev/boost/wrapper/cache/codec/binary"
 	codec_goccy "github.com/xgodev/boost/wrapper/cache/codec/contrib/goccy/go-json/v0"
-	codec_msgpack "github.com/xgodev/boost/wrapper/cache/codec/contrib/vmihailenco/msgpack/v5"
+	codec_shamaton_msgpack "github.com/xgodev/boost/wrapper/cache/codec/contrib/shamaton/msgpack/v2"
+	codec_vmihailenco_msgpack "github.com/xgodev/boost/wrapper/cache/codec/contrib/vmihailenco/msgpack/v5"
 	codec_gob "github.com/xgodev/boost/wrapper/cache/codec/gob"
 	codec_json "github.com/xgodev/boost/wrapper/cache/codec/json"
 	codec_string "github.com/xgodev/boost/wrapper/cache/codec/string"
@@ -186,11 +187,12 @@ func (s *ManagerSuite) Test_manager_Codecs_SimpleString() {
 			ctx := context.Background()
 
 			codecs := map[string]Codec[string]{
-				"gob":     codec_gob.New[string](),
-				"msgpack": codec_msgpack.New[string](),
-				"string":  codec_string.New[string](),
-				"goccy":   codec_goccy.New[string](),
-				"json":    codec_json.New[string](),
+				"gob":                 codec_gob.New[string](),
+				"msgpack_vmihailenco": codec_vmihailenco_msgpack.New[string](),
+				"msgpack_shamaton":    codec_shamaton_msgpack.New[string](),
+				"string":              codec_string.New[string](),
+				"goccy":               codec_goccy.New[string](),
+				"json":                codec_json.New[string](),
 			}
 
 			// Variables to store the best results
@@ -309,11 +311,12 @@ func (s *ManagerSuite) Test_manager_Codecs_ByteArray() {
 
 			// Defining codecs for []byte
 			codecs := map[string]Codec[[]byte]{
-				"binary":  codec_binary.New[[]byte](),
-				"gob":     codec_gob.New[[]byte](),
-				"msgpack": codec_msgpack.New[[]byte](),
-				"goccy":   codec_goccy.New[[]byte](),
-				"json":    codec_json.New[[]byte](),
+				"binary":              codec_binary.New[[]byte](),
+				"gob":                 codec_gob.New[[]byte](),
+				"msgpack_vmihailenco": codec_vmihailenco_msgpack.New[[]byte](),
+				"msgpack_shamaton":    codec_shamaton_msgpack.New[[]byte](),
+				"goccy":               codec_goccy.New[[]byte](),
+				"json":                codec_json.New[[]byte](),
 			}
 
 			// Variables to store the best results
@@ -462,10 +465,11 @@ func (s *ManagerSuite) Test_manager_Codecs_Struct() {
 			ctx := context.Background()
 
 			codecs := map[string]Codec[Complex]{
-				"gob":     codec_gob.New[Complex](),
-				"msgpack": codec_msgpack.New[Complex](),
-				"json":    codec_json.New[Complex](),
-				"goccy":   codec_goccy.New[Complex](),
+				"gob":                 codec_gob.New[Complex](),
+				"msgpack_vmihailenco": codec_vmihailenco_msgpack.New[Complex](),
+				"msgpack_shamaton":    codec_shamaton_msgpack.New[Complex](),
+				"json":                codec_json.New[Complex](),
+				"goccy":               codec_goccy.New[Complex](),
 			}
 
 			// Variables to store the best results
