@@ -69,6 +69,7 @@ require (
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/tidwall/buntdb v1.3.1
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.3.1
+	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/wesovilabs/beyond v1.0.1
 	go.mongodb.org/mongo-driver v1.16.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.54.0
@@ -263,6 +264,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
