@@ -10,13 +10,13 @@ require (
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/aws/aws-sdk-go v1.55.5
-	github.com/aws/aws-sdk-go-v2 v1.30.4
-	github.com/aws/aws-sdk-go-v2/config v1.27.31
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.30
-	github.com/aws/aws-sdk-go-v2/service/kinesis v1.29.5
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.61.0
-	github.com/aws/aws-sdk-go-v2/service/sns v1.31.5
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.34.6
+	github.com/aws/aws-sdk-go-v2 v1.30.5
+	github.com/aws/aws-sdk-go-v2/config v1.27.32
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.31
+	github.com/aws/aws-sdk-go-v2/service/kinesis v1.29.6
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.61.1
+	github.com/aws/aws-sdk-go-v2/service/sns v1.31.6
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.34.7
 	github.com/bytedance/sonic v1.12.2
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.15.2
 	github.com/cloudevents/sdk-go/v2 v2.15.2
@@ -69,7 +69,6 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/tidwall/buntdb v1.3.1
-	github.com/tinylib/msgp v1.2.0
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.3.1
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/wesovilabs/beyond v1.0.1
@@ -94,7 +93,7 @@ require (
 	golang.org/x/net v0.28.0
 	golang.org/x/sync v0.8.0
 	golang.org/x/text v0.17.0
-	google.golang.org/api v0.195.0
+	google.golang.org/api v0.196.0
 	google.golang.org/grpc v1.66.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/DataDog/dd-trace-go.v1 v1.67.0
@@ -105,7 +104,7 @@ require (
 
 require (
 	cloud.google.com/go v0.115.1 // indirect
-	cloud.google.com/go/auth v0.9.2 // indirect
+	cloud.google.com/go/auth v0.9.3 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
 	cloud.google.com/go/iam v1.2.0 // indirect
@@ -123,22 +122,22 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/apache/arrow/go/v15 v15.0.2 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.4 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.12 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.16 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.16 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.13 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.17 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.17 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.16 // indirect
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.34.6 // indirect
-	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.33.5 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.17 // indirect
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.34.7 // indirect
+	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.33.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.3.18 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.9.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.18 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.16 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sfn v1.31.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.22.5 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.5 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.30.5 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.3.19 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.9.18 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.19 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.17 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sfn v1.31.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.22.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.30.6 // indirect
 	github.com/aws/smithy-go v1.20.4 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
@@ -262,6 +261,7 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/rtred v0.1.2 // indirect
 	github.com/tidwall/tinyqueue v0.1.1 // indirect
+	github.com/tinylib/msgp v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
