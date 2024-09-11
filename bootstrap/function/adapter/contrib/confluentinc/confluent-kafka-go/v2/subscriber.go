@@ -98,6 +98,11 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		_, err = l.handler(ctx, in)
 		if err != nil {
 			logger.Error(errors.ErrorStack(err))
+			continue
+		}
+
+		if _, err := l.consumer.CommitMessage(msg); err != nil {
+			logger.Errorf("Failed to commit message: %v", err)
 		}
 
 	}
