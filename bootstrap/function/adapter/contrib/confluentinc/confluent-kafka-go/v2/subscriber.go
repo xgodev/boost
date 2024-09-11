@@ -14,19 +14,21 @@ import (
 
 // Subscriber represents a subscriber listener.
 type Subscriber[T any] struct {
-	consumer *kafka.Consumer
-	handler  function.Handler[T]
-	topics   []string
-	timeOut  time.Duration
+	consumer     *kafka.Consumer
+	handler      function.Handler[T]
+	topics       []string
+	timeOut      time.Duration
+	manualCommit bool
 }
 
 // NewSubscriber returns a subscriber listener.
-func NewSubscriber[T any](consumer *kafka.Consumer, handler function.Handler[T], topics []string, timeOut time.Duration) *Subscriber[T] {
+func NewSubscriber[T any](consumer *kafka.Consumer, handler function.Handler[T], options *Options) *Subscriber[T] {
 	return &Subscriber[T]{
-		consumer: consumer,
-		handler:  handler,
-		topics:   topics,
-		timeOut:  timeOut,
+		consumer:     consumer,
+		handler:      handler,
+		topics:       options.Topics,
+		timeOut:      options.TimeOut,
+		manualCommit: options.ManualCommit,
 	}
 }
 
@@ -98,6 +100,15 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		_, err = l.handler(ctx, in)
 		if err != nil {
 			logger.Error(errors.ErrorStack(err))
+			continue
+		}
+
+		if l.manualCommit {
+
+			if _, err := l.consumer.CommitMessage(msg); err != nil {
+				logger.Errorf("Failed to commit message: %v", err)
+			}
+
 		}
 
 	}

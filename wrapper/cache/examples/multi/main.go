@@ -8,7 +8,7 @@ import (
 
 	"github.com/coocood/freecache"
 	"github.com/xgodev/boost/wrapper/cache"
-	"github.com/xgodev/boost/wrapper/cache/codec/gob"
+	string_codec "github.com/xgodev/boost/wrapper/cache/codec/string"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
@@ -18,7 +18,7 @@ func main() {
 
 	zerolog.NewLogger(zerolog.WithLevel("TRACE"))
 
-	codec := gob.New[string]()
+	codec := string_codec.New[string]()
 
 	fc1 := freecache.NewCache(1)
 	fc2 := freecache.NewCache(1)

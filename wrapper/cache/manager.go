@@ -47,10 +47,11 @@ func (m *Manager[T]) Get(ctx context.Context, key string) (ok bool, data T, err 
 	}
 
 	if len(b) > 0 {
-		if err = m.codec.Decode(b, &data); err != nil {
+		d := data
+		if err = m.codec.Decode(b, &d); err != nil {
 			return false, data, err
 		}
-		return true, data, err
+		return true, d, err
 	}
 
 	return false, data, err
