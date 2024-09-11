@@ -42,15 +42,14 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		return err
 	}
 
-	run := true
-	for run {
+	for {
 		msg, err := l.consumer.ReadMessage(l.timeOut)
 		if err != nil {
 			if err.(kafka.Error).IsTimeout() {
 				logger.Warnf("Consumer error: %v (%v)", err, msg)
 				continue
 			}
-			return err
+			continue
 		}
 
 		logger.Tracef("Message on %s: %s", msg.TopicPartition, string(msg.Value))
@@ -104,21 +103,23 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 			logger.Warnf("could not set data from kafka record. %s", err.Error())
 		}
 
-		_, err = l.handler(ctx, in)
-		if err != nil {
-			logger.Error(errors.ErrorStack(err))
-			continue
-		}
-
-		if l.manualCommit {
-
-			if _, err := l.consumer.CommitMessage(msg); err != nil {
-				logger.Errorf("Failed to commit message: %v", err)
+		for {
+			_, err = l.handler(ctx, in)
+			if err != nil {
+				logger.Error(errors.ErrorStack(err))
+				continue
 			}
 
+			if l.manualCommit {
+
+				if _, err := l.consumer.CommitMessage(msg); err != nil {
+					logger.Errorf("Failed to commit message: %v", err)
+				}
+
+			}
+
+			break
 		}
 
 	}
-
-	return nil
 }
