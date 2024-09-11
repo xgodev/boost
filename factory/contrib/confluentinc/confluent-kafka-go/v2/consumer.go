@@ -22,6 +22,7 @@ func NewConsumerWithOptions(ctx context.Context, o *Options) (*kafka.Consumer, e
 		"group.id":           o.Consumer.GroupId,
 		"auto.offset.reset":  o.Consumer.AutoOffsetReset,
 		"enable.auto.commit": o.Consumer.EnableAutoCommit,
+		"security.protocol":  o.Consumer.Protocol,
 	})
 	if err != nil {
 		return nil, err
