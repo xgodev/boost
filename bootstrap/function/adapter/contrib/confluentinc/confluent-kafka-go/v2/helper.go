@@ -5,15 +5,13 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/wrapper/log"
-	"time"
 )
 
 // Helper assists in creating event handlers.
 type Helper[T any] struct {
 	handler  function.Handler[T]
-	timeOut  time.Duration
-	topics   []string
 	consumer *kafka.Consumer
+	options  *Options
 }
 
 // NewHelperWithOptions returns a new Helper with options.
@@ -21,8 +19,7 @@ func NewHelperWithOptions[T any](consumer *kafka.Consumer, handler function.Hand
 
 	return &Helper[T]{
 		handler:  handler,
-		timeOut:  options.TimeOut,
-		topics:   options.Topics,
+		options:  options,
 		consumer: consumer,
 	}
 }
@@ -40,7 +37,7 @@ func NewHelper[T any](consumer *kafka.Consumer, handler function.Handler[T]) *He
 
 func (h *Helper[T]) Start() {
 
-	subscriber := NewSubscriber[T](h.consumer, h.handler, h.topics, h.timeOut)
+	subscriber := NewSubscriber[T](h.consumer, h.handler, h.options)
 	err := subscriber.Subscribe(context.Background())
 	if err != nil {
 		log.Error(err)

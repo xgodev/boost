@@ -1,15 +1,10 @@
-package confluent
+package pubsub
 
-import (
-	"github.com/xgodev/boost/wrapper/config"
-	"time"
-)
+import "github.com/xgodev/boost/wrapper/config"
 
 // Options can be used to create customized handler.
 type Options struct {
-	Topics       []string
-	TimeOut      time.Duration
-	ManualCommit bool
+	Topics []string
 }
 
 // DefaultOptions returns options based in config.

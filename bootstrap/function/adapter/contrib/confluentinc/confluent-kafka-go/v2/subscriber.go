@@ -2,6 +2,7 @@ package confluent
 
 import (
 	"context"
+	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/google/uuid"
 	"github.com/xgodev/boost/bootstrap/function"
@@ -14,19 +15,21 @@ import (
 
 // Subscriber represents a subscriber listener.
 type Subscriber[T any] struct {
-	consumer *kafka.Consumer
-	handler  function.Handler[T]
-	topics   []string
-	timeOut  time.Duration
+	consumer     *kafka.Consumer
+	handler      function.Handler[T]
+	topics       []string
+	timeOut      time.Duration
+	manualCommit bool
 }
 
 // NewSubscriber returns a subscriber listener.
-func NewSubscriber[T any](consumer *kafka.Consumer, handler function.Handler[T], topics []string, timeOut time.Duration) *Subscriber[T] {
+func NewSubscriber[T any](consumer *kafka.Consumer, handler function.Handler[T], options *Options) *Subscriber[T] {
 	return &Subscriber[T]{
-		consumer: consumer,
-		handler:  handler,
-		topics:   topics,
-		timeOut:  timeOut,
+		consumer:     consumer,
+		handler:      handler,
+		topics:       options.Topics,
+		timeOut:      options.TimeOut,
+		manualCommit: options.ManualCommit,
 	}
 }
 
@@ -72,14 +75,18 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 					ce = true
 				case "ce_source":
 					in.SetSource(string(h.Value))
+					ce = true
 				case "ce_type":
 					in.SetType(string(h.Value))
+					ce = true
 				case "ce_time":
 					if t, err := time.Parse(time.RFC3339, string(h.Value)); err != nil {
 						in.SetTime(t)
 					}
+					ce = true
 				case "ce_subject":
 					in.SetSubject(string(h.Value))
+					ce = true
 				default:
 					in.SetExtension(h.Key, string(h.Value))
 				}
@@ -88,7 +95,9 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 
 		if !ce {
 			in.SetID(uuid.NewString())
-			// TODO: adds another default values
+			in.SetSource(fmt.Sprintf("kafka://%s/%v", *msg.TopicPartition.Topic, msg.TopicPartition.Partition))
+			in.SetType("kafka.message")
+			in.SetTime(time.Now())
 		}
 
 		if err := in.SetData(contentType, msg.Value); err != nil {
@@ -98,6 +107,15 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		_, err = l.handler(ctx, in)
 		if err != nil {
 			logger.Error(errors.ErrorStack(err))
+			continue
+		}
+
+		if l.manualCommit {
+
+			if _, err := l.consumer.CommitMessage(msg); err != nil {
+				logger.Errorf("Failed to commit message: %v", err)
+			}
+
 		}
 
 	}
