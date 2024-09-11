@@ -33,8 +33,8 @@ func NewHelper[T any](client *pubsub.Client, handler function.Handler[T]) *Helpe
 }
 
 // Start subscribes to the topics and processes messages concurrently.
-func (h *Helper[T]) Start(ctx context.Context) {
-	logger := log.FromContext(ctx).WithTypeOf(*h)
+func (h *Helper[T]) Start() {
+	logger := log.WithTypeOf(*h)
 	var wg sync.WaitGroup
 
 	// Subscribe to each topic in a goroutine
@@ -47,7 +47,7 @@ func (h *Helper[T]) Start(ctx context.Context) {
 			subscriber := NewSubscriber[T](h.client, h.handler, topic)
 
 			// Subscribe to the topic
-			if err := subscriber.Subscribe(ctx); err != nil {
+			if err := subscriber.Subscribe(context.Background()); err != nil {
 				logger.Errorf("Failed to subscribe to topic %s: %v", topic, err)
 			} else {
 				logger.Infof("Successfully subscribed to topic %s", topic)
