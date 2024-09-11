@@ -1,11 +1,11 @@
-package confluent
+package pubsub
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (
-	root    = "boost.wrapper.publisher.driver.kafka_confluent"
+	root    = "boost.wrapper.publisher.driver.pubsub"
 	logRoot = ".log"
 	level   = logRoot + ".level"
 )

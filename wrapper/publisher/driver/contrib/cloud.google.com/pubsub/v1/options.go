@@ -1,24 +1,14 @@
-package resty
+package pubsub
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
-	"time"
 )
 
-// Options represents resty client options.
+// Options kafka connection options.
 type Options struct {
-	Debug             bool
-	Accept            string
-	Authorization     string
-	Headers           map[string]string
-	QueryParams       map[string]string
-	ConnectionTimeout time.Duration
-	CloseConnection   bool
-	KeepAlive         time.Duration
-	RequestTimeout    time.Duration
-	FallbackDelay     time.Duration
-	Transport         OptionsTransport
-	Host              string
+	Log struct {
+		Level string
+	}
 }
 
 // NewOptions returns options from config file or environment vars.

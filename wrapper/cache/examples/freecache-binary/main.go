@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/xgodev/boost/wrapper/cache/codec/contrib/vmihailenco/msgpack/v5"
 	cfreecache "github.com/xgodev/boost/wrapper/cache/driver/contrib/coocood/freecache/v1"
 	"time"
 
 	"github.com/coocood/freecache"
 	"github.com/xgodev/boost/wrapper/cache"
-	"github.com/xgodev/boost/wrapper/cache/codec/binary"
 )
 
 type packet struct {
@@ -26,7 +26,7 @@ func main() {
 		TTL: 10 * time.Minute,
 	})
 
-	codec := binary.New[packet]()
+	codec := msgpack.New[packet]()
 
 	manager := cache.NewManager[packet]("foo", codec, drv)
 
