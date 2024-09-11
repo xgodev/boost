@@ -7,19 +7,12 @@ import (
 
 // Options can be used to create customized handler.
 type Options struct {
-	Topics  []string
-	TimeOut time.Duration
+	Topics       []string
+	TimeOut      time.Duration
+	ManualCommit bool
 }
 
 // DefaultOptions returns options based in config.
 func DefaultOptions() (*Options, error) {
-
-	o := &Options{}
-
-	err := config.UnmarshalWithPath(root, o)
-	if err != nil {
-		return nil, err
-	}
-
-	return o, nil
+	return config.NewOptionsWithPath[Options](root)
 }
