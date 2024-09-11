@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	root    = "boost.wrapper.driver.pubsub"
+	root    = "boost.wrapper.publisher.driver.pubsub"
 	logRoot = ".log"
 	level   = logRoot + ".level"
 )
