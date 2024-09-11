@@ -27,6 +27,7 @@ type Options struct {
 		GroupId          string
 		AutoOffsetReset  string
 		EnableAutoCommit bool
+		Protocol         string
 	}
 }
 
