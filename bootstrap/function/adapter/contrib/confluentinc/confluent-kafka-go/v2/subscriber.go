@@ -2,6 +2,7 @@ package confluent
 
 import (
 	"context"
+	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/google/uuid"
 	"github.com/xgodev/boost/bootstrap/function"
@@ -74,14 +75,18 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 					ce = true
 				case "ce_source":
 					in.SetSource(string(h.Value))
+					ce = true
 				case "ce_type":
 					in.SetType(string(h.Value))
+					ce = true
 				case "ce_time":
 					if t, err := time.Parse(time.RFC3339, string(h.Value)); err != nil {
 						in.SetTime(t)
 					}
+					ce = true
 				case "ce_subject":
 					in.SetSubject(string(h.Value))
+					ce = true
 				default:
 					in.SetExtension(h.Key, string(h.Value))
 				}
@@ -90,7 +95,9 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 
 		if !ce {
 			in.SetID(uuid.NewString())
-			// TODO: adds another default values
+			in.SetSource(fmt.Sprintf("kafka://%s/%v", *msg.TopicPartition.Topic, msg.TopicPartition.Partition))
+			in.SetType("kafka.message")
+			in.SetTime(time.Now())
 		}
 
 		if err := in.SetData(contentType, msg.Value); err != nil {
