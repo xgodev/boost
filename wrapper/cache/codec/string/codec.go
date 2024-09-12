@@ -8,8 +8,7 @@ func (c *Codec[T]) Encode(data T) (b []byte, err error) {
 }
 
 func (c *Codec[T]) Decode(b []byte, data *string) (err error) {
-	d := string(b)
-	data = &d
+	*data = string(b)
 	return nil
 }
 
