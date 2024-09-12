@@ -39,7 +39,8 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		return err
 	}
 
-	partitions := make(map[int32]chan *kafka.Message)
+	// Update the map to use a string key composed of topic + partition
+	partitions := make(map[string]chan *kafka.Message)
 
 	// Initialize semaphore if needed
 	var sem *semaphore.Weighted
@@ -58,21 +59,23 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 			continue
 		}
 
-		partition := msg.TopicPartition.Partition
+		// Create a unique key using topic and partition
+		topicPartitionKey := fmt.Sprintf("%s-%d", *msg.TopicPartition.Topic, msg.TopicPartition.Partition)
 
-		if _, exists := partitions[partition]; !exists {
-			partitions[partition] = make(chan *kafka.Message, 100)
+		// Check if a channel exists for the topic and partition
+		if _, exists := partitions[topicPartitionKey]; !exists {
+			partitions[topicPartitionKey] = make(chan *kafka.Message, 100)
 
 			// Process messages from each partition asynchronously if semaphore is used
-			go l.processPartitionMessages(ctx, partitions[partition], partition, sem)
+			go l.processPartitionMessages(ctx, partitions[topicPartitionKey], topicPartitionKey, sem)
 		}
 
-		partitions[partition] <- msg
+		partitions[topicPartitionKey] <- msg
 	}
 }
 
-// processPartitionMessages processes messages for a specific partition
-func (l *Subscriber[T]) processPartitionMessages(ctx context.Context, messages chan *kafka.Message, partition int32, sem *semaphore.Weighted) {
+// processPartitionMessages processes messages for a specific topic and partition
+func (l *Subscriber[T]) processPartitionMessages(ctx context.Context, messages chan *kafka.Message, topicPartitionKey string, sem *semaphore.Weighted) {
 	logger := log.FromContext(ctx)
 
 	for msg := range messages {
@@ -86,17 +89,17 @@ func (l *Subscriber[T]) processPartitionMessages(ctx context.Context, messages c
 			// Process the message asynchronously
 			go func(msg *kafka.Message) {
 				defer sem.Release(1)
-				l.processMessage(ctx, msg, partition)
+				l.processMessage(ctx, msg, topicPartitionKey)
 			}(msg)
 		} else {
 			// Process message synchronously
-			l.processMessage(ctx, msg, partition)
+			l.processMessage(ctx, msg, topicPartitionKey)
 		}
 	}
 }
 
 // processMessage handles the actual message processing and retries
-func (l *Subscriber[T]) processMessage(ctx context.Context, msg *kafka.Message, partition int32) {
+func (l *Subscriber[T]) processMessage(ctx context.Context, msg *kafka.Message, topicPartitionKey string) {
 	logger := log.FromContext(ctx)
 	retryCount := 0
 
@@ -151,12 +154,12 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *kafka.Message, 
 
 		_, err := l.handler(ctx, in)
 		if err != nil {
-			logger.Errorf("Handler error in partition %d: %v", partition, err)
+			logger.Errorf("Handler error in topic-partition %s: %v", topicPartitionKey, err)
 			retryCount++
 
 			// Check if retry limit is reached
 			if l.options.RetryLimit != -1 && retryCount >= l.options.RetryLimit {
-				logger.Errorf("Max retry limit reached for partition %d. Message will not be retried.", partition)
+				logger.Errorf("Max retry limit reached for topic-partition %s. Message will not be retried.", topicPartitionKey)
 				break
 			}
 
@@ -171,12 +174,12 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *kafka.Message, 
 		// Commit the message if manual commit is enabled
 		if l.options.ManualCommit {
 			if _, err := l.consumer.CommitMessage(msg); err != nil {
-				logger.Errorf("Failed to commit message from partition %d: %v", partition, err)
+				logger.Errorf("Failed to commit message from topic-partition %s: %v", topicPartitionKey, err)
 				continue // Retry on commit failure
 			}
 		}
 
-		logger.Infof("Message from partition %d successfully processed and committed: %s", partition, string(msg.Value))
+		logger.Infof("Message from topic-partition %s successfully processed and committed: %s", topicPartitionKey, string(msg.Value))
 		break // Exit loop on success
 	}
 }
