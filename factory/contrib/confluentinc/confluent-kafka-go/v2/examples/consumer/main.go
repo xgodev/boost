@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	boost.Start()
 
 	ctx := context.Background()
@@ -26,40 +25,57 @@ func main() {
 		panic(err)
 	}
 
-	errorCount := 0
-	for {
+	partitions := make(map[int32]chan *kafka.Message)
 
+	for {
 		msg, err := consumer.ReadMessage(10 * time.Second)
 		if err != nil {
-			if err.(kafka.Error).IsTimeout() {
-				logger.Warnf("Consumer error: %v (%v)", err, msg)
+			if kafkaErr, ok := err.(kafka.Error); ok && kafkaErr.IsTimeout() {
+				logger.Warnf("Consumer timeout: %v", kafkaErr)
 				continue
 			}
+			logger.Errorf("Failed to read message: %v", err)
 			continue
 		}
 
-		for {
-			logger.Infof("Processing message on %s: %s", msg.TopicPartition, string(msg.Value))
+		partition := msg.TopicPartition.Partition
 
+		if _, exists := partitions[partition]; !exists {
+			partitions[partition] = make(chan *kafka.Message, 100)
+
+			go processPartition(ctx, consumer, partitions[partition], partition)
+		}
+
+		partitions[partition] <- msg
+	}
+}
+
+func processPartition(ctx context.Context, consumer *kafka.Consumer, msgs chan *kafka.Message, partition int32) {
+	logger := log.FromContext(ctx)
+	errorCount := 0
+
+	for msg := range msgs {
+		for {
+			logger.Infof("Processing message from partition %d: %s", partition, string(msg.Value))
+
+			// Simula um erro no processamento
 			if errorCount < 5 {
 				errorCount++
-				logger.Errorf("Simulated error. Error count: %d", errorCount)
+				logger.Errorf("Simulated error in partition %d. Error count: %d", partition, errorCount)
 				time.Sleep(1 * time.Second) // Simulando um tempo de espera para retry
-				// Não comitar o offset aqui, para que a mensagem continue sendo reprocessada
 				continue
 			}
 
+			// Após sucesso, resetar o contador de erros
 			errorCount = 0
 
 			if _, err := consumer.CommitMessage(msg); err != nil {
-				logger.Errorf("Failed to commit message: %v", err)
-				// Não comitar, o que garantirá que a mensagem seja reprocessada
-				continue
+				logger.Errorf("Failed to commit message from partition %d: %v", partition, err)
+				continue // Retry no commit
 			}
 
-			logger.Infof("Message successfully processed and committed: %s", string(msg.Value))
+			logger.Infof("Message from partition %d successfully processed and committed: %s", partition, string(msg.Value))
 			break
 		}
-
 	}
 }

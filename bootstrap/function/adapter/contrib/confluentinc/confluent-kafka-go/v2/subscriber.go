@@ -3,65 +3,110 @@ package confluent
 import (
 	"context"
 	"fmt"
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	"github.com/google/uuid"
-	"github.com/xgodev/boost/bootstrap/function"
-	"github.com/xgodev/boost/model/errors"
-	"github.com/xgodev/boost/wrapper/log"
+	"math"
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"github.com/google/uuid"
+	"github.com/xgodev/boost/bootstrap/function"
+	"github.com/xgodev/boost/wrapper/log"
+	"golang.org/x/sync/semaphore"
 )
 
 // Subscriber represents a subscriber listener.
 type Subscriber[T any] struct {
-	consumer     *kafka.Consumer
-	handler      function.Handler[T]
-	topics       []string
-	timeOut      time.Duration
-	manualCommit bool
+	consumer *kafka.Consumer
+	handler  function.Handler[T]
+	options  *Options
 }
 
 // NewSubscriber returns a subscriber listener.
 func NewSubscriber[T any](consumer *kafka.Consumer, handler function.Handler[T], options *Options) *Subscriber[T] {
 	return &Subscriber[T]{
-		consumer:     consumer,
-		handler:      handler,
-		topics:       options.Topics,
-		timeOut:      options.TimeOut,
-		manualCommit: options.ManualCommit,
+		consumer: consumer,
+		handler:  handler,
+		options:  options,
 	}
 }
 
-// Subscribe subscribes to a particular subject in the listening subscriber's queue.
+// Subscribe subscribes to specific topics and processes messages by partition.
 func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 
 	logger := log.FromContext(ctx)
 
-	if err := l.consumer.SubscribeTopics(l.topics, nil); err != nil {
+	if err := l.consumer.SubscribeTopics(l.options.Topics, nil); err != nil {
 		return err
 	}
 
+	partitions := make(map[int32]chan *kafka.Message)
+
+	// Initialize semaphore if needed
+	var sem *semaphore.Weighted
+	if l.options.UseSemaphore {
+		sem = semaphore.NewWeighted(l.options.MaxWorkers)
+	}
+
 	for {
-		msg, err := l.consumer.ReadMessage(l.timeOut)
+		msg, err := l.consumer.ReadMessage(l.options.TimeOut)
 		if err != nil {
 			if err.(kafka.Error).IsTimeout() {
-				logger.Warnf("Consumer error: %v (%v)", err, msg)
+				logger.Warnf("Consumer timeout: %v (%v)", err, msg)
 				continue
 			}
+			logger.Errorf("Failed to read message: %v", err)
 			continue
 		}
 
-		logger.Tracef("Message on %s: %s", msg.TopicPartition, string(msg.Value))
+		partition := msg.TopicPartition.Partition
 
+		if _, exists := partitions[partition]; !exists {
+			partitions[partition] = make(chan *kafka.Message, 100)
+
+			// Process messages from each partition asynchronously if semaphore is used
+			go l.processPartitionMessages(ctx, partitions[partition], partition, sem)
+		}
+
+		partitions[partition] <- msg
+	}
+}
+
+// processPartitionMessages processes messages for a specific partition
+func (l *Subscriber[T]) processPartitionMessages(ctx context.Context, messages chan *kafka.Message, partition int32, sem *semaphore.Weighted) {
+	logger := log.FromContext(ctx)
+
+	for msg := range messages {
+		if l.options.UseSemaphore && sem != nil {
+			// Acquire a semaphore before processing the message
+			if err := sem.Acquire(ctx, 1); err != nil {
+				logger.Errorf("Failed to acquire semaphore: %v", err)
+				continue
+			}
+
+			// Process the message asynchronously
+			go func(msg *kafka.Message) {
+				defer sem.Release(1)
+				l.processMessage(ctx, msg, partition)
+			}(msg)
+		} else {
+			// Process message synchronously
+			l.processMessage(ctx, msg, partition)
+		}
+	}
+}
+
+// processMessage handles the actual message processing and retries
+func (l *Subscriber[T]) processMessage(ctx context.Context, msg *kafka.Message, partition int32) {
+	logger := log.FromContext(ctx)
+	retryCount := 0
+
+	for {
 		in := event.New()
-
 		ce := false
 		contentType := "application/json"
 
 		if msg.Headers != nil {
 			for _, h := range msg.Headers {
-
 				switch h.Key {
 				case "content-type":
 					in.SetDataContentType(string(h.Value))
@@ -79,7 +124,7 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 					in.SetType(string(h.Value))
 					ce = true
 				case "ce_time":
-					if t, err := time.Parse(time.RFC3339, string(h.Value)); err != nil {
+					if t, err := time.Parse(time.RFC3339, string(h.Value)); err == nil {
 						in.SetTime(t)
 					}
 					ce = true
@@ -101,25 +146,49 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 
 		if err := in.SetData(contentType, msg.Value); err != nil {
 			logger.Warnf("could not set data from kafka record. %s", err.Error())
+			continue
 		}
 
-		for {
-			_, err = l.handler(ctx, in)
-			if err != nil {
-				logger.Error(errors.ErrorStack(err))
-				continue
+		_, err := l.handler(ctx, in)
+		if err != nil {
+			logger.Errorf("Handler error in partition %d: %v", partition, err)
+			retryCount++
+
+			// Check if retry limit is reached
+			if l.options.RetryLimit != -1 && retryCount >= l.options.RetryLimit {
+				logger.Errorf("Max retry limit reached for partition %d. Message will not be retried.", partition)
+				break
 			}
 
-			if l.manualCommit {
-
-				if _, err := l.consumer.CommitMessage(msg); err != nil {
-					logger.Errorf("Failed to commit message: %v", err)
-				}
-
+			// Apply backoff if enabled
+			if l.options.Backoff {
+				l.applyBackoff(retryCount)
 			}
 
-			break
+			continue // Retry message processing
 		}
 
+		// Commit the message if manual commit is enabled
+		if l.options.ManualCommit {
+			if _, err := l.consumer.CommitMessage(msg); err != nil {
+				logger.Errorf("Failed to commit message from partition %d: %v", partition, err)
+				continue // Retry on commit failure
+			}
+		}
+
+		logger.Infof("Message from partition %d successfully processed and committed: %s", partition, string(msg.Value))
+		break // Exit loop on success
 	}
+}
+
+// applyBackoff applies an exponential backoff strategy with a configurable base and max
+func (l *Subscriber[T]) applyBackoff(retryCount int) {
+	// Use exponential backoff based on the retry count
+	backoffTime := time.Duration(math.Pow(2, float64(retryCount))) * l.options.BackoffBase
+
+	// Cap the backoff time to the configured max
+	if backoffTime > l.options.MaxBackoff {
+		backoffTime = l.options.MaxBackoff
+	}
+	time.Sleep(backoffTime)
 }

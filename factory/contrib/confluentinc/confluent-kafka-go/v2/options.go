@@ -23,7 +23,6 @@ type Options struct {
 		}
 	}
 	Consumer struct {
-		Topics           []string
 		GroupId          string
 		AutoOffsetReset  string
 		EnableAutoCommit bool
