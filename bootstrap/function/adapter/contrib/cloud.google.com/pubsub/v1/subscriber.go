@@ -6,31 +6,37 @@ import (
 	"fmt"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/wrapper/log"
+	"golang.org/x/sync/semaphore"
+	"math"
 	"time"
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
 )
 
-// Subscriber contains the Pub/Sub client and the handler function
+// Subscriber contains the Pub/Sub client, handler function, and options
 type Subscriber[T any] struct {
 	client  *pubsub.Client
 	handler function.Handler[T]
 	topic   string
+	options *Options
+	sem     *semaphore.Weighted
 }
 
 // NewSubscriber returns a subscriber listener.
-func NewSubscriber[T any](client *pubsub.Client, handler function.Handler[T], topic string) *Subscriber[T] {
+func NewSubscriber[T any](client *pubsub.Client, handler function.Handler[T], topic string, options *Options) *Subscriber[T] {
+	sem := semaphore.NewWeighted(options.Concurrency) // Control concurrency using semaphore
 	return &Subscriber[T]{
-		topic:   topic,
-		handler: handler,
 		client:  client,
+		handler: handler,
+		topic:   topic,
+		options: options,
+		sem:     sem,
 	}
 }
 
 // Subscribe subscribes and consumes messages from multiple Pub/Sub topics concurrently
 func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
-
 	logger := log.FromContext(ctx).WithTypeOf(*l)
 
 	// Subscription to the topic
@@ -38,8 +44,31 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 
 	// Starts the subscription (blocking call in a goroutine)
 	err := subscription.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
-		logger.Printf("Received message from %s: %s", l.topic, string(msg.Data))
+		if err := l.sem.Acquire(ctx, 1); err != nil {
+			logger.Printf("Failed to acquire semaphore: %v", err)
+			msg.Nack()
+			return
+		}
 
+		go func(msg *pubsub.Message) {
+			defer l.sem.Release(1)
+			l.processMessage(ctx, msg)
+		}(msg)
+	})
+
+	if err != nil {
+		logger.Fatalf("Failed to start subscription for topic %s: %v", l.topic, err)
+	}
+
+	return nil
+}
+
+// processMessage processes each message, retries if needed, and applies backoff
+func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message) {
+	logger := log.FromContext(ctx)
+	retryCount := 0
+
+	for {
 		in := event.New()
 
 		ce := false
@@ -87,22 +116,45 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		// Set the message body as CloudEvent data
 		if err := in.SetData(contentType, msg.Data); err != nil {
 			logger.Printf("could not set data from pubsub message: %s", err.Error())
+			msg.Nack()
+			return
 		}
 
 		// Processes the event via handler
 		if _, err := l.handler(ctx, in); err != nil {
-			logger.Printf("Error processing message: %v", err)
-			msg.Nack() // Nack the message if there is an error
-			return
+			logger.Printf("Handler error: %v", err)
+			retryCount++
+
+			// Check retry limit
+			if l.options.RetryLimit != -1 && retryCount >= l.options.RetryLimit {
+				logger.Printf("Max retry limit reached. Nacking message.")
+				msg.Nack() // Nack the message to stop further retries
+				return
+			}
+
+			// Apply backoff if enabled
+			if l.options.Backoff {
+				l.applyBackoff(retryCount)
+			}
+
+			// Retry processing the message
+			continue
 		}
 
 		// Acknowledge the message after successful processing
 		msg.Ack()
-	})
+		break
+	}
+}
 
-	if err != nil {
-		logger.Fatalf("Failed to start subscription for topic %s: %v", l.topic, err)
+// applyBackoff applies an exponential backoff strategy
+func (l *Subscriber[T]) applyBackoff(retryCount int) {
+	backoffTime := time.Duration(math.Pow(2, float64(retryCount))) * l.options.BackoffBase
+
+	// Cap the backoff time
+	if backoffTime > l.options.MaxBackoff {
+		backoffTime = l.options.MaxBackoff
 	}
 
-	return nil
+	time.Sleep(backoffTime)
 }
