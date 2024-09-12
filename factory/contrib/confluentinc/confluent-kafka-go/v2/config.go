@@ -19,7 +19,6 @@ const (
 	numMessages     = batch + ".numMessages"
 	size            = batch + ".size"
 	consumer        = ".consumer"
-	topics          = consumer + ".topics"
 	groupId         = consumer + ".groupId"
 	autoOffsetReset = consumer + ".autoOffsetReset"
 	autoCommit      = consumer + ".autoCommit"
@@ -32,7 +31,6 @@ func init() {
 
 func ConfigAdd(path string) {
 	config.Add(path+brokers, "localhost:9092", "defines brokers addresses")
-	config.Add(path+topics, []string{"changeme"}, "defines topics")
 	config.Add(path+groupId, "changeme", "defines consumer groupid")
 	config.Add(path+autoOffsetReset, "earliest", "defines consumer auto offset reset")
 	config.Add(path+autoCommit, false, "defines consumer auto commit")
