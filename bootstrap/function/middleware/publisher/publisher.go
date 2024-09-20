@@ -2,6 +2,7 @@ package publisher
 
 import (
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/pkg/errors"
 	"github.com/xgodev/boost/extra/middleware"
 	berrors "github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
@@ -39,6 +40,8 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 
 			if c.options.Deadletter.Enabled {
 
+				err = errors.Cause(err)
+
 				errType := reflect.TypeOf(err).Elem().Name()
 
 				for _, allowedErrorType := range c.options.Deadletter.Errors {
@@ -68,7 +71,7 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 				ev.SetSubject(c.options.Subject)
 			}
 		}
-		
+
 		if errr := c.publisher.Publish(ctx.GetContext(), events); errr != nil {
 			return e, errr
 		}
