@@ -5,7 +5,6 @@ import (
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"reflect"
-	"strings"
 )
 
 type IgnoreErrors[T any] struct {
@@ -21,7 +20,7 @@ func (c *IgnoreErrors[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middlewa
 
 		err = errors.Cause(err)
 
-		errType := strings.ToLower(reflect.TypeOf(err).Elem().Name())
+		errType := reflect.TypeOf(err).Elem().Name()
 
 		logger.Warnf("contains error type %s.  %s", errType, err.Error())
 
