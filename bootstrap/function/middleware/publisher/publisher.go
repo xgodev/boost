@@ -7,6 +7,7 @@ import (
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
 	"reflect"
+	"strings"
 )
 
 type Publisher[T any] struct {
@@ -42,6 +43,11 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 				err = errors.Cause(err)
 
 				errType := reflect.TypeOf(err).Elem().Name()
+
+				logger.Debugf("configured to send to deadletter error types: [%s]", strings.Join(c.options.Deadletter.Errors, ", "))
+				logger.Warnf("contains error type %s. %s. configured ignored error types: [%s]",
+					errType,
+					err.Error())
 
 				for _, allowedErrorType := range c.options.Deadletter.Errors {
 					if errType == allowedErrorType {

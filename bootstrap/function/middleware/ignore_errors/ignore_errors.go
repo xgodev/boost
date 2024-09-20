@@ -5,6 +5,7 @@ import (
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"reflect"
+	"strings"
 )
 
 type IgnoreErrors[T any] struct {
@@ -22,7 +23,10 @@ func (c *IgnoreErrors[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middlewa
 
 		errType := reflect.TypeOf(err).Elem().Name()
 
-		logger.Warnf("contains error type %s.  %s", errType, err.Error())
+		logger.Debugf("configured ignored error types: [%s]", strings.Join(c.options.Errors, ", "))
+		logger.Warnf("contains error type %s. %s. configured ignored error types: [%s]",
+			errType,
+			err.Error())
 
 		for _, allowedErrorType := range c.options.Errors {
 
