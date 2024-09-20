@@ -2,9 +2,8 @@ package publisher
 
 import (
 	"github.com/cloudevents/sdk-go/v2/event"
-	"github.com/pkg/errors"
 	"github.com/xgodev/boost/extra/middleware"
-	berrors "github.com/xgodev/boost/model/errors"
+	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
 	"reflect"
@@ -30,7 +29,7 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 		case *event.Event:
 			events = []*event.Event{r}
 		default:
-			return e, berrors.Internalf("unsupported handler type")
+			return e, errors.Internalf("unsupported handler type")
 		}
 
 		var deadLetterSubject string
