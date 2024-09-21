@@ -45,7 +45,7 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 				errType := reflect.TypeOf(err).Elem().Name()
 
 				logger.Debugf("configured to send to deadletter error types: [%s]", strings.Join(c.options.Deadletter.Errors, ", "))
-				logger.Warnf("contains error type %s. %s. configured ignored error types: [%s]",
+				logger.Warnf("contains error type %s. %s",
 					errType,
 					err.Error())
 
@@ -58,27 +58,33 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 					}
 				}
 
-			}
+				if deadLetterSubject == "" {
+					logger.Warnf("no dead letter subject found for error type %s", errType)
+					return e, nil
+				}
 
-			if deadLetterSubject == "" {
-				return e, err
+				for _, ev := range events {
+					ev.SetSubject(deadLetterSubject)
+					ev.SetExtension("error_type", errorType)
+					ev.SetExtension("error", err.Error())
+				}
+
 			}
 
 		}
 
 		for _, ev := range events {
-
-			if deadLetterSubject != "" {
-				ev.SetSubject(deadLetterSubject)
-				ev.SetExtension("error_type", errorType)
-				ev.SetExtension("error", err.Error())
-			} else if ev.Subject() == "" {
+			if ev.Subject() == "" {
+				if c.options.Subject == "" {
+					logger.Warnf("no subject found for event. ignoring publish")
+					return e, nil
+				}
 				ev.SetSubject(c.options.Subject)
 			}
 		}
 
-		if errr := c.publisher.Publish(ctx.GetContext(), events); errr != nil {
-			return e, errr
+		if err := c.publisher.Publish(ctx.GetContext(), events); err != nil {
+			return e, err
 		}
 
 		return e, err
