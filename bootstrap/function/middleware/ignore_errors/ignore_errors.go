@@ -24,7 +24,7 @@ func (c *IgnoreErrors[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middlewa
 		errType := reflect.TypeOf(err).Elem().Name()
 
 		logger.Debugf("configured ignored error types: [%s]", strings.Join(c.options.Errors, ", "))
-		logger.Warnf("contains error type %s. %s. configured ignored error types: [%s]",
+		logger.Warnf("contains error type %s. %s",
 			errType,
 			err.Error())
 
