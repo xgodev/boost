@@ -15,8 +15,8 @@ const (
 )
 
 func init() {
-	config.Add(subject, "changeme", "defines output subject")
+	config.Add(subject, "", "defines output subject")
 	config.Add(dlenabled, false, "enables dead letter")
-	config.Add(dlsubject, "changeme", "defines dead letter output subject")
+	config.Add(dlsubject, "", "defines dead letter output subject")
 	config.Add(dlerrors, []string{"internal"}, "defines dead letter errors list")
 }

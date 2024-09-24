@@ -19,10 +19,10 @@ const (
 	numMessages     = batch + ".numMessages"
 	size            = batch + ".size"
 	consumer        = ".consumer"
-	topics          = consumer + ".topics"
 	groupId         = consumer + ".groupId"
 	autoOffsetReset = consumer + ".autoOffsetReset"
 	autoCommit      = consumer + ".autoCommit"
+	protocol        = consumer + ".protocol"
 )
 
 func init() {
@@ -31,7 +31,6 @@ func init() {
 
 func ConfigAdd(path string) {
 	config.Add(path+brokers, "localhost:9092", "defines brokers addresses")
-	config.Add(path+topics, []string{"changeme"}, "defines topics")
 	config.Add(path+groupId, "changeme", "defines consumer groupid")
 	config.Add(path+autoOffsetReset, "earliest", "defines consumer auto offset reset")
 	config.Add(path+autoCommit, false, "defines consumer auto commit")
@@ -42,4 +41,5 @@ func ConfigAdd(path string) {
 	config.Add(path+message, 300000, "Local message timeout. This value is only enforced locally and limits the time a produced message waits for successful delivery. A time of 0 is infinite. This is the maximum time librdkafka may use to deliver a message (including retries). Delivery error occurs when either the retry count or the message timeout are exceeded. The message timeout is automatically adjusted to transaction.timeout.ms if transactional.id is configured")
 	config.Add(path+level, "DEBUG", "defines log level")
 	config.Add(path+logEnabled, true, "defines log enabled")
+	config.Add(path+protocol, "PLAINTEXT", "defines protocol plaintext/ssl")
 }
