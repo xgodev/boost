@@ -1,8 +1,6 @@
 package logger
 
 import (
-	"github.com/xgodev/boost/bootstrap/function/middleware/logger"
-	"github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"go.uber.org/fx"
 	"sync"
 )
@@ -15,17 +13,20 @@ func Module[T any]() fx.Option {
 		return options
 	}
 
-	once.Do(func() {
-		options = fx.Options(
-			fx.Provide(logger.NewOptions),
-			fx.Provide(
-				fx.Annotated{
-					Group:  function.BSFunctionMiddlewaresGroupKey,
-					Target: logger.NewAnyErrorMiddlewareWithOptions[T],
-				},
-			),
-		)
-	})
+	/*
+		once.Do(func() {
+			options = fx.Options(
+				fx.Provide(logger.NewOptions),
+				fx.Provide(
+					fx.Annotated{
+						Group:  function.BSFunctionMiddlewaresGroupKey,
+						Target: logger.NewAnyErrorMiddlewareWithOptions[T],
+					},
+				),
+			)
+		})
+
+	*/
 
 	return options
 }
