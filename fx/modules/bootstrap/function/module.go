@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	BSFunctionAdaptersGroupKey    = "boostrap.function.adapters"
-	BSFunctionMiddlewaresGroupKey = "boostrap.function.middlewares"
+	BSFunctionAdaptersGroupKey = "boostrap.function.adapters"
 )
 
 type params[T any] struct {
