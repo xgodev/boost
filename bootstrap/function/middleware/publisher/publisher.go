@@ -92,6 +92,7 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 	}
 
 	if err := c.publisher.Publish(ctx.GetContext(), events); err != nil {
+		logger.Errorf("error publishing event: %v", err)
 		return e, err
 	}
 
