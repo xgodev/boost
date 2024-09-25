@@ -38,6 +38,13 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 	lm := c.logger(logger)
 
 	e, err := ctx.Next(exec, fallbackFunc)
+	if err != nil {
+		logger.Error(err.Error())
+		if c.options.ErrorStack {
+			fmt.Println(errors.ErrorStack(err))
+		}
+	}
+
 	var events []*event.Event
 
 	switch r := any(e).(type) {
@@ -58,10 +65,7 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 		}
 		j, err := json.Marshal(ev)
 		if err != nil {
-			logger.Error(err.Error())
-			if c.options.ErrorStack {
-				fmt.Println(errors.ErrorStack(err))
-			}
+			logger.Errorf("error on marshall event for logging. %s", err.Error())
 		} else {
 			lm(string(j))
 		}
