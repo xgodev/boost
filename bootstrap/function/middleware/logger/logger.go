@@ -13,16 +13,24 @@ type Logger[T any] struct {
 	options *Options
 }
 
-func NewAnyErrorMiddleware[T any]() (middleware.AnyErrorMiddleware[T], error) {
+func NewLogger[T any]() (*Logger[T], error) {
 	opts, err := NewOptions()
 	if err != nil {
 		return nil, err
 	}
-	return NewAnyErrorMiddlewareWithOptions[T](opts), nil
+	return NewLoggerWithOptions[T](opts), nil
+}
+
+func NewLoggerWithOptions[T any](options *Options) *Logger[T] {
+	return &Logger[T]{options: options}
+}
+
+func NewAnyErrorMiddleware[T any]() (middleware.AnyErrorMiddleware[T], error) {
+	return NewLogger[T]()
 }
 
 func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErrorMiddleware[T] {
-	return &Logger[T]{options: options}
+	return NewLoggerWithOptions[T](options)
 }
 
 func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
@@ -30,6 +38,13 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 	lm := c.logger(logger)
 
 	e, err := ctx.Next(exec, fallbackFunc)
+	if err != nil {
+		logger.Error(err.Error())
+		if c.options.ErrorStack {
+			fmt.Println(errors.ErrorStack(err))
+		}
+	}
+
 	var events []*event.Event
 
 	switch r := any(e).(type) {
@@ -50,10 +65,7 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 		}
 		j, err := json.Marshal(ev)
 		if err != nil {
-			logger.Error(err.Error())
-			if c.options.ErrorStack {
-				fmt.Println(errors.ErrorStack(err))
-			}
+			logger.Errorf("error on marshall event for logging. %s", err.Error())
 		} else {
 			lm(string(j))
 		}
