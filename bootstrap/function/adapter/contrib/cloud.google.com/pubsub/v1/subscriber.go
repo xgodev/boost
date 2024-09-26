@@ -16,22 +16,22 @@ import (
 
 // Subscriber contains the Pub/Sub client, handler function, and options
 type Subscriber[T any] struct {
-	client  *pubsub.Client
-	handler function.Handler[T]
-	topic   string
-	options *Options
-	sem     *semaphore.Weighted
+	client       *pubsub.Client
+	handler      function.Handler[T]
+	subscription string
+	options      *Options
+	sem          *semaphore.Weighted
 }
 
 // NewSubscriber returns a subscriber listener.
-func NewSubscriber[T any](client *pubsub.Client, handler function.Handler[T], topic string, options *Options) *Subscriber[T] {
+func NewSubscriber[T any](client *pubsub.Client, handler function.Handler[T], subscription string, options *Options) *Subscriber[T] {
 	sem := semaphore.NewWeighted(options.Concurrency) // Control concurrency using semaphore
 	return &Subscriber[T]{
-		client:  client,
-		handler: handler,
-		topic:   topic,
-		options: options,
-		sem:     sem,
+		client:       client,
+		handler:      handler,
+		subscription: subscription,
+		options:      options,
+		sem:          sem,
 	}
 }
 
@@ -40,7 +40,7 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 	logger := log.FromContext(ctx).WithTypeOf(*l)
 
 	// Subscription to the topic
-	subscription := l.client.Subscription(fmt.Sprintf("%s-sub", l.topic))
+	subscription := l.client.Subscription(l.subscription)
 
 	// Starts the subscription (blocking call in a goroutine)
 	err := subscription.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
@@ -57,7 +57,7 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 	})
 
 	if err != nil {
-		logger.Fatalf("Failed to start subscription for topic %s: %v", l.topic, err)
+		logger.Fatalf("Failed to start subscription %s: %v", l.subscription, err)
 	}
 
 	return nil
@@ -108,7 +108,7 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message)
 		// If it's not a CloudEvent, create one manually
 		if !ce {
 			in.SetID(uuid.NewString())
-			in.SetSource(fmt.Sprintf("pubsub://%s", l.topic))
+			in.SetSource(fmt.Sprintf("pubsub://%s", l.subscription))
 			in.SetType("pubsub.message")
 			in.SetTime(time.Now())
 		}
