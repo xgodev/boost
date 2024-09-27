@@ -11,12 +11,12 @@ require (
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/aws/aws-sdk-go-v2 v1.31.0
-	github.com/aws/aws-sdk-go-v2/config v1.27.37
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.35
-	github.com/aws/aws-sdk-go-v2/service/kinesis v1.30.1
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.1
-	github.com/aws/aws-sdk-go-v2/service/sns v1.32.1
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.35.1
+	github.com/aws/aws-sdk-go-v2/config v1.27.38
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.36
+	github.com/aws/aws-sdk-go-v2/service/kinesis v1.31.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.63.2
+	github.com/aws/aws-sdk-go-v2/service/sns v1.32.2
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.35.2
 	github.com/bytedance/sonic v1.12.3
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.15.2
 	github.com/cloudevents/sdk-go/v2 v2.15.2
@@ -30,7 +30,7 @@ require (
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/go-redis/redis/v7 v7.4.1
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/go-resty/resty/v2 v2.15.2
+	github.com/go-resty/resty/v2 v2.15.3
 	github.com/gobeam/stringy v0.0.7
 	github.com/goccy/go-json v0.10.3
 	github.com/gocql/gocql v1.6.0
@@ -93,7 +93,7 @@ require (
 	golang.org/x/net v0.29.0
 	golang.org/x/sync v0.8.0
 	golang.org/x/text v0.18.0
-	google.golang.org/api v0.198.0
+	google.golang.org/api v0.199.0
 	google.golang.org/grpc v1.67.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/DataDog/dd-trace-go.v1 v1.68.0
@@ -104,7 +104,7 @@ require (
 
 require (
 	cloud.google.com/go v0.115.1 // indirect
-	cloud.google.com/go/auth v0.9.4 // indirect
+	cloud.google.com/go/auth v0.9.5 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect
 	cloud.google.com/go/iam v1.2.1 // indirect
@@ -127,17 +127,17 @@ require (
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.18 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.18 // indirect
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.35.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.34.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.35.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/eventbridge v1.34.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.3.20 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.9.19 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.20 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.18 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sfn v1.32.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.23.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.27.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.31.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sfn v1.32.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.23.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.27.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.31.2 // indirect
 	github.com/aws/smithy-go v1.21.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
@@ -182,7 +182,7 @@ require (
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/pprof v0.0.0-20240910150728-a0b0bb1d4134 // indirect
+	github.com/google/pprof v0.0.0-20240925223930-fa3061bff0bc // indirect
 	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/google/wire v0.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
@@ -199,7 +199,7 @@ require (
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.8 // indirect
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
-	github.com/hashicorp/go-sockaddr v1.0.6 // indirect
+	github.com/hashicorp/go-sockaddr v1.0.7 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
