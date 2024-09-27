@@ -1,11 +1,16 @@
-package ignore_errors
+package prometheus
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
 )
 
 type Options struct {
-	Errors []string
+	FunctionName string
+	PushGateway  struct {
+		Enabled bool
+		URL     string `config:"url"`
+		Async   bool
+	}
 }
 
 func NewOptions() (*Options, error) {
