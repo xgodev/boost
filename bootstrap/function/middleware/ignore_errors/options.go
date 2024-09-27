@@ -9,10 +9,5 @@ type Options struct {
 }
 
 func NewOptions() (*Options, error) {
-	o := &Options{}
-	err := config.UnmarshalWithPath(root, o)
-	if err != nil {
-		return nil, err
-	}
-	return o, nil
+	return config.NewOptionsWithPath[Options](root)
 }

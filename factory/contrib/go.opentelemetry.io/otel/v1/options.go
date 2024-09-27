@@ -44,9 +44,7 @@ func NewOptionsWithPath(path string) (opts *Options, err error) {
 // NewOptions returns options from config file or environment vars.
 func NewOptions() (*Options, error) {
 
-	opts := &Options{}
-
-	err := config.UnmarshalWithPath(root, opts)
+	opts, err := config.NewOptionsWithPath[Options](root)
 	if err != nil {
 		return nil, err
 	}
