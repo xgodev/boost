@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/xgodev/boost/bootstrap/function"
+	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"golang.org/x/sync/semaphore"
 	"math"
@@ -52,7 +53,14 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 
 		go func(msg *pubsub.Message) {
 			defer l.sem.Release(1)
-			l.processMessage(ctx, msg)
+
+			err := l.processMessage(ctx, msg)
+
+			if err != nil {
+				log.Errorf(err.Error())
+				msg.Nack()
+			}
+
 		}(msg)
 	})
 
@@ -64,8 +72,7 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 }
 
 // processMessage processes each message, retries if needed, and applies backoff
-func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message) {
-	logger := log.FromContext(ctx)
+func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message) error {
 	retryCount := 0
 
 	for {
@@ -115,21 +122,16 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message)
 
 		// Set the message body as CloudEvent data
 		if err := in.SetData(contentType, msg.Data); err != nil {
-			logger.Printf("could not set data from pubsub message: %s", err.Error())
-			msg.Nack()
-			return
+			return errors.Wrap(err, errors.Internalf("could not set data from pubsub message: %s", err.Error()))
 		}
 
 		// Processes the event via handler
 		if _, err := l.handler(ctx, in); err != nil {
-			logger.Printf("Handler error: %v", err)
 			retryCount++
 
 			// Check retry limit
 			if l.options.RetryLimit != -1 && retryCount >= l.options.RetryLimit {
-				logger.Printf("Max retry limit reached. Nacking message.")
-				msg.Nack() // Nack the message to stop further retries
-				return
+				return errors.Wrap(err, errors.Internalf("max retry limit reached"))
 			}
 
 			// Apply backoff if enabled
@@ -145,6 +147,8 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message)
 		msg.Ack()
 		break
 	}
+
+	return nil
 }
 
 // applyBackoff applies an exponential backoff strategy
