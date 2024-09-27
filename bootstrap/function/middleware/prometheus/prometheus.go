@@ -14,7 +14,7 @@ var (
 			Name: "boost_function_messages_processed_total",
 			Help: "Number of messages processed",
 		},
-		[]string{"status"},
+		[]string{"status", "function_name"},
 	)
 
 	messageProcessingLatency = prometheus.NewHistogram(
