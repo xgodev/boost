@@ -8,15 +8,7 @@ type Options struct {
 	Queue    string
 }
 
-// DefaultOptions returns options based in config.
-func DefaultOptions() (*Options, error) {
-
-	o := &Options{}
-
-	err := config.UnmarshalWithPath(root, o)
-	if err != nil {
-		return nil, err
-	}
-
-	return o, nil
+// NewOptions returns options based in config.
+func NewOptions() (*Options, error) {
+	return config.NewOptionsWithPath[Options](root)
 }
