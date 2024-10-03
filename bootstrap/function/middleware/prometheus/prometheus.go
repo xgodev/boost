@@ -47,7 +47,7 @@ func (c *Prometheus[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware
 		messagesProcessed.WithLabelValues("success", c.options.FunctionName).Inc()
 	}
 
-	if c.options.PushGateway.Enabled {
+	if !c.options.PushGateway.Enabled {
 		if c.options.PushGateway.Async {
 			go c.pushMetrics(ctx.GetContext())
 		} else {
