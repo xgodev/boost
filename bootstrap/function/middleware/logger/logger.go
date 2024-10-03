@@ -52,7 +52,7 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 		events = r
 	case *event.Event:
 		if r != nil {
-			events = []*event.Event{r}
+			return e, err
 		}
 		events = []*event.Event{r}
 	default:
@@ -60,9 +60,6 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 	}
 
 	for _, ev := range events {
-		if ev == nil {
-			continue
-		}
 		j, err := json.Marshal(ev)
 		if err != nil {
 			logger.Errorf("error on marshall event for logging. %s", err.Error())

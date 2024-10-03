@@ -27,9 +27,12 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 	case []*event.Event:
 		events = r
 	case *event.Event:
+		if r == nil {
+			return e, err
+		}
 		events = []*event.Event{r}
 	case nil:
-		events = []*event.Event{}
+		return e, err
 	default:
 		return e, errors.Internalf("unsupported handler type")
 	}
