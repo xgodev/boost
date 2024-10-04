@@ -16,12 +16,33 @@ import (
 
 // client represents a pubsub client.
 type client struct {
-	client *pubsub.Client
+	client  *pubsub.Client
+	options *Options
+}
+
+// NewWithConfigPath returns connection with options from config path.
+func NewWithConfigPath(ctx context.Context, c *pubsub.Client, path string) (publisher.Driver, error) {
+	options, err := NewOptionsWithPath(path)
+	if err != nil {
+		return nil, err
+	}
+	return NewWithOptions(ctx, c, options), nil
+}
+
+// NewWithOptions returns connection with options.
+func NewWithOptions(ctx context.Context, c *pubsub.Client, options *Options) publisher.Driver {
+	return &client{options: options, client: c}
 }
 
 // New creates a new pubsub client.
-func New(c *pubsub.Client) publisher.Driver {
-	return &client{client: c}
+func New(ctx context.Context, c *pubsub.Client) (publisher.Driver, error) {
+
+	options, err := NewOptions()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewWithOptions(ctx, c, options), nil
 }
 
 // Publish publishes an event slice.
@@ -77,23 +98,22 @@ func (p *client) send(ctx context.Context, events []*v2.Event) (err error) {
 				"ce_subject":     out.Subject(),
 			}
 
-			// TODO: adds ordering
-			/*
-				pk, err := p.partitionKey(out)
-				if err != nil {
-					return errors.Wrap(err, errors.Internalf("unable to gets partition key"))
-				}
-			*/
-
 			message := &pubsub.Message{
 				ID:              out.ID(),
 				Data:            rawMessage,
 				Attributes:      attrs,
 				PublishTime:     time.Now(),
 				DeliveryAttempt: nil,
-				// OrderingKey:     pk,
 			}
 
+			if p.options.OrderingKey {
+				pk, err := p.partitionKey(out)
+				if err != nil {
+					return errors.Wrap(err, errors.Internalf("unable to gets partition key"))
+				}
+				message.OrderingKey = pk
+			}
+			
 			topic := p.client.Topic(out.Subject())
 			defer topic.Stop()
 

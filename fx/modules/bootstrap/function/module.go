@@ -10,19 +10,17 @@ import (
 )
 
 const (
-	BSFunctionAdaptersGroupKey    = "boostrap.function.adapters"
-	BSFunctionMiddlewaresGroupKey = "boostrap.function.middlewares"
+	BSFunctionAdaptersGroupKey = "boostrap.function.adapters"
 )
 
 type params[T any] struct {
 	fx.In
-	Adapters    []function.CmdFunc[T]              `group:"boostrap.function.adapters"`
-	Middlewares []middleware.AnyErrorMiddleware[T] `group:"boostrap.function.middlewares"`
+	Adapters []function.CmdFunc[T] `group:"boostrap.function.adapters"`
 }
 
 var once sync.Once
 
-func Module[T any]() fx.Option {
+func Module[T any](m []middleware.AnyErrorMiddleware[T]) fx.Option {
 	options := fx.Options()
 
 	once.Do(func() {
@@ -30,7 +28,7 @@ func Module[T any]() fx.Option {
 			fxcontext.Module(),
 			fx.Provide(
 				func(ctx context.Context, p params[T]) (*function.Function[T], error) {
-					return function.New[T](p.Middlewares...)
+					return function.New[T](m...)
 				}),
 			fx.Invoke(
 				func(ctx context.Context, p params[T], hdl function.Handler[T], fn *function.Function[T]) error {

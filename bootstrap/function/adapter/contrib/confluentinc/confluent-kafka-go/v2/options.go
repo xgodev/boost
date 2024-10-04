@@ -7,19 +7,18 @@ import (
 
 // Options can be used to create customized handler.
 type Options struct {
-	Topics  []string
-	TimeOut time.Duration
+	Topics       []string
+	TimeOut      time.Duration
+	ManualCommit bool
+	UseSemaphore bool
+	MaxWorkers   int64
+	Backoff      bool
+	BackoffBase  time.Duration // Base duration for backoff
+	MaxBackoff   time.Duration // Maximum backoff duration
+	RetryLimit   int           // Limit for retries (-1 for infinite retries)
 }
 
 // DefaultOptions returns options based in config.
 func DefaultOptions() (*Options, error) {
-
-	o := &Options{}
-
-	err := config.UnmarshalWithPath(root, o)
-	if err != nil {
-		return nil, err
-	}
-
-	return o, nil
+	return config.NewOptionsWithPath[Options](root)
 }

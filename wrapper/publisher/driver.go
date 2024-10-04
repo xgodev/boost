@@ -1,3 +1,4 @@
+//go:generate mockery --name Driver --case underscore
 package publisher
 
 import (
