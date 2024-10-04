@@ -3,32 +3,43 @@ package function
 import (
 	"context"
 	"github.com/cloudevents/sdk-go/v2/event"
+	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/factory/contrib/spf13/cobra/v1"
-	"github.com/xgodev/boost/middleware"
+	"github.com/xgodev/boost/model/errors"
 	"os"
 
 	co "github.com/spf13/cobra"
 )
 
 // CmdFunc defines a function that return a command.
-type CmdFunc func(fn Handler) *co.Command
+type CmdFunc[T any] func(fn Handler[T]) *co.Command
 
-type Function struct {
-	middlewares []middleware.AnyErrorMiddleware[*event.Event]
+type Function[T any] struct {
+	middlewares []middleware.AnyErrorMiddleware[T]
 }
 
-func New(m ...middleware.AnyErrorMiddleware[*event.Event]) *Function {
-	return &Function{middlewares: m}
+func New[T any](m ...middleware.AnyErrorMiddleware[T]) (*Function[T], error) {
+	var e T
+
+	switch any(e).(type) {
+	case []*event.Event, *event.Event:
+		// Tipo válido
+	default:
+		return nil, errors.New("unsupported handler type")
+	}
+
+	return &Function[T]{middlewares: m}, nil
 }
 
-func (f *Function) Run(ctx context.Context, fn Handler, c ...CmdFunc) error {
+func (f *Function[T]) Run(ctx context.Context, fn Handler[T], c ...CmdFunc[T]) error {
 
-	wrp := middleware.NewAnyErrorWrapper[*event.Event](ctx, "bootstrap", f.middlewares...)
+	// TODO: github.com/alecthomas/kong
 
 	var cmds []*co.Command
 
+	wrp := middleware.NewAnyErrorWrapper[T](ctx, "bootstrap", f.middlewares...)
 	for _, v := range c {
-		cmds = append(cmds, v(Wrapper(wrp, fn)))
+		cmds = append(cmds, v(Wrapper[T](wrp, fn)))
 	}
 
 	rootCmd := &co.Command{

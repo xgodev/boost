@@ -8,7 +8,7 @@ import (
 
 	"github.com/coocood/freecache"
 	"github.com/xgodev/boost/wrapper/cache"
-	"github.com/xgodev/boost/wrapper/cache/codec/gob"
+	string_codec "github.com/xgodev/boost/wrapper/cache/codec/string"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 		TTL: 10 * time.Minute,
 	})
 
-	manager := cache.NewManager[string]("foo", gob.New[string](), drv)
+	manager := cache.NewManager[string]("foo", string_codec.New[string](), drv)
 
 	ctx := context.Background()
 

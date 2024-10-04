@@ -2,27 +2,25 @@ package otel
 
 import (
 	"context"
+	"github.com/go-logr/logr"
 	"go.opentelemetry.io/otel/propagation"
-	"os"
 	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"google.golang.org/grpc/credentials"
 )
 
-var tracerProvider = trace.NewNoopTracerProvider()
+var TracerProvider trace.TracerProvider
 
-// StartTracerProvider starts the tracer provider like StartTracerProviderWithOptions but with default Options.
+// StartTracerProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
 func StartTracerProvider(ctx context.Context, startOptions ...sdktrace.TracerProviderOption) {
 
 	o, err := NewOptions()
@@ -40,56 +38,34 @@ var tracerOnce sync.Once
 // a Noop trace provider will be used instead.
 func StartTracerProviderWithOptions(ctx context.Context, options *Options, startOptions ...sdktrace.TracerProviderOption) {
 
-	if !IsTracerEnabled() {
+	if !IsTraceEnabled() {
 		return
 	}
 
 	tracerOnce.Do(func() {
+
+		TracerProvider = noop.NewTracerProvider()
+
 		logger := log.FromContext(ctx)
 
-		var exporter *otlptrace.Exporter
-		var err error
+		otel.SetLogger(logr.New(&Logger{}))
 
-		switch options.Protocol {
-		case "grpc":
-			exporter, err = startGRPCTracer(ctx, options)
-		case "http":
-			exporter, err = startHTTPTracer(ctx, options)
-		default:
-			exporter, err = startHTTPTracer(ctx, options)
-		}
+		exporter, err := NewTracerExporter(ctx, options)
 
 		if err != nil {
 			logger.Error("error creating opentelemetry exporter: ", err)
-			otel.SetTracerProvider(trace.NewNoopTracerProvider())
 			return
 		}
 
-		attrs := make([]attribute.KeyValue, len(options.Tags))
-		for k, v := range options.Tags {
-			attrs = append(attrs, attribute.KeyValue{
-				Key:   attribute.Key(k),
-				Value: attribute.StringValue(v),
-			})
-		}
-
-		rs, err := resource.New(ctx,
-			resource.WithSchemaURL(semconv.SchemaURL),
-			resource.WithAttributes(
-				semconv.ServiceNameKey.String(options.Service),
-				semconv.ServiceVersionKey.String(options.Version),
-				attribute.String("env", options.Env),
-			),
-			resource.WithAttributes(attrs...),
-		)
+		rs, err := NewResource(ctx, options)
 		if err != nil {
 			logger.Error("error creating opentelemetry resource: ", err)
-			otel.SetTracerProvider(trace.NewNoopTracerProvider())
 			return
 		}
 
 		startOptions = append(startOptions,
 			sdktrace.WithBatcher(exporter),
+			sdktrace.WithSampler(sdktrace.AlwaysSample()),
 			sdktrace.WithResource(rs),
 		)
 
@@ -97,42 +73,50 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		otel.SetTracerProvider(prov)
 		otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-		tracerProvider = prov
+		TracerProvider = prov
 
 		log.Infof("started opentelemetry tracer: %s", options.Service)
 	})
 }
 
-func startHTTPTracer(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
-	var exporterOpts []otlptracehttp.Option
-	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
-		exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730
+func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
+	var exporter *otlptrace.Exporter
+	var err error
+
+	switch options.Protocol {
+	case "grpc":
+		exporter, err = NewGRPCTracerExporter(ctx, options)
+	default:
+		exporter, err = NewHTTPTracerExporter(ctx, options)
 	}
+	return exporter, err
+}
+
+func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
+	var exporterOpts []otlptracehttp.Option
+
+	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Endpoint))
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlptracehttp.WithInsecure())
 	}
 
-	exporter, err := otlptracehttp.New(
+	return otlptrace.New(
 		ctx,
-		exporterOpts...,
+		otlptracehttp.NewClient(
+			exporterOpts...,
+		),
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	return exporter, nil
 }
 
-func startGRPCTracer(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
-	var exporterOpts []otlptracegrpc.Option
-	if _, ok := os.LookupEnv("OTEL_EXPORTER_OTLP_ENDPOINT"); !ok { // Only using WithEndpoint when the environment variable is not set
-		exporterOpts = append(exporterOpts, otlptracegrpc.WithEndpoint(options.Endpoint)) //TODO see https://github.com/open-telemetry/opentelemetry-go/issues/3730
+func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
+	exporterOpts := []otlptracegrpc.Option{
+		otlptracegrpc.WithEndpoint(options.Endpoint),
 	}
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlptracegrpc.WithInsecure())
-	} else {
+	} else if options.TLS.Cert != "" {
 		creds, err := credentials.NewClientTLSFromFile(options.TLS.Cert, "")
 		if err != nil {
 			return nil, errors.Wrap(err, "error creating tls credentials")
@@ -140,15 +124,12 @@ func startGRPCTracer(ctx context.Context, options *Options) (*otlptrace.Exporter
 		exporterOpts = append(exporterOpts, otlptracegrpc.WithTLSCredentials(creds))
 	}
 
-	exporter, err := otlptracegrpc.New(
+	return otlptrace.New(
 		ctx,
-		exporterOpts...,
+		otlptracegrpc.NewClient(
+			exporterOpts...,
+		),
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	return exporter, nil
 }
 
 // NewTracer creates a Tracer with the provided name and options. A Tracer
@@ -157,5 +138,5 @@ func startGRPCTracer(ctx context.Context, options *Options) (*otlptrace.Exporter
 // StartTracerProvider should be called before to setup the tracer provider, otherwise a Noop
 // tracer provider will be used.
 func NewTracer(name string, options ...trace.TracerOption) trace.Tracer {
-	return tracerProvider.Tracer(name, options...)
+	return TracerProvider.Tracer(name, options...)
 }

@@ -40,7 +40,7 @@ func NewOtelMongo() *OtelMongo {
 
 // Register registers this opentelemetry plugin on a new mongo client.
 func (d *OtelMongo) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
-	if !d.options.Enabled || !otel.IsTracerEnabled() {
+	if !d.options.Enabled || !otel.IsTraceEnabled() {
 		return nil, nil
 	}
 

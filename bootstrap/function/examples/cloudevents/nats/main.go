@@ -7,10 +7,11 @@ import (
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
 	ce "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1"
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher"
-	"github.com/xgodev/boost/bootstrap/function/middleware/publisher/driver/extra/noop"
+	lm "github.com/xgodev/boost/bootstrap/function/middleware/logger"
+	pm "github.com/xgodev/boost/bootstrap/function/middleware/publisher"
 	"github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1"
-	"github.com/xgodev/boost/middleware/plugins/local/wrapper/log"
+	"github.com/xgodev/boost/wrapper/publisher"
+	"github.com/xgodev/boost/wrapper/publisher/driver/extra/noop"
 	"os"
 )
 
@@ -36,17 +37,28 @@ func main() {
 
 	ctx := context.Background()
 
-	fn := function.New(
-		publisher.New(noop.New()),
-		log.NewAnyErrorMiddleware[*cloudevents.Event](ctx),
-	)
+	p := publisher.New(noop.New())
+	pmi, err := pm.NewAnyErrorMiddleware[*cloudevents.Event](p)
+	if err != nil {
+		panic(err)
+	}
+
+	lmi, err := lm.NewAnyErrorMiddleware[*cloudevents.Event]()
+	if err != nil {
+		panic(err)
+	}
+
+	fn, err := function.New[*cloudevents.Event](pmi, lmi)
+	if err != nil {
+		panic(err)
+	}
 
 	conn, err := nats.NewConn(ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	err = fn.Run(ctx, Handle, ce.New(conn))
+	err = fn.Run(ctx, Handle, ce.New[*cloudevents.Event](conn))
 	if err != nil {
 		panic(err)
 	}

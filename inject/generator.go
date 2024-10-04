@@ -30,7 +30,7 @@ func NewGenerator(moduleName string, graph *graph.Graph[Component]) *Generator {
 func (p *Generator) Generate(ctx context.Context) error {
 
 	for _, vert := range p.graph.VerticesWithNoIncomingEdges() {
-		err := p.generateModuleFile(ctx, vert)
+		err := p.module(ctx, vert)
 		if err != nil {
 			log.Errorf("Error generating module file: %v", err)
 			return err
@@ -40,7 +40,7 @@ func (p *Generator) Generate(ctx context.Context) error {
 	return nil
 }
 
-func (p *Generator) generateModuleFile(ctx context.Context, vertex *graph.Vertex[Component]) error {
+func (p *Generator) module(ctx context.Context, vertex *graph.Vertex[Component]) error {
 	annoEntry := vertex.Value
 	entry := annoEntry.Entry
 
@@ -51,9 +51,9 @@ func (p *Generator) generateModuleFile(ctx context.Context, vertex *graph.Vertex
 		PackageName:  packageName,
 		FunctionName: funcName,
 		ImportPath:   entry.Path,
-		Alias:        generateAlias(entry.Path),
+		Alias:        alias(entry.Path),
 		Entry:        entry,
-		Type:         getType(entry.Annotations),
+		Type:         fetchType(entry.Annotations),
 	}
 
 	// Rastrear as importações únicas
@@ -64,12 +64,12 @@ func (p *Generator) generateModuleFile(ctx context.Context, vertex *graph.Vertex
 
 		entry := v.Value.Entry
 
-		var alias string
+		var a string
 		if entry.Package != packageName {
-			alias = generateAlias(entry.Path)
+			a = alias(entry.Path)
 		}
 
-		data.Modules = append(data.Modules, ImportData{Alias: alias, Entry: entry})
+		data.Modules = append(data.Modules, ImportData{Alias: a, Entry: entry})
 
 		if entry.Package == packageName {
 			continue
@@ -78,9 +78,9 @@ func (p *Generator) generateModuleFile(ctx context.Context, vertex *graph.Vertex
 		importPath := strings.ReplaceAll(entry.Path, "github.com/", "")
 		fullImportPath := p.moduleName + "/gen/inject/" + importPath
 
-		if _, exists := uniqueImports[alias]; !exists {
-			uniqueImports[alias] = struct{}{}
-			data.Imports = append(data.Imports, ImportData{Alias: alias, Path: fullImportPath, Entry: entry})
+		if _, exists := uniqueImports[a]; !exists {
+			uniqueImports[a] = struct{}{}
+			data.Imports = append(data.Imports, ImportData{Alias: a, Path: fullImportPath, Entry: entry})
 		}
 	}
 
@@ -121,7 +121,7 @@ func (p *Generator) generateModuleFile(ctx context.Context, vertex *graph.Vertex
 	}
 
 	for _, v := range vertex.Adjacent() {
-		err := p.generateModuleFile(ctx, v)
+		err := p.module(ctx, v)
 		if err != nil {
 			return fmt.Errorf("error generating module file: %v", err)
 		}
@@ -130,12 +130,12 @@ func (p *Generator) generateModuleFile(ctx context.Context, vertex *graph.Vertex
 	return nil
 }
 
-func generateAlias(packagePath string) string {
+func alias(packagePath string) string {
 	hash := md5.Sum([]byte(packagePath))
 	return hex.EncodeToString(hash[:])
 }
 
-func getType(annons []annotation.Annotation) string {
+func fetchType(annons []annotation.Annotation) string {
 	for _, ann := range annons {
 		if strings.ToUpper(ann.Name) == AnnotationTypeINVOKE.String() {
 			return AnnotationTypeINVOKE.String()
