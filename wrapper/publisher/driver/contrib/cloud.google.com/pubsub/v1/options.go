@@ -9,6 +9,7 @@ type Options struct {
 	Log struct {
 		Level string
 	}
+	OrderingKey bool
 }
 
 // NewOptions returns options from config file or environment vars.

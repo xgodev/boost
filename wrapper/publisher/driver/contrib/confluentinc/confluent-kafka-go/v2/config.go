@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	root    = "boost.wrapper.driver.kafka_confluent"
+	root    = "boost.wrapper.publisher.driver.kafka_confluent"
 	logRoot = ".log"
 	level   = logRoot + ".level"
 )

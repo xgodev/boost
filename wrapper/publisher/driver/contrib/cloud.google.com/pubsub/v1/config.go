@@ -5,9 +5,10 @@ import (
 )
 
 const (
-	root    = "boost.wrapper.driver.pubsub"
-	logRoot = ".log"
-	level   = logRoot + ".level"
+	root        = "boost.wrapper.publisher.driver.pubsub"
+	logRoot     = ".log"
+	orderingKey = ".orderingKey"
+	level       = logRoot + ".level"
 )
 
 func init() {
@@ -16,4 +17,5 @@ func init() {
 
 func ConfigAdd(path string) {
 	config.Add(path+level, "DEBUG", "defines log level")
+	config.Add(path+orderingKey, false, "defines ordering key")
 }

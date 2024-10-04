@@ -1,29 +1,24 @@
 package binary
 
-import (
-	"bytes"
-	"encoding/binary"
-)
+// Define a constraint that T must be []byte
+type ByteArray interface {
+	~[]byte // Ensures only []byte is accepted
+}
 
-type Codec[T any] struct {
+type Codec[T ByteArray] struct {
 }
 
 func (c *Codec[T]) Encode(e T) (b []byte, err error) {
-	buf := new(bytes.Buffer)
-
-	if err = binary.Write(buf, binary.BigEndian, e); err != nil {
-		return b, err
-	}
-
-	b = buf.Bytes()
-	return b, err
+	// Since T is already []byte, we can return it directly without any further encoding
+	return e, nil
 }
 
 func (c *Codec[T]) Decode(b []byte, data *T) (err error) {
-	buf := bytes.NewReader(b)
-	return binary.Read(buf, binary.BigEndian, data)
+	// Decode is essentially just assigning the byte array
+	*data = b
+	return nil
 }
 
-func New[T any]() *Codec[T] {
+func New[T ByteArray]() *Codec[T] {
 	return &Codec[T]{}
 }

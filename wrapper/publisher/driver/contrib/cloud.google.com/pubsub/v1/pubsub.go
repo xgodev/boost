@@ -98,23 +98,22 @@ func (p *client) send(ctx context.Context, events []*v2.Event) (err error) {
 				"ce_subject":     out.Subject(),
 			}
 
-			// TODO: adds ordering
-			/*
-				pk, err := p.partitionKey(out)
-				if err != nil {
-					return errors.Wrap(err, errors.Internalf("unable to gets partition key"))
-				}
-			*/
-
 			message := &pubsub.Message{
 				ID:              out.ID(),
 				Data:            rawMessage,
 				Attributes:      attrs,
 				PublishTime:     time.Now(),
 				DeliveryAttempt: nil,
-				// OrderingKey:     pk,
 			}
 
+			if p.options.OrderingKey {
+				pk, err := p.partitionKey(out)
+				if err != nil {
+					return errors.Wrap(err, errors.Internalf("unable to gets partition key"))
+				}
+				message.OrderingKey = pk
+			}
+			
 			topic := p.client.Topic(out.Subject())
 			defer topic.Stop()
 
