@@ -2,7 +2,6 @@ package ignore_errors
 
 import (
 	p "github.com/xgodev/boost/bootstrap/function/middleware/ignore_errors"
-	"github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"go.uber.org/fx"
 	"sync"
 )
@@ -18,10 +17,7 @@ func Module[T any]() fx.Option {
 	once.Do(func() {
 		options = fx.Options(
 			fx.Provide(
-				fx.Annotated{
-					Group:  function.BSFunctionMiddlewaresGroupKey,
-					Target: p.NewAnyErrorMiddleware[T],
-				},
+				p.NewIgnoreErrors[T],
 			),
 		)
 	})

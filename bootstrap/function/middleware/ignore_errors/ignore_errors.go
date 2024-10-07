@@ -40,13 +40,21 @@ func (c *IgnoreErrors[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middlewa
 }
 
 func NewAnyErrorMiddleware[T any]() (middleware.AnyErrorMiddleware[T], error) {
+	return NewIgnoreErrors[T]()
+}
+
+func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErrorMiddleware[T] {
+	return NewIgnoreErrorsWithOptions[T](options)
+}
+
+func NewIgnoreErrors[T any]() (*IgnoreErrors[T], error) {
 	opts, err := NewOptions()
 	if err != nil {
 		return nil, err
 	}
-	return NewAnyErrorMiddlewareWithOptions[T](opts), nil
+	return NewIgnoreErrorsWithOptions[T](opts), nil
 }
 
-func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErrorMiddleware[T] {
+func NewIgnoreErrorsWithOptions[T any](options *Options) *IgnoreErrors[T] {
 	return &IgnoreErrors[T]{options: options}
 }

@@ -27,9 +27,12 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 	case []*event.Event:
 		events = r
 	case *event.Event:
+		if r == nil {
+			return e, err
+		}
 		events = []*event.Event{r}
 	case nil:
-		events = []*event.Event{}
+		return e, err
 	default:
 		return e, errors.Internalf("unsupported handler type")
 	}
@@ -85,13 +88,14 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 			ev.SetSubject(c.options.Subject)
 		}
 	}
-	
+
 	if len(events) == 0 {
 		logger.Debugf("no events to publish")
 		return e, nil
 	}
 
 	if err := c.publisher.Publish(ctx.GetContext(), events); err != nil {
+		logger.Errorf("error publishing event: %v", err)
 		return e, err
 	}
 
@@ -99,13 +103,21 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 }
 
 func NewAnyErrorMiddleware[T any](publisher *publisher.Publisher) (middleware.AnyErrorMiddleware[T], error) {
+	return NewPublisher[T](publisher)
+}
+
+func NewAnyErrorMiddlewareWithOptions[T any](publisher *publisher.Publisher, options *Options) middleware.AnyErrorMiddleware[T] {
+	return NewPublisherWithOptions[T](publisher, options)
+}
+
+func NewPublisher[T any](publisher *publisher.Publisher) (*Publisher[T], error) {
 	opts, err := NewOptions()
 	if err != nil {
 		return nil, err
 	}
-	return NewAnyErrorMiddlewareWithOptions[T](publisher, opts), nil
+	return NewPublisherWithOptions[T](publisher, opts), nil
 }
 
-func NewAnyErrorMiddlewareWithOptions[T any](publisher *publisher.Publisher, options *Options) middleware.AnyErrorMiddleware[T] {
+func NewPublisherWithOptions[T any](publisher *publisher.Publisher, options *Options) *Publisher[T] {
 	return &Publisher[T]{publisher: publisher, options: options}
 }

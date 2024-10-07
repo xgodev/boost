@@ -2,7 +2,6 @@ package publisher
 
 import (
 	p "github.com/xgodev/boost/bootstrap/function/middleware/publisher"
-	"github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"github.com/xgodev/boost/fx/modules/wrapper/publisher"
 	"go.uber.org/fx"
 	"sync"
@@ -20,10 +19,7 @@ func Module[T any]() fx.Option {
 		options = fx.Options(
 			publisher.Module(),
 			fx.Provide(
-				fx.Annotated{
-					Group:  function.BSFunctionMiddlewaresGroupKey,
-					Target: p.NewAnyErrorMiddleware[T],
-				},
+				p.NewPublisher[T],
 			),
 		)
 	})
