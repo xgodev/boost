@@ -19,7 +19,7 @@ func main() {
 
 	boost.Start()
 
-	wrp := middleware.NewAnyErrorWrapper[string](context.Background(), "bootstrap", recovery.NewRecover[string]())
+	wrp := middleware.NewAnyErrorWrapper[string](context.Background(), "bootstrap", recovery.NewRecovery[string]())
 	fw := function.Wrapper[string](wrp, func(ctx context.Context, in cloudevents.Event) (string, error) {
 
 		var msg Message

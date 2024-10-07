@@ -6,18 +6,18 @@ import (
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-type Recover[T any] struct {
+type Recovery[T any] struct {
 }
 
-func NewRecover[T any]() *Recover[T] {
-	return &Recover[T]{}
+func NewRecovery[T any]() *Recovery[T] {
+	return &Recovery[T]{}
 }
 
 func NewAnyErrorMiddleware[T any]() middleware.AnyErrorMiddleware[T] {
-	return NewRecover[T]()
+	return NewRecovery[T]()
 }
 
-func (c *Recover[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (res T, err error) {
+func (c *Recovery[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (res T, err error) {
 	logger := log.FromContext(ctx.GetContext()).WithTypeOf(*c)
 
 	defer func() {
