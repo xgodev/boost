@@ -1,7 +1,7 @@
-package logger
+package ignore_errors
 
 import (
-	"github.com/xgodev/boost/bootstrap/function/middleware/logger"
+	p "github.com/xgodev/boost/bootstrap/function/middleware/prometheus"
 	"go.uber.org/fx"
 	"sync"
 )
@@ -16,9 +16,8 @@ func Module[T any]() fx.Option {
 
 	once.Do(func() {
 		options = fx.Options(
-			fx.Provide(logger.NewOptions),
 			fx.Provide(
-				logger.NewLogger[T],
+				p.NewPrometheus[T],
 			),
 		)
 	})

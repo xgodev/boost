@@ -38,22 +38,22 @@ func (h *Helper[T]) Start() {
 	logger := log.WithTypeOf(*h)
 	var wg sync.WaitGroup
 
-	// Subscribe to each topic in a goroutine
-	for _, topic := range h.options.Topics {
+	// Subscribe to each subscription in a goroutine
+	for _, subscription := range h.options.Subscriptions {
 		wg.Add(1)
 
-		go func(topic string) {
+		go func(subscription string) {
 			defer wg.Done()
 
-			subscriber := NewSubscriber[T](h.client, h.handler, topic, h.options)
+			subscriber := NewSubscriber[T](h.client, h.handler, subscription, h.options)
 
-			// Subscribe to the topic
+			// Subscribe to the subscription
 			if err := subscriber.Subscribe(context.Background()); err != nil {
-				logger.Errorf("Failed to subscribe to topic %s: %v", topic, err)
+				logger.Errorf("Failed to subscribe to subscription %s: %v", subscription, err)
 			} else {
-				logger.Infof("Successfully subscribed to topic %s", topic)
+				logger.Infof("Successfully subscribed to subscription %s", subscription)
 			}
-		}(topic)
+		}(subscription)
 	}
 
 	// Wait for all subscriptions to complete
