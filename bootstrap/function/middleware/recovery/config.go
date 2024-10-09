@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	root = middleware.Root + ".recover"
+	root = middleware.Root + ".recovery"
 )
 
 func init() {}
