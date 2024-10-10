@@ -113,20 +113,24 @@ func (p *client) send(ctx context.Context, events []*v2.Event) (err error) {
 				}
 				message.OrderingKey = pk
 			}
-			
+
 			topic := p.client.Topic(out.Subject())
 			defer topic.Stop()
 
-			logger.WithField("subject", out.Subject()).
-				WithField("id", out.ID()).
-				Info(string(rawMessage))
+			l := logger.WithField("subject", out.Subject()).
+				WithField("id", out.ID())
 
 			err = try.Do(func(attempt int) (bool, error) {
+
+				l.Tracef("publishing message to topic %s attempt %v", out.Subject(), attempt)
+
 				r := topic.Publish(gctx, message)
 				if _, err := r.Get(gctx); err != nil {
 					log.Error(err)
 					return attempt < 5, errors.NewInternal(err, "could not be published in gcp pubsub")
 				}
+				l.Infof("message published")
+				l.Debugf(string(rawMessage))
 				return false, nil
 			})
 
