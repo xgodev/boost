@@ -42,7 +42,6 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 	}
 
 	err := subscription.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
-		fmt.Println("Received message")
 		err := l.processMessage(ctx, msg)
 
 		if err != nil {
