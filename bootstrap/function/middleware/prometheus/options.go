@@ -5,8 +5,7 @@ import (
 )
 
 type Options struct {
-	FunctionName string
-	PushGateway  struct {
+	PushGateway struct {
 		Enabled bool
 		URL     string `config:"url"`
 		Async   bool
