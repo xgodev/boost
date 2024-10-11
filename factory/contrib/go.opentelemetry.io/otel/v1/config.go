@@ -9,7 +9,6 @@ const (
 	root           = "boost.factory.otel"
 	metricEnabled  = root + ".metric.enabled"
 	traceEnabled   = root + ".trace.enabled"
-	service        = root + ".service"
 	env            = root + ".env"
 	version        = root + ".version"
 	protocol       = root + ".protocol"
@@ -23,7 +22,6 @@ const (
 )
 
 func init() {
-	config.Add(service, "", "service name for opentelemetry spans")
 	config.Add(traceEnabled, true, "enables the opentelemetry tracer")
 	config.Add(metricEnabled, true, "enables the opentelemetry metrics")
 	config.Add(env, "", "service env")

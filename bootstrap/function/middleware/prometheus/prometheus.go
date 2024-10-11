@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/wrapper/log"
 )
@@ -42,9 +43,9 @@ func (c *Prometheus[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware
 
 	e, err := ctx.Next(exec, fallbackFunc)
 	if err != nil {
-		messagesProcessed.WithLabelValues("error", c.options.FunctionName).Inc()
+		messagesProcessed.WithLabelValues("error", boost.ApplicationName()).Inc()
 	} else {
-		messagesProcessed.WithLabelValues("success", c.options.FunctionName).Inc()
+		messagesProcessed.WithLabelValues("success", boost.ApplicationName()).Inc()
 	}
 
 	if c.options.PushGateway.Enabled {
@@ -59,7 +60,7 @@ func (c *Prometheus[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware
 }
 
 func (c *Prometheus[T]) pushMetrics(ctx context.Context) {
-	if err := push.New(c.options.PushGateway.URL, c.options.FunctionName).
+	if err := push.New(c.options.PushGateway.URL, boost.ApplicationName()).
 		Gatherer(prometheus.DefaultGatherer).
 		Push(); err != nil {
 		logger := log.FromContext(ctx).WithTypeOf(*c)
