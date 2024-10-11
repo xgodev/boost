@@ -1,8 +1,8 @@
 package prometheus
 
 import (
-	"github.com/xgodev/boost/bootstrap/function/middleware"
 	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost/wrapper/publisher/middleware"
 )
 
 const (

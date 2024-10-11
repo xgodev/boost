@@ -6,6 +6,7 @@ import (
 
 const (
 	root          = "boost"
+	aName         = root + ".applicationName"
 	banner        = root + ".banner"
 	bannerEnabled = banner + ".enabled"
 	phrase        = banner + ".phrase"
@@ -18,8 +19,10 @@ const (
 	cfgEnabled    = cfg + ".enabled"
 )
 
-func init() {
+var applicationName = ""
 
+func init() {
+	config.Add(aName, "boost_application", "defines application name")
 	config.Add(bannerEnabled, true, "enable/disable boost banner")
 	config.Add(phrase, "boost", "banner phrase")
 	config.Add(fontName, "standard", "banner font. see https://github.com/common-nighthawk/go-figure")
@@ -27,4 +30,11 @@ func init() {
 	config.Add(strict, true, "sets banner strict")
 	config.Add(cfgEnabled, true, "enable/disable print boost configs")
 	config.Add(maxLength, 25, "defines value max length")
+}
+
+func ApplicationName() string {
+	if applicationName == "" {
+		applicationName = config.String(aName)
+	}
+	return applicationName
 }

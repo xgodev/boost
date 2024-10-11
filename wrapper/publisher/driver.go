@@ -7,5 +7,5 @@ import (
 )
 
 type Driver interface {
-	Publish(context.Context, []*cloudevents.Event) error
+	Publish(context.Context, []*cloudevents.Event) ([]PublishOutput, error)
 }

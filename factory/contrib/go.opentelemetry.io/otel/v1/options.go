@@ -1,6 +1,7 @@
 package otel
 
 import (
+	"github.com/xgodev/boost"
 	"os"
 	"time"
 
@@ -60,6 +61,8 @@ func NewOptions() (*Options, error) {
 	} else {
 		os.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", opts.Protocol)
 	}
+
+	opts.Service = boost.ApplicationName()
 
 	if v := os.Getenv("OTEL_SERVICE_NAME"); v != "" {
 		opts.Service = v
