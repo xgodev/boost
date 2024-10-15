@@ -49,8 +49,3 @@ func IsMetricEnabled() bool {
 func IsInsecure() bool {
 	return config.Bool(insecure)
 }
-
-// Service returns config value from key boost.factory.otel.service where default is empty.
-func Service() string {
-	return config.String(service)
-}
