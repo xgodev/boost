@@ -1,12 +1,9 @@
 package prometheus
 
 import (
-	"context"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/push"
-	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/extra/middleware"
-	"github.com/xgodev/boost/wrapper/log"
+	p "github.com/xgodev/boost/factory/contrib/prometheus/client_golang/v1"
 	"github.com/xgodev/boost/wrapper/publisher"
 )
 
@@ -57,24 +54,9 @@ func (c *Prometheus) Exec(ctx *middleware.AnyErrorContext[[]publisher.PublishOut
 
 	}
 
-	if c.options.PushGateway.Enabled {
-		if c.options.PushGateway.Async {
-			go c.pushMetrics(ctx.GetContext())
-		} else {
-			c.pushMetrics(ctx.GetContext())
-		}
-	}
+	p.Push(ctx.GetContext())
 
 	return outputs, err
-}
-
-func (c *Prometheus) pushMetrics(ctx context.Context) {
-	if err := push.New(c.options.PushGateway.URL, boost.ApplicationName()).
-		Gatherer(prometheus.DefaultGatherer).
-		Push(); err != nil {
-		logger := log.FromContext(ctx).WithTypeOf(*c)
-		logger.WithError(err).Warnf("error on push metrics")
-	}
 }
 
 func NewAnyErrorMiddleware() (middleware.AnyErrorMiddleware[[]publisher.PublishOutput], error) {
@@ -82,7 +64,7 @@ func NewAnyErrorMiddleware() (middleware.AnyErrorMiddleware[[]publisher.PublishO
 }
 
 func NewAnyErrorMiddlewareWithOptions(options *Options) middleware.AnyErrorMiddleware[[]publisher.PublishOutput] {
-	return NewPrometheusWithOptions[[]publisher.PublishOutput](options)
+	return NewPrometheusWithOptions(options)
 }
 
 func NewPrometheus() (*Prometheus, error) {
@@ -90,7 +72,7 @@ func NewPrometheus() (*Prometheus, error) {
 	if err != nil {
 		return nil, err
 	}
-	return NewPrometheusWithOptions[[]publisher.PublishOutput](opts), nil
+	return NewPrometheusWithOptions(opts), nil
 }
 
 func NewPrometheusWithOptions(options *Options) *Prometheus {
