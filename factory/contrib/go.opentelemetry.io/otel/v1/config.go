@@ -1,8 +1,9 @@
 package otel
 
 import (
-	"github.com/xgodev/boost/wrapper/config"
 	"time"
+
+	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 	export         = root + ".export"
 	exportInterval = export + ".interval"
 	exportTimeout  = export + ".timeout"
-	tags           = root + ".tags"
+	attributes     = root + ".attributes"
 	tlsCert        = root + ".tls.cert"
 )
 
@@ -32,7 +33,7 @@ func init() {
 	config.Add(insecure, true, "enable/disable insecure connection to agent")
 	config.Add(exportInterval, time.Millisecond*60000, "defines periodic reader timing for metrics")
 	config.Add(exportTimeout, time.Millisecond*30000, "defines periodic reader timeout for metrics")
-	config.Add(tags, map[string]string{}, "sets a key/value pair which will be set as a tag on all spans created by tracer. This option may be used multiple times")
+	config.Add(attributes, map[string]string{}, "sets a key/value pair which will be set as attributes on all spans created by the tracer. This option may be used multiple times")
 	config.Add(tlsCert, "", "path to certificate to be used for tls")
 }
 
