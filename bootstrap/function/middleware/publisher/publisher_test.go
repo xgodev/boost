@@ -24,7 +24,7 @@ func TestExec(t *testing.T) {
 			name:    "when handler return success then should publish to test",
 			subject: "test",
 			mock: func(driver *mocks.Driver) {
-				driver.On("Publish", mock.Anything, mock.Anything).Times(1).Return(nil)
+				driver.On("Publish", mock.Anything, mock.Anything).Times(1).Return(nil, nil)
 			},
 			exec: func(ctx context.Context) (*cloudevents.Event, error) {
 				ev := cloudevents.NewEvent()
@@ -36,7 +36,7 @@ func TestExec(t *testing.T) {
 			subject:          "deadletter",
 			deadLetterErrors: []string{"internal"},
 			mock: func(driver *mocks.Driver) {
-				driver.On("Publish", mock.Anything, mock.Anything).Times(1).Return(nil)
+				driver.On("Publish", mock.Anything, mock.Anything).Times(1).Return(nil, nil)
 			},
 			exec: func(ctx context.Context) (*cloudevents.Event, error) {
 				ev := cloudevents.NewEvent()

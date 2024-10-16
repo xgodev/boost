@@ -44,15 +44,7 @@ func New(ctx context.Context, producer *kafka.Producer) (publisher.Driver, error
 }
 
 // Publish publishes an event slice.
-func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
-
-	/*
-		producer, err := confluent.NewProducer(ctx)
-		if err != nil {
-			return err
-		}
-		defer producer.Close()
-	*/
+func (p *client) Publish(ctx context.Context, outs []*v2.Event) (res []publisher.PublishOutput, err error) {
 
 	logger := log.FromContext(ctx).WithTypeOf(*p)
 
@@ -66,12 +58,16 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 		msg, err := p.convert(ctx, out)
 		if err != nil {
-			return err
+			res = append(res, publisher.PublishOutput{Event: out, Error: err})
+			continue
 		}
 
 		if err := p.producer.Produce(msg, nil); err != nil {
-			return errors.Wrap(err, errors.Internalf("unable to publish to kafka"))
+			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("unable to produce message"))})
+			continue
 		}
+
+		res = append(res, publisher.PublishOutput{Event: out})
 
 		p.log(ctx, "message produced, awaiting delivery confirmation")
 	}
@@ -80,7 +76,7 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 		p.log(ctx, "Still waiting to flush outstanding messages")
 	}
 
-	return err
+	return res, err
 }
 
 func (p *client) log(ctx context.Context, format string, args ...interface{}) {
