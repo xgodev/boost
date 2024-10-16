@@ -23,7 +23,7 @@ func main() {
 
 	l, _ := logger.NewLogger[*cloudevents.Event]()
 	r := recovery.NewRecovery[*cloudevents.Event]()
-	p, _ := prometheus.NewPrometheus[*cloudevents.Event]()
+	p := prometheus.NewPrometheus[*cloudevents.Event]()
 
 	var mids = []middleware.AnyErrorMiddleware[*cloudevents.Event]{r, l, p}
 
