@@ -31,7 +31,6 @@ func init() {
 }
 
 type Prometheus[T any] struct {
-	options *Options
 }
 
 func (c *Prometheus[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
@@ -40,33 +39,24 @@ func (c *Prometheus[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware
 	defer timer.ObserveDuration()
 
 	e, err := ctx.Next(exec, fallbackFunc)
+	var status string
 	if err != nil {
-		messagesProcessed.WithLabelValues("error", boost.ApplicationName()).Inc()
+		status = "error"
 	} else {
-		messagesProcessed.WithLabelValues("success", boost.ApplicationName()).Inc()
+		status = "success"
 	}
+
+	messagesProcessed.WithLabelValues(status, boost.ApplicationName()).Inc()
 
 	p.Push(ctx.GetContext())
 
 	return e, err
 }
 
-func NewAnyErrorMiddleware[T any]() (middleware.AnyErrorMiddleware[T], error) {
+func NewAnyErrorMiddleware[T any]() middleware.AnyErrorMiddleware[T] {
 	return NewPrometheus[T]()
 }
 
-func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErrorMiddleware[T] {
-	return NewPrometheusWithOptions[T](options)
-}
-
-func NewPrometheus[T any]() (*Prometheus[T], error) {
-	opts, err := NewOptions()
-	if err != nil {
-		return nil, err
-	}
-	return NewPrometheusWithOptions[T](opts), nil
-}
-
-func NewPrometheusWithOptions[T any](options *Options) *Prometheus[T] {
-	return &Prometheus[T]{options: options}
+func NewPrometheus[T any]() *Prometheus[T] {
+	return &Prometheus[T]{}
 }
