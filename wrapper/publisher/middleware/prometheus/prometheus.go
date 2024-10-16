@@ -31,7 +31,6 @@ func init() {
 }
 
 type Prometheus struct {
-	options *Options
 }
 
 func (c *Prometheus) Exec(ctx *middleware.AnyErrorContext[[]publisher.PublishOutput], exec middleware.AnyErrorExecFunc[[]publisher.PublishOutput], fallbackFunc middleware.AnyErrorReturnFunc[[]publisher.PublishOutput]) ([]publisher.PublishOutput, error) {
@@ -46,11 +45,14 @@ func (c *Prometheus) Exec(ctx *middleware.AnyErrorContext[[]publisher.PublishOut
 
 	for _, output := range outputs {
 
+		var status string
 		if output.Error != nil {
-			messagesProcessed.WithLabelValues("error", output.Event.Source(), output.Event.Subject()).Inc()
+			status = "error"
 		} else {
-			messagesProcessed.WithLabelValues("success", output.Event.Source(), output.Event.Subject()).Inc()
+			status = "success"
 		}
+
+		messagesProcessed.WithLabelValues(status, output.Event.Source(), output.Event.Subject()).Inc()
 
 	}
 
@@ -59,22 +61,10 @@ func (c *Prometheus) Exec(ctx *middleware.AnyErrorContext[[]publisher.PublishOut
 	return outputs, err
 }
 
-func NewAnyErrorMiddleware() (middleware.AnyErrorMiddleware[[]publisher.PublishOutput], error) {
+func NewAnyErrorMiddleware() middleware.AnyErrorMiddleware[[]publisher.PublishOutput] {
 	return NewPrometheus()
 }
 
-func NewAnyErrorMiddlewareWithOptions(options *Options) middleware.AnyErrorMiddleware[[]publisher.PublishOutput] {
-	return NewPrometheusWithOptions(options)
-}
-
-func NewPrometheus() (*Prometheus, error) {
-	opts, err := NewOptions()
-	if err != nil {
-		return nil, err
-	}
-	return NewPrometheusWithOptions(opts), nil
-}
-
-func NewPrometheusWithOptions(options *Options) *Prometheus {
-	return &Prometheus{options: options}
+func NewPrometheus() *Prometheus {
+	return &Prometheus{}
 }
