@@ -11,10 +11,10 @@ require (
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/aws/aws-sdk-go-v2 v1.32.2
-	github.com/aws/aws-sdk-go-v2/config v1.27.43
+	github.com/aws/aws-sdk-go-v2/config v1.28.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.41
 	github.com/aws/aws-sdk-go-v2/service/kinesis v1.32.2
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.65.3
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.66.0
 	github.com/aws/aws-sdk-go-v2/service/sns v1.33.2
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.36.2
 	github.com/bytedance/sonic v1.12.3
@@ -53,9 +53,6 @@ require (
 	github.com/mittwald/vaultgo v0.1.9
 	github.com/nats-io/nats-server/v2 v2.10.17
 	github.com/nats-io/nats.go v1.37.0
-	github.com/opentracing-contrib/echo v0.0.0-20190807091611-5fe2e1308f06
-	github.com/opentracing-contrib/go-grpc v0.0.0-20240724223109-9dec25a38fa8
-	github.com/opentracing/opentracing-go v1.2.0
 	github.com/panjf2000/ants/v2 v2.10.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.20.5
