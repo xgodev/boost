@@ -61,6 +61,7 @@ func (i *OTel) Register(ctx context.Context, db *sql.DB, connector driver.Connec
 	db = otelsql.OpenDB(connector)
 
 	otelsql.ReportDBStatsMetrics(db)
+	otelsql.WithTracerProvider(otel.TracerProvider)
 
 	logger.Debug("otel successfully integrated in oracle")
 
