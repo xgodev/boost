@@ -2,7 +2,7 @@ package redis
 
 import (
 	"context"
-	"github.com/xgodev/boost/factory/contrib/go-redis/redis/v8"
+	"github.com/xgodev/boost/factory/contrib/redis/go-redis/v9"
 
 	vault "github.com/xgodev/boost/factory/contrib/mittwald/vaultgo/v0"
 	"github.com/xgodev/boost/model/errors"
