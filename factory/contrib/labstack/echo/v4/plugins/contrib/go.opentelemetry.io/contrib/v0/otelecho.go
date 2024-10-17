@@ -2,6 +2,7 @@ package contrib
 
 import (
 	"context"
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 
 	"github.com/xgodev/boost/wrapper/log"
@@ -59,6 +60,8 @@ func (i *OtelEcho) Register(ctx context.Context, server *echo.Server) {
 	logger := log.FromContext(ctx)
 
 	logger.Trace("enabling opentelemetry middleware in echo")
+
+	i.options.TracingOptions = append(i.options.TracingOptions, otelecho.WithTracerProvider(otel.TracerProvider))
 
 	server.Use(otelecho.Middleware("", i.options.TracingOptions...))
 
