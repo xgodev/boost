@@ -10,13 +10,13 @@ import (
 	redistrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/redis/go-redis.v9"
 )
 
-// ClusterDatadog represents a datadog client for redis cluster client.
-type ClusterDatadog struct {
+// Cluster represents a datadog client for redis cluster client.
+type Cluster struct {
 	options *Options
 }
 
-// NewClusterDatadogWithConfigPath returns datadog client with options from config path.
-func NewClusterDatadogWithConfigPath(path string, traceOptions ...redistrace.ClientOption) (*ClusterDatadog, error) {
+// NewClusterWithConfigPath returns datadog client with options from config path.
+func NewClusterWithConfigPath(path string, traceOptions ...redistrace.ClientOption) (*Cluster, error) {
 	o, err := NewOptionsWithPath(path, traceOptions...)
 	if err != nil {
 		return nil, err
@@ -26,26 +26,26 @@ func NewClusterDatadogWithConfigPath(path string, traceOptions ...redistrace.Cli
 		o.Enabled = false
 	}
 
-	return NewClusterDatadogWithOptions(o), nil
+	return NewClusterWithOptions(o), nil
 }
 
-// NewClusterDatadog returns datadog client with default options.
-func NewClusterDatadog(traceOptions ...redistrace.ClientOption) (*ClusterDatadog, error) {
+// NewCluster returns datadog client with default options.
+func NewCluster(traceOptions ...redistrace.ClientOption) (*Cluster, error) {
 	o, err := NewOptions(traceOptions...)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewClusterDatadogWithOptions(o), nil
+	return NewClusterWithOptions(o), nil
 }
 
-// NewClusterDatadogWithOptions returns datadog client with options.
-func NewClusterDatadogWithOptions(options *Options) *ClusterDatadog {
-	return &ClusterDatadog{options: options}
+// NewClusterWithOptions returns datadog client with options.
+func NewClusterWithOptions(options *Options) *Cluster {
+	return &Cluster{options: options}
 }
 
 // Register registers this datadog client on redis cluster client.
-func (d *ClusterDatadog) Register(ctx context.Context, client *redis.ClusterClient) error {
+func (d *Cluster) Register(ctx context.Context, client *redis.ClusterClient) error {
 	if !d.options.Enabled {
 		return nil
 	}
@@ -67,6 +67,6 @@ func ClusterRegister(ctx context.Context, client *redis.ClusterClient) error {
 	if err != nil {
 		return err
 	}
-	d := NewClusterDatadogWithOptions(o)
+	d := NewClusterWithOptions(o)
 	return d.Register(ctx, client)
 }

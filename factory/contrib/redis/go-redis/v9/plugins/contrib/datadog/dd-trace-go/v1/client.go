@@ -9,13 +9,13 @@ import (
 	redistrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/redis/go-redis.v9"
 )
 
-// ClientDatadog represents a datadog client for redis.
-type ClientDatadog struct {
+// Client represents a datadog client for redis.
+type Client struct {
 	options *Options
 }
 
-// NewClientDatadogWithConfigPath returns a new datadog client with options from config path.
-func NewClientDatadogWithConfigPath(path string, traceOptions ...redistrace.ClientOption) (*ClientDatadog, error) {
+// NewClientWithConfigPath returns a new datadog client with options from config path.
+func NewClientWithConfigPath(path string, traceOptions ...redistrace.ClientOption) (*Client, error) {
 	o, err := NewOptionsWithPath(path, traceOptions...)
 	if err != nil {
 		return nil, err
@@ -25,26 +25,26 @@ func NewClientDatadogWithConfigPath(path string, traceOptions ...redistrace.Clie
 		o.Enabled = false
 	}
 
-	return NewClientDatadogWithOptions(o), nil
+	return NewClientWithOptions(o), nil
 }
 
-// NewClientDatadog returns a new datadog client with default options.
-func NewClientDatadog(traceOptions ...redistrace.ClientOption) (*ClientDatadog, error) {
+// NewClient returns a new datadog client with default options.
+func NewClient(traceOptions ...redistrace.ClientOption) (*Client, error) {
 	o, err := NewOptions(traceOptions...)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewClientDatadogWithOptions(o), nil
+	return NewClientWithOptions(o), nil
 }
 
-// NewClientDatadogWithOptions returns a new datadog client with options.
-func NewClientDatadogWithOptions(options *Options) *ClientDatadog {
-	return &ClientDatadog{options: options}
+// NewClientWithOptions returns a new datadog client with options.
+func NewClientWithOptions(options *Options) *Client {
+	return &Client{options: options}
 }
 
 // Register registers this datadog client to redis client.
-func (d *ClientDatadog) Register(ctx context.Context, client *redis.Client) error {
+func (d *Client) Register(ctx context.Context, client *redis.Client) error {
 	if !d.options.Enabled {
 		return nil
 	}
@@ -66,6 +66,6 @@ func ClientRegister(ctx context.Context, client *redis.Client) error {
 	if err != nil {
 		return err
 	}
-	d := NewClientDatadogWithOptions(o)
+	d := NewClientWithOptions(o)
 	return d.Register(ctx, client)
 }
