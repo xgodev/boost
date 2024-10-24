@@ -10,7 +10,6 @@ type Options struct {
 	Topics       []string
 	TimeOut      time.Duration
 	ManualCommit bool
-	UseSemaphore bool
 	MaxWorkers   int64
 	Backoff      bool
 	BackoffBase  time.Duration // Base duration for backoff
