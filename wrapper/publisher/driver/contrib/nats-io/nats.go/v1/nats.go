@@ -23,7 +23,7 @@ func New(conn *nats.Conn) publisher.Driver {
 }
 
 // Publish publishes an event slice.
-func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
+func (p *client) Publish(ctx context.Context, outs []*v2.Event) (res []publisher.PublishOutput, err error) {
 
 	logger := log.FromContext(ctx).WithTypeOf(*p)
 
@@ -50,7 +50,8 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 				err = out.DataAs(&data)
 				if err != nil {
-					return errors.Wrap(err, errors.Internalf("error on data as. %s", err.Error()))
+					res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("unable to convert data to interface"))})
+					continue
 				}
 
 				rawMessage, err = json.Marshal(data)
@@ -64,8 +65,7 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 		}
 
 		if err != nil {
-			err = errors.Wrap(err, errors.Internalf("error when transforming json into bytes"))
-			logger.Error(errors.ErrorStack(err))
+			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("error when transforming json into bytes"))})
 			continue
 		}
 
@@ -78,11 +78,12 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 		err = p.conn.PublishMsg(msg)
 		if err != nil {
-			err = errors.Wrap(err, errors.Internalf("unable to publish to nats"))
-			logger.Error(errors.ErrorStack(err))
+			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("unable to publish to nats"))})
+			continue
 		}
 
+		res = append(res, publisher.PublishOutput{Event: out})
 	}
 
-	return nil
+	return res, err
 }
