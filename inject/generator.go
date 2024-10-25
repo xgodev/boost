@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/extra/graph"
+	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"go/format"
 	"os"
@@ -32,8 +33,7 @@ func (p *Generator) Generate(ctx context.Context) error {
 	for _, vert := range p.graph.VerticesWithNoIncomingEdges() {
 		err := p.module(ctx, vert)
 		if err != nil {
-			log.Errorf("Error generating module file: %v", err)
-			return err
+			return errors.Wrap(err, errors.Internalf("error generating module file"))
 		}
 	}
 
@@ -56,10 +56,8 @@ func (p *Generator) module(ctx context.Context, vertex *graph.Vertex[Component])
 		Type:         fetchType(entry.Annotations),
 	}
 
-	// Rastrear as importações únicas
 	uniqueImports := make(map[string]struct{})
 
-	// Processar cada vértice adjacente
 	for _, v := range vertex.Incoming() {
 
 		entry := v.Value.Entry
@@ -86,7 +84,7 @@ func (p *Generator) module(ctx context.Context, vertex *graph.Vertex[Component])
 
 	tmpl, err := NewTemplate()
 	if err != nil {
-		return fmt.Errorf("error parsing template: %v", err)
+		return errors.Wrap(err, errors.Internalf("error creating template"))
 	}
 
 	repoPath := strings.ReplaceAll(entry.Path, "github.com/", "")
@@ -95,35 +93,35 @@ func (p *Generator) module(ctx context.Context, vertex *graph.Vertex[Component])
 
 	err = os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
 	if err != nil {
-		return fmt.Errorf("error creating directories: %v", err)
+		return errors.Wrap(err, errors.Internalf("error creating directories"))
 	}
 
 	var buf bytes.Buffer
 	err = tmpl.Execute(&buf, data)
 	if err != nil {
-		return fmt.Errorf("error executing template: %v", err)
+		return errors.Wrap(err, errors.Internalf("error executing template"))
 	}
 
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
-		return err
+		log.Debugf(string(buf.Bytes()))
+		return errors.Wrap(err, errors.Internalf("error formatting source"))
 	}
 
 	file, err := os.Create(filePath)
 	if err != nil {
-		return fmt.Errorf("error creating file: %v", err)
+		return errors.Wrap(err, errors.Internalf("error creating file"))
 	}
 	defer file.Close()
 
 	_, err = file.Write(formatted)
 	if err != nil {
-		return err
+		return errors.Wrap(err, errors.Internalf("error writing to file"))
 	}
 
 	for _, v := range vertex.Adjacent() {
-		err := p.module(ctx, v)
-		if err != nil {
-			return fmt.Errorf("error generating module file: %v", err)
+		if err := p.module(ctx, v); err != nil {
+			return err
 		}
 	}
 
@@ -132,7 +130,7 @@ func (p *Generator) module(ctx context.Context, vertex *graph.Vertex[Component])
 
 func alias(packagePath string) string {
 	hash := md5.Sum([]byte(packagePath))
-	return hex.EncodeToString(hash[:])
+	return "pkg_" + hex.EncodeToString(hash[:])
 }
 
 func fetchType(annons []annotation.Annotation) string {

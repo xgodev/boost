@@ -37,7 +37,7 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 
 			err := ann.Decode(&a)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(err, errors.NotValidf("failed to decode annotation %s in the entry %s.%s", ann.Name, entry.Path, entry.Func.Name))
 			}
 
 			switch annType {
