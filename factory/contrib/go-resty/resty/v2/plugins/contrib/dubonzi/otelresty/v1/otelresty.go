@@ -1,4 +1,4 @@
-package otelresty // import "github.com/xgodev/boost/factory/go-resty/resty.v2/plugins/contrib/dubonzi/otelresty.v1"
+package otelresty
 
 import (
 	"context"
@@ -58,6 +58,7 @@ func (o *Otelresty) Register(ctx context.Context, client *resty.Client) error {
 	logger.Trace("integrating resty with opentelemetry")
 
 	o.options.TracingOptions = append(o.options.TracingOptions, dubresty.WithTracerName(o.options.TracerName))
+	o.options.TracingOptions = append(o.options.TracingOptions, dubresty.WithTracerProvider(otel.TracerProvider))
 
 	dubresty.TraceClient(client, o.options.TracingOptions...)
 

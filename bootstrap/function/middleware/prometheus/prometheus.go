@@ -1,11 +1,10 @@
 package prometheus
 
 import (
-	"context"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/push"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/extra/middleware"
-	"github.com/xgodev/boost/wrapper/log"
+	p "github.com/xgodev/boost/factory/contrib/prometheus/client_golang/v1"
 )
 
 var (
@@ -32,7 +31,6 @@ func init() {
 }
 
 type Prometheus[T any] struct {
-	options *Options
 }
 
 func (c *Prometheus[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
@@ -41,48 +39,24 @@ func (c *Prometheus[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware
 	defer timer.ObserveDuration()
 
 	e, err := ctx.Next(exec, fallbackFunc)
+	var status string
 	if err != nil {
-		messagesProcessed.WithLabelValues("error", c.options.FunctionName).Inc()
+		status = "error"
 	} else {
-		messagesProcessed.WithLabelValues("success", c.options.FunctionName).Inc()
+		status = "success"
 	}
 
-	if !c.options.PushGateway.Enabled {
-		if c.options.PushGateway.Async {
-			go c.pushMetrics(ctx.GetContext())
-		} else {
-			c.pushMetrics(ctx.GetContext())
-		}
-	}
+	messagesProcessed.WithLabelValues(status, boost.ApplicationName()).Inc()
+
+	p.Push(ctx.GetContext())
 
 	return e, err
 }
 
-func (c *Prometheus[T]) pushMetrics(ctx context.Context) {
-	if err := push.New(c.options.PushGateway.URL, c.options.FunctionName).
-		Gatherer(prometheus.DefaultGatherer).
-		Push(); err != nil {
-		logger := log.FromContext(ctx).WithTypeOf(*c)
-		logger.WithError(err).Warnf("error on push metrics")
-	}
-}
-
-func NewAnyErrorMiddleware[T any]() (middleware.AnyErrorMiddleware[T], error) {
+func NewAnyErrorMiddleware[T any]() middleware.AnyErrorMiddleware[T] {
 	return NewPrometheus[T]()
 }
 
-func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErrorMiddleware[T] {
-	return NewPrometheusWithOptions[T](options)
-}
-
-func NewPrometheus[T any]() (*Prometheus[T], error) {
-	opts, err := NewOptions()
-	if err != nil {
-		return nil, err
-	}
-	return NewPrometheusWithOptions[T](opts), nil
-}
-
-func NewPrometheusWithOptions[T any](options *Options) *Prometheus[T] {
-	return &Prometheus[T]{options: options}
+func NewPrometheus[T any]() *Prometheus[T] {
+	return &Prometheus[T]{}
 }

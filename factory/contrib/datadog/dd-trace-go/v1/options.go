@@ -1,6 +1,7 @@
 package datadog
 
 import (
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/wrapper/config"
 	"net"
 	"os"
@@ -39,6 +40,8 @@ func NewOptions() (*Options, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	opts.Service = boost.ApplicationName()
 
 	if v := os.Getenv("DD_SERVICE"); v != "" {
 		opts.Service = v
