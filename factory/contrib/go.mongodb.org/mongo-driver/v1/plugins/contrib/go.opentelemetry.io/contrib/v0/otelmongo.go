@@ -49,7 +49,7 @@ func (d *OtelMongo) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mo
 
 		logger.Trace("integrating opentelemetry in mongo")
 
-		options.SetMonitor(otelmongo.NewMonitor())
+		options.SetMonitor(otelmongo.NewMonitor(otelmongo.WithTracerProvider(otel.TracerProvider)))
 
 		logger.Debug("opentelemetry successfully integrated in mongo")
 

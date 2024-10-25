@@ -64,7 +64,7 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 
 			if deadLetterSubject == "" {
 				logger.Warnf("no dead letter subject found for error type %s", errType)
-				return e, nil
+				return e, err
 			}
 
 			for _, ev := range events {
@@ -83,7 +83,7 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 		if ev.Subject() == "" {
 			if c.options.Subject == "" {
 				logger.Warnf("no subject found for event. ignoring publish")
-				return e, nil
+				return e, err
 			}
 			ev.SetSubject(c.options.Subject)
 		}
@@ -91,7 +91,7 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 
 	if len(events) == 0 {
 		logger.Debugf("no events to publish")
-		return e, nil
+		return e, err
 	}
 
 	if err := c.publisher.Publish(ctx.GetContext(), events); err != nil {
