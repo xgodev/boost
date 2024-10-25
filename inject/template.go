@@ -2,8 +2,8 @@ package inject
 
 import (
 	_ "embed"
-	"fmt"
 	"github.com/xgodev/boost/annotation"
+	"github.com/xgodev/boost/model/errors"
 	"text/template"
 )
 
@@ -30,7 +30,7 @@ type ImportData struct {
 func NewTemplate() (*template.Template, error) {
 	tmpl, err := template.New("module").Parse(moduleTemplate)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing template: %v", err)
+		return nil, errors.Wrap(err, errors.Internalf("error parsing template"))
 	}
 	return tmpl, nil
 }

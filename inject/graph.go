@@ -17,6 +17,7 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 
 	for _, entry := range entries {
 		if !entry.IsFunc() {
+			log.Debugf("the entry %s is not a function", entry.Path)
 			continue
 		}
 
@@ -37,7 +38,7 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 
 			err := ann.Decode(&a)
 			if err != nil {
-				return nil, errors.Wrap(err, errors.NotValidf("failed to decode annotation %s in the entry %s.%s", ann.Name, entry.Path, entry.Func.Name))
+				return nil, errors.NotValidf("failed to decode annotation %s in the entry %s.%s", ann.Name, entry.Path, entry.Func.Name)
 			}
 
 			switch annType {
@@ -94,9 +95,9 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 
 	}
 
-	graph := graph.NewGraph[Component]()
-	for id, ae := range out {
-		graph.AddVertex(id, ae)
+	g := graph.NewGraph[Component]()
+	for _, ae := range out {
+		g.AddVertex(gid(ae.Entry), ae)
 	}
 
 	for id, aes := range in {
@@ -104,8 +105,8 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 		if outAnnoEntry, ok := out[id]; ok {
 			for _, inb := range aes {
 
-				graph.AddVertex(gid(inb.Entry), inb)
-				graph.AddEdge(gid(outAnnoEntry.Entry), gid(inb.Entry))
+				g.AddVertex(gid(inb.Entry), inb)
+				g.AddEdge(gid(outAnnoEntry.Entry), gid(inb.Entry))
 
 			}
 		} else {
@@ -114,7 +115,7 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 
 	}
 
-	return graph, nil
+	return g, nil
 }
 
 func gid(entry annotation.Entry) string {

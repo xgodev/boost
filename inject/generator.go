@@ -28,19 +28,45 @@ func NewGenerator(moduleName string, graph *graph.Graph[Component]) *Generator {
 	}
 }
 
+// Generate iterates over the graph and generates all necessary modules recursively
 func (p *Generator) Generate(ctx context.Context) error {
-
 	for _, vert := range p.graph.VerticesWithNoIncomingEdges() {
-		err := p.module(ctx, vert)
+		// Start the recursive generation of modules
+		err := p.generateModuleRecursive(ctx, vert)
 		if err != nil {
 			return errors.Wrap(err, errors.Internalf("error generating module file"))
+		}
+	}
+	return nil
+}
+
+// This function handles the recursive module generation
+func (p *Generator) generateModuleRecursive(ctx context.Context, vertex *graph.Vertex[Component]) error {
+	// Step 1: Collect the metadata for the current module
+	moduleData, err := p.collectMetadata(ctx, vertex)
+	if err != nil {
+		return errors.Wrap(err, errors.Internalf("error collecting metadata"))
+	}
+
+	// Step 2: Generate the file using the collected metadata
+	err = p.generateFile(ctx, moduleData)
+	if err != nil {
+		return errors.Wrap(err, errors.Internalf("error generating module file"))
+	}
+
+	// Step 3: Recursively process adjacent vertices (dependencies)
+	for _, v := range vertex.Adjacent() {
+		err := p.generateModuleRecursive(ctx, v)
+		if err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func (p *Generator) module(ctx context.Context, vertex *graph.Vertex[Component]) error {
+// Collects the metadata needed to generate a module
+func (p *Generator) collectMetadata(ctx context.Context, vertex *graph.Vertex[Component]) (ModuleData, error) {
 	annoEntry := vertex.Value
 	entry := annoEntry.Entry
 
@@ -59,7 +85,6 @@ func (p *Generator) module(ctx context.Context, vertex *graph.Vertex[Component])
 	uniqueImports := make(map[string]struct{})
 
 	for _, v := range vertex.Incoming() {
-
 		entry := v.Value.Entry
 
 		var a string
@@ -81,14 +106,18 @@ func (p *Generator) module(ctx context.Context, vertex *graph.Vertex[Component])
 			data.Imports = append(data.Imports, ImportData{Alias: a, Path: fullImportPath, Entry: entry})
 		}
 	}
+	return data, nil
+}
 
+// Responsible for generating the Go file based on the metadata
+func (p *Generator) generateFile(ctx context.Context, data ModuleData) error {
 	tmpl, err := NewTemplate()
 	if err != nil {
 		return errors.Wrap(err, errors.Internalf("error creating template"))
 	}
 
-	repoPath := strings.ReplaceAll(entry.Path, "github.com/", "")
-	fileName := fmt.Sprintf("%s_module.go", strings.ToLower(funcName))
+	repoPath := strings.ReplaceAll(data.ImportPath, "github.com/", "")
+	fileName := fmt.Sprintf("%s_module.go", strings.ToLower(data.FunctionName))
 	filePath := filepath.Join("gen", "inject", repoPath, fileName)
 
 	err = os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
@@ -117,12 +146,6 @@ func (p *Generator) module(ctx context.Context, vertex *graph.Vertex[Component])
 	_, err = file.Write(formatted)
 	if err != nil {
 		return errors.Wrap(err, errors.Internalf("error writing to file"))
-	}
-
-	for _, v := range vertex.Adjacent() {
-		if err := p.module(ctx, v); err != nil {
-			return err
-		}
 	}
 
 	return nil

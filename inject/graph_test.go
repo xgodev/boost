@@ -24,7 +24,7 @@ func (suite *NewGraphFromEntriesTestSuite) SetupSuite() {
 
 	suite.testData = make(map[string][]annotation.Entry)
 
-	files, err := filepath.Glob("testdata/inject/mkgraph/*.yaml")
+	files, err := filepath.Glob("testdata/graph/*.yaml")
 	suite.Require().NoError(err)
 
 	for _, file := range files {

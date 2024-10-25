@@ -1,14 +1,11 @@
-digraph G {
-	"github.com/xgodev/boost/inject/examples/simple_FooBar" [label="github.com/xgodev/boost/inject/examples/simple_FooBar"];
-	"github.com/xgodev/boost/inject/examples/simple_FooBar" -> "github.com/xgodev/boost/inject/examples/simple_Bar";
-	"github.com/xgodev/boost/inject/examples/simple_FooBar" -> "github.com/xgodev/boost/inject/examples/simple_Foz";
-	"github.com/xgodev/boost/inject/examples/simple_FooBaz" [label="github.com/xgodev/boost/inject/examples/simple_FooBaz"];
-	"github.com/xgodev/boost/inject/examples/simple_FooBaz" -> "github.com/xgodev/boost/inject/examples/simple_Foz";
-	"github.com/jpfaria/tests/annotated_LorenMethod" [label="github.com/jpfaria/tests/annotated_LorenMethod"];
-	"github.com/jpfaria/tests/annotated_LorenMethod" -> "github.com/xgodev/boost/inject/examples/simple_Foo";
-	"github.com/jpfaria/tests/annotated_LorenMethod" -> "github.com/xgodev/boost/inject/examples/simple_Foz";
-	"github.com/xgodev/boost/inject/examples/simple_Foz" [label="github.com/xgodev/boost/inject/examples/simple_Foz"];
-	"github.com/xgodev/boost/inject/examples/simple_Bar" [label="github.com/xgodev/boost/inject/examples/simple_Bar"];
-	"github.com/xgodev/boost/inject/examples/simple_Foo" [label="github.com/xgodev/boost/inject/examples/simple_Foo"];
-	"github.com/xgodev/boost/inject/examples/simple_Foo" -> "github.com/xgodev/boost/inject/examples/simple_Foz";
+digraph InjectGraph {
+        graph [splines=true, overlap=false];
+        node [fontname="Arial"];
+        edge [color="#606060"];
+    	"annotated.LorenMethod" [label="LorenMethod", shape=box, style=filled, fillcolor="#A0A0FF"];
+	"simple.Foo" [label="Foo", shape=box, style=filled, fillcolor="#A0A0FF"];
+	"simple.FooBar" [label="FooBar", shape=box, style=filled, fillcolor="#A0A0FF"];
+	"simple.FooBaz" [label="FooBaz", shape=box, style=filled, fillcolor="#A0A0FF"];
+	"simple.Foz" [label="Foz", shape=box, style=filled, fillcolor="#A0A0FF"];
+	"simple.Bar" [label="Bar", shape=box, style=filled, fillcolor="#A0A0FF"];
 }

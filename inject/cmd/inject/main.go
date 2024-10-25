@@ -42,6 +42,10 @@ func main() {
 		Err(err)
 	}
 
+	if err := inject.ExportInjectGraphToGraphviz(graph, basePath+"/simple.gv"); err != nil {
+		Err(err)
+	}
+
 	generator := inject.NewGenerator(moduleName, graph)
 	err = generator.Generate(ctx)
 	if err != nil {

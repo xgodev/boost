@@ -36,7 +36,7 @@ func (suite *VertexTestSuite) TestAdjacent() {
 
 	for _, tc := range testCases {
 		suite.Run(tc.name, func() {
-			vertex := suite.graph.vertices[tc.vertexKey]
+			vertex := suite.graph.Vertices[tc.vertexKey]
 			adjacentVertices := vertex.Adjacent()
 
 			var actualKeys []string
@@ -61,7 +61,7 @@ func (suite *VertexTestSuite) TestIncoming() {
 
 	for _, tc := range testCases {
 		suite.Run(tc.name, func() {
-			vertex := suite.graph.vertices[tc.vertexKey]
+			vertex := suite.graph.Vertices[tc.vertexKey]
 			incomingVertices := vertex.Incoming()
 
 			var actualKeys []string

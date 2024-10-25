@@ -6,34 +6,34 @@ import (
 	"os"
 )
 
-// Graph represents a generic graph structure with vertices of any type.
-// It includes maps for vertices, incoming edges, and edges for efficient graph operations.
+// Graph represents a generic graph structure with Vertices of any type.
+// It includes maps for Vertices, incoming Edges, and Edges for efficient graph operations.
 type Graph[T any] struct {
-	vertices      map[string]*Vertex[T]   // Map of vertices in the graph.
-	incomingEdges map[string]int          // Map of incoming edge counts per vertex.
-	edges         map[string][]*Vertex[T] // Map of edges represented as adjacency lists.
+	Vertices      map[string]*Vertex[T]   // Map of Vertices in the graph.
+	IncomingEdges map[string]int          // Map of incoming edge counts per vertex.
+	Edges         map[string][]*Vertex[T] // Map of Edges represented as adjacency lists.
 }
 
 // NewGraph creates and returns a new instance of Graph.
 func NewGraph[T any]() *Graph[T] {
 	return &Graph[T]{
-		vertices:      make(map[string]*Vertex[T]),
-		incomingEdges: make(map[string]int),
-		edges:         make(map[string][]*Vertex[T]),
+		Vertices:      make(map[string]*Vertex[T]),
+		IncomingEdges: make(map[string]int),
+		Edges:         make(map[string][]*Vertex[T]),
 	}
 }
 
 // AddVertex adds a new vertex with the specified key and value to the graph.
 // If the vertex already exists, it logs a warning and does not overwrite it.
 func (g *Graph[T]) AddVertex(key string, value T) {
-	if _, exists := g.vertices[key]; exists {
+	if _, exists := g.Vertices[key]; exists {
 		log.Warnf("vertex %s already exists", key)
 		return
 	}
 
 	vertex := &Vertex[T]{Key: key, Value: value, graph: g}
-	g.vertices[key] = vertex
-	g.incomingEdges[key] = 0
+	g.Vertices[key] = vertex
+	g.IncomingEdges[key] = 0
 
 	log.Debugf("vertex added: %s", key)
 }
@@ -41,8 +41,8 @@ func (g *Graph[T]) AddVertex(key string, value T) {
 // AddEdge adds a directed edge from one vertex to another.
 // If either vertex does not exist, it logs a warning and does not add the edge.
 func (g *Graph[T]) AddEdge(fromKey, toKey string) {
-	_, fromExists := g.vertices[fromKey]
-	toVertex, toExists := g.vertices[toKey]
+	_, fromExists := g.Vertices[fromKey]
+	toVertex, toExists := g.Vertices[toKey]
 
 	if !fromExists {
 		log.Warnf("from vertex not found. %v ", fromKey)
@@ -59,32 +59,32 @@ func (g *Graph[T]) AddEdge(fromKey, toKey string) {
 		return
 	}
 
-	for _, v := range g.edges[fromKey] {
+	for _, v := range g.Edges[fromKey] {
 		if v.Key == toKey {
 			return
 		}
 	}
 
-	g.edges[fromKey] = append(g.edges[fromKey], toVertex)
-	g.incomingEdges[toKey]++
+	g.Edges[fromKey] = append(g.Edges[fromKey], toVertex)
+	g.IncomingEdges[toKey]++
 	log.Debugf("edge added from %v to %v", fromKey, toKey)
 }
 
-// VerticesWithNoIncomingEdges returns a list of vertices with no incoming edges.
+// VerticesWithNoIncomingEdges returns a list of Vertices with no incoming Edges.
 func (g *Graph[T]) VerticesWithNoIncomingEdges() []*Vertex[T] {
 	var vertices []*Vertex[T]
-	for key, count := range g.incomingEdges {
+	for key, count := range g.IncomingEdges {
 		if count == 0 {
-			vertices = append(vertices, g.vertices[key])
+			vertices = append(vertices, g.Vertices[key])
 		}
 	}
 	return vertices
 }
 
 func (g *Graph[T]) Print() {
-	for _, vertex := range g.vertices {
+	for _, vertex := range g.Vertices {
 		log.Infof("%v (%v) -> ", vertex.Key, vertex.Value)
-		for _, edge := range g.edges[vertex.Key] {
+		for _, edge := range g.Edges[vertex.Key] {
 			log.Infof("%v ", edge.Value)
 		}
 	}
@@ -97,25 +97,46 @@ func (g *Graph[T]) ExportToGraphviz(filename string) error {
 	}
 	defer file.Close()
 
-	_, err = file.WriteString("digraph G {\n")
+	// Cabeçalho básico do arquivo DOT com algumas configurações de estilo globais
+	_, err = file.WriteString(`digraph G {
+        graph [splines=true, overlap=false];
+        node [shape=box, style=filled, fontname="Arial"];
+        edge [color="#606060"];
+    `)
 	if err != nil {
 		return err
 	}
 
-	for key, _ := range g.vertices {
-		_, err = file.WriteString(fmt.Sprintf("\t\"%s\" [label=\"%s\"];\n", key, key))
+	// Itera sobre os nós (vértices) do grafo
+	for key := range g.Vertices {
+		// Configurações básicas para os nós, mantendo o grafo genérico
+		nodeColor := "#A0A0FF" // Cor padrão
+		nodeShape := "box"     // Forma padrão
+
+		// Escreve os nós no arquivo, mantendo uma abordagem genérica
+		_, err = file.WriteString(fmt.Sprintf(
+			"\t\"%s\" [label=\"%s\", shape=%s, fillcolor=\"%s\"];\n",
+			key, key, nodeShape, nodeColor))
 		if err != nil {
 			return err
 		}
 
-		for _, edge := range g.edges[key] {
-			_, err = file.WriteString(fmt.Sprintf("\t\"%s\" -> \"%s\";\n", key, edge.Key))
+		// Escreve as arestas (conexões) entre os nós
+		for _, edge := range g.Edges[key] {
+			edgeStyle := "solid"   // Estilo padrão das arestas
+			edgeColor := "#000000" // Cor padrão
+
+			// Escreve as arestas entre os nós
+			_, err = file.WriteString(fmt.Sprintf(
+				"\t\"%s\" -> \"%s\" [style=%s, color=\"%s\"];\n",
+				key, edge.Key, edgeStyle, edgeColor))
 			if err != nil {
 				return err
 			}
 		}
 	}
 
+	// Finaliza o arquivo DOT
 	_, err = file.WriteString("}\n")
 	if err != nil {
 		return err
