@@ -1,11 +1,17 @@
 digraph InjectGraph {
         graph [splines=true, overlap=false];
-        node [fontname="Arial"];
+        node [fontname="Arial", shape=box, style=filled];
         edge [color="#606060"];
-    	"annotated.LorenMethod" [label="LorenMethod", shape=box, style=filled, fillcolor="#A0A0FF"];
-	"simple.Foo" [label="Foo", shape=box, style=filled, fillcolor="#A0A0FF"];
-	"simple.FooBar" [label="FooBar", shape=box, style=filled, fillcolor="#A0A0FF"];
-	"simple.FooBaz" [label="FooBaz", shape=box, style=filled, fillcolor="#A0A0FF"];
-	"simple.Foz" [label="Foz", shape=box, style=filled, fillcolor="#A0A0FF"];
-	"simple.Bar" [label="Bar", shape=box, style=filled, fillcolor="#A0A0FF"];
+    "simple_FooBar" [label="FooBar", shape=ellipse, fillcolor="#90EE90"];
+"simple_FooBar" -> "simple_Bar";
+"simple_FooBar" -> "simple_Foz";
+"simple_Foz" [label="Foz", shape=octagon, fillcolor="#FFD700"];
+"simple_Bar" [label="Bar", shape=octagon, fillcolor="#FFD700"];
+"simple_FooBaz" [label="FooBaz", shape=ellipse, fillcolor="#90EE90"];
+"simple_FooBaz" -> "simple_Foz";
+"annotated_LorenMethod" [label="LorenMethod", shape=ellipse, fillcolor="#90EE90"];
+"annotated_LorenMethod" -> "simple_Foo";
+"annotated_LorenMethod" -> "simple_Foz";
+"simple_Foo" [label="Foo", shape=ellipse, fillcolor="#90EE90"];
+"simple_Foo" -> "simple_Foz";
 }
