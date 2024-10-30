@@ -28,8 +28,8 @@ func (suite *GraphTestSuite) TestAddVertex() {
 	for _, tc := range testCases {
 		suite.Run(tc.name, func() {
 			g.AddVertex(tc.key, tc.value)
-			suite.Contains(g.vertices, tc.key)
-			suite.Equal(tc.value, g.vertices[tc.key].Value)
+			suite.Contains(g.Vertices, tc.key)
+			suite.Equal(tc.value, g.Vertices[tc.key].Value)
 		})
 	}
 }
@@ -57,8 +57,8 @@ func (suite *GraphTestSuite) TestAddEdge() {
 			tc.setupGraph(g)
 			g.AddEdge(tc.from, tc.to)
 
-			suite.Len(g.edges[tc.from], 1)
-			suite.Equal(tc.to, g.edges[tc.from][0].Key)
+			suite.Len(g.Edges[tc.from], 1)
+			suite.Equal(tc.to, g.Edges[tc.from][0].Key)
 		})
 	}
 }

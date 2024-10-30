@@ -8,23 +8,23 @@ type Vertex[T any] struct {
 	graph *Graph[T] // Reference to the graph the vertex belongs to.
 }
 
-// Adjacent returns a list of adjacent vertices to this vertex.
+// Adjacent returns a list of adjacent Vertices to this vertex.
 // It returns nil if the vertex is not part of a graph.
 func (v *Vertex[T]) Adjacent() []*Vertex[T] {
 	if v.graph != nil {
-		return v.graph.edges[v.Key]
+		return v.graph.Edges[v.Key]
 	}
 	return nil
 }
 
-// Incoming returns a list of vertices with edges incoming to this vertex.
-// It iterates over all edges in the graph to find incoming connections.
+// Incoming returns a list of Vertices with Edges incoming to this vertex.
+// It iterates over all Edges in the graph to find incoming connections.
 func (v *Vertex[T]) Incoming() []*Vertex[T] {
 	var incomingVertices []*Vertex[T]
-	for key, edges := range v.graph.edges {
+	for key, edges := range v.graph.Edges {
 		for _, edge := range edges {
 			if edge.Key == v.Key {
-				incomingVertices = append(incomingVertices, v.graph.vertices[key])
+				incomingVertices = append(incomingVertices, v.graph.Vertices[key])
 			}
 		}
 	}

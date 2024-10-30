@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"github.com/xgodev/boost/wrapper/log/contrib/rs/zerolog/v1"
+	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/model/errors"
 	"golang.org/x/tools/go/packages"
 	"os"
 	"os/exec"
@@ -14,63 +14,74 @@ import (
 
 func main() {
 
-	zerolog.NewLogger(zerolog.WithLevel("INFO"))
+	boost.Start()
 
 	basePath, err := os.Getwd()
 	if err != nil {
 		log.Panic(err)
 	}
 
+	basePath = basePath + "/inject/examples/simple"
+
 	ctx := context.Background()
 
 	log.Infof("current path is %s", basePath)
 
-	moduleName, err := getModuleName(basePath)
+	moduleName, err := moduleName(basePath)
 	if err != nil {
-		log.Fatalf(err.Error())
+		Err(err)
 	}
 
 	entries, err := inject.CollectEntries(basePath)
 	if err != nil {
-		log.Fatalf(err.Error())
+		Err(err)
 	}
 
 	graph, err := inject.NewGraphFromEntries(ctx, entries)
 	if err != nil {
-		log.Fatalf(err.Error())
+		Err(err)
+	}
+
+	if err := inject.ExportInjectGraphToGraphviz(graph, basePath+"/simple.gv"); err != nil {
+		Err(err)
 	}
 
 	generator := inject.NewGenerator(moduleName, graph)
 	err = generator.Generate(ctx)
 	if err != nil {
-		log.Fatalf(err.Error())
+		Err(err)
 	}
 
 	cmd := exec.Command("go", "mod", "tidy")
 	err = cmd.Run()
 	if err != nil {
-		log.Fatalf("go mod tidy failed: %v", err)
+		Err(errors.Wrap(err, errors.Internalf("go mod tidy failed")))
 	}
 
 	cmd = exec.Command("go", "mod", "vendor")
 	err = cmd.Run()
 	if err != nil {
-		log.Fatalf("go mod vendor failed: %v", err)
+		Err(errors.Wrap(err, errors.Internalf("go mod vendor failed")))
 	}
 
 }
 
-func getModuleName(basePath string) (string, error) {
+func Err(err error) {
+	log.Errorf(errors.ErrorStack(err))
+	log.Fatalf(err.Error())
+}
+
+func moduleName(basePath string) (string, error) {
 	cfg := &packages.Config{Mode: packages.NeedName | packages.NeedModule, Dir: basePath}
 	pkgs, err := packages.Load(cfg)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, errors.Internalf("failed to load packages"))
 	}
 	if len(pkgs) == 0 {
-		return "", fmt.Errorf("no packages found in %s", basePath)
+		return "", errors.Internalf("no packages found in %s", basePath)
 	}
 	if pkgs[0].Module == nil {
-		return "", fmt.Errorf("no module information found in %s", basePath)
+		return "", errors.Internalf("no module found in %s", basePath)
 	}
 	return pkgs[0].Module.Path, nil
 }
