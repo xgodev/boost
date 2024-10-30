@@ -6,6 +6,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event/datacodec/json"
 	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/extra/graph"
+	"github.com/xgodev/boost/model/errors"
 	ustrings "github.com/xgodev/boost/utils/strings"
 	"github.com/xgodev/boost/wrapper/log"
 	"strings"
@@ -48,7 +49,7 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 			annType, _ := ParseAnnotationType(strings.ToUpper(ann.Name))
 			parsedAnnotation := Annotation{}
 			if err := ann.Decode(&parsedAnnotation); err != nil {
-				return nil, fmt.Errorf("decode error on %s in %s.%s: %w", ann.Name, entry.Path, entry.Func.Name, err)
+				return nil, errors.NotValidf("decode error on %s in %s.%s: %w", ann.Name, entry.Path, entry.Func.Name, err)
 			}
 
 			// Process based on annotation type (PROVIDE or INJECT)
@@ -88,7 +89,7 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 // - Error if the annotation is missing a required `Index` field.
 func populateOutMap(entry annotation.Entry, ann Annotation, out map[string]Component) error {
 	if ann.Index == nil {
-		return fmt.Errorf("index parameter is required in PROVIDE annotation for %s.%s", entry.Path, entry.Func.Name)
+		return errors.NotValidf("index parameter is required in PROVIDE annotation for %s.%s", entry.Path, entry.Func.Name)
 	}
 
 	for i, res := range entry.Func.Results {
@@ -117,7 +118,7 @@ func populateOutMap(entry annotation.Entry, ann Annotation, out map[string]Compo
 // - Error if the annotation is missing a required `Index` field.
 func populateInMap(entry annotation.Entry, ann Annotation, in map[string][]Component) error {
 	if ann.Index == nil {
-		return fmt.Errorf("index parameter is required in INJECT annotation for %s.%s", entry.Path, entry.Func.Name)
+		return errors.NotValidf("index parameter is required in INJECT annotation for %s.%s", entry.Path, entry.Func.Name)
 	}
 
 	for i, param := range entry.Func.Parameters {
@@ -150,7 +151,7 @@ func buildGraphFromDependencies(ctx context.Context, out map[string]Component, i
 	for id, injectors := range in {
 		provider, exists := out[id]
 		if !exists {
-			return nil, fmt.Errorf("provider not found for %s", id)
+			return nil, errors.NotFoundf("provider not found for %s", id)
 		}
 		for _, injector := range injectors {
 			injectorID := gid(injector.Entry)

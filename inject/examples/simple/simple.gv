@@ -5,8 +5,6 @@ digraph InjectGraph {
     "simple_FooBar" [label="FooBar", shape=ellipse, fillcolor="#90EE90"];
 "simple_FooBar" -> "simple_Bar";
 "simple_FooBar" -> "simple_Foz";
-"simple_Foz" [label="Foz", shape=octagon, fillcolor="#FFD700"];
-"simple_Bar" [label="Bar", shape=octagon, fillcolor="#FFD700"];
 "simple_FooBaz" [label="FooBaz", shape=ellipse, fillcolor="#90EE90"];
 "simple_FooBaz" -> "simple_Foz";
 "annotated_LorenMethod" [label="LorenMethod", shape=ellipse, fillcolor="#90EE90"];
@@ -14,4 +12,6 @@ digraph InjectGraph {
 "annotated_LorenMethod" -> "simple_Foz";
 "simple_Foo" [label="Foo", shape=ellipse, fillcolor="#90EE90"];
 "simple_Foo" -> "simple_Foz";
+"simple_Foz" [label="Foz", shape=octagon, fillcolor="#FFD700"];
+"simple_Bar" [label="Bar", shape=octagon, fillcolor="#FFD700"];
 }
