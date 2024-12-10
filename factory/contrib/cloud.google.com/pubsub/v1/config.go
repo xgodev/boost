@@ -18,6 +18,6 @@ func init() {
 
 func ConfigAdd(path string) {
 	config.Add(path+projectID, "default", "defines project ID")
-	config.Add(path+credentialsFile, "credentials.json", "sets credentials file")
+	config.Add(path+credentialsFile, "", "sets credentials file")
 	config.Add(path+credentialsJSON, "", "sets credentials json")
 }
