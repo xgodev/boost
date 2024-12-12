@@ -21,7 +21,7 @@ const (
 	tlsFileKey            = tlsFileRoot + ".key"
 	tlsFileCA             = tlsFileRoot + ".ca"
 	PluginsRoot           = root + ".plugins"
-	keepAliveRoot         = root + ".keepAlive"
+	keepAliveRoot         = ".keepAlive"
 	keepAliveTime         = keepAliveRoot + ".time"
 	keepAliveTimeout      = keepAliveRoot + ".timeout"
 	maxConnectionIdle     = keepAliveRoot + ".maxConnectionIdle"
