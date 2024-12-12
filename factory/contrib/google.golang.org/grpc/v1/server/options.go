@@ -12,14 +12,15 @@ type Options struct {
 	InitialWindowSize     int32
 	InitialConnWindowSize int32
 	TLS                   TLSOptions `config:"tls"`
-	// KeepAlive configurations
-	KeepAlive struct {
-		Time                  time.Duration // Ping interval in seconds
-		Timeout               time.Duration // Timeout for a ping response in seconds
-		MaxConnectionIdle     time.Duration // Max idle time in seconds before closing the connection
-		MaxConnectionAge      time.Duration // Max connection age in seconds before closing
-		MaxConnectionAgeGrace time.Duration // Grace period in seconds before forcing connection closure
-	}
+	KeepAlive             KeepAliveOtions
+}
+
+type KeepAliveOtions struct {
+	Time                  time.Duration // Ping interval in seconds
+	Timeout               time.Duration // Timeout for a ping response in seconds
+	MaxConnectionIdle     time.Duration // Max idle time in seconds before closing the connection
+	MaxConnectionAge      time.Duration // Max connection age in seconds before closing
+	MaxConnectionAgeGrace time.Duration // Grace period in seconds before forcing connection closure
 }
 
 type TLSAutoOptions struct {
