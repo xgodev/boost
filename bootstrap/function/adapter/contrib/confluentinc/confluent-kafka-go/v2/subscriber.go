@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/wrapper/log"
-	"golang.org/x/sync/semaphore"
 )
 
 // Subscriber represents a subscriber listener.
@@ -42,12 +41,6 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 	// Update the map to use a string key composed of topic + partition
 	partitions := make(map[string]chan *kafka.Message)
 
-	// Initialize semaphore if needed
-	var sem *semaphore.Weighted
-	if l.options.UseSemaphore {
-		sem = semaphore.NewWeighted(l.options.MaxWorkers)
-	}
-
 	for {
 		msg, err := l.consumer.ReadMessage(l.options.TimeOut)
 		if err != nil {
@@ -64,10 +57,10 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 
 		// Check if a channel exists for the topic and partition
 		if _, exists := partitions[topicPartitionKey]; !exists {
-			partitions[topicPartitionKey] = make(chan *kafka.Message, 100)
+			partitions[topicPartitionKey] = make(chan *kafka.Message, l.options.MaxWorkers)
 
 			// Process messages from each partition asynchronously if semaphore is used
-			go l.processPartitionMessages(ctx, partitions[topicPartitionKey], topicPartitionKey, sem)
+			go l.processPartitionMessages(ctx, partitions[topicPartitionKey], topicPartitionKey)
 		}
 
 		partitions[topicPartitionKey] <- msg
@@ -75,26 +68,9 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 }
 
 // processPartitionMessages processes messages for a specific topic and partition
-func (l *Subscriber[T]) processPartitionMessages(ctx context.Context, messages chan *kafka.Message, topicPartitionKey string, sem *semaphore.Weighted) {
-	logger := log.FromContext(ctx)
-
+func (l *Subscriber[T]) processPartitionMessages(ctx context.Context, messages chan *kafka.Message, topicPartitionKey string) {
 	for msg := range messages {
-		if l.options.UseSemaphore && sem != nil {
-			// Acquire a semaphore before processing the message
-			if err := sem.Acquire(ctx, 1); err != nil {
-				logger.Errorf("Failed to acquire semaphore: %v", err)
-				continue
-			}
-
-			// Process the message asynchronously
-			go func(msg *kafka.Message) {
-				defer sem.Release(1)
-				l.processMessage(ctx, msg, topicPartitionKey)
-			}(msg)
-		} else {
-			// Process message synchronously
-			l.processMessage(ctx, msg, topicPartitionKey)
-		}
+		l.processMessage(ctx, msg, topicPartitionKey)
 	}
 }
 

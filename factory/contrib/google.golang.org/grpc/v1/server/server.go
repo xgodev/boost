@@ -9,6 +9,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
+	"google.golang.org/grpc/keepalive"
 	"io/ioutil"
 	"math/big"
 	"net"
@@ -85,6 +86,16 @@ func NewServerWithOptions(ctx context.Context, opt *Options, plugins ...Plugin) 
 
 		serverOptions = append(serverOptions, grpc.Creds(creds))
 	}
+
+	keepAliveParams := keepalive.ServerParameters{
+		MaxConnectionIdle:     opt.KeepAlive.MaxConnectionIdle,
+		MaxConnectionAge:      opt.KeepAlive.MaxConnectionAge,
+		MaxConnectionAgeGrace: opt.KeepAlive.MaxConnectionAgeGrace,
+		Time:                  opt.KeepAlive.Time,
+		Timeout:               opt.KeepAlive.Timeout,
+	}
+
+	serverOptions = append(serverOptions, grpc.KeepaliveParams(keepAliveParams))
 
 	for _, plugin := range plugins {
 		sopts := plugin(ctx)
