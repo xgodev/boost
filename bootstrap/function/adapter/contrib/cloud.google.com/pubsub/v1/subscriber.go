@@ -130,12 +130,16 @@ func (l *Subscriber[T]) generateCloudEvent(msg *pubsub.Message) (event.Event, er
 		}
 	}
 
+	// If the event does not have a time, populate it with the time the message was published
+	if in.Time().IsZero() {
+		in.SetTime(msg.PublishTime)
+	}
+
 	// If it's not a CloudEvent, create one manually
 	if !ce {
 		in.SetID(uuid.NewString())
 		in.SetSource(fmt.Sprintf("pubsub://%s", l.subscription))
 		in.SetType("pubsub.message")
-		in.SetTime(time.Now())
 	}
 
 	// Set the message body as CloudEvent data
