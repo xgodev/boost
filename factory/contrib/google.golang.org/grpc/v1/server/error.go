@@ -11,25 +11,25 @@ import (
 func Error(err error) error {
 
 	if errors.IsNotFound(err) {
-		return status.Errorf(codes.NotFound, err.Error())
+		return status.Errorf(codes.NotFound, "%s", err.Error())
 	} else if errors.IsNotValid(err) || errors.IsBadRequest(err) {
-		return status.Errorf(codes.InvalidArgument, err.Error())
+		return status.Errorf(codes.InvalidArgument, "%s", err.Error())
 	} else if errors.IsServiceUnavailable(err) {
-		return status.Errorf(codes.Unavailable, err.Error())
+		return status.Errorf(codes.Unavailable, "%s", err.Error())
 	} else if errors.IsConflict(err) || errors.IsAlreadyExists(err) {
-		return status.Errorf(codes.AlreadyExists, err.Error())
+		return status.Errorf(codes.AlreadyExists, "%s", err.Error())
 	} else if errors.IsNotImplemented(err) || errors.IsNotProvisioned(err) {
-		return status.Errorf(codes.Unimplemented, err.Error())
+		return status.Errorf(codes.Unimplemented, "%s", err.Error())
 	} else if errors.IsUnauthorized(err) {
-		return status.Errorf(codes.Unauthenticated, err.Error())
+		return status.Errorf(codes.Unauthenticated, "%s", err.Error())
 	} else if errors.IsForbidden(err) {
-		return status.Errorf(codes.PermissionDenied, err.Error())
+		return status.Errorf(codes.PermissionDenied, "%s", err.Error())
 	} else {
 		switch t := err.(type) {
 		case validator.ValidationErrors:
-			return status.Errorf(codes.InvalidArgument, t.Error())
+			return status.Errorf(codes.InvalidArgument, "%s", t.Error())
 		default:
-			return status.Errorf(codes.Internal, t.Error())
+			return status.Errorf(codes.Internal, "%s", t.Error())
 		}
 	}
 }
