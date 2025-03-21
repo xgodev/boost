@@ -24,7 +24,7 @@ func main() {
 	c1 := AppConfig{}
 	config.UnmarshalWithPath("app", &c1)
 
-	log.Printf(c1.Application.Name)
+	log.Printf("%s", c1.Application.Name)
 
 	os.Setenv("APP_APPLICATION_NAME", "app_test_env_2")
 	config.Load()
@@ -32,7 +32,7 @@ func main() {
 	c2 := AppConfig{}
 	config.UnmarshalWithPath("app", &c2)
 
-	log.Printf(c2.Application.Name)
+	log.Printf("%s", c2.Application.Name)
 
 	os.Setenv("APP_APPLICATION_NAME", "app_test_env_3")
 	config.Load()
@@ -40,6 +40,6 @@ func main() {
 	c3 := AppConfig{}
 	config.UnmarshalWithPath("app", &c3)
 
-	log.Printf(c3.Application.Name)
+	log.Printf("%s", c3.Application.Name)
 
 }
