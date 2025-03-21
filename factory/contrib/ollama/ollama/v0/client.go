@@ -10,8 +10,8 @@ import (
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-// NewConnWithOptions registers a nats connection.
-func NewConnWithOptions(ctx context.Context, options *Options) (*api.Client, error) {
+// NewClientWithOptions registers a ollama connection.
+func NewClientWithOptions(ctx context.Context, options *Options) (*api.Client, error) {
 
 	logger := log.FromContext(ctx)
 
@@ -30,17 +30,17 @@ func NewConnWithOptions(ctx context.Context, options *Options) (*api.Client, err
 	return client, nil
 }
 
-// NewConnWithConfigPath returns a new nats connection with options from config path.
-func NewConnWithConfigPath(ctx context.Context, path string) (*api.Client, error) {
+// NewClientWithConfigPath returns a new nats connection with options from config path.
+func NewClientWithConfigPath(ctx context.Context, path string) (*api.Client, error) {
 	options, err := NewOptionsWithPath(path)
 	if err != nil {
 		return nil, err
 	}
-	return NewConnWithOptions(ctx, options)
+	return NewClientWithOptions(ctx, options)
 }
 
-// NewConn returns a new connection with default options.
-func NewConn(ctx context.Context) (*api.Client, error) {
+// NewClient returns a new connection with default options.
+func NewClient(ctx context.Context) (*api.Client, error) {
 
 	logger := log.FromContext(ctx)
 
@@ -49,5 +49,5 @@ func NewConn(ctx context.Context) (*api.Client, error) {
 		logger.Fatalf(err.Error())
 	}
 
-	return NewConnWithOptions(ctx, o)
+	return NewClientWithOptions(ctx, o)
 }
