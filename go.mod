@@ -4,12 +4,9 @@ go 1.24.1
 
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.16
 
-replace github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.13.4
-
+// replace github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.13.4
 // replace github.com/DataDog/datadog-agent/pkg/trace => github.com/DataDog/datadog-agent/pkg/trace v0.58.0
 // replace github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes => github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes v0.24.0
-
-replace github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes => github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes v0.24.0
 
 require (
 	cloud.google.com/go/bigquery v1.67.0
