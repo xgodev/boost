@@ -1,23 +1,18 @@
 package pubsub
 
 import (
-	"github.com/xgodev/boost/wrapper/config"
+	apiv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/api/v0"
+	grpcv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/grpc/v1"
 )
 
-const (
-	root            = "boost.factory.pubsub"
-	projectID       = ".projectId"
-	credentialsRoot = ".credentials"
-	credentialsFile = credentialsRoot + ".file"
-	credentialsJSON = credentialsRoot + ".json"
-)
+const root = "boost.factory.gcp.pubsub"
 
 func init() {
 	ConfigAdd(root)
 }
 
+// ConfigAdd registers shared API and gRPC configs under the given path.
 func ConfigAdd(path string) {
-	config.Add(path+projectID, "default", "defines project ID")
-	config.Add(path+credentialsFile, "", "sets credentials file")
-	config.Add(path+credentialsJSON, "", "sets credentials json")
+	apiv1.ConfigAdd(path + ".apiOptions")
+	grpcv1.ConfigAdd(path + ".grpcOptions")
 }
