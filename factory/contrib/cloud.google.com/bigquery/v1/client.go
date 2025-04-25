@@ -4,37 +4,63 @@ import (
 	"context"
 
 	"cloud.google.com/go/bigquery"
+	apiv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/api/v0"
+	grpcv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/grpc/v1"
+	clientgrpc "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client"
+	"github.com/xgodev/boost/wrapper/log"
 	"google.golang.org/api/option"
 )
 
-// NewClient returns a new bigquery client with default options.
-func NewClient(ctx context.Context) (*bigquery.Client, error) {
-	opt, err := NewOptions()
+// Client wraps a BigQuery client and its Options.
+type Client struct {
+	Inner *bigquery.Client
+	Opts  *Options
+}
+
+// NewClient creates a wrapped BigQuery client using default configuration.
+func NewClient(ctx context.Context, plugins ...clientgrpc.Plugin) (*bigquery.Client, error) {
+	o, err := NewOptions()
 	if err != nil {
 		return nil, err
 	}
-	return NewClientWithOptions(ctx, opt)
+	return NewClientWithOptions(ctx, o, plugins...)
 }
 
-// NewClientWithConfigPath returns a new bigquery client with options from config path.
-func NewClientWithConfigPath(ctx context.Context, path string) (*bigquery.Client, error) {
-	options, err := NewOptionsWithPath(path)
+// NewClientWithConfigPath creates a wrapped BigQuery client using configuration from the specified path.
+func NewClientWithConfigPath(ctx context.Context, path string, plugins ...clientgrpc.Plugin) (*bigquery.Client, error) {
+	o, err := NewOptionsWithPath(path)
 	if err != nil {
 		return nil, err
 	}
-	return NewClientWithOptions(ctx, options)
+	return NewClientWithOptions(ctx, o, plugins...)
 }
 
-// NewClientWithOptions returns a new bigquery client with options.
-func NewClientWithOptions(ctx context.Context, options *Options) (*bigquery.Client, error) {
+// NewClientWithOptions constructs a wrapped BigQuery client from Options.
+func NewClientWithOptions(ctx context.Context, o *Options, plugins ...clientgrpc.Plugin) (*bigquery.Client, error) {
+	logger := log.FromContext(ctx)
 
-	var opts []option.ClientOption
+	// API-level options
+	apiOpts := apiv1.ApplyAPIOptions(ctx, &o.APIOptions)
 
-	if options.Credentials.JSON != "" {
-		opts = append(opts, option.WithCredentialsJSON([]byte(options.Credentials.JSON)))
-	} else {
-		opts = append(opts, option.WithCredentialsFile(options.Credentials.File))
+	// gRPC-level DialOptions
+	grpcDialOpts := grpcv1.ApplyDialOptions(ctx, &o.GRPCOptions, plugins...)
+
+	// collect ClientOption
+	var clientOpts []option.ClientOption
+	clientOpts = append(clientOpts, apiOpts...)
+	for _, dop := range grpcDialOpts {
+		clientOpts = append(clientOpts, option.WithGRPCDialOption(dop))
 	}
 
-	return bigquery.NewClient(ctx, options.ProjectID, opts...)
+	// Quota project override
+	if o.UserProject != "" {
+		clientOpts = append(clientOpts, option.WithQuotaProject(o.UserProject))
+	}
+
+	logger.Debugf("creating BigQuery client for project %s", o.APIOptions.ProjectID)
+	bqClient, err := bigquery.NewClient(ctx, o.APIOptions.ProjectID, clientOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return bqClient, nil
 }
