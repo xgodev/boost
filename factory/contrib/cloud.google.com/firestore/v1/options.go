@@ -1,4 +1,4 @@
-package pubsub
+package firestore
 
 import (
 	apiv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/api/v0"
@@ -6,7 +6,7 @@ import (
 	"github.com/xgodev/boost/wrapper/config"
 )
 
-// Options holds shared API/gRPC options for Pub/Sub.
+// Options holds shared API/gRPC options for Firestore.
 type Options struct {
 	APIOptions  apiv1.Options  `config:"apiOptions"`
 	GRPCOptions grpcv1.Options `config:"grpcOptions"`
