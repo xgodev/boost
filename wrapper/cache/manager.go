@@ -111,14 +111,29 @@ func (m *Manager[T]) set(ctx context.Context, driveIndex int, key string, b []by
 }
 
 func (m *Manager[T]) isReplicable(opt Option, i int, driveIndex int) bool {
-	return (opt.Replicate && i < driveIndex) || len(m.drivers)-1 == driveIndex
+	// 1️⃣ sempre replicar para todos os anteriores
+	if opt.Replicate && i < driveIndex {
+		return true
+	}
+	// 2️⃣ se for o set inicial (driveIndex == último), grava também no próprio
+	last := len(m.drivers) - 1
+	if driveIndex == last && i == driveIndex {
+		return true
+	}
+	// caso contrário, não grava
+	return false
 }
 
-func (m *Manager[T]) GetOrSet(ctx context.Context, key string, cacheable Cacheable[T], opts ...OptionSet) (data T, err error) {
-
+func (m *Manager[T]) GetOrSet(
+	ctx context.Context,
+	key string,
+	cacheable Cacheable[T],
+	opts ...OptionSet,
+) (data T, err error) {
 	var b []byte
 	var index int
 
+	// ➊ busca sequencial
 	for i, d := range m.drivers {
 		c := m.newContext(ctx, d)
 		b, err = c.Get(key)
@@ -132,30 +147,34 @@ func (m *Manager[T]) GetOrSet(ctx context.Context, key string, cacheable Cacheab
 	}
 
 	if len(b) > 0 {
+		// ➋ decode
 		if err = m.codec.Decode(b, &data); err != nil {
 			return data, err
 		}
 
+		// ➌ warm-up apenas nos drivers anteriores
 		if index > 0 {
-			err = m.set(ctx, index, key, b, opts...)
-			if err != nil {
-				return data, err
+			for j := 0; j < index; j++ {
+				c := m.newContext(ctx, m.drivers[j])
+				if err = c.Set(key, b); err != nil {
+					return data, err
+				}
 			}
 		}
 
 	} else {
+		// ➍ cache miss: gera e salva normalmente (em todos, inclusive Redis)
 		data, err = cacheable(ctx)
 		if err != nil {
 			return data, err
 		}
-
 		err = m.Set(ctx, key, data, opts...)
 		if err != nil {
 			return data, err
 		}
 	}
 
-	return data, err
+	return data, nil
 }
 
 func (m *Manager[T]) Use(mid Plugin[T]) *Manager[T] {
