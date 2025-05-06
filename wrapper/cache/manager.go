@@ -127,6 +127,7 @@ func (m *Manager[T]) GetOrSet(ctx context.Context, key string, cacheable Cacheab
 		}
 		if len(b) > 0 {
 			index = i
+			break
 		}
 	}
 
