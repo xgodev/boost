@@ -18,7 +18,7 @@ func (c *Checker) Check(ctx context.Context) error {
 	return nil
 }
 
-//NewChecker returns a new health checker.
+// NewChecker returns a new health checker.
 func NewChecker(db *sql.DB) *Checker {
 	return &Checker{db: db}
 }
