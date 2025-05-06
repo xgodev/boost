@@ -16,6 +16,11 @@ func (c *Client) Del(ctx context.Context, key string) error {
 }
 
 func (c *Client) Get(ctx context.Context, key string) (data []byte, err error) {
+
+	if c.cache.Exists(ctx, key).Val() == 0 {
+		return nil, nil
+	}
+
 	return c.cache.Get(ctx, key).Bytes()
 }
 
