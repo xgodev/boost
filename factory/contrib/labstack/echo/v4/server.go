@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"github.com/xgodev/boost/wrapper/config"
 	"math/big"
 	"strconv"
 	"time"
@@ -27,12 +28,12 @@ type Server struct {
 }
 
 // NewServer returns a new echo server with default options.
-func NewServer(ctx context.Context, plugins ...Plugin) *Server {
+func NewServer(ctx context.Context, plugins ...Plugin) (*Server, error) {
 	opt, err := NewOptions()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return NewServerWithOptions(ctx, opt, plugins...)
+	return NewServerWithOptions(ctx, opt, plugins...), nil
 }
 
 // NewServerWithConfigPath returns a new echo server with options from config path.

@@ -27,7 +27,7 @@ func main() {
 
 	ctx := context.Background()
 
-	srv := echo.NewServer(ctx,
+	srv, _ := echo.NewServer(ctx,
 		logplugin.Register,
 		error_handler.Register)
 

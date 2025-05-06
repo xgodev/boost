@@ -44,7 +44,7 @@ func main() {
 
 	ctx1 := context.Background()
 
-	srv1 := echo.NewServer(ctx1,
+	srv1, _ := echo.NewServer(ctx1,
 		cors.Register,
 		requestid.Register,
 		gzip.Register,
