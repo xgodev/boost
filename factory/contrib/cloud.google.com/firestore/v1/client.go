@@ -31,38 +31,31 @@ func NewClientWithConfigPath(ctx context.Context, path string, plugins ...client
 }
 
 // NewClientWithOptions constructs a Firestore client from Options.
-func NewClientWithOptions(ctx context.Context, o *Options, plugins ...clientgrpc.Plugin) (*firestore.Client, error) {
+func NewClientWithOptions(
+	ctx context.Context,
+	o *Options,
+	plugins ...clientgrpc.Plugin,
+) (*firestore.Client, error) {
 	logger := log.FromContext(ctx)
 
-	// aplica opções de API leve
-	apiOpts := apiv1.ApplyAPIOptions(ctx, &o.APIOptions)
-	// aplica opções de dial gRPC (plugins, interceptors etc)
-	grpcDialOpts := grpcv1.ApplyDialOptions(ctx, &o.GRPCOptions, plugins...)
+	var clientOpts []option.ClientOption
 
-	// monta clientOpts
-	clientOpts := make([]option.ClientOption, 0, len(apiOpts)+len(grpcDialOpts)+2)
-	clientOpts = append(clientOpts, apiOpts...)
-	for _, dop := range grpcDialOpts {
-		clientOpts = append(clientOpts, option.WithGRPCDialOption(dop))
-	}
-	for _, plugin := range plugins {
-		if dopts, err := plugin(ctx); err == nil {
-			for _, dop := range dopts {
-				clientOpts = append(clientOpts, option.WithGRPCDialOption(dop))
-			}
+	if o.APIOptions.UseEmulator {
+		logger.Infof("using emulator at %s", o.APIOptions.EmulatorHost)
+		clientOpts = []option.ClientOption{
+			option.WithEndpoint(o.APIOptions.EmulatorHost),
+			option.WithGRPCDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())),
+			option.WithoutAuthentication(),
 		}
-	}
+	} else {
+		apiOpts := apiv1.ApplyAPIOptions(ctx, &o.APIOptions)
+		grpcDialOpts := grpcv1.ApplyDialOptions(ctx, &o.GRPCOptions, plugins...)
 
-	// se detectar o emulator, override do endpoint e desliga TLS/auth
-	if o.APIOptions.EmulatorHost != "" && o.APIOptions.UseEmulator {
-		logger.Infof("using Firestore emulator at %s", o.APIOptions.EmulatorHost)
-		clientOpts = append(clientOpts,
-			option.WithEndpoint(o.APIOptions.EmulatorHost), // host:porta do emulator
-			option.WithGRPCDialOption(grpc.WithTransportCredentials( // força canal inseguro
-				insecure.NewCredentials(),
-			)),
-			option.WithoutAuthentication(), // não tenta credenciais GCP
-		)
+		clientOpts = make([]option.ClientOption, len(apiOpts))
+		copy(clientOpts, apiOpts)
+		for _, dop := range grpcDialOpts {
+			clientOpts = append(clientOpts, option.WithGRPCDialOption(dop))
+		}
 	}
 
 	logger.Debugf("creating Firestore client for project %s", o.APIOptions.ProjectID)
