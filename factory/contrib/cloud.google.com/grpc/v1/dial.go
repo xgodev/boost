@@ -6,7 +6,6 @@ import (
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 // ApplyDialOptions retorna os DialOptions gRPC baseados em Options
@@ -19,7 +18,7 @@ func ApplyDialOptions(ctx context.Context, o *Options, plugins ...client.Plugin)
 		creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: o.TLS.InsecureSkipVerify})
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	} else {
-		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		// opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
 	// window sizes

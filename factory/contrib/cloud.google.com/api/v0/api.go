@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/xgodev/boost/wrapper/log"
 	"google.golang.org/api/option"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
 	"net/url"
 	"os"
@@ -30,7 +32,7 @@ func ApplyAPIOptions(ctx context.Context, o *Options) []option.ClientOption {
 		if host == "" {
 			host = os.Getenv("EMULATOR_HOST")
 		}
-		opts = append(opts, option.WithEndpoint(host), option.WithoutAuthentication())
+		opts = append(opts, option.WithEndpoint(host), option.WithoutAuthentication(), option.WithGRPCDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())))
 
 	} else {
 		// credentials
