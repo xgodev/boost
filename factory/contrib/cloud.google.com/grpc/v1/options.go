@@ -16,7 +16,6 @@ type Options struct {
 	} `config:"tls"`
 	InitialWindowSize     int    `config:"initialWindowSize"`
 	InitialConnWindowSize int    `config:"initialConnWindowSize"`
-	Block                 bool   `config:"block"`
 	HostOverwrite         string `config:"hostOverwrite"`
 	Backoff               struct {
 		BaseDelay  time.Duration `config:"baseDelay"`

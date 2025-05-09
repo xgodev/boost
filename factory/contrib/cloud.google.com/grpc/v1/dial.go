@@ -23,15 +23,12 @@ func ApplyDialOptions(ctx context.Context, o *Options, plugins ...client.Plugin)
 	} else {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
+
 	// window sizes
 	opts = append(opts,
 		grpc.WithInitialWindowSize(int32(o.InitialWindowSize)),
 		grpc.WithInitialConnWindowSize(int32(o.InitialConnWindowSize)),
 	)
-	// block
-	if o.Block {
-		opts = append(opts, grpc.WithBlock())
-	}
 	// authority override
 	if o.HostOverwrite != "" {
 		opts = append(opts, grpc.WithAuthority(o.HostOverwrite))

@@ -8,8 +8,6 @@ import (
 	clientgrpc "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client"
 	"github.com/xgodev/boost/wrapper/log"
 	"google.golang.org/api/option"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 // NewClient creates a Firestore client using default configuration.
@@ -38,24 +36,17 @@ func NewClientWithOptions(
 ) (*firestore.Client, error) {
 	logger := log.FromContext(ctx)
 
+	// API-level options
+	apiOpts := apiv1.ApplyAPIOptions(ctx, &o.APIOptions)
+
+	// gRPC-level DialOptions
+	grpcDialOpts := grpcv1.ApplyDialOptions(ctx, &o.GRPCOptions, plugins...)
+
+	// collect ClientOption
 	var clientOpts []option.ClientOption
-
-	if o.APIOptions.UseEmulator {
-		logger.Infof("using emulator at %s", o.APIOptions.EmulatorHost)
-		clientOpts = []option.ClientOption{
-			option.WithEndpoint(o.APIOptions.EmulatorHost),
-			option.WithGRPCDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())),
-			option.WithoutAuthentication(),
-		}
-	} else {
-		apiOpts := apiv1.ApplyAPIOptions(ctx, &o.APIOptions)
-		grpcDialOpts := grpcv1.ApplyDialOptions(ctx, &o.GRPCOptions, plugins...)
-
-		clientOpts = make([]option.ClientOption, len(apiOpts))
-		copy(clientOpts, apiOpts)
-		for _, dop := range grpcDialOpts {
-			clientOpts = append(clientOpts, option.WithGRPCDialOption(dop))
-		}
+	clientOpts = append(clientOpts, apiOpts...)
+	for _, dop := range grpcDialOpts {
+		clientOpts = append(clientOpts, option.WithGRPCDialOption(dop))
 	}
 
 	logger.Debugf("creating Firestore client for project %s", o.APIOptions.ProjectID)

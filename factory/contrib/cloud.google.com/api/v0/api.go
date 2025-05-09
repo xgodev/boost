@@ -2,9 +2,8 @@ package api
 
 import (
 	"context"
+	"github.com/xgodev/boost/wrapper/log"
 	"google.golang.org/api/option"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
 	"net/url"
 	"os"
@@ -13,6 +12,8 @@ import (
 // ApplyAPIOptions retorna os option.ClientOption da biblioteca
 // google.golang.org/api baseados em Options.
 func ApplyAPIOptions(ctx context.Context, o *Options) []option.ClientOption {
+
+	logger := log.FromContext(ctx)
 
 	var opts []option.ClientOption
 	// proxy
@@ -24,17 +25,18 @@ func ApplyAPIOptions(ctx context.Context, o *Options) []option.ClientOption {
 	}
 	// emulator
 	if o.UseEmulator {
+		logger.Debugf("using emulator at %s", o.EmulatorHost)
 		host := o.EmulatorHost
 		if host == "" {
 			host = os.Getenv("EMULATOR_HOST")
 		}
-		opts = append(opts, option.WithEndpoint(host), option.WithGRPCDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())), option.WithoutAuthentication())
+		opts = append(opts, option.WithEndpoint(host), option.WithoutAuthentication())
 
 	} else {
 		// credentials
 		if o.Credentials.JSON != "" {
 			opts = append(opts, option.WithCredentialsJSON([]byte(o.Credentials.JSON)))
-		} else {
+		} else if o.Credentials.File != "" {
 			opts = append(opts, option.WithCredentialsFile(o.Credentials.File))
 		}
 	}

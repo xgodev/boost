@@ -11,7 +11,6 @@ func ConfigAdd(path string) {
 	config.Add(path+".tls.insecureSkipVerify", false, "skip TLS certificate verification")
 	config.Add(path+".initialWindowSize", "65535", "initial stream window size in bytes")
 	config.Add(path+".initialConnWindowSize", "1048576", "initial connection window size in bytes")
-	config.Add(path+".block", false, "block until the connection is ready")
 	config.Add(path+".hostOverwrite", "", "authority header override")
 	config.Add(path+".connectParams.backoff.baseDelay", "1s", "gRPC backoff base delay")
 	config.Add(path+".connectParams.backoff.multiplier", "1.6", "gRPC backoff multiplier")
