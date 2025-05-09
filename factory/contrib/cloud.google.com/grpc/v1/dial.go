@@ -5,10 +5,8 @@ import (
 	"crypto/tls"
 	"github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/keepalive"
 )
 
 // ApplyDialOptions retorna os DialOptions gRPC baseados em Options
@@ -31,27 +29,35 @@ func ApplyDialOptions(ctx context.Context, o *Options, plugins ...client.Plugin)
 			grpc.WithInitialConnWindowSize(int32(o.InitialConnWindowSize)),
 		)
 	*/
-	
+
 	// authority override
-	if o.HostOverwrite != "" {
-		opts = append(opts, grpc.WithAuthority(o.HostOverwrite))
-	}
+	/*
+		if o.HostOverwrite != "" {
+			opts = append(opts, grpc.WithAuthority(o.HostOverwrite))
+		}
+	*/
+
 	// backoff
-	opts = append(opts, grpc.WithConnectParams(grpc.ConnectParams{
-		Backoff: backoff.Config{
-			BaseDelay:  o.Backoff.BaseDelay,
-			Multiplier: o.Backoff.Multiplier,
-			Jitter:     o.Backoff.Jitter,
-			MaxDelay:   o.Backoff.MaxDelay,
-		},
-		MinConnectTimeout: o.MinConnectTimeout,
-	}))
+	/*
+		opts = append(opts, grpc.WithConnectParams(grpc.ConnectParams{
+			Backoff: backoff.Config{
+				BaseDelay:  o.Backoff.BaseDelay,
+				Multiplier: o.Backoff.Multiplier,
+				Jitter:     o.Backoff.Jitter,
+				MaxDelay:   o.Backoff.MaxDelay,
+			},
+			MinConnectTimeout: o.MinConnectTimeout,
+		}))
+	*/
+
 	// keepalive
-	opts = append(opts, grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                o.Keepalive.Time,
-		Timeout:             o.Keepalive.Timeout,
-		PermitWithoutStream: o.Keepalive.PermitWithoutStream,
-	}))
+	/*
+		opts = append(opts, grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                o.Keepalive.Time,
+			Timeout:             o.Keepalive.Timeout,
+			PermitWithoutStream: o.Keepalive.PermitWithoutStream,
+		}))
+	*/
 
 	// plugins de gRPC
 	for _, plugin := range plugins {
