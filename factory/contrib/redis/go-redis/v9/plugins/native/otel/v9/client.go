@@ -2,6 +2,7 @@ package otel
 
 import (
 	"context"
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
@@ -48,7 +49,10 @@ func (d *Client) Register(ctx context.Context, client *redis.Client) error {
 
 	logger.Trace("integrating redis in otel")
 
-	if err := redisotel.InstrumentMetrics(client); err != nil {
+	if err := redisotel.InstrumentMetrics(client, redisotel.WithMeterProvider(otel.MeterProvider)); err != nil {
+		return err
+	}
+	if err := redisotel.InstrumentTracing(client, redisotel.WithTracerProvider(otel.TracerProvider)); err != nil {
 		return err
 	}
 
