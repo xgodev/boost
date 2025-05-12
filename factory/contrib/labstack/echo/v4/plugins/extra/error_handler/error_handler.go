@@ -2,7 +2,6 @@ package error_handler
 
 import (
 	"context"
-
 	e "github.com/labstack/echo/v4"
 	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"github.com/xgodev/boost/wrapper/log"
