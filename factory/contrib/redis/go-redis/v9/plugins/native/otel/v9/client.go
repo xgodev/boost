@@ -49,11 +49,16 @@ func (d *Client) Register(ctx context.Context, client *redis.Client) error {
 
 	logger.Trace("integrating redis in otel")
 
-	if err := redisotel.InstrumentMetrics(client, redisotel.WithMeterProvider(otel.MeterProvider)); err != nil {
-		return err
+	if otel.IsMetricEnabled() {
+		if err := redisotel.InstrumentMetrics(client, redisotel.WithMeterProvider(otel.MeterProvider)); err != nil {
+			return err
+		}
 	}
-	if err := redisotel.InstrumentTracing(client, redisotel.WithTracerProvider(otel.TracerProvider)); err != nil {
-		return err
+
+	if otel.IsTraceEnabled() {
+		if err := redisotel.InstrumentTracing(client, redisotel.WithTracerProvider(otel.TracerProvider)); err != nil {
+			return err
+		}
 	}
 
 	logger.Debug("redis successfully integrated in otel")
