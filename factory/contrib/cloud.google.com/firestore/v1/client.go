@@ -50,5 +50,5 @@ func NewClientWithOptions(
 	}
 
 	logger.Debugf("creating Firestore client for project %s", o.APIOptions.ProjectID)
-	return firestore.NewClient(ctx, o.APIOptions.ProjectID, clientOpts...)
+	return firestore.NewClientWithDatabase(ctx, o.APIOptions.ProjectID, o.Database, clientOpts...)
 }
