@@ -3,7 +3,6 @@ package otelsql
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
 	"github.com/XSAM/otelsql"
 	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
@@ -11,13 +10,13 @@ import (
 )
 
 // Register registers a new otel plugin on sql DB.
-func Register(ctx context.Context, db *sql.DB, connector driver.Connector) (d *sql.DB, err error) {
+func Register(ctx context.Context, db *sql.DB) error {
 	o, err := NewOptions()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	h := NewOTelWithOptions(o)
-	return h.Register(ctx, db, connector)
+	return h.Register(ctx, db)
 }
 
 // OTel represents otel plugin for go driver for oracle.
@@ -50,9 +49,9 @@ func NewOTel() *OTel {
 }
 
 // Register registers this otel plugin on sql DB.
-func (i *OTel) Register(ctx context.Context, db *sql.DB, connector driver.Connector) (d *sql.DB, err error) {
+func (i *OTel) Register(ctx context.Context, db *sql.DB) error {
 	if !i.options.Enabled || !otel.IsTraceEnabled() {
-		return nil, nil
+		return nil
 	}
 
 	logger := log.FromContext(ctx)
@@ -60,12 +59,12 @@ func (i *OTel) Register(ctx context.Context, db *sql.DB, connector driver.Connec
 	logger.Trace("integrating sql in otel")
 
 	if err := otelsql.RegisterDBStatsMetrics(db, otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL)); err != nil {
-		return nil, err
+		return err
 	}
 	otelsql.WithTracerProvider(otel.TracerProvider)
 	otelsql.WithMeterProvider(otel.MeterProvider)
 
 	logger.Debug("otel successfully integrated in sql")
 
-	return db, nil
+	return nil
 }

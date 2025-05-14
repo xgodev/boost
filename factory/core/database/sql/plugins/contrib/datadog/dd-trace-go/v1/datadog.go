@@ -3,20 +3,19 @@ package datadog
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
 	datadog "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
 	"github.com/xgodev/boost/wrapper/log"
 	sqltrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
 )
 
 // Register registers a new datadog plugin on sql DB.
-func Register(ctx context.Context, db *sql.DB, connector driver.Connector) (d *sql.DB, err error) {
+func Register(ctx context.Context, db *sql.DB) error {
 	o, err := NewOptions()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	h := NewDatadogWithOptions(o)
-	return h.Register(ctx, db, connector)
+	return h.Register(ctx, db)
 }
 
 // Datadog represents datadog plugin for go driver for oracle.
@@ -49,9 +48,9 @@ func NewDatadog(traceOptions ...sqltrace.Option) *Datadog {
 }
 
 // Register registers this datadog plugin on sql DB.
-func (i *Datadog) Register(ctx context.Context, db *sql.DB, connector driver.Connector) (d *sql.DB, err error) {
+func (i *Datadog) Register(ctx context.Context, db *sql.DB) error {
 	if !i.options.Enabled || !datadog.IsTracerEnabled() {
-		return nil, nil
+		return nil
 	}
 
 	logger := log.FromContext(ctx)
@@ -62,6 +61,6 @@ func (i *Datadog) Register(ctx context.Context, db *sql.DB, connector driver.Con
 
 	logger.Debug("datadog successfully integrated in sql")
 
-	return db, nil
+	return nil
 
 }

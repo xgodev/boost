@@ -3,20 +3,18 @@ package health
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
-
 	"github.com/xgodev/boost/extra/health"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 // Register registers a new health check on sql DB.
-func Register(ctx context.Context, db *sql.DB, connector driver.Connector) (d *sql.DB, err error) {
+func Register(ctx context.Context, db *sql.DB) error {
 	o, err := NewOptions()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	h := NewHealthWithOptions(o)
-	return h.Register(ctx, db, connector)
+	return h.Register(ctx, db)
 }
 
 // Health represents a health check for go driver for oracle.
@@ -49,7 +47,7 @@ func NewHealth() *Health {
 }
 
 // Register registers this health check on sql DB.
-func (i *Health) Register(ctx context.Context, db *sql.DB, connector driver.Connector) (d *sql.DB, err error) {
+func (i *Health) Register(ctx context.Context, db *sql.DB) error {
 
 	logger := log.FromContext(ctx).WithTypeOf(*i)
 
@@ -61,5 +59,5 @@ func (i *Health) Register(ctx context.Context, db *sql.DB, connector driver.Conn
 
 	logger.Debug("sql successfully integrated in health")
 
-	return db, nil
+	return nil
 }
