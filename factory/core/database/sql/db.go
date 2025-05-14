@@ -29,7 +29,7 @@ func NewDBWithOptions(ctx context.Context, connector driver.Connector, options *
 	db.SetMaxOpenConns(options.MaxOpenConns)
 
 	for _, plugin := range plugins {
-		db, err = plugin(ctx, db, connector)
+		err := plugin(ctx, db)
 		if err != nil {
 			return db, err
 		}
