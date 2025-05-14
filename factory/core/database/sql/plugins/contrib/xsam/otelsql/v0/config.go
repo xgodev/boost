@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	root    = sql.PluginsRoot + ".datadog"
+	root    = sql.PluginsRoot + ".otel"
 	enabled = ".enabled"
 )
 

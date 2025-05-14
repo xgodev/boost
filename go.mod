@@ -12,6 +12,7 @@ require (
 	cloud.google.com/go/bigquery v1.67.0
 	cloud.google.com/go/firestore v1.18.0
 	cloud.google.com/go/pubsub v1.49.0
+	github.com/XSAM/otelsql v0.38.0
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/aws/aws-sdk-go v1.55.7
@@ -72,7 +73,6 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/tidwall/buntdb v1.3.2
-	github.com/uptrace/opentelemetry-go-extra/otelsql v0.3.2
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/wesovilabs/beyond v1.0.1
 	go.mongodb.org/mongo-driver v1.17.3
