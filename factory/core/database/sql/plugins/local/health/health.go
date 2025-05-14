@@ -53,13 +53,13 @@ func (i *Health) Register(ctx context.Context, db *sql.DB, connector driver.Conn
 
 	logger := log.FromContext(ctx).WithTypeOf(*i)
 
-	logger.Trace("integrating godror in health")
+	logger.Trace("integrating sql in health")
 
 	checker := NewChecker(db)
 	hc := health.NewHealthChecker(i.options.Name, i.options.Description, checker, i.options.Required, i.options.Enabled)
 	health.Add(hc)
 
-	logger.Debug("godror successfully integrated in health")
+	logger.Debug("sql successfully integrated in health")
 
 	return db, nil
 }

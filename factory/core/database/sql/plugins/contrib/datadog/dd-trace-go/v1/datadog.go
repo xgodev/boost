@@ -56,11 +56,11 @@ func (i *Datadog) Register(ctx context.Context, db *sql.DB, connector driver.Con
 
 	logger := log.FromContext(ctx)
 
-	logger.Trace("integrating oracle in datadog")
+	logger.Trace("integrating sql in datadog")
 
 	sqltrace.Register("godror", db.Driver(), i.options.TraceOptions...)
 
-	logger.Debug("datadog successfully integrated in oracle")
+	logger.Debug("datadog successfully integrated in sql")
 
 	return db, nil
 
