@@ -1,12 +1,12 @@
 package health
 
 import (
-	"github.com/xgodev/boost/factory/contrib/godror/godror/v0"
+	"github.com/xgodev/boost/factory/core/database/sql"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (
-	root        = godror.PluginsRoot + ".health"
+	root        = sql.PluginsRoot + ".health"
 	name        = ".name"
 	description = ".description"
 	required    = ".required"
