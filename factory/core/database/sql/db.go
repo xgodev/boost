@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"github.com/xgodev/boost/wrapper/log"
 )
 
 // Plugin define os hooks de “antes” e “depois” de sql.OpenDB.
@@ -21,6 +22,9 @@ func NewDBWithOptions(
 	options *Options,
 	plugins ...Plugin,
 ) (*sql.DB, error) {
+
+	logger := log.FromContext(ctx)
+
 	// 1) Wrap do connector
 	var err error
 	for _, pl := range plugins {
@@ -32,12 +36,16 @@ func NewDBWithOptions(
 		}
 	}
 
+	logger.Debugf("after WrapConnector, driver is %T", connector.Driver())
+
 	// 2) Abre o DB e configura pool
 	db := sql.OpenDB(connector)
 	db.SetConnMaxLifetime(options.ConnMaxLifetime)
 	db.SetConnMaxIdleTime(options.ConnMaxIdletime)
 	db.SetMaxIdleConns(options.MaxIdletime)
 	db.SetMaxOpenConns(options.MaxOpenConns)
+
+	logger.Debugf("db.Driver() = %T", db.Driver())
 
 	// 3) Init no DB
 	for _, pl := range plugins {

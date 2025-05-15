@@ -18,10 +18,13 @@ type wrappedConnector struct {
 }
 
 func (w *wrappedConnector) Connect(ctx context.Context) (driver.Conn, error) {
+	logger := log.FromContext(ctx)
+	logger.Tracef("OTel-Connector CONNECT called, driver now: %T", w.wrappedDriver)
 	return w.orig.Connect(ctx)
 }
 
 func (w *wrappedConnector) Driver() driver.Driver {
+	log.Tracef("OTel-Connector DRIVER called, returning: %T", w.wrappedDriver)
 	return w.wrappedDriver
 }
 
@@ -89,7 +92,7 @@ func (p *OTel) WrapConnector(ctx context.Context, connector driver.Connector) (d
 // InitDB is called immediately after sql.OpenDB. If metrics are enabled,
 // it registers DB pool stats with OpenTelemetry.
 func (p *OTel) InitDB(ctx context.Context, db *sql.DB) error {
-	if !p.options.Enabled || (!otelboost.IsTraceEnabled() && !otelboost.IsMetricEnabled()) {
+	if !p.options.Enabled || !otelboost.IsMetricEnabled() {
 		return nil
 	}
 	logger := log.FromContext(ctx)
@@ -97,10 +100,6 @@ func (p *OTel) InitDB(ctx context.Context, db *sql.DB) error {
 
 	var opts []otelsql.Option
 	opts = append(opts, otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL))
-
-	if otelboost.IsTraceEnabled() {
-		opts = append(opts, otelsql.WithTracerProvider(otelboost.TracerProvider))
-	}
 
 	if otelboost.IsMetricEnabled() {
 		opts = append(opts, otelsql.WithMeterProvider(otelboost.MeterProvider))

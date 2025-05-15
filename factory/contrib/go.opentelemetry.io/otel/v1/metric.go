@@ -8,11 +8,14 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
+
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"google.golang.org/grpc/credentials"
 	"sync"
+	"time"
 )
 
 var MeterProvider metric.MeterProvider
@@ -63,6 +66,15 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 		if err != nil {
 			logger.WithError(err).Errorf("error creating opentelemetry reader")
 			return
+		}
+
+		if options.Console.Enabled {
+			consoleMetExp, err := stdoutmetric.New(stdoutmetric.WithPrettyPrint())
+			if err != nil {
+				log.Fatalf("stdout metric exporter: %v", err)
+			}
+			consoleReader := sdkmetric.NewPeriodicReader(consoleMetExp, sdkmetric.WithInterval(5*time.Second))
+			startOptions = append(startOptions, sdkmetric.WithReader(consoleReader))
 		}
 
 		startOptions = append(startOptions,
