@@ -4,55 +4,52 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"github.com/xgodev/boost/wrapper/log"
+	"fmt"
 )
 
-// NewDBWithConfigPath returns a new sql DB with options from config path.
-func NewDBWithConfigPath(ctx context.Context, connector driver.Connector, path string, plugins ...Plugin) (*sql.DB, error) {
-	opts, err := NewOptionsWithPath(path)
-	if err != nil {
-		return nil, err
-	}
-	return NewDBWithOptions(ctx, connector, opts, plugins...)
+type Plugin interface {
+	// WrapConnector é chamado antes de abrir o *sql.DB*,
+	// pra você trocar o driver/connector se quiser.
+	WrapConnector(ctx context.Context, connector driver.Connector) (driver.Connector, error)
+	// InitDB é chamado logo depois de abrir o *sql.DB*,
+	// pra você configurar métricas ou outros hooks.
+	InitDB(ctx context.Context, db *sql.DB) error
 }
 
-// NewDBWithOptions returns a new sql DB.
-func NewDBWithOptions(ctx context.Context, connector driver.Connector, options *Options, plugins ...Plugin) (db *sql.DB, err error) {
+func NewDBWithOptions(
+	ctx context.Context,
+	connector driver.Connector,
+	options *Options,
+	plugins []Plugin,
+) (*sql.DB, error) {
+	// 1) wrap do connector
+	var err error
+	for _, pl := range plugins {
+		if pl != nil {
+			connector, err = pl.WrapConnector(ctx, connector)
+			if err != nil {
+				return nil, fmt.Errorf("connector plugin: %w", err)
+			}
+		}
+	}
 
-	logger := log.FromContext(ctx)
-
-	db = sql.OpenDB(connector)
-
+	// 2) abre o DB
+	db := sql.OpenDB(connector)
 	db.SetConnMaxLifetime(options.ConnMaxLifetime)
 	db.SetConnMaxIdleTime(options.ConnMaxIdletime)
 	db.SetMaxIdleConns(options.MaxIdletime)
 	db.SetMaxOpenConns(options.MaxOpenConns)
 
-	for _, plugin := range plugins {
-		err := plugin(ctx, db)
-		if err != nil {
-			return db, err
+	// 3) init no DB
+	for _, pl := range plugins {
+		if err := pl.InitDB(ctx, db); err != nil {
+			return nil, fmt.Errorf("db plugin: %w", err)
 		}
 	}
 
-	if err = db.Ping(); err != nil {
+	// 4) ping
+	if err := db.PingContext(ctx); err != nil {
 		return nil, err
 	}
-
-	logger.Info("Connected to sql connector driver")
-
-	return db, err
-}
-
-// NewDB returns a new DB.
-func NewDB(ctx context.Context, connector driver.Connector, plugins ...Plugin) (*sql.DB, error) {
-
-	logger := log.FromContext(ctx)
-
-	o, err := NewOptions()
-	if err != nil {
-		logger.Fatalf(err.Error())
-	}
-
-	return NewDBWithOptions(ctx, connector, o, plugins...)
+	return db, nil
 }

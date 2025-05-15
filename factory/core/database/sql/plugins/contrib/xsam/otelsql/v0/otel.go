@@ -3,68 +3,94 @@ package otelsql
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
+
 	"github.com/XSAM/otelsql"
-	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
+	otelboost "github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
 	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
 )
 
-// Register registers a new otel plugin on sql DB.
-func Register(ctx context.Context, db *sql.DB) error {
-	o, err := NewOptions()
-	if err != nil {
-		return err
-	}
-	h := NewOTelWithOptions(o)
-	return h.Register(ctx, db)
+// wrappedConnector delegates Connect to the original connector
+// but returns the wrappedDriver from Driver().
+type wrappedConnector struct {
+	orig          driver.Connector
+	wrappedDriver driver.Driver
 }
 
-// OTel represents otel plugin for go driver for oracle.
+func (w *wrappedConnector) Connect(ctx context.Context) (driver.Conn, error) {
+	return w.orig.Connect(ctx)
+}
+
+func (w *wrappedConnector) Driver() driver.Driver {
+	return w.wrappedDriver
+}
+
+// OTel instruments database/sql with OpenTelemetry: it wraps the connector
+// to emit spans for each query and registers pool metrics on *sql.DB*.
 type OTel struct {
 	options *Options
 }
 
-// NewOTelWithOptions returns a new otel with options.
+// NewOTelWithOptions constructs the plugin with explicit Options.
 func NewOTelWithOptions(options *Options) *OTel {
 	return &OTel{options: options}
 }
 
-// NewOTelWithConfigPath returns a new otel with options from config path.
+// NewOTelWithConfigPath loads Options from the given config path.
 func NewOTelWithConfigPath(path string) (*OTel, error) {
-	o, err := NewOptionsWithPath(path)
+	opts, err := NewOptionsWithPath(path)
 	if err != nil {
 		return nil, err
 	}
-	return NewOTelWithOptions(o), nil
+	return NewOTelWithOptions(opts), nil
 }
 
-// NewOTel returns a new otel plugin.
+// NewOTel constructs the plugin with default Options.
 func NewOTel() *OTel {
-	o, err := NewOptions()
+	opts, err := NewOptions()
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
-
-	return NewOTelWithOptions(o)
+	return NewOTelWithOptions(opts)
 }
 
-// Register registers this otel plugin on sql DB.
-func (i *OTel) Register(ctx context.Context, db *sql.DB) error {
-	if !i.options.Enabled || !otel.IsTraceEnabled() {
+// WrapConnector is called before sql.OpenDB. If tracing is enabled,
+// it wraps the connector's Driver() so that each query emits an OTel span.
+func (p *OTel) WrapConnector(ctx context.Context, connector driver.Connector) (driver.Connector, error) {
+	if !p.options.Enabled || !otelboost.IsTraceEnabled() {
+		return connector, nil
+	}
+	logger := log.FromContext(ctx)
+	logger.Trace("wrapping connector for OpenTelemetry SQL tracing")
+
+	origDriver := connector.Driver()
+	wrappedDriver := otelsql.WrapDriver(
+		origDriver,
+		otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL),
+		otelsql.WithTracerProvider(otelboost.TracerProvider),
+		otelsql.WithMeterProvider(otelboost.MeterProvider),
+	)
+
+	return &wrappedConnector{
+		orig:          connector,
+		wrappedDriver: wrappedDriver,
+	}, nil
+}
+
+// InitDB is called immediately after sql.OpenDB. If metrics are enabled,
+// it registers DB pool stats with OpenTelemetry.
+func (p *OTel) InitDB(ctx context.Context, db *sql.DB) error {
+	if !p.options.Enabled {
 		return nil
 	}
-
 	logger := log.FromContext(ctx)
+	logger.Trace("registering OpenTelemetry SQL pool metrics")
 
-	logger.Trace("integrating sql in otel")
-
-	if err := otelsql.RegisterDBStatsMetrics(db, otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL)); err != nil {
-		return err
-	}
-	otelsql.WithTracerProvider(otel.TracerProvider)
-	otelsql.WithMeterProvider(otel.MeterProvider)
-
-	logger.Debug("otel successfully integrated in sql")
-
-	return nil
+	return otelsql.RegisterDBStatsMetrics(
+		db,
+		otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL),
+		otelsql.WithMeterProvider(otelboost.MeterProvider),
+		otelsql.WithTracerProvider(otelboost.TracerProvider),
+	)
 }

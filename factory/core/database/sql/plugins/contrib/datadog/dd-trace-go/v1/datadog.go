@@ -3,64 +3,66 @@ package datadog
 import (
 	"context"
 	"database/sql"
-	datadog "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
+	"database/sql/driver"
+
+	ddboost "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
 	"github.com/xgodev/boost/wrapper/log"
 	sqltrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
 )
 
-// Register registers a new datadog plugin on sql DB.
-func Register(ctx context.Context, db *sql.DB) error {
-	o, err := NewOptions()
-	if err != nil {
-		return err
-	}
-	h := NewDatadogWithOptions(o)
-	return h.Register(ctx, db)
-}
-
-// Datadog represents datadog plugin for go driver for oracle.
+// Datadog instruments database/sql for DataDog tracing.
 type Datadog struct {
 	options *Options
 }
 
-// NewDatadogWithOptions returns a new datadog with options.
+// NewDatadogWithOptions constructs the plugin with explicit Options.
 func NewDatadogWithOptions(options *Options) *Datadog {
 	return &Datadog{options: options}
 }
 
-// NewDatadogWithConfigPath returns a new datadog with options from config path.
+// NewDatadogWithConfigPath loads Options (and traceOpts) from the given path.
 func NewDatadogWithConfigPath(path string, traceOptions ...sqltrace.Option) (*Datadog, error) {
-	o, err := NewOptionsWithPath(path, traceOptions...)
+	opts, err := NewOptionsWithPath(path, traceOptions...)
 	if err != nil {
 		return nil, err
 	}
-	return NewDatadogWithOptions(o), nil
+	return NewDatadogWithOptions(opts), nil
 }
 
-// NewDatadog returns a new datadog plugin.
+// NewDatadog constructs the plugin with default Options.
 func NewDatadog(traceOptions ...sqltrace.Option) *Datadog {
-	o, err := NewOptions(traceOptions...)
+	opts, err := NewOptions(traceOptions...)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
-
-	return NewDatadogWithOptions(o)
+	return NewDatadogWithOptions(opts)
 }
 
-// Register registers this datadog plugin on sql DB.
-func (i *Datadog) Register(ctx context.Context, db *sql.DB) error {
-	if !i.options.Enabled || !datadog.IsTracerEnabled() {
+// WrapConnector is a no-op for DataDog: instrumentation happens on InitDB.
+func (d *Datadog) WrapConnector(ctx context.Context, connector driver.Connector) (driver.Connector, error) {
+	return connector, nil
+}
+
+// InitDB registers the DataDog SQL driver to start tracing queries.
+func (d *Datadog) InitDB(ctx context.Context, db *sql.DB) error {
+	if !d.options.Enabled || !ddboost.IsTracerEnabled() {
 		return nil
 	}
-
 	logger := log.FromContext(ctx)
-
 	logger.Trace("integrating sql in datadog")
 
-	sqltrace.Register("godror", db.Driver(), i.options.TraceOptions...)
+	// Register the existing driver under the given name for tracing
+	sqltrace.Register(
+		"datadog-sql",
+		db.Driver(),
+		d.options.TraceOptions...,
+	)
 
 	logger.Debug("datadog successfully integrated in sql")
-
 	return nil
+}
 
+// Register is provided for backward compatibility and simply calls InitDB.
+func (d *Datadog) Register(ctx context.Context, db *sql.DB) error {
+	return d.InitDB(ctx, db)
 }
