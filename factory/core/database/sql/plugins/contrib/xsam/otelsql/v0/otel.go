@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-
 	"github.com/XSAM/otelsql"
 	otelboost "github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
@@ -58,18 +57,27 @@ func NewOTel() *OTel {
 // WrapConnector is called before sql.OpenDB. If tracing is enabled,
 // it wraps the connector's Driver() so that each query emits an OTel span.
 func (p *OTel) WrapConnector(ctx context.Context, connector driver.Connector) (driver.Connector, error) {
-	if !p.options.Enabled || !otelboost.IsTraceEnabled() {
+	if !p.options.Enabled || (!otelboost.IsTraceEnabled() && !otelboost.IsMetricEnabled()) {
 		return connector, nil
 	}
 	logger := log.FromContext(ctx)
 	logger.Trace("wrapping connector for OpenTelemetry SQL tracing")
 
+	var opts []otelsql.Option
+	opts = append(opts, otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL))
+
+	if otelboost.IsTraceEnabled() {
+		opts = append(opts, otelsql.WithTracerProvider(otelboost.TracerProvider))
+	}
+
+	if otelboost.IsMetricEnabled() {
+		opts = append(opts, otelsql.WithMeterProvider(otelboost.MeterProvider))
+	}
+
 	origDriver := connector.Driver()
 	wrappedDriver := otelsql.WrapDriver(
 		origDriver,
-		otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL),
-		otelsql.WithTracerProvider(otelboost.TracerProvider),
-		otelsql.WithMeterProvider(otelboost.MeterProvider),
+		opts...,
 	)
 
 	return &wrappedConnector{
@@ -81,16 +89,25 @@ func (p *OTel) WrapConnector(ctx context.Context, connector driver.Connector) (d
 // InitDB is called immediately after sql.OpenDB. If metrics are enabled,
 // it registers DB pool stats with OpenTelemetry.
 func (p *OTel) InitDB(ctx context.Context, db *sql.DB) error {
-	if !p.options.Enabled {
+	if !p.options.Enabled || (!otelboost.IsTraceEnabled() && !otelboost.IsMetricEnabled()) {
 		return nil
 	}
 	logger := log.FromContext(ctx)
 	logger.Trace("registering OpenTelemetry SQL pool metrics")
 
+	var opts []otelsql.Option
+	opts = append(opts, otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL))
+
+	if otelboost.IsTraceEnabled() {
+		opts = append(opts, otelsql.WithTracerProvider(otelboost.TracerProvider))
+	}
+
+	if otelboost.IsMetricEnabled() {
+		opts = append(opts, otelsql.WithMeterProvider(otelboost.MeterProvider))
+	}
+
 	return otelsql.RegisterDBStatsMetrics(
 		db,
-		otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL),
-		otelsql.WithMeterProvider(otelboost.MeterProvider),
-		otelsql.WithTracerProvider(otelboost.TracerProvider),
+		opts...,
 	)
 }

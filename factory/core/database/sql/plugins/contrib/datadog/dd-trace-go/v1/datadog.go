@@ -61,8 +61,3 @@ func (d *Datadog) InitDB(ctx context.Context, db *sql.DB) error {
 	logger.Debug("datadog successfully integrated in sql")
 	return nil
 }
-
-// Register is provided for backward compatibility and simply calls InitDB.
-func (d *Datadog) Register(ctx context.Context, db *sql.DB) error {
-	return d.InitDB(ctx, db)
-}
