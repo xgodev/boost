@@ -1,28 +1,72 @@
 package prometheus
 
 import (
-	"context"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-func Push(ctx context.Context) {
-	if PushGatewayEnabled() {
-		if PushGatewayAsync() {
-			go pushMetrics(ctx)
-		} else {
-			pushMetrics(ctx)
-		}
+var (
+	once sync.Once
+)
+
+// startPusherInternal inicia o ticker + hook de shutdown
+func startPusherInternal() {
+	if !PushGatewayEnabled() {
+		return
 	}
+
+	interval := PushInterval()
+	ticker := time.NewTicker(interval)
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		defer ticker.Stop()
+		logger := log.WithField("interval", interval.String())
+		logger.Infof("starting Prometheus PushGateway pusher")
+
+		for {
+			select {
+			case <-ticker.C:
+				pushOnce()
+
+			case sig := <-sigCh:
+				logger.Infof("received signal %s, doing final push", sig)
+				pushOnce()
+				logger.Infof("stopping Prometheus PushGateway pusher")
+				return
+			}
+		}
+	}()
 }
 
-func pushMetrics(ctx context.Context) {
-	if err := push.New(PushGatewayURL(), boost.ApplicationName()).
+// StartPusher garante que o background pusher só comece 1×
+func StartPusher() {
+	once.Do(startPusherInternal)
+}
+
+// FlushMetrics força um push síncrono **uma única vez**, quando você chamar
+func FlushMetrics() {
+	pushOnce()
+}
+
+// pushOnce faz o push, se habilitado
+func pushOnce() {
+	if !PushGatewayEnabled() {
+		return
+	}
+	if err := push.
+		New(PushGatewayURL(), boost.ApplicationName()).
 		Gatherer(prometheus.DefaultGatherer).
 		Push(); err != nil {
-		logger := log.FromContext(ctx)
-		logger.WithError(err).Warnf("error on push metrics")
+		log.WithError(err).Warnf("error pushing metrics to PushGateway")
 	}
 }

@@ -26,6 +26,7 @@ var (
 )
 
 func init() {
+	p.StartPusher()
 	prometheus.MustRegister(messagesProcessed)
 	prometheus.MustRegister(messageProcessingLatency)
 }
@@ -47,8 +48,6 @@ func (c *Prometheus[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware
 	}
 
 	messagesProcessed.WithLabelValues(status, boost.ApplicationName()).Inc()
-
-	p.Push(ctx.GetContext())
 
 	return e, err
 }
