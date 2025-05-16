@@ -26,6 +26,7 @@ var (
 )
 
 func init() {
+	p.StartPusher()
 	prometheus.MustRegister(messagesProcessed)
 	prometheus.MustRegister(messageProcessingLatency)
 }
@@ -55,8 +56,6 @@ func (c *Prometheus) Exec(ctx *middleware.AnyErrorContext[[]publisher.PublishOut
 		messagesProcessed.WithLabelValues(status, output.Event.Source(), output.Event.Subject()).Inc()
 
 	}
-
-	p.Push(ctx.GetContext())
 
 	return outputs, err
 }
