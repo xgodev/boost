@@ -31,7 +31,7 @@ func startPusherInternal() {
 	go func() {
 		defer ticker.Stop()
 		logger := log.WithField("interval", interval.String())
-		logger.Infof("starting Prometheus PushGateway pusher")
+		logger.Debugf("starting Prometheus PushGateway pusher")
 
 		for {
 			select {
@@ -39,9 +39,9 @@ func startPusherInternal() {
 				pushOnce()
 
 			case sig := <-sigCh:
-				logger.Infof("received signal %s, doing final push", sig)
+				logger.Tracef("received signal %s, doing final push", sig)
 				pushOnce()
-				logger.Infof("stopping Prometheus PushGateway pusher")
+				logger.Debugf("stopping Prometheus PushGateway pusher")
 				return
 			}
 		}
