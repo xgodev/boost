@@ -26,7 +26,6 @@ var (
 )
 
 func init() {
-	p.StartPusher()
 	prometheus.MustRegister(messagesProcessed)
 	prometheus.MustRegister(messageProcessingLatency)
 }
@@ -65,5 +64,6 @@ func NewAnyErrorMiddleware() middleware.AnyErrorMiddleware[[]publisher.PublishOu
 }
 
 func NewPrometheus() *Prometheus {
+	p.StartPusher()
 	return &Prometheus{}
 }
