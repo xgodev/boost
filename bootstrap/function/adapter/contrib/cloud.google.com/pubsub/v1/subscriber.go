@@ -72,13 +72,13 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message)
 	for {
 		// Timeout por tentativa
 		msgCtx, cancel := context.WithTimeout(ctx, l.options.ProcessTimeout)
-		defer cancel()
 
 		// Processes the event via handler
 		if _, err := l.handler(msgCtx, in); err != nil {
+			cancel()
 			retryCount++
 
-			logger.Warnf("handler failed (attempt %d/%d): %v\nPayload: %s", retryCount, l.options.RetryLimit, err, string(msg.Data))
+			logger.Warnf("msgID=%s handler failed (attempt %d/%d): %v\nPayload: %s", msg.ID, retryCount, l.options.RetryLimit, err, string(msg.Data))
 
 			// Check retry limit
 			if l.options.RetryLimit != -1 && retryCount >= l.options.RetryLimit {
@@ -94,6 +94,7 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message)
 			continue
 		}
 
+		cancel()
 		// Acknowledge the message after successful processing
 		msg.Ack()
 		break
@@ -155,6 +156,11 @@ func (l *Subscriber[T]) generateCloudEvent(msg *pubsub.Message) (event.Event, er
 	if err := in.SetData(contentType, msg.Data); err != nil {
 		return event.Event{}, errors.Wrap(err, errors.Internalf("could not set data from pubsub message: %s", err.Error()))
 	}
+
+	if err := in.Validate(); err != nil {
+		return event.Event{}, errors.Wrap(err, errors.Internalf("invalid CloudEvent: %s", err.Error()))
+	}
+
 	return in, nil
 }
 
