@@ -6,7 +6,7 @@ import (
 	"crypto/x509"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/event"
@@ -169,7 +169,7 @@ func clientOptions(ctx context.Context, o *Options) (*options.ClientOptions, err
 
 		// Load CA certificate if provided
 		if o.TLSCAFile != "" {
-			caCert, err := ioutil.ReadFile(o.TLSCAFile)
+			caCert, err := os.ReadFile(o.TLSCAFile)
 			if err != nil {
 				return nil, errors.NewInternal(err, "Failed to read TLS CA file")
 			}

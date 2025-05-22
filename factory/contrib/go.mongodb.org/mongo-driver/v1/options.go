@@ -52,7 +52,6 @@ type Options struct {
 	// Retry configuration
 	RetryReads              *bool
 	RetryWrites             *bool
-	RetryableWritesEnabled  *bool
 
 	// Replica set configuration
 	ReplicaSet              string
@@ -230,10 +229,6 @@ func (o *Options) ToClientOptions() *options.ClientOptions {
 	}
 	if o.RetryWrites != nil {
 		clientOptions.SetRetryWrites(*o.RetryWrites)
-	}
-	if o.RetryableWritesEnabled != nil {
-		// This is a deprecated option, but included for backward compatibility
-		clientOptions.SetRetryWrites(*o.RetryableWritesEnabled)
 	}
 
 	// Replica set configuration
