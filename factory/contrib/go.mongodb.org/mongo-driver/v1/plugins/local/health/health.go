@@ -34,7 +34,7 @@ func NewHealth() (*Health, error) {
 	o, err := NewOptions()
 	if err != nil {
 		log.Errorf("Falha ao obter opções de health: %v", err)
-		return nil, errors.Annotatef(err, "falha ao obter opções de health")
+		return nil, errors.NewInternal(err, "falha ao obter opções de health")
 	}
 	return NewHealthWithOptions(o), nil
 }
