@@ -2,8 +2,8 @@ package health
 
 import (
 	"context"
-	"fmt"
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
+	"github.com/xgodev/boost/model/errors"
 
 	"github.com/xgodev/boost/extra/health"
 	"github.com/xgodev/boost/wrapper/log"
@@ -34,7 +34,7 @@ func NewHealth() (*Health, error) {
 	o, err := NewOptions()
 	if err != nil {
 		log.Errorf("Falha ao obter opções de health: %v", err)
-		return nil, fmt.Errorf("falha ao obter opções de health: %w", err)
+		return nil, errors.Annotatef(err, "falha ao obter opções de health")
 	}
 	return NewHealthWithOptions(o), nil
 }
