@@ -157,9 +157,11 @@ func (l *Subscriber[T]) generateCloudEvent(msg *pubsub.Message) (event.Event, er
 		return event.Event{}, errors.Wrap(err, errors.Internalf("could not set data from pubsub message: %s", err.Error()))
 	}
 
-	if err := in.Validate(); err != nil {
-		return event.Event{}, errors.Wrap(err, errors.Internalf("invalid CloudEvent: %s", err.Error()))
-	}
+	/*
+		if err := in.Validate(); err != nil {
+			return event.Event{}, errors.Wrap(err, errors.Internalf("invalid CloudEvent: %s", err.Error()))
+		}
+	*/
 
 	return in, nil
 }
