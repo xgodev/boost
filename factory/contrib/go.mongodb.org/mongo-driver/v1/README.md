@@ -102,6 +102,15 @@ All configuration options are accessible through the Boost configuration system.
 | `boost.factory.mongo.app_name` | `""` | Application name for MongoDB logs and profiling |
 | `boost.factory.mongo.load_balanced` | `false` | Enable load balanced mode |
 
+## Configuration Priority
+
+The MongoDB driver factory follows this configuration priority order:
+
+1. **URI Parameters**: Settings specified in the connection URI have the highest priority
+2. **Explicit Options**: Settings specified through configuration options have lower priority
+
+This means that any parameter specified in the URI will override the same parameter set through configuration options.
+
 ## Usage Examples
 
 ### Basic Connection with Advanced Options
@@ -122,12 +131,14 @@ func main() {
 	boost.Start()
 	
 	// Configure MongoDB options
-	config.Set("boost.factory.mongo.uri", "mongodb://localhost:27017/mydb")
 	config.Set("boost.factory.mongo.pool.max_size", 100)
 	config.Set("boost.factory.mongo.pool.min_size", 10)
 	config.Set("boost.factory.mongo.timeout.connect_ms", 5000)
 	config.Set("boost.factory.mongo.read_preference.mode", "secondaryPreferred")
 	config.Set("boost.factory.mongo.write_concern.j", true)
+	
+	// URI parameters will override any conflicting options above
+	config.Set("boost.factory.mongo.uri", "mongodb://localhost:27017/mydb?maxPoolSize=50&readPreference=primary")
 	
 	// Create MongoDB connection
 	conn, err := mongo.NewConn(context.Background())

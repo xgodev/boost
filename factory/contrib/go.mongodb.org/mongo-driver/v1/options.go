@@ -83,7 +83,8 @@ func NewOptionsWithPath(path string) (opts *Options, err error) {
 
 // ToClientOptions converts the Options struct to MongoDB ClientOptions
 func (o *Options) ToClientOptions() *options.ClientOptions {
-	clientOptions := options.Client().ApplyURI(o.Uri)
+	// Create empty client options first
+	clientOptions := options.Client()
 
 	// Apply authentication if provided
 	if o.Auth != nil && (o.Auth.Username != "" || o.Auth.Password != "") {
@@ -272,6 +273,9 @@ func (o *Options) ToClientOptions() *options.ClientOptions {
 	if o.DisableWriteRetryability != nil {
 		clientOptions.SetDisableWriteRetryability(*o.DisableWriteRetryability)
 	}
+
+	// Apply URI last to ensure its settings have priority
+	clientOptions.ApplyURI(o.Uri)
 
 	return clientOptions
 }
