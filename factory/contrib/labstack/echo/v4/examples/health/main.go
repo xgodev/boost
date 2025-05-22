@@ -35,7 +35,7 @@ func main() {
 	hc := health.NewHealthChecker("teste", "teste", &MyChecker{}, true, true)
 	health.Add(hc)
 
-	srv := echo.NewServer(ctx, h.Register)
+	srv, _ := echo.NewServer(ctx, h.Register)
 
 	srv.GET("/hello", helloHandler)
 

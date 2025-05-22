@@ -7,12 +7,12 @@ import (
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-// Cluster represents a datadog client for redis cluster client.
+// Cluster represents a prometheus client for redis cluster client.
 type Cluster struct {
 	options *Options
 }
 
-// NewClusterWithConfigPath returns datadog client with options from config path.
+// NewClusterWithConfigPath returns prometheus client with options from config path.
 func NewClusterWithConfigPath(path string) (*Cluster, error) {
 	o, err := NewOptionsWithPath(path)
 	if err != nil {
@@ -22,7 +22,7 @@ func NewClusterWithConfigPath(path string) (*Cluster, error) {
 	return NewClusterWithOptions(o), nil
 }
 
-// NewCluster returns datadog client with default options.
+// NewCluster returns prometheus client with default options.
 func NewCluster() (*Cluster, error) {
 	o, err := NewOptions()
 	if err != nil {
@@ -32,12 +32,12 @@ func NewCluster() (*Cluster, error) {
 	return NewClusterWithOptions(o), nil
 }
 
-// NewClusterWithOptions returns datadog client with options.
+// NewClusterWithOptions returns prometheus client with options.
 func NewClusterWithOptions(options *Options) *Cluster {
 	return &Cluster{options: options}
 }
 
-// Register registers this datadog client on redis cluster client.
+// Register registers this prometheus client on redis cluster client.
 func (d *Cluster) Register(ctx context.Context, client *redis.ClusterClient) error {
 	if !d.options.Enabled {
 		return nil
@@ -45,16 +45,16 @@ func (d *Cluster) Register(ctx context.Context, client *redis.ClusterClient) err
 
 	logger := log.FromContext(ctx)
 
-	logger.Trace("integrating redis in datadog")
+	logger.Trace("integrating redis in prometheus")
 
 	client.AddHook(NewHook())
 
-	logger.Debug("redis successfully integrated in datadog")
+	logger.Debug("redis successfully integrated in prometheus")
 
 	return nil
 }
 
-// ClusterRegister registers a new datadog client on redis cluster client.
+// ClusterRegister registers a new prometheus client on redis cluster client.
 func ClusterRegister(ctx context.Context, client *redis.ClusterClient) error {
 	o, err := NewOptions()
 	if err != nil {

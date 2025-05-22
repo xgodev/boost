@@ -77,13 +77,7 @@ func loggerMiddleware(level string) e.MiddlewareFunc {
 
 			ctx := req.Context()
 
-			id := req.Header.Get(e.HeaderXRequestID)
-			if id == "" {
-				id = res.Header().Get(e.HeaderXRequestID)
-			}
-
 			logger := log.FromContext(ctx).
-				WithField("requestId", id).
 				WithField("requestUri", req.RequestURI)
 
 			ctx = logger.ToContext(ctx)
@@ -108,8 +102,7 @@ func loggerMiddleware(level string) e.MiddlewareFunc {
 					method = logger.Debugf
 				}
 
-				method("%s %s %s %-7s %s %3d %s %s %13v %s %s",
-					id,
+				method("%s %s %-7s %s %3d %s %s %13v %s %s",
 					c.RealIP(),
 					req.Host,
 					req.Method,
