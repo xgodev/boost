@@ -68,7 +68,6 @@ type Options struct {
 	ZlibLevel               *int
 	ZstdLevel               *int
 	LoadBalanced            *bool
-	DisableWriteRetryability *bool
 }
 
 // NewOptions returns options from config file or environment vars.
@@ -167,21 +166,15 @@ func (o *Options) ToClientOptions() *options.ClientOptions {
 			mode = readpref.NearestMode
 		}
 		
-		// Convert tag sets to readpref.TagSet
-		var tagSets []readpref.TagSet
-		for _, ts := range o.ReadPreferenceTagSets {
-			tagSet := make(readpref.TagSet)
-			for k, v := range ts {
-				tagSet[k] = v
-			}
-			tagSets = append(tagSets, tagSet)
+		// Handle tag sets using the proper approach for the driver version
+		rpOpts := []readpref.Option{}
+		
+		// Convert tag sets to the format expected by the driver
+		if len(o.ReadPreferenceTagSets) > 0 {
+			// Create tag sets directly as []map[string]string
+			rpOpts = append(rpOpts, readpref.WithTagSetsFromMaps(o.ReadPreferenceTagSets))
 		}
 		
-		// Create read preference with appropriate options
-		rpOpts := []readpref.Option{}
-		if len(tagSets) > 0 {
-			rpOpts = append(rpOpts, readpref.WithTagSets(tagSets...))
-		}
 		if o.ReadPreferenceMaxStaleness != nil {
 			rpOpts = append(rpOpts, readpref.WithMaxStaleness(*o.ReadPreferenceMaxStaleness))
 		}
@@ -269,9 +262,6 @@ func (o *Options) ToClientOptions() *options.ClientOptions {
 	}
 	if o.LoadBalanced != nil {
 		clientOptions.SetLoadBalanced(*o.LoadBalanced)
-	}
-	if o.DisableWriteRetryability != nil {
-		clientOptions.SetDisableWriteRetryability(*o.DisableWriteRetryability)
 	}
 
 	// Apply URI last to ensure its settings have priority
