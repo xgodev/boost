@@ -2,6 +2,7 @@ package health
 
 import (
 	"context"
+	"fmt"
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 
 	"github.com/xgodev/boost/extra/health"
@@ -29,12 +30,13 @@ func NewHealthWithConfigPath(path string) (*Health, error) {
 }
 
 // NewHealth returns a new health with default options.
-func NewHealth() *Health {
+func NewHealth() (*Health, error) {
 	o, err := NewOptions()
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Errorf("Falha ao obter opções de health: %v", err)
+		return nil, fmt.Errorf("falha ao obter opções de health: %w", err)
 	}
-	return NewHealthWithOptions(o)
+	return NewHealthWithOptions(o), nil
 }
 
 // Register registers this health plugin on a new mongo client.

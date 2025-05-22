@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"github.com/xgodev/boost/wrapper/log"
 	"strings"
 
@@ -36,7 +37,8 @@ func NewConn(ctx context.Context, plugins ...Plugin) (*Conn, error) {
 
 	o, err := NewOptions()
 	if err != nil {
-		logger.Fatalf(err.Error())
+		logger.Errorf("Falha ao obter opções padrão: %v", err)
+		return nil, fmt.Errorf("falha ao obter opções padrão: %w", err)
 	}
 
 	return NewConnWithOptions(ctx, o, plugins...)
@@ -71,12 +73,14 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 
 	co, err := clientOptions(ctx, o)
 	if err != nil {
-		logger.Fatalf(err.Error())
+		logger.Errorf("Falha ao criar opções de cliente: %v", err)
+		return nil, fmt.Errorf("falha ao criar opções de cliente: %w", err)
 	}
 
 	for _, clientOptionsPlugin := range clientOptionsPlugins {
 		if err := clientOptionsPlugin(ctx, co); err != nil {
-			logger.Fatalf(err.Error())
+			logger.Errorf("Falha ao aplicar plugin de opções de cliente: %v", err)
+			return nil, fmt.Errorf("falha ao aplicar plugin de opções de cliente: %w", err)
 		}
 	}
 
@@ -90,7 +94,8 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 
 	for _, clientPlugin := range clientPlugins {
 		if err := clientPlugin(ctx, client); err != nil {
-			logger.Fatalf(err.Error())
+			logger.Errorf("Falha ao aplicar plugin de cliente: %v", err)
+			return nil, fmt.Errorf("falha ao aplicar plugin de cliente: %w", err)
 		}
 	}
 
