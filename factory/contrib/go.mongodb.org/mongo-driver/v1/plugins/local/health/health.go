@@ -33,8 +33,8 @@ func NewHealthWithConfigPath(path string) (*Health, error) {
 func NewHealth() (*Health, error) {
 	o, err := NewOptions()
 	if err != nil {
-		log.Errorf("Falha ao obter opções de health: %v", err)
-		return nil, errors.NewInternal(err, "falha ao obter opções de health")
+		log.Errorf("Failed to get health options: %v", err)
+		return nil, errors.NewInternal(err, "failed to get health options")
 	}
 	return NewHealthWithOptions(o), nil
 }

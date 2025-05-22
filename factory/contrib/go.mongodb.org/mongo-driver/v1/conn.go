@@ -37,8 +37,8 @@ func NewConn(ctx context.Context, plugins ...Plugin) (*Conn, error) {
 
 	o, err := NewOptions()
 	if err != nil {
-		logger.Errorf("Falha ao obter opções padrão: %v", err)
-		return nil, errors.NewInternal(err, "falha ao obter opções padrão")
+		logger.Errorf("Failed to get default options: %v", err)
+		return nil, errors.NewInternal(err, "failed to get default options")
 	}
 
 	return NewConnWithOptions(ctx, o, plugins...)
@@ -73,14 +73,14 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 
 	co, err := clientOptions(ctx, o)
 	if err != nil {
-		logger.Errorf("Falha ao criar opções de cliente: %v", err)
-		return nil, errors.NewInternal(err, "falha ao criar opções de cliente")
+		logger.Errorf("Failed to create client options: %v", err)
+		return nil, errors.NewInternal(err, "failed to create client options")
 	}
 
 	for _, clientOptionsPlugin := range clientOptionsPlugins {
 		if err := clientOptionsPlugin(ctx, co); err != nil {
-			logger.Errorf("Falha ao aplicar plugin de opções de cliente: %v", err)
-			return nil, errors.NewInternal(err, "falha ao aplicar plugin de opções de cliente")
+			logger.Errorf("Failed to apply client options plugin: %v", err)
+			return nil, errors.NewInternal(err, "failed to apply client options plugin")
 		}
 	}
 
@@ -94,8 +94,8 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 
 	for _, clientPlugin := range clientPlugins {
 		if err := clientPlugin(ctx, client); err != nil {
-			logger.Errorf("Falha ao aplicar plugin de cliente: %v", err)
-			return nil, errors.NewInternal(err, "falha ao aplicar plugin de cliente")
+			logger.Errorf("Failed to apply client plugin: %v", err)
+			return nil, errors.NewInternal(err, "failed to apply client plugin")
 		}
 	}
 
