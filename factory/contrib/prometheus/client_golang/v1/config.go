@@ -1,6 +1,8 @@
 package prometheus
 
 import (
+	"time"
+
 	"github.com/xgodev/boost/wrapper/config"
 )
 
@@ -9,39 +11,42 @@ const (
 	pushGateway = root + ".pushGateway"
 	pgEnabled   = pushGateway + ".enabled"
 	pgURL       = pushGateway + ".url"
-	pgAsync     = pushGateway + ".async"
+	pgInterval  = pushGateway + ".interval" // new
 )
 
 func init() {
-	config.Add(pgEnabled, false, "enables/disables prometheus push gateway")
-	config.Add(pgURL, "http://localhost", "defines prometheus push gateway url")
-	config.Add(pgAsync, true, "enables/disables prometheus push gateway async")
+	config.Add(pgEnabled, false, "enable/disable prometheus push gateway")
+	config.Add(pgURL, "http://localhost:9091", "prometheus push gateway URL")
+	config.Add(pgInterval, "10s", "interval between push gateway pushes") // default 10 seconds
 }
 
-var pgEnabledVar *bool
-var pgAsyncVar *bool
-var pgURLVar *string
+var (
+	pgEnabledVar  *bool
+	pgURLVar      *string
+	pgIntervalVar *time.Duration
+)
 
 func PushGatewayEnabled() bool {
 	if pgEnabledVar == nil {
-		chk := config.Bool(pgEnabled)
-		pgEnabledVar = &chk
+		v := config.Bool(pgEnabled)
+		pgEnabledVar = &v
 	}
 	return *pgEnabledVar
 }
 
-func PushGatewayAsync() bool {
-	if pgAsyncVar == nil {
-		chk := config.Bool(pgAsync)
-		pgAsyncVar = &chk
-	}
-	return *pgAsyncVar
-}
-
 func PushGatewayURL() string {
 	if pgURLVar == nil {
-		chk := config.String(pgURL)
-		pgURLVar = &chk
+		v := config.String(pgURL)
+		pgURLVar = &v
 	}
 	return *pgURLVar
+}
+
+// PushInterval returns the duration between pushes
+func PushInterval() time.Duration {
+	if pgIntervalVar == nil {
+		d := config.Duration(pgInterval)
+		pgIntervalVar = &d
+	}
+	return *pgIntervalVar
 }

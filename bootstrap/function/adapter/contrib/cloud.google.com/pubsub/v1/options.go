@@ -7,12 +7,13 @@ import (
 
 // Options can be used to create customized handler.
 type Options struct {
-	Subscriptions []string
-	Concurrency   int64         // Max concurrent workers
-	Backoff       bool          // Enable backoff
-	BackoffBase   time.Duration // Base backoff duration
-	MaxBackoff    time.Duration // Max backoff duration
-	RetryLimit    int           // Limit retries, -1 for infinite retries
+	Subscriptions  []string
+	Concurrency    int64         // Max concurrent workers
+	Backoff        bool          // Enable backoff
+	BackoffBase    time.Duration // Base backoff duration
+	MaxBackoff     time.Duration // Max backoff duration
+	RetryLimit     int           // Limit retries, -1 for infinite retries
+	ProcessTimeout time.Duration // Timeout for processing messages
 }
 
 // DefaultOptions returns options based in config.

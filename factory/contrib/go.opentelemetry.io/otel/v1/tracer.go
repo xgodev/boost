@@ -12,6 +12,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
@@ -61,6 +62,15 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 		if err != nil {
 			logger.Error("error creating opentelemetry resource: ", err)
 			return
+		}
+
+		if options.Console.Enabled {
+			// 1) Console exporter
+			consoleExp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+			if err != nil {
+				logger.Error("stdout trace exporter: %v", err)
+			}
+			startOptions = append(startOptions, sdktrace.WithSpanProcessor(sdktrace.NewBatchSpanProcessor(consoleExp)))
 		}
 
 		startOptions = append(startOptions,

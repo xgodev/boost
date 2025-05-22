@@ -58,19 +58,22 @@ func (i *Prometheus) Register(ctx context.Context, server *echo.Server) error {
 
 	logger := log.FromContext(ctx)
 
-	logger.Trace("enabling prometheus middleware in echo")
+	if i.options.Collector.Enabled {
+		logger.Trace("enabling prometheus middleware in echo")
 
-	server.Use(prometheus.MetricsMiddleware())
+		server.Use(prometheus.MetricsMiddleware())
 
-	logger.Debug("prometheus middleware successfully enabled in echo")
+		logger.Debug("prometheus middleware successfully enabled in echo")
+	}
 
-	prometheusRoute := i.options.Route
+	if i.options.Route.Enabled {
+		prometheusRoute := i.options.Route.Path
 
-	logger.Tracef("configuring prometheus metric router on %s in echo", prometheusRoute)
+		logger.Tracef("configuring prometheus metric router on %s in echo", prometheusRoute)
 
-	server.GET(prometheusRoute, e.WrapHandler(promhttp.Handler()))
-
-	logger.Debugf("prometheus metric router configured on %s in echo", prometheusRoute)
+		server.GET(prometheusRoute, e.WrapHandler(promhttp.Handler()))
+		logger.Debugf("prometheus metric router configured on %s in echo", prometheusRoute)
+	}
 
 	return nil
 }
