@@ -24,7 +24,25 @@ type client struct {
 	topics map[string]*pubsub.Topic
 }
 
-// NewWithOptions returns a publisher with a topic cache.
+// NewWithConfigPath returns a publisher configured by a file path.
+func NewWithConfigPath(ctx context.Context, c *pubsub.Client, path string) (publisher.Driver, error) {
+	options, err := NewOptionsWithPath(path)
+	if err != nil {
+		return nil, err
+	}
+	return NewWithOptions(ctx, c, options), nil
+}
+
+// New returns a publisher with default options loaded from environment.
+func New(ctx context.Context, c *pubsub.Client) (publisher.Driver, error) {
+	options, err := NewOptions()
+	if err != nil {
+		return nil, err
+	}
+	return NewWithOptions(ctx, c, options), nil
+}
+
+// NewWithOptions returns a publisher with explicit options.
 func NewWithOptions(ctx context.Context, c *pubsub.Client, options *Options) publisher.Driver {
 	return &client{
 		client:  c,
@@ -45,91 +63,82 @@ func (p *client) Publish(ctx context.Context, events []*v2.Event) ([]publisher.P
 	return p.send(ctx, events)
 }
 
-// send iterates over the events and publishes them using cached topics.
+// send publishes events concurrently and aggregates results as they arrive.
 func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.PublishOutput, error) {
-	var results []publisher.PublishOutput
+	var wg sync.WaitGroup
+	resultCh := make(chan publisher.PublishOutput, len(events))
 
+	// launch all publishes asynchronously
 	for _, ev := range events {
-		logger := log.FromContext(ctx).WithTypeOf(*p).
-			WithField("subject", ev.Subject()).
-			WithField("id", ev.ID())
+		wg.Add(1)
+		go func(ev *v2.Event) {
+			defer wg.Done()
 
-		// Convert event data to a generic map.
-		var data map[string]interface{}
-		if err := ev.DataAs(&data); err != nil {
-			results = append(results, publisher.PublishOutput{
-				Event: ev,
-				Error: errors.Wrap(err, errors.Internalf("failed to convert event data")),
-			})
-			continue
-		}
+			logger := log.FromContext(ctx).WithTypeOf(*p).
+				WithField("subject", ev.Subject()).
+				WithField("id", ev.ID())
 
-		// Serialize data to JSON.
-		raw, err := json.Marshal(data)
-		if err != nil {
-			results = append(results, publisher.PublishOutput{
-				Event: ev,
-				Error: errors.Wrap(err, errors.Internalf("failed to marshal data")),
-			})
-			continue
-		}
+			// Convert event data
+			var data map[string]interface{}
+			if err := ev.DataAs(&data); err != nil {
+				resultCh <- publisher.PublishOutput{Event: ev, Error: errors.Wrap(err, errors.Internalf("failed to convert event data"))}
+				return
+			}
 
-		// Build CloudEvents attributes.
-		attrs := map[string]string{
-			"ce_specversion": ev.SpecVersion(),
-			"ce_id":          ev.ID(),
-			"ce_source":      ev.Source(),
-			"ce_type":        ev.Type(),
-			"content-type":   ev.DataContentType(),
-			"ce_time":        ev.Time().String(),
-			"ce_path":        "/",
-			"ce_subject":     ev.Subject(),
-		}
-
-		// Create Pub/Sub message.
-		msg := &pubsub.Message{
-			ID:          ev.ID(),
-			Data:        raw,
-			Attributes:  attrs,
-			PublishTime: time.Now(),
-		}
-
-		// Set ordering key if enabled.
-		if p.options.OrderingKey {
-			pk, err := p.getPartitionKey(ev)
+			// Serialize to JSON
+			raw, err := json.Marshal(data)
 			if err != nil {
-				results = append(results, publisher.PublishOutput{
-					Event: ev,
-					Error: errors.Wrap(err, errors.Internalf("failed to get partition key")),
-				})
-				continue
+				resultCh <- publisher.PublishOutput{Event: ev, Error: errors.Wrap(err, errors.Internalf("failed to marshal data"))}
+				return
 			}
-			msg.OrderingKey = pk
-		}
 
-		// Retrieve cached topic or create a new one.
-		topic := p.getTopic(ev.Subject())
-
-		// Publish with retry logic.
-		err = try.Do(func(attempt int) (bool, error) {
-			logger.Tracef("publishing to topic %s, attempt %d", ev.Subject(), attempt)
-			res := topic.Publish(ctx, msg)
-			if _, err := res.Get(ctx); err != nil {
-				log.Error(err)
-				return attempt < 5, errors.NewInternal(err, "Pub/Sub publish failed")
+			// Build attributes
+			attrs := map[string]string{
+				"ce_specversion": ev.SpecVersion(),
+				"ce_id":          ev.ID(),
+				"ce_source":      ev.Source(),
+				"ce_type":        ev.Type(),
+				"content-type":   ev.DataContentType(),
+				"ce_time":        ev.Time().String(),
+				"ce_path":        "/",
+				"ce_subject":     ev.Subject(),
 			}
-			logger.Infof("message published")
-			logger.Debugf("payload: %s", string(raw))
-			return false, nil
-		})
 
-		if err != nil {
-			results = append(results, publisher.PublishOutput{Event: ev, Error: err})
-		} else {
-			results = append(results, publisher.PublishOutput{Event: ev})
-		}
+			msg := &pubsub.Message{ID: ev.ID(), Data: raw, Attributes: attrs, PublishTime: time.Now()}
+			if p.options.OrderingKey {
+				if pk, err := p.getPartitionKey(ev); err == nil {
+					msg.OrderingKey = pk
+				}
+			}
+
+			topic := p.getTopic(ev.Subject())
+			err = try.Do(func(attempt int) (bool, error) {
+				logger.Tracef("publishing to topic %s, attempt %d", ev.Subject(), attempt)
+				r := topic.Publish(ctx, msg)
+				if _, err := r.Get(ctx); err != nil {
+					log.Error(err)
+					return attempt < 5, errors.NewInternal(err, "Pub/Sub publish failed")
+				}
+				logger.Infof("message published")
+				return false, nil
+			})
+
+			// send result as soon as done
+			resultCh <- publisher.PublishOutput{Event: ev, Error: err}
+		}(ev)
 	}
 
+	// close channel once all goroutines finish
+	go func() {
+		wg.Wait()
+		close(resultCh)
+	}()
+
+	// collect results as they arrive
+	var results []publisher.PublishOutput
+	for res := range resultCh {
+		results = append(results, res)
+	}
 	return results, nil
 }
 
