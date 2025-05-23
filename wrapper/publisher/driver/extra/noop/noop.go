@@ -17,8 +17,12 @@ func New() publisher.Driver {
 }
 
 // Publish publishes an event slice.
-func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
-	logger := log.FromContext(ctx)
-	logger.Debugf("published on the noop")
-	return nil
+func (p *client) Publish(ctx context.Context, outs []*v2.Event) (res []publisher.PublishOutput, err error) {
+	logger := log.FromContext(ctx).WithTypeOf(*p)
+	for _, out := range outs {
+		logger.WithField("event", out).Debugf("published event to noop topic %s", out.Subject())
+		res = append(res, publisher.PublishOutput{Event: out})
+	}
+	logger.Debugf("published all on the noop")
+	return res, nil
 }

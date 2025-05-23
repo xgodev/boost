@@ -6,7 +6,6 @@ import (
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/google/uuid"
-	"github.com/xgodev/boost/factory/contrib/confluentinc/confluent-kafka-go/v2"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
@@ -15,64 +14,41 @@ import (
 
 // client represents a Kafka client that implements.
 type client struct {
-	options *Options
+	producer *kafka.Producer
+	options  *Options
 }
 
 // NewWithConfigPath returns connection with options from config path.
-func NewWithConfigPath(ctx context.Context, path string) (publisher.Driver, error) {
+func NewWithConfigPath(ctx context.Context, producer *kafka.Producer, path string) (publisher.Driver, error) {
 	options, err := NewOptionsWithPath(path)
 	if err != nil {
 		return nil, err
 	}
-	return NewWithOptions(ctx, options), nil
+	return NewWithOptions(ctx, producer, options), nil
 }
 
 // NewWithOptions returns connection with options.
-func NewWithOptions(ctx context.Context, options *Options) publisher.Driver {
-	return &client{options: options}
+func NewWithOptions(ctx context.Context, producer *kafka.Producer, options *Options) publisher.Driver {
+	return &client{producer: producer, options: options}
 }
 
 // New returns connection with default options.
-func New(ctx context.Context) (publisher.Driver, error) {
+func New(ctx context.Context, producer *kafka.Producer) (publisher.Driver, error) {
 
 	options, err := NewOptions()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewWithOptions(ctx, options), nil
+	return NewWithOptions(ctx, producer, options), nil
 }
 
 // Publish publishes an event slice.
-func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
-
-	producer, err := confluent.NewProducer(ctx)
-	if err != nil {
-		return err
-	}
-	defer producer.Close()
+func (p *client) Publish(ctx context.Context, outs []*v2.Event) (res []publisher.PublishOutput, err error) {
 
 	logger := log.FromContext(ctx).WithTypeOf(*p)
 
 	logger.Tracef("publishing to kafka %d events", len(outs))
-
-	go func() {
-		for e := range producer.Events() {
-
-			switch ev := e.(type) {
-			case *kafka.Message:
-				if ev.TopicPartition.Error != nil {
-					err = errors.Wrap(ev.TopicPartition.Error, errors.Internalf("delivery failed"))
-				}
-				p.log("message delivered to %s [%d] at offset %v", *ev.TopicPartition.Topic, ev.TopicPartition.Partition, ev.TopicPartition.Offset)
-			case kafka.Error:
-				log.Errorf("Error: %v\n", ev)
-			default:
-				log.Warnf("Ignored event: %s\n", ev)
-			}
-
-		}
-	}()
 
 	for _, out := range outs {
 
@@ -82,31 +58,38 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 		msg, err := p.convert(ctx, out)
 		if err != nil {
-			return err
+			res = append(res, publisher.PublishOutput{Event: out, Error: err})
+			continue
 		}
 
-		if err := producer.Produce(msg, nil); err != nil {
-			return errors.Wrap(err, errors.Internalf("unable to publish to kafka"))
+		if err := p.producer.Produce(msg, nil); err != nil {
+			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("unable to produce message"))})
+			continue
 		}
 
-		p.log("message produced, awaiting delivery confirmation")
+		res = append(res, publisher.PublishOutput{Event: out})
+
+		p.log(ctx, "message produced, awaiting delivery confirmation")
 	}
 
-	for producer.Flush(10000) > 0 {
-		p.log("Still waiting to flush outstanding messages")
+	for p.producer.Flush(10000) > 0 {
+		p.log(ctx, "Still waiting to flush outstanding messages")
 	}
 
-	return err
+	return res, err
 }
 
-func (p *client) log(format string, args ...interface{}) {
+func (p *client) log(ctx context.Context, format string, args ...interface{}) {
+
+	logger := log.FromContext(ctx).WithTypeOf(*p)
+
 	switch p.options.Log.Level {
 	case "INFO":
-		log.Infof(format, args...)
+		logger.Infof(format, args...)
 	case "TRACE":
-		log.Tracef(format, args...)
+		logger.Tracef(format, args...)
 	default:
-		log.Debugf(format, args...)
+		logger.Debugf(format, args...)
 	}
 }
 

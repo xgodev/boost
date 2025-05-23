@@ -1,3 +1,4 @@
+//go:generate mockery --name Driver --case underscore
 package publisher
 
 import (
@@ -6,5 +7,5 @@ import (
 )
 
 type Driver interface {
-	Publish(context.Context, []*cloudevents.Event) error
+	Publish(context.Context, []*cloudevents.Event) ([]PublishOutput, error)
 }

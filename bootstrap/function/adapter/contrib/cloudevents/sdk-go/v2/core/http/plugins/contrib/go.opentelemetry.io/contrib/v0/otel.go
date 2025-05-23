@@ -11,7 +11,7 @@ import (
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-// Register registers a new opentelemetry plugin for echo server.
+// Register registers a new opentelemetry plugin for http cloudevents.
 func Register(ctx context.Context, opts []cehttp.Option) []cehttp.Option {
 	o, err := NewOptions()
 	if err != nil {
@@ -21,7 +21,7 @@ func Register(ctx context.Context, opts []cehttp.Option) []cehttp.Option {
 	return h.Register(ctx, opts)
 }
 
-// Otel represents opentelemetry plugin for echo server.
+// Otel represents opentelemetry plugin for http cloudevents.
 type Otel struct {
 	options *Options
 }
@@ -50,7 +50,7 @@ func NewOtel() *Otel {
 	return NewOtelWithOptions(o)
 }
 
-// Register registers this opentelemetry plugin for echo server.
+// Register registers this opentelemetry plugin for http cloudevents.
 func (i *Otel) Register(ctx context.Context, opts []cehttp.Option) []cehttp.Option {
 	if !i.options.Enabled {
 		return nil

@@ -18,9 +18,11 @@ func NewConsumerWithConfigPath(ctx context.Context, path string) (*kafka.Consume
 func NewConsumerWithOptions(ctx context.Context, o *Options) (*kafka.Consumer, error) {
 
 	p, err := kafka.NewConsumer(&kafka.ConfigMap{
-		"bootstrap.servers": o.Brokers,
-		"group.id":          o.Consumer.GroupId,
-		"auto.offset.reset": o.Consumer.AutoOffsetReset,
+		"bootstrap.servers":  o.Brokers,
+		"group.id":           o.Consumer.GroupId,
+		"auto.offset.reset":  o.Consumer.AutoOffsetReset,
+		"enable.auto.commit": o.Consumer.EnableAutoCommit,
+		"security.protocol":  o.Consumer.Protocol,
 	})
 	if err != nil {
 		return nil, err

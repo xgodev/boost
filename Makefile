@@ -12,6 +12,11 @@ upgrade-deps:
 	go mod tidy
 	go mod vendor
 
+.PHONY: v
+v:
+	go mod tidy
+	go mod vendor
+
 .PHONY: test
 test:
 	go test all

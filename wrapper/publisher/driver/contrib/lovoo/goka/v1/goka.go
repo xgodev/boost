@@ -22,7 +22,7 @@ func New(emitter *g.Emitter) publisher.Driver {
 }
 
 // Publish publishes an event slice.
-func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
+func (p *client) Publish(ctx context.Context, outs []*v2.Event) (res []publisher.PublishOutput, err error) {
 
 	logger := log.FromContext(ctx).WithTypeOf(*p)
 
@@ -35,19 +35,24 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 			WithField("id", out.ID())
 
 		var data map[string]interface{}
-		if err := out.DataAs(&data); err != nil {
-			return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
+		err = out.DataAs(&data)
+		if err != nil {
+			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("unable to convert data to interface"))})
+			continue
 		}
 
 		var rawMessage []byte
 		rawMessage, err = json.Marshal(data)
 		if err != nil {
-			return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
+			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("error on marshal"))})
+			continue
 		}
 
-		pk, err := p.partitionKey(out)
+		var pk string
+		pk, err = p.partitionKey(out)
 		if err != nil {
-			return errors.Wrap(err, errors.Internalf("unable to gets partition key"))
+			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("unable to gets partition key"))})
+			continue
 		}
 
 		headers := goka.Headers{
@@ -63,14 +68,15 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (err error) {
 
 		err = p.emitter.EmitSyncWithHeaders(ctx, out.Subject(), pk, rawMessage, headers)
 		if err != nil {
-			return errors.Wrap(err, errors.Internalf("unable to publish to kafka"))
+			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("unable to publish to kafka"))})
+			continue
 		}
 
 		logger.Info(string(rawMessage))
 
 	}
 
-	return nil
+	return res, err
 }
 
 func (p *client) partitionKey(out *v2.Event) (string, error) {

@@ -1,11 +1,11 @@
-package otelresty // import "github.com/xgodev/boost/factory/go-resty/resty.v2/plugins/contrib/dubonzi/otelresty.v1"
+package otelresty
 
 import (
 	"context"
-	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
-
 	dubresty "github.com/dubonzi/otelresty"
 	"github.com/go-resty/resty/v2"
+	resty2 "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
@@ -48,6 +48,15 @@ func Register(ctx context.Context, client *resty.Client) error {
 	return o.Register(ctx, client)
 }
 
+func RegisterWithPath(path string) (resty2.Plugin, error) {
+	o, err := NewOtelrestyWithConfigPath(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return o.Register, nil
+}
+
 func (o *Otelresty) Register(ctx context.Context, client *resty.Client) error {
 	if !o.options.Enabled || !otel.IsTraceEnabled() {
 		return nil
@@ -58,6 +67,7 @@ func (o *Otelresty) Register(ctx context.Context, client *resty.Client) error {
 	logger.Trace("integrating resty with opentelemetry")
 
 	o.options.TracingOptions = append(o.options.TracingOptions, dubresty.WithTracerName(o.options.TracerName))
+	o.options.TracingOptions = append(o.options.TracingOptions, dubresty.WithTracerProvider(otel.TracerProvider))
 
 	dubresty.TraceClient(client, o.options.TracingOptions...)
 

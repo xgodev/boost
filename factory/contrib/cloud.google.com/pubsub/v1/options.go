@@ -1,24 +1,23 @@
 package pubsub
 
 import (
+	apiv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/api/v0"
+	grpcv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/grpc/v1"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
-// Options bigquery client options.
+// Options holds shared API/gRPC options for Pub/Sub.
 type Options struct {
-	ProjectID   string `config:"projectId"`
-	Credentials struct {
-		File string
-		JSON string `config:"json"`
-	}
+	APIOptions  apiv1.Options  `config:"apiOptions"`
+	GRPCOptions grpcv1.Options `config:"grpcOptions"`
 }
 
-// NewOptions returns options from config file or environment vars.
+// NewOptions loads Options from the default root.
 func NewOptions() (*Options, error) {
 	return config.NewOptionsWithPath[Options](root)
 }
 
-// NewOptionsWithPath unmarshals a given key path into options and returns it.
-func NewOptionsWithPath(path string) (opts *Options, err error) {
-	return config.NewOptionsWithPath[Options](root, path)
+// NewOptionsWithPath loads Options from the specified path.
+func NewOptionsWithPath(path string) (*Options, error) {
+	return config.NewOptionsWithPath[Options](path)
 }

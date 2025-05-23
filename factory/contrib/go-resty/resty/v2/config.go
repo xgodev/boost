@@ -10,6 +10,8 @@ const (
 	host                           = ".host"
 	debug                          = ".debug"
 	accept                         = ".accept"
+	headers                        = ".headers"
+	queryParams                    = ".queryParams"
 	authorization                  = ".authorization"
 	closeConnection                = ".closeConnection"
 	connectionTimeout              = ".connectionTimeout"
@@ -37,16 +39,18 @@ func ConfigAdd(path string) {
 	config.Add(path+host, "http://localhost", "defines host request")
 	config.Add(path+debug, false, "defines debug request")
 	config.Add(path+accept, "application/json", "defines accept request")
+	config.Add(path+headers, map[string]string{}, "defines headers request")
+	config.Add(path+queryParams, map[string]string{}, "defines queryParams request")
 	config.Add(path+authorization, "", "defines authorization request")
 	config.Add(path+closeConnection, false, "defines http close connection")
 	config.Add(path+connectionTimeout, 3*time.Minute, "defines http connection timeout")
 	config.Add(path+keepAlive, 30*time.Second, "defines http keepalive")
-	config.Add(path+fallbackDelay, 300*time.Millisecond, "defines fallbackDelay")
-	config.Add(path+requestTimeout, 30*time.Second, "defines http request timeout")
+	config.Add(path+fallbackDelay, 0*time.Millisecond, "defines fallbackDelay")
+	config.Add(path+requestTimeout, 2*time.Second, "defines http request timeout")
 	config.Add(path+transportDisableCompression, false, "enabled/disable transport compression")
 	config.Add(path+transportDisableKeepAlives, false, "enabled/disable transport keep alives")
-	config.Add(path+transportMaxIdleConnsPerHost, 2, "define transport max idle conns per host")
-	config.Add(path+transportResponseHeaderTimeout, 2*time.Second, "define transport response header timeout")
+	config.Add(path+transportMaxIdleConnsPerHost, 100, "define transport max idle conns per host")
+	config.Add(path+transportResponseHeaderTimeout, 0*time.Second, "define transport response header timeout")
 	config.Add(path+transportForceAttemptHTTP2, true, "define transport force attempt http2")
 	config.Add(path+transportMaxIdleConns, 100, "define transport max idle conns")
 	config.Add(path+transportMaxConnsPerHost, 100, "define transport max conns per host")

@@ -1,6 +1,7 @@
 package otel
 
 import (
+	"github.com/xgodev/boost"
 	"os"
 	"time"
 
@@ -15,6 +16,9 @@ type Options struct {
 	Export  struct {
 		Interval time.Duration
 		Timeout  time.Duration
+	}
+	Console struct {
+		Enabled bool
 	}
 	Protocol   string
 	Endpoint   string
@@ -44,9 +48,7 @@ func NewOptionsWithPath(path string) (opts *Options, err error) {
 // NewOptions returns options from config file or environment vars.
 func NewOptions() (*Options, error) {
 
-	opts := &Options{}
-
-	err := config.UnmarshalWithPath(root, opts)
+	opts, err := config.NewOptionsWithPath[Options](root)
 	if err != nil {
 		return nil, err
 	}
@@ -62,6 +64,8 @@ func NewOptions() (*Options, error) {
 	} else {
 		os.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", opts.Protocol)
 	}
+
+	opts.Service = boost.ApplicationName()
 
 	if v := os.Getenv("OTEL_SERVICE_NAME"); v != "" {
 		opts.Service = v

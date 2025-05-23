@@ -32,7 +32,7 @@ func NewHelperWithOptions[T any](conn *nats.Conn,
 // NewHelper returns a new Helper with default options.
 func NewHelper[T any](conn *nats.Conn, handler function.Handler[T]) *Helper[T] {
 
-	opt, err := DefaultOptions()
+	opt, err := NewOptions()
 	if err != nil {
 		log.Fatal(err.Error())
 	}

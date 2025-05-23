@@ -3,18 +3,14 @@ package godror
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
-
 	"github.com/godror/godror"
+	sqll "github.com/xgodev/boost/factory/core/database/sql"
 	"github.com/xgodev/boost/factory/core/time"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-// Plugin defines a go driver for oracle plugin signature.
-type Plugin func(context.Context, *sql.DB, driver.Connector) (*sql.DB, error)
-
 // NewDBWithConfigPath returns a new sql DB with options from config path.
-func NewDBWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*sql.DB, error) {
+func NewDBWithConfigPath(ctx context.Context, path string, plugins ...sqll.Plugin) (*sql.DB, error) {
 	opts, err := NewOptionsWithPath(path)
 	if err != nil {
 		return nil, err
@@ -23,7 +19,7 @@ func NewDBWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*
 }
 
 // NewDBWithOptions returns a new sql DB with options.
-func NewDBWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (db *sql.DB, err error) {
+func NewDBWithOptions(ctx context.Context, o *Options, plugins ...sqll.Plugin) (db *sql.DB, err error) {
 
 	logger := log.FromContext(ctx)
 
@@ -45,13 +41,9 @@ func NewDBWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (db *s
 
 	connector := godror.NewConnector(params)
 
-	db = sql.OpenDB(connector)
-
-	for _, plugin := range plugins {
-		db, err = plugin(ctx, db, connector)
-		if err != nil {
-			return db, err
-		}
+	db, err = sqll.NewDB(ctx, connector, plugins...)
+	if err != nil {
+		return nil, err
 	}
 
 	if err = db.Ping(); err != nil {
@@ -64,7 +56,7 @@ func NewDBWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (db *s
 }
 
 // NewDB returns a new DB.
-func NewDB(ctx context.Context, plugins ...Plugin) (*sql.DB, error) {
+func NewDB(ctx context.Context, plugins ...sqll.Plugin) (*sql.DB, error) {
 
 	logger := log.FromContext(ctx)
 

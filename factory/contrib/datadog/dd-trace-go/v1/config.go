@@ -8,7 +8,6 @@ import (
 
 const (
 	root                  = "boost.factory.datadog"
-	service               = root + ".service"
 	env                   = root + ".env"
 	version               = root + ".version"
 	tracerEnabled         = root + ".tracer.enabled"
@@ -38,7 +37,6 @@ const (
 )
 
 func init() {
-	config.Add(service, "", "service name for datadog")
 	config.Add(env, "", "service env")
 	config.Add(tracerEnabled, true, "enables tracer datadog")
 	config.Add(profilerEnabled, true, "enables profiler datadog")
@@ -73,9 +71,4 @@ func IsTracerEnabled() bool {
 // IsProfilerEnabled returns config value from key boost.datadog.profiler.enabled where default is true.
 func IsProfilerEnabled() bool {
 	return config.Bool(profilerEnabled)
-}
-
-// Service returns config value from key boost.datadog.service where default is empty.
-func Service() string {
-	return config.String(service)
 }

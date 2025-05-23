@@ -3,132 +3,174 @@ package pubsub
 import (
 	"context"
 	"encoding/json"
-	"github.com/xgodev/boost/model/errors"
-	"github.com/xgodev/boost/wrapper/log"
-	"github.com/xgodev/boost/wrapper/publisher"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/pubsub"
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/matryer/try"
-	"golang.org/x/sync/errgroup"
+
+	"github.com/xgodev/boost/model/errors"
+	"github.com/xgodev/boost/wrapper/log"
+	"github.com/xgodev/boost/wrapper/publisher"
 )
 
-// client represents a pubsub client.
+// client implements a reusable Pub/Sub publisher.
 type client struct {
-	client *pubsub.Client
+	client  *pubsub.Client
+	options *Options
+
+	mu     sync.Mutex
+	topics map[string]*pubsub.Topic
 }
 
-// New creates a new pubsub client.
-func New(c *pubsub.Client) publisher.Driver {
-	return &client{client: c}
-}
-
-// Publish publishes an event slice.
-func (p *client) Publish(ctx context.Context, events []*v2.Event) error {
-
-	logger := log.FromContext(ctx).WithTypeOf(*p)
-
-	logger.Info("publishing to pubsub")
-
-	if len(events) > 0 {
-
-		return p.send(ctx, events)
-
+// NewWithConfigPath returns a publisher configured by a file path.
+func NewWithConfigPath(ctx context.Context, c *pubsub.Client, path string) (publisher.Driver, error) {
+	options, err := NewOptionsWithPath(path)
+	if err != nil {
+		return nil, err
 	}
-
-	logger.Warnf("no messages were reported for posting")
-
-	return nil
+	return NewWithOptions(ctx, c, options), nil
 }
 
-func (p *client) send(ctx context.Context, events []*v2.Event) (err error) {
+// New returns a publisher with default options loaded from environment.
+func New(ctx context.Context, c *pubsub.Client) (publisher.Driver, error) {
+	options, err := NewOptions()
+	if err != nil {
+		return nil, err
+	}
+	return NewWithOptions(ctx, c, options), nil
+}
 
+// NewWithOptions returns a publisher with explicit options.
+func NewWithOptions(ctx context.Context, c *pubsub.Client, options *Options) publisher.Driver {
+	return &client{
+		client:  c,
+		options: options,
+		topics:  make(map[string]*pubsub.Topic),
+	}
+}
+
+// Publish sends a batch of events to Pub/Sub.
+func (p *client) Publish(ctx context.Context, events []*v2.Event) ([]publisher.PublishOutput, error) {
 	logger := log.FromContext(ctx).WithTypeOf(*p)
+	logger.Info("publishing to Pub/Sub")
 
-	g, gctx := errgroup.WithContext(ctx)
-	defer gctx.Done()
+	if len(events) == 0 {
+		logger.Warn("no messages to publish")
+		return nil, nil
+	}
+	return p.send(ctx, events)
+}
 
-	for _, e := range events {
+// send publishes events concurrently and aggregates results as they arrive.
+func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.PublishOutput, error) {
+	var wg sync.WaitGroup
+	resultCh := make(chan publisher.PublishOutput, len(events))
 
-		out := e
+	// launch all publishes asynchronously
+	for _, ev := range events {
+		wg.Add(1)
+		go func(ev *v2.Event) {
+			defer wg.Done()
 
-		g.Go(func() (err error) {
+			logger := log.FromContext(ctx).WithTypeOf(*p).
+				WithField("subject", ev.Subject()).
+				WithField("id", ev.ID())
 
+			// Convert event data
 			var data map[string]interface{}
-			if err := out.DataAs(&data); err != nil {
-				return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
+			if err := ev.DataAs(&data); err != nil {
+				resultCh <- publisher.PublishOutput{Event: ev, Error: errors.Wrap(err, errors.Internalf("failed to convert event data"))}
+				return
 			}
 
-			var rawMessage []byte
-			rawMessage, err = json.Marshal(data)
+			// Serialize to JSON
+			raw, err := json.Marshal(data)
 			if err != nil {
-				return errors.Wrap(err, errors.Internalf("error on marshal. %s", err.Error()))
+				resultCh <- publisher.PublishOutput{Event: ev, Error: errors.Wrap(err, errors.Internalf("failed to marshal data"))}
+				return
 			}
 
+			// Build attributes
 			attrs := map[string]string{
-				"ce_specversion": out.SpecVersion(),
-				"ce_id":          out.ID(),
-				"ce_source":      out.Source(),
-				"ce_type":        out.Type(),
-				"content-type":   out.DataContentType(),
-				"ce_time":        out.Time().String(),
+				"ce_specversion": ev.SpecVersion(),
+				"ce_id":          ev.ID(),
+				"ce_source":      ev.Source(),
+				"ce_type":        ev.Type(),
+				"content-type":   ev.DataContentType(),
+				"ce_time":        ev.Time().String(),
 				"ce_path":        "/",
-				"ce_subject":     out.Subject(),
+				"ce_subject":     ev.Subject(),
 			}
 
-			// TODO: adds ordering
-			/*
-				pk, err := p.partitionKey(out)
-				if err != nil {
-					return errors.Wrap(err, errors.Internalf("unable to gets partition key"))
+			msg := &pubsub.Message{ID: ev.ID(), Data: raw, Attributes: attrs, PublishTime: time.Now()}
+			if p.options.OrderingKey {
+				if pk, err := p.getPartitionKey(ev); err == nil {
+					msg.OrderingKey = pk
 				}
-			*/
-
-			message := &pubsub.Message{
-				ID:              out.ID(),
-				Data:            rawMessage,
-				Attributes:      attrs,
-				PublishTime:     time.Now(),
-				DeliveryAttempt: nil,
-				// OrderingKey:     pk,
 			}
 
-			topic := p.client.Topic(out.Subject())
-			defer topic.Stop()
-
-			logger.WithField("subject", out.Subject()).
-				WithField("id", out.ID()).
-				Info(string(rawMessage))
-
+			topic := p.getTopic(ev.Subject())
 			err = try.Do(func(attempt int) (bool, error) {
-				r := topic.Publish(gctx, message)
-				if _, err := r.Get(gctx); err != nil {
+				logger.Tracef("publishing to topic %s, attempt %d", ev.Subject(), attempt)
+				r := topic.Publish(ctx, msg)
+				if _, err := r.Get(ctx); err != nil {
 					log.Error(err)
-					return attempt < 5, errors.NewInternal(err, "could not be published in gcp pubsub")
+					return attempt < 5, errors.NewInternal(err, "Pub/Sub publish failed")
 				}
+				logger.Infof("message published")
 				return false, nil
 			})
 
-			return err
-
-		})
-
+			// send result as soon as done
+			resultCh <- publisher.PublishOutput{Event: ev, Error: err}
+		}(ev)
 	}
 
-	return g.Wait()
+	// close channel once all goroutines finish
+	go func() {
+		wg.Wait()
+		close(resultCh)
+	}()
+
+	// collect results as they arrive
+	var results []publisher.PublishOutput
+	for res := range resultCh {
+		results = append(results, res)
+	}
+	return results, nil
 }
 
-func (p *client) partitionKey(out *v2.Event) (string, error) {
+// getTopic returns a cached Pub/Sub topic or creates it on first use.
+func (p *client) getTopic(subject string) *pubsub.Topic {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
-	var pk string
-	exts := out.Extensions()
-
-	if key, ok := exts["key"]; ok {
-		pk = key.(string)
-	} else {
-		pk = out.ID()
+	if t, ok := p.topics[subject]; ok {
+		return t
 	}
+	t := p.client.Topic(subject)
+	p.topics[subject] = t
+	return t
+}
 
-	return pk, nil
+// Close stops all cached topics' background goroutines.
+// Call this when the publisher is shutting down.
+func (p *client) Close() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	for _, t := range p.topics {
+		t.Stop()
+	}
+	p.topics = nil
+}
+
+// getPartitionKey extracts the ordering key extension or uses the event ID.
+func (p *client) getPartitionKey(ev *v2.Event) (string, error) {
+	if key, ok := ev.Extensions()["key"]; ok {
+		return key.(string), nil
+	}
+	return ev.ID(), nil
 }
