@@ -1,12 +1,12 @@
 package prometheus
 
 import (
-	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
+	"github.com/xgodev/boost/factory/contrib/redis/go-redis/v9"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (
-	root    = resty.PluginsRoot + ".prometheus"
+	root    = redis.PluginsRoot + ".prometheus"
 	enabled = ".enabled"
 )
 

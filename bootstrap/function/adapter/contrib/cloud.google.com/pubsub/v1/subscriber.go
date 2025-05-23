@@ -45,7 +45,7 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		err := l.processMessage(ctx, msg)
 
 		if err != nil {
-			log.Errorf(err.Error())
+			log.Errorf("processing failed: %v", err)
 			msg.Nack()
 		}
 	})
@@ -59,17 +59,26 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 
 // processMessage processes each message, retries if needed, and applies backoff
 func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message) error {
+	logger := log.FromContext(ctx).WithTypeOf(*l)
+
 	retryCount := 0
 
 	in, err := l.generateCloudEvent(msg)
 	if err != nil {
+		msg.Nack()
 		return errors.Wrap(err, errors.Internalf("could not generate CloudEvent: %s", err.Error()))
 	}
 
 	for {
+		// Timeout por tentativa
+		msgCtx, cancel := context.WithTimeout(ctx, l.options.ProcessTimeout)
+
 		// Processes the event via handler
-		if _, err := l.handler(ctx, in); err != nil {
+		if _, err := l.handler(msgCtx, in); err != nil {
+			cancel()
 			retryCount++
+
+			logger.Warnf("msgID=%s handler failed (attempt %d/%d): %v\nPayload: %s", msg.ID, retryCount, l.options.RetryLimit, err, string(msg.Data))
 
 			// Check retry limit
 			if l.options.RetryLimit != -1 && retryCount >= l.options.RetryLimit {
@@ -85,6 +94,7 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message)
 			continue
 		}
 
+		cancel()
 		// Acknowledge the message after successful processing
 		msg.Ack()
 		break
@@ -146,6 +156,13 @@ func (l *Subscriber[T]) generateCloudEvent(msg *pubsub.Message) (event.Event, er
 	if err := in.SetData(contentType, msg.Data); err != nil {
 		return event.Event{}, errors.Wrap(err, errors.Internalf("could not set data from pubsub message: %s", err.Error()))
 	}
+
+	/*
+		if err := in.Validate(); err != nil {
+			return event.Event{}, errors.Wrap(err, errors.Internalf("invalid CloudEvent: %s", err.Error()))
+		}
+	*/
+
 	return in, nil
 }
 
@@ -157,4 +174,6 @@ func (l *Subscriber[T]) applyBackoff(retryCount int) {
 	if backoffTime > l.options.MaxBackoff {
 		backoffTime = l.options.MaxBackoff
 	}
+
+	time.Sleep(backoffTime)
 }

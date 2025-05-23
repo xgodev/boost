@@ -48,8 +48,6 @@ func (c *Prometheus[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware
 
 	messagesProcessed.WithLabelValues(status, boost.ApplicationName()).Inc()
 
-	p.Push(ctx.GetContext())
-
 	return e, err
 }
 
@@ -58,5 +56,6 @@ func NewAnyErrorMiddleware[T any]() middleware.AnyErrorMiddleware[T] {
 }
 
 func NewPrometheus[T any]() *Prometheus[T] {
+	p.StartPusher()
 	return &Prometheus[T]{}
 }

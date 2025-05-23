@@ -7,9 +7,7 @@ import (
 
 // Options holds shared gRPC client configuration.
 type Options struct {
-	Host string `config:"host"`
-	Port int    `config:"port"`
-	TLS  struct {
+	TLS struct {
 		Enabled            bool   `config:"enabled"`
 		CertFile           string `config:"certFile"`
 		KeyFile            string `config:"keyFile"`
@@ -18,7 +16,6 @@ type Options struct {
 	} `config:"tls"`
 	InitialWindowSize     int    `config:"initialWindowSize"`
 	InitialConnWindowSize int    `config:"initialConnWindowSize"`
-	Block                 bool   `config:"block"`
 	HostOverwrite         string `config:"hostOverwrite"`
 	Backoff               struct {
 		BaseDelay  time.Duration `config:"baseDelay"`

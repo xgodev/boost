@@ -7,12 +7,12 @@ import (
 	"github.com/xgodev/boost/wrapper/log"
 )
 
-// Client represents a datadog client for redis.
+// Client represents a prometheus client for redis.
 type Client struct {
 	options *Options
 }
 
-// NewClientWithConfigPath returns a new datadog client with options from config path.
+// NewClientWithConfigPath returns a new prometheus client with options from config path.
 func NewClientWithConfigPath(path string) (*Client, error) {
 	o, err := NewOptionsWithPath(path)
 	if err != nil {
@@ -22,7 +22,7 @@ func NewClientWithConfigPath(path string) (*Client, error) {
 	return NewClientWithOptions(o), nil
 }
 
-// NewClient returns a new datadog client with default options.
+// NewClient returns a new prometheus client with default options.
 func NewClient() (*Client, error) {
 	o, err := NewOptions()
 	if err != nil {
@@ -32,12 +32,12 @@ func NewClient() (*Client, error) {
 	return NewClientWithOptions(o), nil
 }
 
-// NewClientWithOptions returns a new datadog client with options.
+// NewClientWithOptions returns a new prometheus client with options.
 func NewClientWithOptions(options *Options) *Client {
 	return &Client{options: options}
 }
 
-// Register registers this datadog client to redis client.
+// Register registers this prometheus client to redis client.
 func (d *Client) Register(ctx context.Context, client *redis.Client) error {
 	if !d.options.Enabled {
 		return nil
@@ -45,16 +45,16 @@ func (d *Client) Register(ctx context.Context, client *redis.Client) error {
 
 	logger := log.FromContext(ctx)
 
-	logger.Trace("integrating redis in datadog")
+	logger.Trace("integrating redis in prometheus")
 
 	client.AddHook(NewHook())
 
-	logger.Debug("redis successfully integrated in datadog")
+	logger.Debug("redis successfully integrated in prometheus")
 
 	return nil
 }
 
-// ClientRegister registers a new datadog client to redis client.
+// ClientRegister registers a new prometheus client to redis client.
 func ClientRegister(ctx context.Context, client *redis.Client) error {
 	o, err := NewOptions()
 	if err != nil {

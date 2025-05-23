@@ -10,6 +10,7 @@ import (
 type Options struct {
 	APIOptions  apiv1.Options  `config:"apiOptions"`
 	GRPCOptions grpcv1.Options `config:"grpcOptions"`
+	Database    string         `config:"database"`
 }
 
 // NewOptions loads Options from the default root.

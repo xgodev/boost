@@ -17,6 +17,9 @@ type Options struct {
 		Interval time.Duration
 		Timeout  time.Duration
 	}
+	Console struct {
+		Enabled bool
+	}
 	Protocol   string
 	Endpoint   string
 	Insecure   bool

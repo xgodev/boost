@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	Root = middleware.Root + ".publisher"
+	Root    = middleware.Root + ".publisher"
 	enabled = Root + ".enabled"
 )
 

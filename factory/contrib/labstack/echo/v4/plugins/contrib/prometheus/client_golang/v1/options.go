@@ -7,7 +7,13 @@ import (
 // Options prometheus plugin for echo server options.
 type Options struct {
 	Enabled bool
-	Route   string
+	Route   struct {
+		Path    string
+		Enabled bool
+	}
+	Collector struct {
+		Enabled bool
+	}
 }
 
 // NewOptions returns options from config file or environment vars.

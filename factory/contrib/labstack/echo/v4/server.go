@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"github.com/xgodev/boost/wrapper/config"
 	"math/big"
 	"strconv"
 	"time"
