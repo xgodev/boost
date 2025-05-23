@@ -2,8 +2,11 @@ package mongo
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
+	"os"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/event"
@@ -32,13 +35,12 @@ type Plugin func(context.Context) (ClientOptionsPlugin, ClientPlugin)
 
 // NewConn returns a new connection with default options.
 func NewConn(ctx context.Context, plugins ...Plugin) (*Conn, error) {
-
 	logger := log.FromContext(ctx)
 
 	o, err := NewOptions()
 	if err != nil {
 		logger.Errorf("Failed to get default options: %v", err)
-		return nil, errors.NewInternal(err, "failed to get default options")
+		return nil, errors.NewInternal(err, "Failed to get default options")
 	}
 
 	return NewConnWithOptions(ctx, o, plugins...)
@@ -48,14 +50,13 @@ func NewConn(ctx context.Context, plugins ...Plugin) (*Conn, error) {
 func NewConnWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*Conn, error) {
 	opts, err := NewOptionsWithPath(path)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewInternal(err, "Failed to get options from config path")
 	}
 	return NewConnWithOptions(ctx, opts, plugins...)
 }
 
 // NewConnWithOptions returns a new connection with options from config path.
 func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (conn *Conn, err error) {
-
 	logger := log.FromContext(ctx)
 
 	var clientOptionsPlugins []ClientOptionsPlugin
@@ -74,13 +75,13 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 	co, err := clientOptions(ctx, o)
 	if err != nil {
 		logger.Errorf("Failed to create client options: %v", err)
-		return nil, errors.NewInternal(err, "failed to create client options")
+		return nil, errors.NewInternal(err, "Failed to create client options")
 	}
 
 	for _, clientOptionsPlugin := range clientOptionsPlugins {
 		if err := clientOptionsPlugin(ctx, co); err != nil {
 			logger.Errorf("Failed to apply client options plugin: %v", err)
-			return nil, errors.NewInternal(err, "failed to apply client options plugin")
+			return nil, errors.NewInternal(err, "Failed to apply client options plugin")
 		}
 	}
 
@@ -89,13 +90,13 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 
 	client, database, err = newClient(ctx, co)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewInternal(err, "Failed to create MongoDB client")
 	}
 
 	for _, clientPlugin := range clientPlugins {
 		if err := clientPlugin(ctx, client); err != nil {
 			logger.Errorf("Failed to apply client plugin: %v", err)
-			return nil, errors.NewInternal(err, "failed to apply client plugin")
+			return nil, errors.NewInternal(err, "Failed to apply client plugin")
 		}
 	}
 
@@ -111,41 +112,38 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 }
 
 func newClient(ctx context.Context, co *options.ClientOptions) (client *mongo.Client, database *mongo.Database, err error) {
-
 	logger := log.FromContext(ctx)
 
 	client, err = mongo.Connect(ctx, co)
-
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.NewInternal(err, "Failed to connect to MongoDB")
 	}
 
 	// Check the connection
 	err = client.Ping(ctx, nil)
-
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.NewInternal(err, "Failed to ping MongoDB server")
 	}
 
 	var connFields *connstring.ConnString
-
 	connFields, err = connstring.Parse(co.GetURI())
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.NewInternal(err, "Failed to parse MongoDB connection string")
 	}
 
 	database = client.Database(connFields.Database)
-
 	logger.Infof("Connected to MongoDB server: %v", strings.Join(connFields.Hosts, ","))
 
 	return client, database, err
 }
 
 func clientOptions(ctx context.Context, o *Options) (*options.ClientOptions, error) {
-
 	logger := log.FromContext(ctx)
 
-	clientOptions := options.Client().ApplyURI(o.Uri)
+	// Use the ToClientOptions method from Options struct to get the base configuration
+	clientOptions := o.ToClientOptions()
+
+	// Add command and pool monitoring
 	clientOptions.SetMonitor(&event.CommandMonitor{
 		Started: func(ctx context.Context, startedEvent *event.CommandStartedEvent) {
 			logger.Debugf("mongodb cmd - %v %s %s %v", startedEvent.ConnectionID, startedEvent.CommandName, startedEvent.DatabaseName, startedEvent.RequestID)
@@ -163,42 +161,39 @@ func clientOptions(ctx context.Context, o *Options) (*options.ClientOptions, err
 		},
 	})
 
-	if o.Auth != nil {
-		if err := setAuthOptions(o, clientOptions); err != nil {
-			return nil, err
+	// Configure TLS if enabled
+	if o.TLS != nil && *o.TLS {
+		tlsConfig := &tls.Config{
+			InsecureSkipVerify: o.TLSInsecure != nil && *o.TLSInsecure,
 		}
 
+		// Load CA certificate if provided
+		if o.TLSCAFile != "" {
+			caCert, err := os.ReadFile(o.TLSCAFile)
+			if err != nil {
+				return nil, errors.NewInternal(err, "Failed to read TLS CA file")
+			}
+			
+			caCertPool := x509.NewCertPool()
+			if !caCertPool.AppendCertsFromPEM(caCert) {
+				return nil, errors.NewInternal(nil, "Failed to append CA certificate to pool")
+			}
+			
+			tlsConfig.RootCAs = caCertPool
+		}
+
+		// Load client certificate if provided
+		if o.TLSCertificateKeyFile != "" {
+			cert, err := tls.LoadX509KeyPair(o.TLSCertificateKeyFile, o.TLSCertificateKeyFile)
+			if err != nil {
+				return nil, errors.NewInternal(err, "Failed to load TLS certificate/key pair")
+			}
+			
+			tlsConfig.Certificates = []tls.Certificate{cert}
+		}
+
+		clientOptions.SetTLSConfig(tlsConfig)
 	}
 
 	return clientOptions, nil
-}
-
-func setAuthOptions(o *Options, clientOptions *options.ClientOptions) error {
-
-	if o.Auth.Password == "" && o.Auth.Username == "" {
-		return nil
-	}
-
-	if clientOptions.Auth == nil {
-		clientOptions.Auth = &options.Credential{}
-	}
-
-	if o.Auth.Password != "" {
-		clientOptions.Auth.Password = o.Auth.Password
-		clientOptions.Auth.PasswordSet = true
-	}
-
-	if o.Auth.Username != "" {
-		clientOptions.Auth.Username = o.Auth.Username
-	}
-
-	if clientOptions.Auth.AuthSource == "" {
-		connFields, err := connstring.Parse(clientOptions.GetURI())
-		if err != nil {
-			return err
-		}
-		clientOptions.Auth.AuthSource = connFields.Database
-	}
-
-	return nil
 }
