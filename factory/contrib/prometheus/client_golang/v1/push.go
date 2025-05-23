@@ -63,6 +63,7 @@ func pushOnce() {
 	if !PushGatewayEnabled() {
 		return
 	}
+	log.Tracef("starting Prometheus PushGateway push")
 	if err := push.
 		New(PushGatewayURL(), boost.ApplicationName()).
 		Gatherer(prometheus.DefaultGatherer).
