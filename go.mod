@@ -29,6 +29,7 @@ require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/confluentinc/confluent-kafka-go/v2 v2.10.0
 	github.com/coocood/freecache v1.2.4
+	github.com/dapr/go-sdk v1.12.0
 	github.com/dubonzi/otelresty v1.5.0
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
 	github.com/globocom/echo-prometheus v0.1.2
@@ -163,6 +164,7 @@ require (
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
+	github.com/dapr/dapr v1.15.0-rc.17 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -178,6 +180,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.8.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
+	github.com/go-chi/chi/v5 v5.1.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.0 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
