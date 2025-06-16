@@ -2,10 +2,10 @@ package otelresty
 
 import (
 	"context"
-	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
-
 	dubresty "github.com/dubonzi/otelresty"
 	"github.com/go-resty/resty/v2"
+	resty2 "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
@@ -46,6 +46,15 @@ func Register(ctx context.Context, client *resty.Client) error {
 	}
 	o := NewOtelrestyWithOptions(options)
 	return o.Register(ctx, client)
+}
+
+func RegisterWithPath(path string) (resty2.Plugin, error) {
+	o, err := NewOtelrestyWithConfigPath(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return o.Register, nil
 }
 
 func (o *Otelresty) Register(ctx context.Context, client *resty.Client) error {
