@@ -32,6 +32,6 @@ func main() {
 
 	config.UnmarshalWithPath("app", &c)
 
-	log.Printf(c.Application.Name)
-	log.Printf(c.Application.MyNameTest)
+	log.Printf("%s", c.Application.Name)
+	log.Printf("%s", c.Application.MyNameTest)
 }

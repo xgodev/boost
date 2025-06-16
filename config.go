@@ -23,12 +23,12 @@ var applicationName = ""
 
 func init() {
 	config.Add(aName, "boost_application", "defines application name")
-	config.Add(bannerEnabled, true, "enable/disable boost banner")
+	config.Add(bannerEnabled, false, "enable/disable boost banner")
 	config.Add(phrase, "boost", "banner phrase")
 	config.Add(fontName, "standard", "banner font. see https://github.com/common-nighthawk/go-figure")
 	config.Add(color, "white", "banner color")
 	config.Add(strict, true, "sets banner strict")
-	config.Add(cfgEnabled, true, "enable/disable print boost configs")
+	config.Add(cfgEnabled, false, "enable/disable print boost configs")
 	config.Add(maxLength, 25, "defines value max length")
 }
 

@@ -4,7 +4,7 @@ import (
 	"github.com/xgodev/boost/wrapper/config"
 )
 
-// Options represents opentracing for resty client options.
+// Options represents opentracing for redis client options.
 type Options struct {
 	Enabled bool
 }

@@ -27,21 +27,21 @@ type Server struct {
 }
 
 // NewServer returns a new echo server with default options.
-func NewServer(ctx context.Context, plugins ...Plugin) *Server {
+func NewServer(ctx context.Context, plugins ...Plugin) (*Server, error) {
 	opt, err := NewOptions()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return NewServerWithOptions(ctx, opt, plugins...)
+	return NewServerWithOptions(ctx, opt, plugins...), nil
 }
 
 // NewServerWithConfigPath returns a new echo server with options from config path.
-func NewServerWithConfigPath(ctx context.Context, path string) (*Server, error) {
+func NewServerWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*Server, error) {
 	options, err := NewOptionsWithPath(path)
 	if err != nil {
 		return nil, err
 	}
-	return NewServerWithOptions(ctx, options), nil
+	return NewServerWithOptions(ctx, options, plugins...), nil
 }
 
 // NewServerWithOptions returns a new echo server with options.
