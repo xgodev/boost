@@ -28,7 +28,7 @@ func Module() fx.Option {
 		options = fx.Options(
 			contextfx.Module(),
 			fx.Provide(
-				func(ctx context.Context, p params) *echo.Server {
+				func(ctx context.Context, p params) (*echo.Server, error) {
 					return echo.NewServer(ctx, p.Plugins...)
 				},
 				func(srv *echo.Server) *e.Echo {

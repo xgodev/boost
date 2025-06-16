@@ -36,5 +36,7 @@ func NewOptions() (*Options, error) {
 
 // NewOptionsWithPath unmarshals a given key path into options and returns it.
 func NewOptionsWithPath(path string) (opts *Options, err error) {
+	ConfigAdd(path)
+	config.Load()
 	return config.NewOptionsWithPath[Options](root, path)
 }

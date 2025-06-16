@@ -1,13 +1,12 @@
 package firestore
 
 import (
-	"context"
-
 	"cloud.google.com/go/firestore"
-	"github.com/xgodev/boost/wrapper/log"
-	clientgrpc "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client"
+	"context"
 	apiv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/api/v0"
 	grpcv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/grpc/v1"
+	clientgrpc "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client"
+	"github.com/xgodev/boost/wrapper/log"
 	"google.golang.org/api/option"
 )
 
@@ -30,7 +29,11 @@ func NewClientWithConfigPath(ctx context.Context, path string, plugins ...client
 }
 
 // NewClientWithOptions constructs a Firestore client from Options.
-func NewClientWithOptions(ctx context.Context, o *Options, plugins ...clientgrpc.Plugin) (*firestore.Client, error) {
+func NewClientWithOptions(
+	ctx context.Context,
+	o *Options,
+	plugins ...clientgrpc.Plugin,
+) (*firestore.Client, error) {
 	logger := log.FromContext(ctx)
 
 	// API-level options
@@ -40,20 +43,12 @@ func NewClientWithOptions(ctx context.Context, o *Options, plugins ...clientgrpc
 	grpcDialOpts := grpcv1.ApplyDialOptions(ctx, &o.GRPCOptions, plugins...)
 
 	// collect ClientOption
-	clientOpts := make([]option.ClientOption, 0, len(apiOpts)+len(grpcDialOpts))
+	var clientOpts []option.ClientOption
 	clientOpts = append(clientOpts, apiOpts...)
 	for _, dop := range grpcDialOpts {
 		clientOpts = append(clientOpts, option.WithGRPCDialOption(dop))
 	}
 
-	// Additional gRPC plugins
-	for _, plugin := range plugins {
-		dopts, _ := plugin(ctx)
-		for _, dop := range dopts {
-			clientOpts = append(clientOpts, option.WithGRPCDialOption(dop))
-		}
-	}
-
 	logger.Debugf("creating Firestore client for project %s", o.APIOptions.ProjectID)
-	return firestore.NewClient(ctx, o.APIOptions.ProjectID, clientOpts...)
+	return firestore.NewClientWithDatabase(ctx, o.APIOptions.ProjectID, o.Database, clientOpts...)
 }
