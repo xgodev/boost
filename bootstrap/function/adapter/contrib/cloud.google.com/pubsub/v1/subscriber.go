@@ -36,6 +36,8 @@ func NewSubscriber[T any](client *pubsub.Client, handler function.Handler[T], su
 func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 	logger := log.FromContext(ctx).WithTypeOf(*l)
 
+	logger.Tracef("pubsub - Subscribing to %s", l.subscription)
+
 	subscription := l.client.Subscription(l.subscription)
 	subscription.ReceiveSettings = pubsub.ReceiveSettings{
 		MaxOutstandingMessages: int(l.options.Concurrency),
