@@ -75,6 +75,7 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 
 		} else {
 			logger.Debugf("dead letter is disabled. ignoring dead letter")
+			return e, err
 		}
 
 	}
