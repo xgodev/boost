@@ -100,7 +100,7 @@ func shouldIgnoreError(err error, allowed []string) (bool, string) {
 
 		for _, allowedName := range allowed {
 			if strings.HasSuffix(errName, allowedName) {
-				return true, errName
+				return true, allowedName
 			}
 		}
 

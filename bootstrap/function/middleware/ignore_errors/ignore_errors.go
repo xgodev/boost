@@ -21,7 +21,7 @@ func (c *IgnoreErrors[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middlewa
 
 		// Verifica se algum erro na cadeia deve ser ignorado
 		if ok, name := shouldIgnoreError(err, c.options.Errors); ok {
-			logger.Warnf("ignoring error (type: %s): %s", err.Error(), name)
+			logger.Warnf("ignoring error (type: %s): %s", name, err.Error())
 			return e, nil
 		}
 
@@ -37,7 +37,7 @@ func shouldIgnoreError(err error, allowed []string) (bool, string) {
 
 		for _, allowedName := range allowed {
 			if strings.HasSuffix(errName, allowedName) {
-				return true, errName
+				return true, allowedName
 			}
 		}
 
