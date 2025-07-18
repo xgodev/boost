@@ -1,8 +1,8 @@
 package ignore_errors
 
 import (
+	stderrors "errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/wrapper/log"
 	"strings"
@@ -20,8 +20,8 @@ func (c *IgnoreErrors[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middlewa
 		logger.Debugf("configured ignored error types: [%s]", strings.Join(c.options.Errors, ", "))
 
 		// Verifica se algum erro na cadeia deve ser ignorado
-		if shouldIgnoreError(err, c.options.Errors) {
-			logger.Warnf("ignoring error: %s", err.Error())
+		if ok, name := shouldIgnoreError(err, c.options.Errors); ok {
+			logger.Warnf("ignoring error (type: %s): %s", err.Error(), name)
 			return e, nil
 		}
 
@@ -30,20 +30,20 @@ func (c *IgnoreErrors[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middlewa
 	return e, err
 }
 
-func shouldIgnoreError(err error, allowed []string) bool {
+func shouldIgnoreError(err error, allowed []string) (bool, string) {
 	for err != nil {
 		errName := fmt.Sprintf("%T", err)          // ex: *my.ErrFoo
 		errName = strings.TrimPrefix(errName, "*") // remove o '*' para comparar com o nome puro
 
 		for _, allowedName := range allowed {
 			if strings.HasSuffix(errName, allowedName) {
-				return true
+				return true, errName
 			}
 		}
 
-		err = errors.Unwrap(err)
+		err = stderrors.Unwrap(err)
 	}
-	return false
+	return false, ""
 }
 
 func NewAnyErrorMiddleware[T any]() (middleware.AnyErrorMiddleware[T], error) {
