@@ -42,32 +42,35 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 	var deadLetterSubject string
 	var errorType string
 
-	if err != nil && c.options.Deadletter.Enabled {
+	if err != nil {
 
-		logger.Debugf("configured to send to deadletter error types: [%s]", strings.Join(c.options.Deadletter.Errors, ", "))
+		if c.options.Deadletter.Enabled {
 
-		if ok, name := shouldIgnoreError(err, c.options.Deadletter.Errors); ok {
-			logger.Warnf("Error type %s is allowed to be sent to dead letter", name)
-			deadLetterSubject = c.options.Deadletter.Subject
-			errorType = name
+			logger.Debugf("configured to send to deadletter error types: [%s]", strings.Join(c.options.Deadletter.Errors, ", "))
+
+			if ok, name := shouldIgnoreError(err, c.options.Deadletter.Errors); ok {
+				logger.Warnf("Error type %s is allowed to be sent to dead letter", name)
+				deadLetterSubject = c.options.Deadletter.Subject
+				errorType = name
+			} else {
+				return e, err
+			}
+
+			if deadLetterSubject == "" {
+				logger.Warnf("no dead letter subject found for error type %s", errorType)
+				return e, err
+			}
+
+			for _, ev := range events {
+				ev.SetSubject(deadLetterSubject)
+				ev.SetExtension("error_type", errorType)
+				ev.SetExtension("error", err.Error())
+			}
+
 		} else {
+			logger.Debugf("dead letter is disabled. ignoring dead letter")
 			return e, err
 		}
-
-		if deadLetterSubject == "" {
-			logger.Warnf("no dead letter subject found for error type %s", errorType)
-			return e, err
-		}
-
-		for _, ev := range events {
-			ev.SetSubject(deadLetterSubject)
-			ev.SetExtension("error_type", errorType)
-			ev.SetExtension("error", err.Error())
-		}
-
-	} else {
-		logger.Debugf("dead letter is disabled. ignoring dead letter")
-		return e, err
 	}
 
 	for _, ev := range events {
