@@ -4,9 +4,9 @@ import (
 	"context"
 	"sync"
 
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"github.com/xgodev/boost/factory/core/net/http/client"
 	"github.com/xgodev/boost/wrapper/log"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 // StartTracer starts the tracer like StartTraceWithOptions but with default Options.

@@ -1,16 +1,24 @@
 module github.com/xgodev/boost
 
-go 1.24.1
+go 1.24.0
 
-// replace github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.13.4
-// replace github.com/DataDog/datadog-agent/pkg/trace => github.com/DataDog/datadog-agent/pkg/trace v0.58.0
-// replace github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes => github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes v0.24.0
+// Versão 0.7.0 inclui mudança da lib de Yaml da "gopkg.in/yaml.v3" para "go.yaml.in/yaml/v3" e acaba quebrando
+replace github.com/google/gnostic-models v0.7.0 => github.com/google/gnostic-models v0.6.9
+
+// k8s/apimachinery incompativel com a nova versão do kube-openapi
+replace k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f
 
 require (
 	cloud.google.com/go/bigquery v1.69.0
 	cloud.google.com/go/firestore v1.18.0
 	cloud.google.com/go/pubsub v1.50.0
+	github.com/DataDog/dd-trace-go/contrib/aws/aws-sdk-go-v2/v2 v2.2.2
+	github.com/DataDog/dd-trace-go/contrib/database/sql/v2 v2.2.2
 	github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver.v2/v2 v2.2.2
+	github.com/DataDog/dd-trace-go/contrib/google.golang.org/grpc/v2 v2.2.2
+	github.com/DataDog/dd-trace-go/contrib/labstack/echo.v4/v2 v2.2.2
+	github.com/DataDog/dd-trace-go/contrib/redis/go-redis.v9/v2 v2.2.2
+	github.com/DataDog/dd-trace-go/v2 v2.2.2
 	github.com/XSAM/otelsql v0.39.0
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/allegro/bigcache/v3 v3.1.0
@@ -100,7 +108,6 @@ require (
 	google.golang.org/api v0.247.0
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.7
-	gopkg.in/DataDog/dd-trace-go.v1 v1.74.5
 	gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	k8s.io/client-go v0.33.4
@@ -124,13 +131,6 @@ require (
 	github.com/DataDog/datadog-agent/pkg/util/scrubber v0.69.0 // indirect
 	github.com/DataDog/datadog-agent/pkg/version v0.69.0 // indirect
 	github.com/DataDog/datadog-go/v5 v5.6.0 // indirect
-	github.com/DataDog/dd-trace-go/contrib/aws/aws-sdk-go-v2/v2 v2.2.2 // indirect
-	github.com/DataDog/dd-trace-go/contrib/database/sql/v2 v2.2.2 // indirect
-	github.com/DataDog/dd-trace-go/contrib/google.golang.org/grpc/v2 v2.2.2 // indirect
-	github.com/DataDog/dd-trace-go/contrib/labstack/echo.v4/v2 v2.2.2 // indirect
-	github.com/DataDog/dd-trace-go/contrib/redis/go-redis.v9/v2 v2.2.2 // indirect
-	github.com/DataDog/dd-trace-go/instrumentation/testutils/grpc/v2 v2.2.2 // indirect
-	github.com/DataDog/dd-trace-go/v2 v2.2.2 // indirect
 	github.com/DataDog/go-libddwaf/v4 v4.4.0 // indirect
 	github.com/DataDog/go-runtime-metrics-internal v0.0.4-0.20250721125240-fdf1ef85b633 // indirect
 	github.com/DataDog/go-sqllexer v0.1.6 // indirect
@@ -208,6 +208,7 @@ require (
 	github.com/google/gnostic-models v0.7.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-tpm v0.9.5 // indirect
+	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20250630185457-6e76a2b096b5 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/wire v0.6.0 // indirect
@@ -351,6 +352,5 @@ require (
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.7.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )

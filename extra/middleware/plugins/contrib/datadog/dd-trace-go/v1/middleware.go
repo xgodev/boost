@@ -2,8 +2,8 @@ package datadog
 
 import (
 	"context"
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"github.com/xgodev/boost/extra/middleware"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 type anyErrorMiddleware[R any] struct {

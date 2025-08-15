@@ -2,12 +2,10 @@ package datadog
 
 import (
 	"context"
-
-	datadog "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
-
+	redistrace "github.com/DataDog/dd-trace-go/contrib/redis/go-redis.v9/v2"
 	"github.com/redis/go-redis/v9"
+	datadog "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
 	"github.com/xgodev/boost/wrapper/log"
-	redistrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/redis/go-redis.v9"
 )
 
 // Cluster represents a datadog client for redis cluster client.
