@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	fxcontext "github.com/xgodev/boost/fx/modules/core/context"
-	m "go.mongodb.org/mongo-driver/mongo"
+	m "go.mongodb.org/mongo-driver/v2/mongo"
 	"go.uber.org/fx"
 	"sync"
 )

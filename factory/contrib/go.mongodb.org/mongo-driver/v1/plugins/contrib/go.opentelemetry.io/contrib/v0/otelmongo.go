@@ -5,8 +5,8 @@ import (
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/v2/mongo/otelmongo"
 )
 
 // OtelMongo represents a opentelemetry plugin for mongo.
@@ -48,7 +48,6 @@ func (d *OtelMongo) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mo
 		logger := log.FromContext(ctx)
 
 		logger.Trace("integrating opentelemetry in mongo")
-
 		options.SetMonitor(otelmongo.NewMonitor(otelmongo.WithTracerProvider(otel.TracerProvider)))
 
 		logger.Debug("opentelemetry successfully integrated in mongo")

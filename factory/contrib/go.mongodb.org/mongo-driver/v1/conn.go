@@ -6,10 +6,10 @@ import (
 	"github.com/xgodev/boost/wrapper/log"
 	"strings"
 
-	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
+	"go.mongodb.org/mongo-driver/v2/event"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/x/mongo/driver/connstring"
 )
 
 // Conn represents a mongo connection.
@@ -114,7 +114,7 @@ func newClient(ctx context.Context, co *options.ClientOptions) (client *mongo.Cl
 
 	logger := log.FromContext(ctx)
 
-	client, err = mongo.Connect(ctx, co)
+	client, err = mongo.Connect(co)
 
 	if err != nil {
 		return nil, nil, err
@@ -151,7 +151,7 @@ func clientOptions(ctx context.Context, o *Options) (*options.ClientOptions, err
 			logger.Debugf("mongodb cmd - %v %s %s %v", startedEvent.ConnectionID, startedEvent.CommandName, startedEvent.DatabaseName, startedEvent.RequestID)
 		},
 		Succeeded: func(ctx context.Context, succeededEvent *event.CommandSucceededEvent) {
-			logger.Debugf("mongodb cmd - %v %s %vus %v", succeededEvent.ConnectionID, succeededEvent.CommandName, succeededEvent.DurationNanos, succeededEvent.RequestID)
+			logger.Debugf("mongodb cmd - %v %s %vus %v", succeededEvent.ConnectionID, succeededEvent.CommandName, succeededEvent.Duration.Nanoseconds(), succeededEvent.RequestID)
 		},
 		Failed: func(ctx context.Context, failedEvent *event.CommandFailedEvent) {
 			logger.Errorf("mongodb cmd - %v %s %s %v", failedEvent.ConnectionID, failedEvent.CommandName, failedEvent.Failure, failedEvent.RequestID)

@@ -7,7 +7,7 @@ import (
 
 	"github.com/xgodev/boost/extra/health"
 	"github.com/xgodev/boost/wrapper/log"
-	m "go.mongodb.org/mongo-driver/mongo"
+	m "go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // Health represents a healh plugin for mongo.

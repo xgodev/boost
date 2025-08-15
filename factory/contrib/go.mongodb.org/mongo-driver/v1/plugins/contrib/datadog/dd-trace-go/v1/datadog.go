@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 
+	mongotrace "github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver.v2/v2/mongo"
 	datadog "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
 	"github.com/xgodev/boost/wrapper/log"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	mongotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // Datadog represents a datadog plugin for mongo.
@@ -46,9 +46,9 @@ func (d *Datadog) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mong
 	}
 
 	opt := []mongotrace.Option{
-		mongotrace.WithServiceName(d.options.ServiceName),
-		mongotrace.WithAnalytics(d.options.Analytics),
-		mongotrace.WithAnalyticsRate(d.options.AnalyticsRate),
+		mongotrace.WithService(d.options.ServiceName),
+		//mongotrace.WithAnalytics(d.options.Analytics),
+		//mongotrace.WithAnalyticsRate(d.options.AnalyticsRate),
 	}
 
 	return func(ctx context.Context, options *options.ClientOptions) error {
