@@ -4,10 +4,10 @@ import (
 	"context"
 
 	prom "github.com/prometheus/client_golang/prometheus"
-	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
+	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
 	"github.com/xgodev/boost/wrapper/log"
-	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/event"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 var (

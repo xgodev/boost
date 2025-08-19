@@ -1,14 +1,12 @@
-package mongo
+package prometheus
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Options represents mongo client options.
+// Options represents opentracing for resty client options.
 type Options struct {
-	Uri  string
-	Auth *options.Credential
+	Enabled bool
 }
 
 // NewOptions returns options from config file or environment vars.

@@ -2,7 +2,7 @@ package mongo
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // Options represents mongo client options.

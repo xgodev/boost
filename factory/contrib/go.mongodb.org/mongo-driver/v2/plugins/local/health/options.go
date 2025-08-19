@@ -1,14 +1,15 @@
-package mongo
+package health
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Options represents mongo client options.
+// Options represents health plugin for mongo options
 type Options struct {
-	Uri  string
-	Auth *options.Credential
+	Name        string
+	Enabled     bool
+	Description string
+	Required    bool
 }
 
 // NewOptions returns options from config file or environment vars.

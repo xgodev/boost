@@ -3,12 +3,12 @@ package health
 import (
 	"context"
 
-	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
+	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
 	"github.com/xgodev/boost/model/errors"
 
 	"github.com/xgodev/boost/extra/health"
 	"github.com/xgodev/boost/wrapper/log"
-	m "go.mongodb.org/mongo-driver/mongo"
+	m "go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // Health represents a healh plugin for mongo.

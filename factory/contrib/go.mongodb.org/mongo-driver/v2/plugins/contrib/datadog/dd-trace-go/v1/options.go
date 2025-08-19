@@ -1,14 +1,15 @@
-package mongo
+package datadog
 
 import (
 	"github.com/xgodev/boost/wrapper/config"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Options represents mongo client options.
+// Options represents datadog plugin for mongo options.
 type Options struct {
-	Uri  string
-	Auth *options.Credential
+	Enabled       bool
+	ServiceName   string
+	Analytics     bool
+	AnalyticsRate float64
 }
 
 // NewOptions returns options from config file or environment vars.

@@ -3,11 +3,11 @@ package contrib
 import (
 	"context"
 
-	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
+	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
 	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/v2/mongo/otelmongo"
 )
 
 // OtelMongo represents a opentelemetry plugin for mongo.
