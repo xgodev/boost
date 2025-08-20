@@ -48,8 +48,6 @@ func (d *Datadog) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mong
 
 	opt := []mongotrace.Option{
 		mongotrace.WithService(d.options.ServiceName),
-		//mongotrace.WithAnalytics(d.options.Analytics),
-		//mongotrace.WithAnalyticsRate(d.options.AnalyticsRate),
 	}
 
 	return func(ctx context.Context, options *options.ClientOptions) error {
