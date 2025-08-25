@@ -2,6 +2,7 @@ package health
 
 import (
 	"context"
+
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	"github.com/xgodev/boost/model/errors"
 

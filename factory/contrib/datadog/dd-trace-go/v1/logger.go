@@ -1,9 +1,9 @@
 package datadog
 
 import (
+	ddtrace "github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/log"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 )
 
 // Logger represents Datadog's Logger implementation.
