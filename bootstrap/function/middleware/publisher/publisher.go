@@ -1,12 +1,14 @@
 package publisher
 
 import (
+	"fmt"
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/model/errors"
+
+	stderrors "errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
-	"reflect"
 	"strings"
 )
 
@@ -44,26 +46,18 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 
 		if c.options.Deadletter.Enabled {
 
-			err = errors.Cause(err)
-
-			errType := reflect.TypeOf(err).Elem().Name()
-
 			logger.Debugf("configured to send to deadletter error types: [%s]", strings.Join(c.options.Deadletter.Errors, ", "))
-			logger.Warnf("contains error type %s. %s",
-				errType,
-				err.Error())
 
-			for _, allowedErrorType := range c.options.Deadletter.Errors {
-				if errType == allowedErrorType {
-					logger.Tracef("Error type %s is allowed to be sent to dead letter", errType)
-					deadLetterSubject = c.options.Deadletter.Subject
-					errorType = errType
-					break
-				}
+			if ok, name := shouldIgnoreError(err, c.options.Deadletter.Errors); ok {
+				logger.Warnf("Error type %s is allowed to be sent to dead letter", name)
+				deadLetterSubject = c.options.Deadletter.Subject
+				errorType = name
+			} else {
+				return e, err
 			}
 
 			if deadLetterSubject == "" {
-				logger.Warnf("no dead letter subject found for error type %s", errType)
+				logger.Warnf("no dead letter subject found for error type %s", errorType)
 				return e, err
 			}
 
@@ -75,8 +69,8 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 
 		} else {
 			logger.Debugf("dead letter is disabled. ignoring dead letter")
+			return e, err
 		}
-
 	}
 
 	for _, ev := range events {
@@ -100,6 +94,22 @@ func (c *Publisher[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.
 	}
 
 	return e, err
+}
+
+func shouldIgnoreError(err error, allowed []string) (bool, string) {
+	for err != nil {
+		errName := fmt.Sprintf("%T", err)          // ex: *my.ErrFoo
+		errName = strings.TrimPrefix(errName, "*") // remove o '*' para comparar com o nome puro
+
+		for _, allowedName := range allowed {
+			if strings.HasSuffix(errName, allowedName) {
+				return true, allowedName
+			}
+		}
+
+		err = stderrors.Unwrap(err)
+	}
+	return false, ""
 }
 
 func NewAnyErrorMiddleware[T any](publisher *publisher.Publisher) (middleware.AnyErrorMiddleware[T], error) {

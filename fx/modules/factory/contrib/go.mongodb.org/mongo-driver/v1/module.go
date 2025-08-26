@@ -2,11 +2,12 @@ package mongo
 
 import (
 	"context"
+	"sync"
+
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	fxcontext "github.com/xgodev/boost/fx/modules/core/context"
 	m "go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
-	"sync"
 )
 
 const (

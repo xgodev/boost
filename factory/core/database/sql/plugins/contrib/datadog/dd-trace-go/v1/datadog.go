@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"database/sql/driver"
 
+	sqltrace "github.com/DataDog/dd-trace-go/contrib/database/sql/v2"
 	ddboost "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
 	"github.com/xgodev/boost/wrapper/log"
-	sqltrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
 )
 
 // Datadog instruments database/sql for DataDog tracing.

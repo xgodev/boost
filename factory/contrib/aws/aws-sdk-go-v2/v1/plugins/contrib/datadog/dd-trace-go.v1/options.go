@@ -1,8 +1,8 @@
 package datadog
 
 import (
+	awstrace "github.com/DataDog/dd-trace-go/contrib/aws/aws-sdk-go-v2/v2/aws"
 	"github.com/xgodev/boost/wrapper/config"
-	awstrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/aws/aws-sdk-go-v2/aws"
 )
 
 // Options struct which represents a datadog plugin for aws.
