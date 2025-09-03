@@ -74,8 +74,9 @@ func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.Publ
 		go func(ev *v2.Event) {
 			defer wg.Done()
 
-			logger := log.FromContext(ctx).WithTypeOf(*p).
-				WithField("subject", ev.Subject()).
+			ctx := context.Background()
+
+			logger := log.WithField("subject", ev.Subject()).
 				WithField("id", ev.ID())
 
 			// Convert event data
@@ -151,6 +152,7 @@ func (p *client) getTopic(subject string) *pubsub.Topic {
 		return t
 	}
 	t := p.client.Topic(subject)
+	t.PublishSettings = p.options.Settings
 	p.topics[subject] = t
 	return t
 }

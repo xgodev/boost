@@ -1,6 +1,7 @@
 package pubsub
 
 import (
+	"cloud.google.com/go/pubsub"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
@@ -10,6 +11,7 @@ type Options struct {
 		Level string
 	}
 	OrderingKey bool
+	Settings    pubsub.PublishSettings
 }
 
 // NewOptions returns options from config file or environment vars.
