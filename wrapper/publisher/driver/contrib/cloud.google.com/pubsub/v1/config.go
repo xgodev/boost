@@ -42,7 +42,7 @@ func ConfigAdd(path string) {
 	config.Add(path+bufferedByteLimit, 10*1e7, "the maximum number of bytes that can be pending in memory across all topics")
 	config.Add(path+maxOutstandingMessages, 1000, "the maximum number of messages that can be pending in memory for publishing")
 	config.Add(path+maxOutstandingBytes, -1, "the maximum total size of messages that can be pending in memory for publishing")
-	config.Add(path+limitExceededBehavior, 0, "behavior when flow control limits are exceeded: Block or Ignore")
+	config.Add(path+limitExceededBehavior, 1, "behavior when flow control limits are exceeded: Block or Ignore")
 	config.Add(path+enableCompression, false, "whether to compress messages before sending")
 	config.Add(path+compressionBytesThreshold, 240, "the minimum size a message must be to be compressed before sending")
 }
