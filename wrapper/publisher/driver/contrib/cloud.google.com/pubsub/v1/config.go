@@ -14,6 +14,7 @@ const (
 	logRoot                   = ".log"
 	orderingKey               = ".orderingKey"
 	level                     = logRoot + ".level"
+	publishTimeout            = ".publishTimeout"
 	settings                  = ".settings"
 	delayThreshold            = settings + ".delayThreshold"
 	countThreshold            = settings + ".countThreshold"
@@ -60,4 +61,5 @@ func ConfigAdd(path string) {
 	config.Add(path+limitExceededBehavior, 1, "behavior when flow control limits are exceeded: Block or Ignore")
 	config.Add(path+enableCompression, false, "whether to compress messages before sending")
 	config.Add(path+compressionBytesThreshold, 240, "the minimum size a message must be to be compressed before sending")
+	config.Add(path+publishTimeout, 60*time.Second, "the maximum duration to wait for a publish to complete")
 }
