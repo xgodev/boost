@@ -8,6 +8,10 @@ import (
 // Noop is a dummy implementation of Logger
 type Noop struct{}
 
+func (n Noop) Contextual(key string, val any) Logger {
+	return n
+}
+
 // NewNoop create a Noop Logger
 func NewNoop() Noop {
 	i := Noop{}

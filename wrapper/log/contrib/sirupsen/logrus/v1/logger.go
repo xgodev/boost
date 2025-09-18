@@ -169,6 +169,10 @@ type logger struct {
 	errorFieldName string
 }
 
+func (l *logger) Contextual(key string, val any) log.Logger {
+	return l
+}
+
 func (l *logger) Trace(args ...interface{}) {
 	l.logger.Trace(args...)
 }

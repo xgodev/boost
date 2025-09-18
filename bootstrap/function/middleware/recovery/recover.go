@@ -18,11 +18,9 @@ func NewAnyErrorMiddleware[T any]() middleware.AnyErrorMiddleware[T] {
 }
 
 func (c *Recovery[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (res T, err error) {
-	logger := log.FromContext(ctx.GetContext()).WithTypeOf(*c)
-
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Errorf("recovering %v", r)
+			log.FromContext(ctx.GetContext()).WithTypeOf(*c).Errorf("recovering: %v", r)
 			err = errors.Internalf("%v", r)
 		}
 	}()

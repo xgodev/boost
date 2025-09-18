@@ -62,6 +62,8 @@ type Logger interface {
 
 	FromContext(ctx context.Context) Logger
 
+	Contextual(key string, val any) Logger
+
 	Output() io.Writer
 
 	Fields() Fields

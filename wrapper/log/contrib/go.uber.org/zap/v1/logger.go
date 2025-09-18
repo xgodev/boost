@@ -185,6 +185,10 @@ type zapLogger struct {
 	errorFieldName string
 }
 
+func (l *zapLogger) Contextual(key string, val any) log.Logger {
+	return l
+}
+
 // Printf uses (*zap.SugaredLogger).Infof to log a templated message.
 func (l *zapLogger) Printf(format string, args ...interface{}) {
 	l.sugaredLogger.Infof(format, args...)

@@ -2,7 +2,7 @@ package otel
 
 import (
 	"context"
-	"github.com/go-logr/logr"
+
 	"github.com/pkg/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"go.opentelemetry.io/otel"
@@ -10,12 +10,13 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 
+	"sync"
+	"time"
+
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"google.golang.org/grpc/credentials"
-	"sync"
-	"time"
 )
 
 var MeterProvider metric.MeterProvider
@@ -47,8 +48,6 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 		MeterProvider = noop.NewMeterProvider()
 
 		logger := log.FromContext(ctx)
-
-		otel.SetLogger(logr.New(&Logger{}))
 
 		exporter, err := NewMeterExporter(ctx, options)
 		if err != nil {

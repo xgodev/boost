@@ -5,7 +5,6 @@ import (
 	"context"
 	"io"
 	"os"
-	"reflect"
 	"strings"
 
 	"github.com/rs/zerolog"
@@ -41,7 +40,7 @@ func NewLoggerWithOptions(options *Options) log.Logger {
 	if writer == nil {
 		zerologger := zerolog.Nop()
 		logger := &logger{
-			logger: zerologger,
+			logger: &zerologger,
 		}
 
 		log.Set(logger)
@@ -64,7 +63,7 @@ func NewLoggerWithOptions(options *Options) log.Logger {
 	}
 
 	logger := &logger{
-		logger:         zerologger,
+		logger:         &zerologger,
 		writer:         writer,
 		fields:         log.Fields{},
 		errorFieldName: errorField,
@@ -112,7 +111,7 @@ func options(option []Option) *Options {
 }
 
 type logger struct {
-	logger         zerolog.Logger
+	logger         *zerolog.Logger
 	writer         io.Writer
 	fields         log.Fields
 	errorFieldName string
@@ -263,27 +262,31 @@ func (l *logger) Panic(args ...interface{}) {
 	l.logger.Panic().Msgf(format.String(), args...)
 }
 
+func (l *logger) Contextual(key string, value interface{}) log.Logger {
+	l.logger.UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.Any(key, value)
+	})
+
+	return l
+}
+
 func (l *logger) WithField(key string, value interface{}) log.Logger {
 	newField := make(map[string]interface{})
 	newField[key] = value
 
 	newLogger := l.logger.With().Fields(newField).Logger()
-	return &logger{newLogger, l.writer, newField, l.errorFieldName}
+	return &logger{&newLogger, l.writer, newField, l.errorFieldName}
 }
 
 func (l *logger) WithFields(fields map[string]interface{}) log.Logger {
+
 	newLogger := l.logger.With().Fields(fields).Logger()
-	return &logger{newLogger, l.writer, fields, l.errorFieldName}
+	return &logger{&newLogger, l.writer, fields, l.errorFieldName}
 }
 
 func (l *logger) WithTypeOf(obj interface{}) log.Logger {
 
-	t := reflect.TypeOf(obj)
-
-	return l.WithFields(map[string]interface{}{
-		"reflect.type.name":    t.Name(),
-		"reflect.type.package": t.PkgPath(),
-	})
+	return l
 }
 
 func (l *logger) WithError(err error) log.Logger {
@@ -299,7 +302,7 @@ func (l *logger) Output() io.Writer {
 }
 
 func (l *logger) ToContext(ctx context.Context) context.Context {
-	return l.logger.WithContext(context.WithValue(ctx, key, l.fields))
+	return l.logger.WithContext(ctx)
 }
 
 func (l *logger) FromContext(ctx context.Context) log.Logger {
@@ -307,13 +310,6 @@ func (l *logger) FromContext(ctx context.Context) log.Logger {
 	if zerologger.GetLevel() == zerolog.Disabled {
 		return l
 	}
-	rawFields := ctx.Value(key)
-	fields := log.Fields{}
-	if rawFields != nil {
-		switch v := rawFields.(type) {
-		case log.Fields:
-			fields = v
-		}
-	}
-	return &logger{*zerologger, l.writer, fields, l.errorFieldName}
+
+	return &logger{zerologger, l.writer, nil, l.errorFieldName}
 }

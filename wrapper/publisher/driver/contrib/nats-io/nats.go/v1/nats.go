@@ -3,6 +3,7 @@ package nats
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
@@ -69,7 +70,7 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (res []publisher
 			continue
 		}
 
-		logger.Info(string(rawMessage))
+		logger.Trace(string(rawMessage))
 
 		msg := &nats.Msg{
 			Subject: out.Subject(),

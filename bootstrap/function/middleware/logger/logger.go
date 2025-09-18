@@ -3,8 +3,11 @@ package logger
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
+	"github.com/xgodev/boost/factory/contrib/rs/zerolog/v1"
+
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 )
@@ -34,12 +37,12 @@ func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErr
 }
 
 func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
-	logger := log.FromContext(ctx.GetContext()).WithTypeOf(*c)
-	lm := c.logger(logger)
+	logCtx := zerolog.NewLogger().ToContext(ctx.GetContext())
+	ctx.SetContext(logCtx)
 
 	e, err := ctx.Next(exec, fallbackFunc)
 	if err != nil {
-		logger.Error(err.Error())
+		log.FromContext(ctx.GetContext()).Error(err)
 		if c.options.ErrorStack {
 			fmt.Println(errors.ErrorStack(err))
 		}
@@ -60,11 +63,11 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 	}
 
 	for _, ev := range events {
-		j, err := json.Marshal(ev)
+		output, err := json.Marshal(ev)
 		if err != nil {
-			logger.Errorf("error on marshall event for logging. %s", err.Error())
+			log.FromContext(ctx.GetContext()).Errorf("error on marshall event for logging. %s", err.Error())
 		} else {
-			lm(string(j))
+			log.FromContext(ctx.GetContext()).WithField("output", output).Info("event sent")
 		}
 	}
 

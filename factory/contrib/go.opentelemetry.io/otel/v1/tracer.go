@@ -2,9 +2,9 @@ package otel
 
 import (
 	"context"
-	"github.com/go-logr/logr"
-	"go.opentelemetry.io/otel/propagation"
 	"sync"
+
+	"go.opentelemetry.io/otel/propagation"
 
 	"github.com/pkg/errors"
 	"github.com/xgodev/boost/wrapper/log"
@@ -49,7 +49,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		logger := log.FromContext(ctx)
 
-		otel.SetLogger(logr.New(&Logger{}))
+		//otel.SetLogger(logr.New(&Logger{}))
 
 		exporter, err := NewTracerExporter(ctx, options)
 
