@@ -19,16 +19,6 @@ type client struct {
 	options  *Options
 }
 
-func (p *client) Close() {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *client) Stop() {
-	//TODO implement me
-	panic("implement me")
-}
-
 // NewWithConfigPath returns connection with options from config path.
 func NewWithConfigPath(ctx context.Context, producer *kafka.Producer, path string) (publisher.Driver, error) {
 	options, err := NewOptionsWithPath(path)

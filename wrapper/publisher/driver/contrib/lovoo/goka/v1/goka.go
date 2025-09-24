@@ -17,16 +17,6 @@ type client struct {
 	emitter *g.Emitter
 }
 
-func (p *client) Close() {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *client) Stop() {
-	//TODO implement me
-	panic("implement me")
-}
-
 // New creates a new Kafka client.
 func New(emitter *g.Emitter) publisher.Driver {
 	return &client{emitter: emitter}

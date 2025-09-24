@@ -23,7 +23,7 @@ func NewAnyErrorMiddleware[T any]() middleware.AnyErrorMiddleware[T] {
 func (c *Recovery[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (res T, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			runtimeCallback := FancyHandleError(r)
+			runtimeCallback := GenerateStackTrace(r)
 
 			log.FromContext(ctx.GetContext()).WithTypeOf(*c).WithField("callers", runtimeCallback).Errorf("recovering: %v", r)
 			err = fmt.Errorf(runtimeCallback)
@@ -32,18 +32,10 @@ func (c *Recovery[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.A
 
 	res, err = ctx.Next(exec, fallbackFunc)
 
-	//if r := recover(); r != nil {
-	//	log.FromContext(ctx.GetContext()).WithTypeOf(*c).Errorf("recovering: %v", r)
-	//	err = fmt.Errorf(FancyHandleError(r))
-	//}
 	return res, err
 }
 
-// this logs the function name as well.
-func FancyHandleError(err any) string {
-	// notice that we're using 1, so it will actually log the where
-	// the error happened, 0 = this function, we don't want that.
-	//pc, filename, line, _ := runtime.Caller(1)
+func GenerateStackTrace(err any) string {
 	var pcs [10]uintptr
 	n := runtime.Callers(1, pcs[:])
 	iter := runtime.CallersFrames(pcs[:n])
@@ -51,8 +43,6 @@ func FancyHandleError(err any) string {
 	b := strings.Builder{}
 	for {
 		f, more := iter.Next()
-		//fmt.Printf("  %s %s:%d\n", f.Function, f.File, f.Line)
-
 		b.WriteString(fmt.Sprintf("%s %s:%d;", f.Function, f.File, f.Line))
 		if !more {
 			break
@@ -60,8 +50,4 @@ func FancyHandleError(err any) string {
 	}
 
 	return b.String()
-
-	//log.Printf("[error] in %s[%s:%d] %v", runtime.FuncForPC(pc).Name(), filename, line, err)
-	//return fmt.Sprintf("[error] in %s[%s:%d] %v %v", runtime.FuncForPC(pc).Name(), filename, line, err, n)
-
 }

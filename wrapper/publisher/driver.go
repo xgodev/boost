@@ -9,5 +9,4 @@ import (
 
 type Driver interface {
 	Publish(context.Context, []*cloudevents.Event) ([]PublishOutput, error)
-	Close()
 }

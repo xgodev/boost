@@ -24,11 +24,6 @@ type client struct {
 	topics map[string]*pubsub.Topic
 }
 
-func (p *client) Stop() {
-	//TODO implement me
-	panic("implement me")
-}
-
 // NewWithConfigPath returns a publisher configured by a file path.
 func NewWithConfigPath(ctx context.Context, c *pubsub.Client, path string) (publisher.Driver, error) {
 	options, err := NewOptionsWithPath(path)

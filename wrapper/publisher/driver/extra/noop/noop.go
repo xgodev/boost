@@ -2,6 +2,7 @@ package noop
 
 import (
 	"context"
+
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
@@ -9,16 +10,6 @@ import (
 
 // client represents a noop client.
 type client struct {
-}
-
-func (p *client) Close() {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *client) Stop() {
-	//TODO implement me
-	panic("implement me")
 }
 
 // New creates a new noop client.
