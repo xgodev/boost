@@ -18,6 +18,16 @@ type client struct {
 	conn *nats.Conn
 }
 
+func (p *client) Close() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p *client) Stop() {
+	//TODO implement me
+	panic("implement me")
+}
+
 // New creates a new NATS client.
 func New(conn *nats.Conn) publisher.Driver {
 	return &client{conn: conn}

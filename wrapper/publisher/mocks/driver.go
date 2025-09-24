@@ -16,6 +16,11 @@ type Driver struct {
 	mock.Mock
 }
 
+func (_m *Driver) Stop() {
+	//TODO implement me
+	panic("implement me")
+}
+
 // Publish provides a mock function with given fields: _a0, _a1
 func (_m *Driver) Publish(_a0 context.Context, _a1 []*event.Event) ([]publisher.PublishOutput, error) {
 	ret := _m.Called(_a0, _a1)

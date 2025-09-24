@@ -3,6 +3,7 @@ package goka
 import (
 	"context"
 	"encoding/json"
+
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/lovoo/goka"
 	g "github.com/xgodev/boost/factory/contrib/lovoo/goka/v1"
@@ -14,6 +15,16 @@ import (
 // client represents a Kafka client that implements.
 type client struct {
 	emitter *g.Emitter
+}
+
+func (p *client) Close() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p *client) Stop() {
+	//TODO implement me
+	panic("implement me")
 }
 
 // New creates a new Kafka client.

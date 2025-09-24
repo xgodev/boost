@@ -3,19 +3,30 @@ package confluent
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/google/uuid"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
-	"time"
 )
 
 // client represents a Kafka client that implements.
 type client struct {
 	producer *kafka.Producer
 	options  *Options
+}
+
+func (p *client) Close() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p *client) Stop() {
+	//TODO implement me
+	panic("implement me")
 }
 
 // NewWithConfigPath returns connection with options from config path.

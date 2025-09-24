@@ -1,14 +1,15 @@
 package pubsub
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
 	"fmt"
+	"math"
+	"time"
+
+	"cloud.google.com/go/pubsub"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
-	"math"
-	"time"
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/google/uuid"
@@ -61,46 +62,63 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 
 // processMessage processes each message, retries if needed, and applies backoff
 func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message) error {
-	logger := log.FromContext(ctx).WithTypeOf(*l)
-
-	retryCount := 0
-
 	in, err := l.generateCloudEvent(msg)
 	if err != nil {
 		msg.Nack()
 		return errors.Wrap(err, errors.Internalf("could not generate CloudEvent: %s", err.Error()))
 	}
 
-	for {
-		// Timeout por tentativa
-		msgCtx, cancel := context.WithTimeout(ctx, l.options.ProcessTimeout)
-
-		// Processes the event via handler
-		if _, err := l.handler(msgCtx, in); err != nil {
-			cancel()
-			retryCount++
-
-			logger.Warnf("msgID=%s handler failed (attempt %d/%d): %v\nPayload: %s", msg.ID, retryCount, l.options.RetryLimit, err, string(msg.Data))
-
-			// Check retry limit
-			if l.options.RetryLimit != -1 && retryCount >= l.options.RetryLimit {
-				return errors.Wrap(err, errors.Internalf("max retry limit reached"))
-			}
-
-			// Apply backoff if enabled
-			if l.options.Backoff {
-				l.applyBackoff(retryCount)
-			}
-
-			// Retry processing the message
-			continue
+	if _, err := l.handler(ctx, in); err != nil {
+		a := 0
+		if msg.DeliveryAttempt != nil {
+			a = *msg.DeliveryAttempt
 		}
-
-		cancel()
-		// Acknowledge the message after successful processing
-		msg.Ack()
-		break
+		log.Ctx(ctx, *l).Warnf("msgID=%s handler failed (attempt %d): %v | Payload: %s", msg.ID, a, err, string(msg.Data))
+		return err
 	}
+
+	//if _, err := l.handler(ctx, in); err != nil {
+	//	log.Ctx(ctx, *l).Warnf("msgID=%s handler failed (attempt %d): %v | Payload: %s", msg.ID, *msg.DeliveryAttempt, err, string(msg.Data))
+	//	return err
+	//}
+
+	//msg.DeliveryAttempt
+	//
+	//for {
+	//	// Timeout por tentativa
+	//	//msgCtx, cancel := context.WithTimeout(ctx, l.options.ProcessTimeout)
+	//
+	//	// Processes the event via handler
+	//	if _, err := l.handler(ctx, in); err != nil {
+	//		a := 0
+	//		if msg.DeliveryAttempt != nil {
+	//			a = *msg.DeliveryAttempt
+	//		}
+	//
+	//		log.Ctx(ctx, *l).Warnf("msgID=%s handler failed (attempt %d): %v | Payload: %s", msg.ID, a, err, string(msg.Data))
+	//		return err
+	//		//cancel()
+	//		retryCount++
+	//
+	//		// Check retry limit
+	//		if l.options.RetryLimit != -1 && retryCount >= l.options.RetryLimit {
+	//			return errors.Wrap(err, errors.Internalf("max retry limit reached"))
+	//		}
+	//
+	//		// Apply backoff if enabled
+	//		if l.options.Backoff {
+	//			l.applyBackoff(retryCount)
+	//		}
+	//
+	//		// Retry processing the message
+	//		continue
+	//	}
+	//
+	//	//cancel()
+	//	// Acknowledge the message after successful processing
+	//	msg.Ack()
+	//	break
+	//}
 
 	return nil
 }
@@ -177,5 +195,4 @@ func (l *Subscriber[T]) applyBackoff(retryCount int) {
 		backoffTime = l.options.MaxBackoff
 	}
 
-	time.Sleep(backoffTime)
 }

@@ -2,12 +2,13 @@ package logrus
 
 import (
 	"context"
-	"github.com/xgodev/boost/wrapper/log/contrib/sirupsen/logrus/v1/formatter/text"
 	"io"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
+
+	"github.com/xgodev/boost/wrapper/log/contrib/sirupsen/logrus/v1/formatter/text"
 
 	"github.com/sirupsen/logrus"
 	"github.com/xgodev/boost/wrapper/log"
@@ -285,6 +286,10 @@ type logEntry struct {
 	entry          *logrus.Entry
 	fields         map[string]interface{}
 	errorFieldName string
+}
+
+func (l *logEntry) Contextual(key string, val any) log.Logger {
+	return l
 }
 
 func (l *logEntry) Trace(args ...interface{}) {

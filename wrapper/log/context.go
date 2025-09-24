@@ -10,3 +10,7 @@ func ToContext(ctx context.Context) context.Context {
 func FromContext(ctx context.Context) Logger {
 	return l.FromContext(ctx)
 }
+
+func Ctx(ctx context.Context, obj interface{}) Logger {
+	return l.FromContext(ctx).WithTypeOf(obj)
+}

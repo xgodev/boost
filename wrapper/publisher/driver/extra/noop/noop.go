@@ -11,6 +11,16 @@ import (
 type client struct {
 }
 
+func (p *client) Close() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p *client) Stop() {
+	//TODO implement me
+	panic("implement me")
+}
+
 // New creates a new noop client.
 func New() publisher.Driver {
 	return &client{}

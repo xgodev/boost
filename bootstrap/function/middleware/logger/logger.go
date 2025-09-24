@@ -1,13 +1,9 @@
 package logger
 
 import (
-	"encoding/json"
 	"fmt"
 
-	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
-	"github.com/xgodev/boost/factory/contrib/rs/zerolog/v1"
-
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 )
@@ -37,39 +33,48 @@ func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErr
 }
 
 func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
-	logCtx := zerolog.NewLogger().ToContext(ctx.GetContext())
-	ctx.SetContext(logCtx)
+	//logCtx := zerolog.NewLogger().ToContext(ctx.GetContext())
+	//ctx.SetContext(logCtx)
 
 	e, err := ctx.Next(exec, fallbackFunc)
 	if err != nil {
-		log.FromContext(ctx.GetContext()).Error(err)
+		log.Ctx(ctx.GetContext(), *c).Warnf("handle with error: %s", err.Error())
 		if c.options.ErrorStack {
 			fmt.Println(errors.ErrorStack(err))
 		}
-	}
 
-	var events []*event.Event
-
-	switch r := any(e).(type) {
-	case []*event.Event:
-		events = r
-	case *event.Event:
-		if r == nil {
-			return e, err
-		}
-		events = []*event.Event{r}
-	default:
 		return e, err
 	}
+	//
+	//var events []*event.Event
+	//
+	//switch r := any(e).(type) {
+	//case []*event.Event:
+	//	events = r
+	//case *event.Event:
+	//	if r == nil {
+	//		return e, err
+	//	}
+	//	events = []*event.Event{r}
+	//default:
+	//	return e, err
+	//}
 
-	for _, ev := range events {
-		output, err := json.Marshal(ev)
-		if err != nil {
-			log.FromContext(ctx.GetContext()).Errorf("error on marshall event for logging. %s", err.Error())
-		} else {
-			log.FromContext(ctx.GetContext()).WithField("output", output).Info("event sent")
-		}
-	}
+	//output, err := json.Marshal(e)
+	//if err != nil {
+	//	log.FromContext(ctx.GetContext()).Errorf("error on marshall event for logging. %s", err.Error())
+	//} else {
+	//	log.FromContext(ctx.GetContext()).WithField("output", output).Info("event sent")
+	//}
+	//
+	//for _, ev := range events {
+	//	output, err := json.Marshal(ev)
+	//	if err != nil {
+	//		log.FromContext(ctx.GetContext()).Errorf("error on marshall event for logging. %s", err.Error())
+	//	} else {
+	//		log.FromContext(ctx.GetContext()).WithField("output", output).Info("event sent")
+	//	}
+	//}
 
 	return e, err
 }
