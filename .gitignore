@@ -27,3 +27,6 @@ Godeps/_workspace/
 dist/
 gen/
 .vscode/
+.claude/skills/golang-boost/evals/baseline/
+
+.claude/skills/golang-boost/evals/green/
