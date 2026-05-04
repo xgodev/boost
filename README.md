@@ -66,6 +66,61 @@ func main() {
 }
 ```
 
+## Claude Code plugin (AI assistance)
+
+If you use [Claude Code](https://claude.com/claude-code), this repo ships an
+official plugin that teaches AI coding agents to write boost-shaped code —
+correct boot sequence, idiomatic logging, config layer, error model, and
+subsystem-specific patterns (Echo APIs, Pub/Sub functions, new drivers, etc.).
+
+### Install (one time, per developer)
+
+Inside your Claude Code session, run:
+
+```
+/plugin marketplace add xgodev/boost
+/plugin install boost@xgodev-boost
+```
+
+That's it — 18 skills (one per boost subsystem) become discoverable in every
+Claude Code session you open from then on.
+
+### Update
+
+```
+/plugin update boost@xgodev-boost
+```
+
+### What you get
+
+| Skill | Subsystem |
+|---|---|
+| `boost-core` *(mature)* | Iron Laws, `boost.Start`, `log.FromContext`, `config`, `model/errors` |
+| `boost-factory-echo` *(stub)* | HTTP APIs with Echo |
+| `boost-factory-resty` *(stub)* | Outbound HTTP clients |
+| `boost-factory-pubsub` *(stub)* | GCP Pub/Sub client factory |
+| `boost-bootstrap-function` *(stub)* | `function.New` / `fn.Run` plumbing |
+| `boost-bootstrap-adapter-pubsub` *(stub)* | Pub/Sub subscriber (incl. ctx-loss workaround) |
+| `boost-bootstrap-adapter-nats` *(stub)* | NATS subscriber |
+| `boost-bootstrap-adapter-kafka` *(stub)* | Kafka subscriber |
+| `boost-bootstrap-middleware` *(stub)* | recovery / logger / publisher / ignore_errors |
+| `boost-wrapper-publisher` *(stub)* | publisher drivers |
+| `boost-wrapper-cache` *(stub)* | cache drivers |
+| `boost-wrapper-log` *(stub)* | log backends |
+| `boost-wrapper-config` *(stub)* | koanf config wrapper |
+| `boost-fx-modules` *(stub)* | uber/fx modules |
+| `boost-extra-middleware` *(stub)* | `AnyErrorMiddleware` / `AnyErrorWrapper` |
+| `boost-extra-health` *(stub)* | health checkers |
+| `boost-extra-multiserver` *(stub)* | multi-server lifecycle |
+| `boost-maintainer` *(stub)* | contributor guide for adding to boost |
+
+Stubs are placeholders that route to `boost-core`. They get lapidated via a
+TDD cycle (RED → GREEN → REFACTOR) the first time a contributor adds or
+changes the corresponding boost subsystem — see
+[`cc-plugins/CONTRIBUTING.md`](./cc-plugins/CONTRIBUTING.md).
+
+For the plugin's own docs, see [`cc-plugins/boost/README.md`](./cc-plugins/boost/README.md).
+
 ## Main Components
 
 ### Bootstrap
