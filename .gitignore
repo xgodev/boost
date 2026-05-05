@@ -27,10 +27,6 @@ Godeps/_workspace/
 dist/
 gen/
 .vscode/
-# cc-plugins TDD eval scratch dirs (not committed)
-cc-plugins/boost/skills/*/evals/baseline/
-cc-plugins/boost/skills/*/evals/green/
-cc-plugins/boost/skills/*/evals/green-v2/
 
-# Project-local Claude Code config (not the distributable plugin)
+# Local Claude Code config (untracked)
 .claude/
