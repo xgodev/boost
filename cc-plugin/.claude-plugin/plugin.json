@@ -1,7 +1,7 @@
 {
   "name": "golang-boost",
-  "version": "0.2.0",
-  "description": "Component-aligned Claude Code skill bundle for github.com/xgodev/boost. One plugin, one skill per boost component (boost-start, wrapper/log, wrapper/config, wrapper/publisher, model/errors, factory/echo, factory/pubsub, bootstrap/function, bootstrap/adapter/pubsub, bootstrap/middleware, extra/middleware, plus a maintainer guide). Skills cross-reference via REQUIRED BACKGROUND so Claude only loads the ones relevant to the current task.",
+  "version": "0.3.0",
+  "description": "Component-aligned Claude Code skill bundle for github.com/xgodev/boost. One plugin, one skill per boost component (20 total): boot sequence, log/config/publisher/cache wrappers, model/errors, Echo/Resty/Pub/Sub factories, function bootstrap + Pub/Sub/NATS/Kafka adapters, middleware stack, extra middleware/health/multiserver, fx modules, and a maintainer guide. Skills cross-reference via REQUIRED BACKGROUND so Claude only loads the ones relevant to the current task.",
   "author": {
     "name": "João Paulo Faria",
     "email": "jpfaria@gmail.com",
@@ -16,10 +16,12 @@
     "boost",
     "xgodev",
     "echo",
+    "resty",
     "pubsub",
     "cloudevents",
     "nats",
     "kafka",
+    "redis",
     "fx",
     "carrefour"
   ]

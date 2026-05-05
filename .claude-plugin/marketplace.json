@@ -12,10 +12,10 @@
     {
       "name": "golang-boost",
       "source": "./cc-plugin",
-      "description": "Component-aligned skill bundle for github.com/xgodev/boost — one skill per boost component, cross-referenced via REQUIRED BACKGROUND so Claude loads only what the current task needs.",
-      "version": "0.2.0",
+      "description": "Component-aligned skill bundle for github.com/xgodev/boost — 20 skills, one per boost component, cross-referenced via REQUIRED BACKGROUND so Claude loads only what the current task needs.",
+      "version": "0.3.0",
       "category": "language-go",
-      "tags": ["go", "golang", "boost", "echo", "pubsub", "cloudevents", "nats", "kafka", "fx", "carrefour"]
+      "tags": ["go", "golang", "boost", "echo", "resty", "pubsub", "cloudevents", "nats", "kafka", "redis", "fx", "carrefour"]
     }
   ]
 }
