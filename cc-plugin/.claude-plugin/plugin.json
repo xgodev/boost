@@ -1,0 +1,26 @@
+{
+  "name": "golang-boost",
+  "version": "0.1.0",
+  "description": "Single-skill Claude Code plugin teaching AI agents how to write and review Go code on top of github.com/xgodev/boost — Iron Laws (boost.Start, log.FromContext, config.Add, model/errors), HTTP APIs with Echo, event-driven functions over Pub/Sub/NATS/Kafka, and the maintainer-side layout convention for new factory contribs / wrapper drivers / bootstrap adapters.",
+  "author": {
+    "name": "João Paulo Faria",
+    "email": "jpfaria@gmail.com",
+    "url": "https://github.com/jpfaria"
+  },
+  "homepage": "https://github.com/xgodev/boost/tree/main/cc-plugin",
+  "repository": "https://github.com/xgodev/boost",
+  "license": "MIT",
+  "keywords": [
+    "golang",
+    "go",
+    "boost",
+    "xgodev",
+    "echo",
+    "pubsub",
+    "cloudevents",
+    "nats",
+    "kafka",
+    "fx",
+    "carrefour"
+  ]
+}

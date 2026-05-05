@@ -66,6 +66,17 @@ func main() {
 }
 ```
 
+### Claude Code plugin
+
+This repo ships a [Claude Code](https://claude.com/claude-code) plugin (`golang-boost`) that teaches AI agents how to write boost-shaped Go code — Iron Laws (`boost.Start`, handler typing, config layer), HTTP APIs with Echo, event-driven functions, and the maintainer-side layout for new contribs. Install once in your Claude Code session:
+
+```
+/plugin marketplace add xgodev/boost
+/plugin install golang-boost@xgodev
+```
+
+See [`cc-plugin/README.md`](./cc-plugin/README.md) for details.
+
 ## Main Components
 
 ### Bootstrap
