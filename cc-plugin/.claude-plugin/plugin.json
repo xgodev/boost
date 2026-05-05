@@ -1,7 +1,7 @@
 {
   "name": "golang-boost",
-  "version": "0.1.0",
-  "description": "Single-skill Claude Code plugin teaching AI agents how to write and review Go code on top of github.com/xgodev/boost — Iron Laws (boost.Start, log.FromContext, config.Add, model/errors), HTTP APIs with Echo, event-driven functions over Pub/Sub/NATS/Kafka, and the maintainer-side layout convention for new factory contribs / wrapper drivers / bootstrap adapters.",
+  "version": "0.2.0",
+  "description": "Component-aligned Claude Code skill bundle for github.com/xgodev/boost. One plugin, one skill per boost component (boost-start, wrapper/log, wrapper/config, wrapper/publisher, model/errors, factory/echo, factory/pubsub, bootstrap/function, bootstrap/adapter/pubsub, bootstrap/middleware, extra/middleware, plus a maintainer guide). Skills cross-reference via REQUIRED BACKGROUND so Claude only loads the ones relevant to the current task.",
   "author": {
     "name": "João Paulo Faria",
     "email": "jpfaria@gmail.com",

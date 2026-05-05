@@ -1,6 +1,6 @@
 # golang-boost — Claude Code plugin
 
-A single Claude Code skill that teaches AI agents how to write and review Go code on top of [github.com/xgodev/boost](https://github.com/xgodev/boost).
+Single Claude Code plugin shipping one skill per `github.com/xgodev/boost` component. Skills are component-aligned (one per boost subsystem) and cross-reference each other via `REQUIRED BACKGROUND` markers — Claude loads only the ones relevant to your current task.
 
 ## Install
 
@@ -15,20 +15,28 @@ A single Claude Code skill that teaches AI agents how to write and review Go cod
 /plugin update golang-boost@xgodev
 ```
 
-## What it covers
+## Skills shipped
 
-- The three Iron Laws every boost service obeys (`boost.Start`, handler typing, config layer)
-- Structured logging via `wrapper/log.FromContext`
-- Configuration via `wrapper/config` (and why `os.Getenv` is a violation)
-- The `model/errors` type system + how Echo's `error_handler` and the function `publisher` deadletter middleware route on it
-- Canonical `main.go` shapes for HTTP APIs (Echo) and Pub/Sub functions
-- The documented production workaround for the ctx-loss in adapter helpers (with the required `// TODO(boost-upstream):` annotation)
-- Maintainer-side layout convention for new factory contribs, wrapper drivers, bootstrap adapters, and Echo plugins
-- Red flags + self-test checklist
+| Skill | Component (under `github.com/xgodev/boost/`) |
+|---|---|
+| `boost-start` | the `boost.Start()` boot sequence |
+| `boost-wrapper-log` | `wrapper/log` — `log.FromContext`, structured logging |
+| `boost-wrapper-config` | `wrapper/config` — `config.Add`, typed accessors, env override |
+| `boost-wrapper-publisher` | `wrapper/publisher` — driver-agnostic publishing |
+| `boost-model-errors` | `model/errors` — typed error catalog + matchers |
+| `boost-factory-echo` | `factory/contrib/labstack/echo/v4` — HTTP API factory |
+| `boost-factory-pubsub` | `factory/contrib/cloud.google.com/pubsub/v1` — Pub/Sub client |
+| `boost-bootstrap-function` | `bootstrap/function` — generic function plumbing + `Handler[T]` rule |
+| `boost-bootstrap-adapter-pubsub` | `bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v1` — incl. ctx-loss workaround |
+| `boost-bootstrap-middleware` | `bootstrap/function/middleware` — recovery / logger / publisher / ignore_errors stack |
+| `boost-extra-middleware` | `extra/middleware` — generic `NewAnyErrorWrapper` for the workaround pattern |
+| `boost-maintainer` | guide for adding a new contrib (driver / adapter / plugin / module) |
+
+Components NOT yet covered (no validated content): `wrapper/cache`, `wrapper/log/contrib/*`, NATS / Kafka adapters, `extra/health`, `extra/multiserver`, `fx/modules`, `factory/contrib/go-resty`. New skills land only when there's concrete evidence of need (real-world failure observed when Claude codes against that component).
 
 ## Discovery
 
-Claude Code activates the skill automatically when your session has a Go file that imports `github.com/xgodev/boost` or you ask about its APIs. You don't need to invoke it manually.
+Claude reads each skill's `description` field at session start. When your context matches (Go file importing the corresponding boost subpackage, or a question about its APIs), the relevant skill activates. You don't pick — Claude does.
 
 ## License
 

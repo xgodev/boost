@@ -12,8 +12,8 @@
     {
       "name": "golang-boost",
       "source": "./cc-plugin",
-      "description": "Skill for writing and reviewing Go code on top of github.com/xgodev/boost. Covers Iron Laws, Echo HTTP APIs, event-driven functions (Pub/Sub / NATS / Kafka), and the maintainer-side layout convention for adding new factory contribs / wrapper drivers / bootstrap adapters.",
-      "version": "0.1.0",
+      "description": "Component-aligned skill bundle for github.com/xgodev/boost — one skill per boost component, cross-referenced via REQUIRED BACKGROUND so Claude loads only what the current task needs.",
+      "version": "0.2.0",
       "category": "language-go",
       "tags": ["go", "golang", "boost", "echo", "pubsub", "cloudevents", "nats", "kafka", "fx", "carrefour"]
     }
