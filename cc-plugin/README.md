@@ -1,6 +1,6 @@
 # golang-boost — Claude Code plugin
 
-Single Claude Code plugin shipping one skill per `github.com/xgodev/boost` component (28 skills total). Skills are component-aligned, cross-reference each other via `REQUIRED BACKGROUND` markers, and — for factories — anchor their guidance on the framework's own `examples/` dir so devs can verify the canonical shape against runnable code.
+Single Claude Code plugin shipping one skill per `github.com/xgodev/boost` component (53 skills total). Skills are component-aligned, cross-reference each other via `REQUIRED BACKGROUND` markers, and — for factories with framework-shipped examples — anchor their guidance on the boost source's own `examples/` dir.
 
 ## Install
 
@@ -15,74 +15,96 @@ Single Claude Code plugin shipping one skill per `github.com/xgodev/boost` compo
 /plugin update golang-boost@xgodev
 ```
 
-## Skills shipped
+## Skills shipped (53)
 
-### Foundations
+### Foundations (7)
 
-| Skill | Component (under `github.com/xgodev/boost/`) |
-|---|---|
-| `boost-start` | the `boost.Start()` boot sequence |
-| `boost-wrapper-log` | `wrapper/log` — `log.FromContext`, structured logging |
-| `boost-wrapper-log-backends` | `factory/contrib/{zap,zerolog,logrus}/v1` — picking the backend |
-| `boost-wrapper-config` | `wrapper/config` — `config.Add`, typed accessors, env override |
-| `boost-wrapper-publisher` | `wrapper/publisher` — driver-agnostic publishing |
-| `boost-wrapper-cache` | `wrapper/cache` — `Manager[T]` + drivers (Redis, allegro, stretchr) + codecs |
-| `boost-model-errors` | `model/errors` — typed error catalog + matchers |
+`boost-start`, `boost-wrapper-log`, `boost-wrapper-log-backends`, `boost-wrapper-config`, `boost-wrapper-publisher`, `boost-wrapper-cache`, `boost-model-errors`.
 
-### Factories (each backed by the component's `examples/` dir)
+### Factories (36)
 
-| Skill | Component |
-|---|---|
-| `boost-factory-echo` | `factory/contrib/labstack/echo/v4` — HTTP API + plugin set |
-| `boost-factory-resty` | `factory/contrib/go-resty/resty/v2` — outbound HTTP |
-| `boost-factory-pubsub` | `factory/contrib/cloud.google.com/pubsub/v1` |
-| `boost-factory-mongo` | `factory/contrib/go.mongodb.org/mongo-driver/v1` and `v2` |
-| `boost-factory-cassandra` | `factory/contrib/gocql/gocql/v1` |
-| `boost-factory-redis` | `factory/contrib/redis/go-redis/v9` (single + cluster) |
-| `boost-factory-elasticsearch` | `factory/contrib/elastic/go-elasticsearch/v8` (client + bulk indexer) |
-| `boost-factory-kafka` | `factory/contrib/confluentinc/confluent-kafka-go/v2` (raw producer/consumer) |
-| `boost-factory-aws` | `factory/contrib/aws/aws-sdk-go-v2/v1` umbrella + S3/SNS/SQS/Kinesis examples |
-| `boost-factory-grpc` | `factory/contrib/google.golang.org/grpc/v1` (client, server, autoTLS server) |
-| `boost-factory-gocloud-pubsub` | `factory/contrib/gocloud.dev/pubsub/v0` (provider-portable) |
+Every contrib under `factory/contrib/` is covered. Skills marked ✦ are anchored on framework-shipped `examples/` dirs.
 
-### Bootstrap (event-driven functions)
+**HTTP / API**
+- `boost-factory-echo` ✦ — Echo HTTP server + plugin set
+- `boost-factory-resty` ✦ — Resty outbound HTTP client
+- `boost-factory-grpc` ✦ — google.golang.org/grpc client + server (incl. autoTLS)
+- `boost-factory-graphql` — graphql-go handler
+- `boost-factory-cloudevents` — CloudEvents HTTP receiver
+- `boost-factory-net-http2` — HTTP/2 server tunables
 
-| Skill | Component |
-|---|---|
-| `boost-bootstrap-function` | `bootstrap/function` — generic plumbing + `Handler[T]` rule |
-| `boost-bootstrap-adapter-pubsub` | `bootstrap/.../pubsub/v1` — incl. ctx-loss workaround |
-| `boost-bootstrap-adapter-nats` | `bootstrap/.../nats-io/nats.go/v1` — same workaround pattern |
-| `boost-bootstrap-adapter-kafka` | `bootstrap/.../confluent-kafka-go/v2` — same workaround pattern |
-| `boost-bootstrap-middleware` | recovery → logger → publisher chain order + deadletter wrapping |
+**Messaging**
+- `boost-factory-pubsub` ✦ — GCP Pub/Sub client
+- `boost-factory-kafka` ✦ — Confluent Kafka raw producer/consumer
+- `boost-factory-nats` — raw NATS connection
+- `boost-factory-goka` — Goka emitter
+- `boost-factory-gocloud-pubsub` ✦ — provider-portable URL-driven pub/sub
 
-### Extra & DI
+**Databases**
+- `boost-factory-mongo` ✦ — mongo-driver v1 + v2
+- `boost-factory-cassandra` ✦ — gocql session
+- `boost-factory-pgx` — jackc/pgx PostgreSQL
+- `boost-factory-godror` — godror Oracle
+- `boost-factory-bigquery` — Google BigQuery
+- `boost-factory-firestore` — Google Firestore
+- `boost-factory-elasticsearch` ✦ — go-elasticsearch client + bulk indexer
 
-| Skill | Component |
-|---|---|
-| `boost-extra-middleware` | `extra/middleware` — `NewAnyErrorWrapper` for the workaround pattern |
-| `boost-extra-health` | `extra/health` — checkers, liveness vs readiness |
-| `boost-extra-multiserver` | `extra/multiserver` — coordinated multi-listener lifecycle |
-| `boost-fx-modules` | `fx/modules` — uber/fx wiring at scale |
+**Caches & embedded stores**
+- `boost-factory-redis` ✦ — go-redis client + cluster
+- `boost-factory-bigcache` — allegro/bigcache
+- `boost-factory-freecache` — coocood/freecache
+- `boost-factory-buntdb` — embedded KV
+- `boost-factory-memdb` — hashicorp in-memory indexed store
 
-### Contributing
+**Cloud SDKs / composition**
+- `boost-factory-aws` ✦ — AWS SDK v2 umbrella + per-service examples
+- `boost-factory-gcp-api` — GCP API options composed by every cloud.google.com factory
+- `boost-factory-gcp-grpc` — GCP gRPC dial options composed by every cloud.google.com factory
+- `boost-factory-k8s` — Kubernetes clientset
 
-| Skill | Component |
-|---|---|
-| `boost-maintainer` | guide for adding a new contrib (driver / adapter / plugin / module) |
+**Observability**
+- `boost-factory-otel` — OpenTelemetry exporters + readers
+- `boost-factory-datadog` — Datadog APM bridge
+- `boost-factory-prometheus` — Prometheus metrics endpoint
+
+**Resilience & utility**
+- `boost-factory-hystrix` — circuit breaker per upstream
+- `boost-factory-ants` — bounded goroutine pool
+- `boost-factory-vault` — Vault secret retrieval
+- `boost-factory-cobra` — multi-command CLI
+- `boost-factory-fx` — fx app builder
+- `boost-factory-ftp` — legacy FTP partner connections
+
+### Bootstrap (event-driven functions) (5)
+
+`boost-bootstrap-function`, `boost-bootstrap-adapter-pubsub` (incl. ctx-loss workaround), `boost-bootstrap-adapter-nats`, `boost-bootstrap-adapter-kafka`, `boost-bootstrap-middleware`.
+
+### Extra & DI (4)
+
+`boost-extra-middleware`, `boost-extra-health`, `boost-extra-multiserver`, `boost-fx-modules`.
+
+### Contributing (1)
+
+`boost-maintainer` — layout convention, constructor trio, `// TODO(maintainer-review):` discipline, multi-service SDK rule.
 
 ## Discovery
 
 Claude reads each skill's `description` field at session start. When your context matches (Go file importing the corresponding boost subpackage, or a question about its APIs), the relevant skill activates. Cross-references via `REQUIRED BACKGROUND` keep load minimal — a dev working only on HTTP API typically loads `boost-start`, `boost-wrapper-log`, `boost-wrapper-config`, `boost-model-errors`, and `boost-factory-echo`, not the function/Pub/Sub/Kafka ones.
 
+## Validation note
+
+The 7 foundations + 5 bootstrap + 11 factories with framework-shipped examples (✦) were extracted from real boost source patterns or validated through TDD cycles against the `examples/` dirs.
+
+The remaining 25 factory skills (databases, caches, cloud SDKs, observability, utilities) were inferred from each factory's constructor trio + `ConfigAdd` shape — they apply the same `<area>/<vendor>/<lib>/v<major>/` convention codified in `boost-maintainer`. They cover canonical construction and known pitfalls but should be re-validated against real-world failures when first exercised on a non-trivial task.
+
 ## Adding a new skill
 
-Add a new `boost-<area>-<name>` skill when:
-- A boost component ships an `examples/` dir AND
-- The component has a non-trivial canonical shape (multi-step wiring, gotchas, plugin order) that an AI agent could miss.
+Add `boost-<area>-<name>` when:
+- A boost component ships an `examples/` dir, OR
+- A boost component has non-obvious wiring (multi-step, plugin order, ctx-loss workaround), OR
+- An AI agent demonstrably fails on the component in a real task.
 
-Pure thin wrappers (one constructor, no surprises) don't need a dedicated skill — `boost-maintainer` covers the universal layout/trio convention.
-
-Skip placeholder skills. If you don't have content from real usage or framework examples, don't ship a stub.
+Skip placeholder skills. Pure trivial wrappers don't need a dedicated skill — `boost-maintainer` already documents the universal layout/trio convention.
 
 ## License
 
