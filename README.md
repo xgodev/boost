@@ -75,6 +75,64 @@ This repo ships a [Claude Code](https://claude.com/claude-code) plugin (`golang-
 /plugin install golang-boost@xgodev
 ```
 
+#### Update
+
+Inside Claude Code:
+
+```
+/plugin update golang-boost
+```
+
+From the CLI:
+
+```bash
+claude plugin update golang-boost@xgodev
+```
+
+If it reports `Plugin "..." not found`, pass the scope explicitly:
+
+```bash
+claude plugin update golang-boost@xgodev --scope user   # or: project | local | managed
+```
+
+Use `claude plugin list` to find the scope where the plugin is installed.
+
+#### Auto-update
+
+Claude Code checks for plugin updates at startup, but **third-party
+marketplaces have auto-update disabled by default** — only Anthropic's
+official marketplaces update on their own. To enable it:
+
+Interactive: run `/plugin` → **Marketplaces** → select `xgodev` →
+**Enable auto-update**.
+
+Or declaratively, in `~/.claude/settings.json` (global) — add
+`"autoUpdate": true` to the marketplace entry under
+`extraKnownMarketplaces`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "xgodev": {
+      "source": {
+        "source": "git",
+        "url": "git@github.com:xgodev/boost.git"
+      },
+      "autoUpdate": true
+    }
+  }
+}
+```
+
+The same works in a project's `.claude/settings.json` to pin auto-update
+for the team via the repo. Restart Claude Code for the change to take
+effect.
+
+> An update is only recognized when the `version` in
+> `cc-plugin/.claude-plugin/plugin.json` is incremented. Commits without a
+> version bump do not trigger an update — even with auto-update on, Claude
+> Code reports "already at latest".
+
 See [`cc-plugin/README.md`](./cc-plugin/README.md) for details.
 
 ## Main Components
