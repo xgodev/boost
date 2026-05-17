@@ -15,7 +15,7 @@
       "description": "Component-aligned skill bundle for github.com/xgodev/boost — 53 skills, one per boost component, cross-referenced via REQUIRED BACKGROUND so Claude loads only what the current task needs. Covers every factory contrib, every wrapper, every bootstrap component, plus a maintainer guide.",
       "version": "0.5.0",
       "category": "language-go",
-      "tags": ["go", "golang", "boost", "echo", "resty", "pubsub", "cloudevents", "nats", "kafka", "mongo", "cassandra", "redis", "elasticsearch", "aws", "grpc", "fx", "otel", "datadog", "prometheus", "k8s", "carrefour"]
+      "tags": ["go", "golang", "boost", "echo", "resty", "pubsub", "cloudevents", "nats", "kafka", "mongo", "cassandra", "redis", "elasticsearch", "aws", "grpc", "fx", "otel", "datadog", "prometheus", "k8s"]
     }
   ]
 }
