@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "golang-boost",
-      "source": "./cc-plugin",
+      "source": "./",
       "description": "Component-aligned skill bundle for github.com/xgodev/boost — 53 skills, one per boost component, cross-referenced via REQUIRED BACKGROUND so Claude loads only what the current task needs. Covers every factory contrib, every wrapper, every bootstrap component, plus a maintainer guide.",
       "version": "0.5.0",
       "category": "language-go",

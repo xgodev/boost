@@ -28,5 +28,6 @@ dist/
 gen/
 .vscode/
 
-# Local Claude Code config (untracked)
-.claude/
+# Local Claude Code config (untracked) — but keep versioned internal project skills
+.claude/*
+!.claude/skills/

@@ -129,11 +129,9 @@ for the team via the repo. Restart Claude Code for the change to take
 effect.
 
 > An update is only recognized when the `version` in
-> `cc-plugin/.claude-plugin/plugin.json` is incremented. Commits without a
+> `.claude-plugin/plugin.json` is incremented. Commits without a
 > version bump do not trigger an update — even with auto-update on, Claude
 > Code reports "already at latest".
-
-See [`cc-plugin/README.md`](./cc-plugin/README.md) for details.
 
 ## Main Components
 
