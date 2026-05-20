@@ -46,10 +46,15 @@ factory por componente sob `factory/contrib/`.
 
 - `skills/boost-*` — skills de **consumo** (como usar boost). Distribuídas no
   plugin `golang-boost`.
-- `.claude/skills/*` — skills **internas** do projeto (manutenção). Não fazem
-  parte do plugin.
 - `skills/boost-maintainer` — guia de manutenção (criar nova factory/skill).
   Leia antes de adicionar componente.
+
+Skills Go gerais (samber) vêm de plugin externo, não vivem no repo:
+
+```
+/plugin marketplace add samber/cc
+/plugin install cc-skills-golang@samber
+```
 
 ## Referências (ler quando precisar)
 

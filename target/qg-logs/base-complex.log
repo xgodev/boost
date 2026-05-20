@@ -1,0 +1,7 @@
+32 koanf parseFlags wrapper/config/contrib/knadh/koanf/v1/loader.go:133:1
+22 server toValue factory/contrib/google.golang.org/grpc/v1/server/pb_util.go:114:1
+22 gocql NewSessionWithOptions factory/contrib/gocql/gocql/v1/session.go:35:1
+21 cobra parseFlag factory/contrib/spf13/cobra/v1/cobra.go:58:1
+20 confluent (*Subscriber).processMessage bootstrap/function/adapter/contrib/confluentinc/confluent-kafka-go/v2/subscriber.go:78:1
+18 koanf Load wrapper/config/contrib/knadh/koanf/v1/loader.go:49:1
+16 prometheus errString extra/middleware/plugins/contrib/prometheus/client_golang/v1/middleware.go:106:1
