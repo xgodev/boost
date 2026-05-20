@@ -2,9 +2,10 @@ package multiserver
 
 import (
 	"context"
+	"sync"
+
 	"github.com/xgodev/boost/factory/contrib/spf13/cobra/v1"
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
-	"sync"
 
 	c "github.com/spf13/cobra"
 	server "github.com/xgodev/boost/extra/multiserver"
@@ -33,7 +34,8 @@ func Module() fx.Option {
 			fx.Invoke(
 				func(ctx context.Context, p params) error {
 
-					return cobra.Run(
+					return cobra.RunContext(
+						ctx,
 						&c.Command{
 							Run: func(cmd *c.Command, args []string) {
 								server.Serve(ctx, p.Servers...)
