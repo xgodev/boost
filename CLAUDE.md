@@ -49,11 +49,17 @@ factory por componente sob `factory/contrib/`.
 - `skills/boost-maintainer` — guia de manutenção (criar nova factory/skill).
   Leia antes de adicionar componente.
 
-Skills Go gerais (samber) vêm via dependência cross-marketplace declarada em
-`.claude-plugin/plugin.json` — instalar `golang-boost` puxa
-`cc-skills-golang@samber` automaticamente. Pré-requisito: o marketplace
-`samber` precisa estar adicionado (`/plugin marketplace add samber/cc`); sem
-ele, a dep fica unresolved e o plugin é desabilitado com `dependency-unsatisfied`.
+Dependências cross-marketplace declaradas em `.claude-plugin/plugin.json` —
+instalar `golang-boost` puxa automaticamente:
+
+- `cc-skills-golang@samber` — skills Go gerais
+- `quality-gate@quality-gate` — gate comparativo pré-push (ver
+  `docs/development/quality-gate.md`)
+
+Pré-requisito: os marketplaces precisam estar adicionados antes do install
+(`/plugin marketplace add samber/cc` e `/plugin marketplace add xgodev/quality-gate`);
+sem eles, as deps ficam unresolved e o plugin é desabilitado com
+`dependency-unsatisfied`.
 
 ## Referências (ler quando precisar)
 

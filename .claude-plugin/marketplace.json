@@ -6,15 +6,15 @@
   },
   "metadata": {
     "description": "Claude Code plugins shipped from the github.com/xgodev/boost repository.",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
-  "allowCrossMarketplaceDependenciesOn": ["samber"],
+  "allowCrossMarketplaceDependenciesOn": ["samber", "quality-gate"],
   "plugins": [
     {
       "name": "golang-boost",
       "source": "./",
-      "description": "Component-aligned skill bundle for github.com/xgodev/boost — 56 skills, one per boost component, cross-referenced via REQUIRED BACKGROUND so Claude loads only what the current task needs. Covers every factory contrib, every wrapper, every bootstrap component, plus a maintainer guide. Pulls in samber/cc-skills-golang as a dependency for general Go skills.",
-      "version": "0.7.0",
+      "description": "Component-aligned skill bundle for github.com/xgodev/boost — 56 skills, one per boost component, cross-referenced via REQUIRED BACKGROUND so Claude loads only what the current task needs. Covers every factory contrib, every wrapper, every bootstrap component, plus a maintainer guide. Pulls in samber/cc-skills-golang for general Go skills and xgodev/quality-gate for the pre-push comparative gate as dependencies.",
+      "version": "0.8.0",
       "category": "language-go",
       "tags": ["go", "golang", "boost", "echo", "resty", "pubsub", "cloudevents", "nats", "kafka", "mongo", "cassandra", "redis", "elasticsearch", "aws", "grpc", "fx", "otel", "datadog", "prometheus", "k8s"]
     }
