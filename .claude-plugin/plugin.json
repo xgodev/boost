@@ -1,6 +1,6 @@
 {
   "name": "golang-boost",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Component-aligned Claude Code skill bundle for github.com/xgodev/boost. One plugin, one skill per boost component (56 total): boot sequence, log/config/publisher/cache wrappers, model/errors, every factory under factory/contrib/ (Echo, Resty, Pub/Sub, Mongo, Cassandra, Redis, Elasticsearch, Kafka, AWS, gRPC, gocloud.dev, Postgres, Oracle, BigQuery, Firestore, BuntDB, MemDB, BigCache, FreeCache, Vault, Hystrix, Ants, NATS, Goka, CloudEvents, GCP API/gRPC composition, OTel, Datadog, Prometheus, fx, Cobra, GraphQL, K8s, FTP, HTTP/2, Zap/Zerolog/Logrus loggers), function bootstrap + Pub/Sub/NATS/Kafka adapters, middleware stack, extra middleware/health/multiserver, fx modules, and a maintainer guide. Each skill cites the boost source paths it teaches; factory skills with framework-shipped examples cite them.",
   "author": {
     "name": "João Paulo Faria",
@@ -33,5 +33,8 @@
     "prometheus",
     "k8s",
     "carrefour"
+  ],
+  "dependencies": [
+    { "name": "cc-skills-golang", "marketplace": "samber" }
   ]
 }
