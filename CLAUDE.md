@@ -64,12 +64,12 @@ este plugin como `boost@xgodev` — usar um caminho ou outro, não os dois.
 Dependências declaradas em `.claude-plugin/plugin.json` — instalar
 `golang-boost` puxa automaticamente:
 
-- `quality-gate@xgodev` — gate comparativo pré-push (ver
-  `docs/development/quality-gate.md`), vive no marketplace `xgodev` (umbrella
-  `xgodev/claude-plugin`).
+- `quality-gate@xgodev-quality-gate` — gate comparativo pré-push (ver
+  `docs/development/quality-gate.md`), publicado direto em
+  `xgodev/quality-gate` (marketplace `xgodev-quality-gate`).
 
 Pré-requisito: o marketplace da dep precisa estar adicionado antes do install
-(`/plugin marketplace add xgodev/claude-plugin`); sem ele a dep fica
+(`/plugin marketplace add xgodev/quality-gate`); sem ele a dep fica
 unresolved e o plugin é desabilitado com `dependency-unsatisfied`.
 
 ## Referências (ler quando precisar)

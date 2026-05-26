@@ -35,6 +35,6 @@
     "carrefour"
   ],
   "dependencies": [
-    { "name": "quality-gate", "marketplace": "xgodev" }
+    { "name": "quality-gate", "marketplace": "xgodev-quality-gate" }
   ]
 }
