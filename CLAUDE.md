@@ -49,17 +49,22 @@ factory por componente sob `factory/contrib/`.
 - `skills/boost-maintainer` — guia de manutenção (criar nova factory/skill).
   Leia antes de adicionar componente.
 
-Dependências cross-marketplace declaradas em `.claude-plugin/plugin.json` —
-instalar `golang-boost` puxa automaticamente:
+O plugin `golang-boost` é distribuído pelo marketplace **`xgodev`**:
 
-- `cc-skills-golang@samber` — skills Go gerais
-- `quality-gate@quality-gate` — gate comparativo pré-push (ver
-  `docs/development/quality-gate.md`)
+```
+/plugin marketplace add xgodev/boost
+/plugin install golang-boost@xgodev
+```
 
-Pré-requisito: os marketplaces precisam estar adicionados antes do install
-(`/plugin marketplace add samber/cc` e `/plugin marketplace add xgodev/quality-gate`);
-sem eles, as deps ficam unresolved e o plugin é desabilitado com
-`dependency-unsatisfied`.
+Dependências declaradas em `.claude-plugin/plugin.json` — instalar
+`golang-boost` puxa automaticamente:
+
+- `quality-gate@xgodev` — gate comparativo pré-push (ver
+  `docs/development/quality-gate.md`), publicado em `xgodev/quality-gate`
+
+Pré-requisito: o marketplace da dep precisa estar adicionado antes do install
+(`/plugin marketplace add xgodev/quality-gate`); sem ele a dep fica unresolved
+e o plugin é desabilitado com `dependency-unsatisfied`.
 
 ## Referências (ler quando precisar)
 
