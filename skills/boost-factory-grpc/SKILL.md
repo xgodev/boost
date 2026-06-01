@@ -4,7 +4,7 @@ description: "Use when constructing a gRPC client or server in a Go service via 
 license: MIT
 metadata:
   author: jpfaria
-  version: "0.1.0"
+  version: "0.2.0"
 allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent
 ---
 
@@ -30,6 +30,18 @@ Configure under `boost.factory.grpc.client.*` and `boost.factory.grpc.server.*` 
 ## GCP-tuned variant
 
 For talking to GCP gRPC APIs (Pub/Sub, BigQuery, Firestore), the cloud-google factories compose `factory/contrib/cloud.google.com/grpc/v1` internally. You normally don't import it directly — you configure its keys at the per-service factory's `apiOptions` / `grpcOptions` namespace.
+
+## Error → gRPC code (and custom errors)
+
+The server converts errors to gRPC status via `server.Error(err)`, which resolves
+the code through `model/errors.Classify` (`NotFound`→`codes.NotFound`,
+`NotValid`/`BadRequest`→`InvalidArgument`, `Conflict`/`AlreadyExists`→
+`AlreadyExists`, `Unauthorized`→`Unauthenticated`, `Forbidden`→`PermissionDenied`,
+`ServiceUnavailable`→`Unavailable`, `NotImplemented`→`Unimplemented`,
+`TooManyRequests`→`ResourceExhausted`, `Timeout`→`DeadlineExceeded`, else
+`Internal`). To map an app-specific error to a code (or ignore it → returns
+`nil`/OK), register it at boot — see `boost-model-errors`
+(`Register`/`RegisterMatch`/`Ignore`). Don't edit `server.Error` by hand.
 
 ## Red flags
 

@@ -4,7 +4,7 @@ description: "Use when writing or reviewing Go HTTP API services that import git
 license: MIT
 metadata:
   author: jpfaria
-  version: "0.1.0"
+  version: "0.2.0"
 allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent
 ---
 
@@ -72,7 +72,7 @@ func main() {
 | `native/requestid` | X-Request-ID | Never |
 | `local/wrapper/log` | Access log via boost logger | Never |
 | `local/model/restresponse` | Sets `Type=REST` for `error_handler` JSON mode | Never (REST APIs) |
-| `extra/error_handler` | Maps `model/errors.*` to HTTP status + JSON envelope | Never |
+| `extra/error_handler` | Maps errors to HTTP status + JSON envelope via `model/errors.Classify` | Never |
 | `native/cors` | Browser clients | Internal-only services |
 | `native/gzip` | Response compression | gRPC / streaming |
 
@@ -94,6 +94,13 @@ srv.Shutdown(shutdownCtx) // bounded drain with FRESH ctx
 ```
 
 Use a fresh context for `Shutdown` — passing the cancelled parent makes it return immediately.
+
+## Custom error → status, or ignore
+
+The handler resolves status via `model/errors.Classify`. To make a non-boost
+error return a specific status (or be ignored / treated as 200), register it at
+boot — it works for HTTP and gRPC at once. See `boost-model-errors`
+(`Register`/`RegisterMatch`/`Ignore`); don't add cases to the handler by hand.
 
 ## Red flags
 
