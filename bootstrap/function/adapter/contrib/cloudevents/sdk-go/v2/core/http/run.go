@@ -9,6 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/model/errors"
+	response "github.com/xgodev/boost/model/restresponse"
 	"github.com/xgodev/boost/wrapper/log"
 	"net/http"
 )
@@ -48,6 +49,9 @@ func Wrapper[T any](fn function.Handler[T]) func(context.Context, ce.Event) ce.R
 	return func(ctx context.Context, event ce.Event) ce.Result {
 		e, err := fn(ctx, event)
 		if err != nil {
+			if pol, ok := errors.IgnoreOf(err); ok && pol&errors.IgnoreAsSuccess != 0 {
+				return ce.NewHTTPResult(http.StatusOK, "")
+			}
 			status := ErrorStatusCode(err)
 			return ce.NewHTTPResult(status, err.Error())
 		}
@@ -76,32 +80,10 @@ func Wrapper[T any](fn function.Handler[T]) func(context.Context, ce.Event) ce.R
 	}
 }
 
-// ErrorStatusCode translates to the respective status code.
+// ErrorStatusCode translates err to the respective HTTP status code.
 func ErrorStatusCode(err error) int {
-
-	switch {
-	case errors.IsNotFound(err):
-		return http.StatusNotFound
-	case errors.IsMethodNotAllowed(err):
-		return http.StatusMethodNotAllowed
-	case errors.IsNotValid(err) || errors.IsBadRequest(err):
-		return http.StatusBadRequest
-	case errors.IsServiceUnavailable(err):
-		return http.StatusServiceUnavailable
-	case errors.IsConflict(err) || errors.IsAlreadyExists(err):
-		return http.StatusConflict
-	case errors.IsNotImplemented(err) || errors.IsNotProvisioned(err):
-		return http.StatusNotImplemented
-	case errors.IsUnauthorized(err):
-		return http.StatusUnauthorized
-	case errors.IsForbidden(err):
-		return http.StatusForbidden
-	case errors.IsNotSupported(err) || errors.IsNotAssigned(err):
+	if _, ok := err.(validator.ValidationErrors); ok {
 		return http.StatusUnprocessableEntity
-	default:
-		if _, ok := err.(validator.ValidationErrors); ok {
-			return http.StatusUnprocessableEntity
-		}
-		return http.StatusInternalServerError
 	}
+	return response.HTTPStatusFor(errors.Classify(err))
 }
