@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"google.golang.org/grpc"
 )
@@ -93,12 +94,20 @@ func (i *Log) streamInterceptor() grpc.StreamServerInterceptor {
 			"duration": time.Since(start),
 		})
 
+		silenced := false
 		if err != nil {
-			logger = logger.WithField("error", err.Error())
+			if pol, ok := errors.IgnoreOf(err); ok && pol&errors.IgnoreSilenceLog != 0 {
+				silenced = true
+			} else {
+				logger = logger.WithField("error", err.Error())
+			}
 		}
 
-		xx := i.m(logger)
-		xx("stream request received")
+		method := i.m(logger)
+		if silenced {
+			method = logger.Debugf
+		}
+		method("stream request received")
 		return err
 	}
 }
@@ -118,12 +127,20 @@ func (i *Log) unaryInterceptor() grpc.UnaryServerInterceptor {
 			"req":      req,
 		})
 
+		silenced := false
 		if err != nil {
-			logger = logger.WithField("error", err.Error())
+			if pol, ok := errors.IgnoreOf(err); ok && pol&errors.IgnoreSilenceLog != 0 {
+				silenced = true
+			} else {
+				logger = logger.WithField("error", err.Error())
+			}
 		}
 
-		xx := i.m(logger)
-		xx("unary request received")
+		method := i.m(logger)
+		if silenced {
+			method = logger.Debugf
+		}
+		method("unary request received")
 		return resp, err
 	}
 }
