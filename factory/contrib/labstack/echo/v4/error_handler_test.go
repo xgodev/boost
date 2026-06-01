@@ -14,6 +14,7 @@ type customNotFound struct{ msg string }
 func (c *customNotFound) Error() string { return c.msg }
 
 func TestErrorStatusCode_RegisteredCustom(t *testing.T) {
+	defer errors.ResetRegistry()
 	errors.RegisterMatch(func(err error) bool {
 		_, ok := err.(*customNotFound)
 		return ok
@@ -31,6 +32,7 @@ func TestErrorStatusCode_BuiltinNotFound(t *testing.T) {
 }
 
 func TestErrorHandler_IgnoreAsSuccess(t *testing.T) {
+	defer errors.ResetRegistry()
 	sentinel := errors.New("ignorable")
 	errors.Ignore(sentinel, errors.IgnoreAsSuccess)
 

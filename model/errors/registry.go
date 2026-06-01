@@ -137,8 +137,10 @@ func combineOptions(opts []IgnoreOption) IgnoreOption {
 	return policy
 }
 
-// resetRegistry clears all registered matchers and ignore rules. Test-only.
-func resetRegistry() {
+// ResetRegistry clears all registered matchers and ignore rules. It is intended
+// for test teardown so a test that calls Register/RegisterMatch/Ignore/IgnoreMatch
+// can `defer errors.ResetRegistry()` to avoid leaking global state into other tests.
+func ResetRegistry() {
 	mu.Lock()
 	defer mu.Unlock()
 	matchers = nil

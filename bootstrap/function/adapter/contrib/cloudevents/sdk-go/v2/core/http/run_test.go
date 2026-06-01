@@ -12,6 +12,7 @@ type customForbidden struct{ msg string }
 func (c *customForbidden) Error() string { return c.msg }
 
 func TestErrorStatusCode_RegisteredCustom(t *testing.T) {
+	defer errors.ResetRegistry()
 	errors.RegisterMatch(func(err error) bool {
 		_, ok := err.(*customForbidden)
 		return ok

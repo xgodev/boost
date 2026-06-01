@@ -13,6 +13,7 @@ type customConflict struct{ msg string }
 func (c *customConflict) Error() string { return c.msg }
 
 func TestError_RegisteredCustom(t *testing.T) {
+	defer errors.ResetRegistry()
 	errors.RegisterMatch(func(err error) bool {
 		_, ok := err.(*customConflict)
 		return ok
@@ -24,6 +25,7 @@ func TestError_RegisteredCustom(t *testing.T) {
 }
 
 func TestError_IgnoreAsSuccess(t *testing.T) {
+	defer errors.ResetRegistry()
 	sentinel := errors.New("ignorable-grpc")
 	errors.Ignore(sentinel, errors.IgnoreAsSuccess)
 

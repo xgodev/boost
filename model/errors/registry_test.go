@@ -6,7 +6,7 @@ import (
 )
 
 func TestClassifyRegisteredSentinel(t *testing.T) {
-	defer resetRegistry()
+	defer ResetRegistry()
 
 	sentinel := New("sentinel not found")
 	Register(sentinel, KindNotFound)
@@ -21,7 +21,7 @@ type xptoError struct{ msg string }
 func (e *xptoError) Error() string { return e.msg }
 
 func TestClassifyRegisteredMatch(t *testing.T) {
-	defer resetRegistry()
+	defer ResetRegistry()
 
 	RegisterMatch(func(err error) bool {
 		var target *xptoError
@@ -34,7 +34,7 @@ func TestClassifyRegisteredMatch(t *testing.T) {
 }
 
 func TestClassifyFallsBackToBuiltin(t *testing.T) {
-	defer resetRegistry()
+	defer ResetRegistry()
 
 	if got := Classify(NotFoundf("x")); got != KindNotFound {
 		t.Fatalf("Classify(NotFoundf) = %d, want %d", got, KindNotFound)
@@ -42,7 +42,7 @@ func TestClassifyFallsBackToBuiltin(t *testing.T) {
 }
 
 func TestClassifyDefaultInternal(t *testing.T) {
-	defer resetRegistry()
+	defer ResetRegistry()
 
 	if got := Classify(New("anything")); got != KindInternal {
 		t.Fatalf("Classify(New) = %d, want %d", got, KindInternal)
@@ -50,7 +50,7 @@ func TestClassifyDefaultInternal(t *testing.T) {
 }
 
 func TestClassifyRegisteredWinsOverBuiltin(t *testing.T) {
-	defer resetRegistry()
+	defer ResetRegistry()
 
 	err := NotFoundf("x")
 	Register(err, KindConflict)
@@ -61,7 +61,7 @@ func TestClassifyRegisteredWinsOverBuiltin(t *testing.T) {
 }
 
 func TestIgnoreDefaultBoth(t *testing.T) {
-	defer resetRegistry()
+	defer ResetRegistry()
 
 	e := New("ignored")
 	Ignore(e)
@@ -76,7 +76,7 @@ func TestIgnoreDefaultBoth(t *testing.T) {
 }
 
 func TestIgnoreSilenceOnly(t *testing.T) {
-	defer resetRegistry()
+	defer ResetRegistry()
 
 	e := New("ignored")
 	Ignore(e, IgnoreSilenceLog)
@@ -94,7 +94,7 @@ func TestIgnoreSilenceOnly(t *testing.T) {
 }
 
 func TestIgnoreOfUnregistered(t *testing.T) {
-	defer resetRegistry()
+	defer ResetRegistry()
 
 	if _, ok := IgnoreOf(New("x")); ok {
 		t.Fatalf("IgnoreOf(unregistered) ok = true, want false")
