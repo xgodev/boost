@@ -10,7 +10,8 @@ import (
 )
 
 type Logger[T any] struct {
-	options *Options
+	options    *Options
+	baseLogger log.Logger
 }
 
 func NewLogger[T any]() (*Logger[T], error) {
@@ -22,7 +23,8 @@ func NewLogger[T any]() (*Logger[T], error) {
 }
 
 func NewLoggerWithOptions[T any](options *Options) *Logger[T] {
-	return &Logger[T]{options: options}
+	var zero T
+	return &Logger[T]{options: options, baseLogger: log.WithTypeOf(zero)}
 }
 
 func NewAnyErrorMiddleware[T any]() (middleware.AnyErrorMiddleware[T], error) {
@@ -34,7 +36,7 @@ func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErr
 }
 
 func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
-	logger := log.FromContext(ctx.GetContext()).WithTypeOf(*c)
+	logger := c.baseLogger.FromContext(ctx.GetContext())
 	lm := c.logger(logger)
 
 	e, err := ctx.Next(exec, fallbackFunc)
@@ -71,18 +73,13 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 	return e, err
 }
 
-func (c *Logger[T]) logger(logger log.Logger) func(format string, args ...interface{}) {
-
-	var method func(format string, args ...interface{})
-
+func (c *Logger[T]) logger(logger log.Logger) func(string) {
 	switch c.options.Level {
 	case "TRACE":
-		method = logger.Tracef
+		return func(s string) { logger.Trace(s) }
 	case "DEBUG":
-		method = logger.Debugf
+		return func(s string) { logger.Debug(s) }
 	default:
-		method = logger.Infof
+		return func(s string) { logger.Info(s) }
 	}
-
-	return method
 }

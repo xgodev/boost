@@ -43,9 +43,6 @@ func NewClientWithOptions(ctx context.Context, o *Options, plugins ...clientgrpc
 
 	clientConfig := &pubsub.ClientConfig{}
 	if o.Otel.Enabled {
-		otelboost.StartMeterProvider(ctx)
-		otelboost.StartTracerProvider(ctx)
-
 		opts := opentelemetry.Options{
 			MetricsOptions: opentelemetry.MetricsOptions{
 

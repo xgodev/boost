@@ -18,7 +18,7 @@ type ctxKey string
 
 const (
 	key                     ctxKey = "ctxfields"
-	defaultConsoleFormatter        = "TEXT"
+	defaultConsoleFormatter        = "JSON"
 	defaultConsoleEnabled          = true
 	defaultConsoleLevel            = "INFO"
 	defaultFileEnabled             = false
@@ -28,7 +28,7 @@ const (
 	defaultFileMaxSize             = 100
 	defaultFileCompress            = true
 	defaultFileMaxAge              = 28
-	defaultFileFormatter           = "TEXT"
+	defaultFileFormatter           = "JSON"
 	defaultErrorFieldName          = "err"
 )
 

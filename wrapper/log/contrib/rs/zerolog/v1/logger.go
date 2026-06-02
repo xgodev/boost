@@ -1,8 +1,8 @@
 package zerolog
 
 import (
-	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"reflect"
@@ -17,7 +17,7 @@ type ctxKey string
 
 const (
 	key                   ctxKey = "ctxfields"
-	defaultFormatter             = "TEXT"
+	defaultFormatter             = "JSON"
 	defaultLevel                 = "INFO"
 	defaultConsoleEnabled        = true
 	defaultFileEnabled           = false
@@ -177,12 +177,7 @@ func (l *logger) Tracef(format string, args ...interface{}) {
 }
 
 func (l *logger) Trace(args ...interface{}) {
-	format := bytes.NewBufferString("")
-	for range args {
-		format.WriteString("%v")
-	}
-
-	l.logger.Trace().Msgf(format.String(), args...)
+	l.logger.Trace().Msg(fmt.Sprint(args...))
 }
 
 func (l *logger) Debugf(format string, args ...interface{}) {
@@ -190,12 +185,7 @@ func (l *logger) Debugf(format string, args ...interface{}) {
 }
 
 func (l *logger) Debug(args ...interface{}) {
-	format := bytes.NewBufferString("")
-	for range args {
-		format.WriteString("%v")
-	}
-
-	l.logger.Debug().Msgf(format.String(), args...)
+	l.logger.Debug().Msg(fmt.Sprint(args...))
 }
 
 func (l *logger) Infof(format string, args ...interface{}) {
@@ -203,12 +193,7 @@ func (l *logger) Infof(format string, args ...interface{}) {
 }
 
 func (l *logger) Info(args ...interface{}) {
-	format := bytes.NewBufferString("")
-	for range args {
-		format.WriteString("%v")
-	}
-
-	l.logger.Info().Msgf(format.String(), args...)
+	l.logger.Info().Msg(fmt.Sprint(args...))
 }
 
 func (l *logger) Warnf(format string, args ...interface{}) {
@@ -216,12 +201,7 @@ func (l *logger) Warnf(format string, args ...interface{}) {
 }
 
 func (l *logger) Warn(args ...interface{}) {
-	format := bytes.NewBufferString("")
-	for range args {
-		format.WriteString("%v")
-	}
-
-	l.logger.Warn().Msgf(format.String(), args...)
+	l.logger.Warn().Msg(fmt.Sprint(args...))
 }
 
 func (l *logger) Errorf(format string, args ...interface{}) {
@@ -229,12 +209,7 @@ func (l *logger) Errorf(format string, args ...interface{}) {
 }
 
 func (l *logger) Error(args ...interface{}) {
-	format := bytes.NewBufferString("")
-	for range args {
-		format.WriteString("%v")
-	}
-
-	l.logger.Error().Msgf(format.String(), args...)
+	l.logger.Error().Msg(fmt.Sprint(args...))
 }
 
 func (l *logger) Fatalf(format string, args ...interface{}) {
@@ -242,12 +217,7 @@ func (l *logger) Fatalf(format string, args ...interface{}) {
 }
 
 func (l *logger) Fatal(args ...interface{}) {
-	format := bytes.NewBufferString("")
-	for range args {
-		format.WriteString("%v")
-	}
-
-	l.logger.Fatal().Msgf(format.String(), args...)
+	l.logger.Fatal().Msg(fmt.Sprint(args...))
 }
 
 func (l *logger) Panicf(format string, args ...interface{}) {
@@ -255,12 +225,7 @@ func (l *logger) Panicf(format string, args ...interface{}) {
 }
 
 func (l *logger) Panic(args ...interface{}) {
-	format := bytes.NewBufferString("")
-	for range args {
-		format.WriteString("%v")
-	}
-
-	l.logger.Panic().Msgf(format.String(), args...)
+	l.logger.Panic().Msg(fmt.Sprint(args...))
 }
 
 func (l *logger) WithField(key string, value interface{}) log.Logger {

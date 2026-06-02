@@ -2,7 +2,6 @@ package pubsub
 
 import (
 	"context"
-	"encoding/json"
 	"sync"
 	"time"
 
@@ -81,21 +80,9 @@ func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.Publ
 			logger := log.WithField("subject", ev.Subject()).
 				WithField("id", ev.ID())
 
-			// Convert event data
-			var data map[string]interface{}
-			if err := ev.DataAs(&data); err != nil {
-				resultCh <- publisher.PublishOutput{Event: ev, Error: errors.Wrap(err, errors.Internalf("failed to convert event data"))}
-				return
-			}
+			raw := ev.Data()
 
-			// Serialize to JSON
-			raw, err := json.Marshal(data)
-			if err != nil {
-				resultCh <- publisher.PublishOutput{Event: ev, Error: errors.Wrap(err, errors.Internalf("failed to marshal data"))}
-				return
-			}
-
-			// Build attributes
+				// Build attributes
 			attrs := map[string]string{
 				"ce_specversion": ev.SpecVersion(),
 				"ce_id":          ev.ID(),
@@ -120,7 +107,7 @@ func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.Publ
 			}
 
 			topic := p.getTopic(ev.Subject())
-			err = try.Do(func(attempt int) (bool, error) {
+			err := try.Do(func(attempt int) (bool, error) {
 				logger.Tracef("publishing to topic %s, attempt %d", ev.Subject(), attempt)
 				r := topic.Publish(pubCtx, msg)
 				if _, err := r.Get(pubCtx); err != nil {
