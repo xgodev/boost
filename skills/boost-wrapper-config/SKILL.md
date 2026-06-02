@@ -4,7 +4,7 @@ description: "Use when registering or reading configuration in a Go service that
 license: MIT
 metadata:
   author: jpfaria
-  version: "0.2.0"
+  version: "0.3.0"
 allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent
 ---
 
@@ -79,11 +79,30 @@ The slice getter is `config.Strings` (plural) — there is no `StringSlice`. For
 
 A key registered as `myapp.outbound.subject` is overridden at deploy time by env var `MYAPP_OUTBOUND_SUBJECT` (uppercased, dots → underscores). Framework-layer keys live under `boost.*` (e.g., `boost.factory.echo.port` ← `BOOST_FACTORY_ECHO_PORT`). Application-layer keys can use any namespace.
 
+## See every config at boot, hide the secrets
+
+Enable the startup config table (`key | default | resolved value`) — invaluable for spotting a bad override (a wrong `myapp.brand` shows up immediately instead of a silent boot fail-fast):
+
+```
+boost.print.config.enabled   = true   # env: BOOST_PRINT_CONFIG_ENABLED=true   (dev / .env only)
+boost.print.config.maxLength = 25      # env: BOOST_PRINT_CONFIG_MAXLENGTH      (truncates long values)
+```
+
+Mark every secret with `config.WithHide()` so its value renders `****` in that table (the boot printer does `if entry.Options.Hide { v = "****" }`):
+
+```go
+config.Add("myapp.vtex.apptoken", "", "VTEX X-VTEX-API-AppToken", config.WithHide())
+config.Add("myapp.dolphin.apikey", "", "Dolphin x-api-key",        config.WithHide())
+```
+
+`WithHide` only masks the *printed* value — `config.String(key)` still returns the real secret. Leave `boost.print.config.enabled` off (the default) in production.
+
 ## Red flags
 
 | Red flag | Fix |
 |---|---|
 | `os.Getenv("FOO_BAR")` outside a `config.Add` registration | `config.Add("myapp.foo.bar", default, desc)` then `config.String(...)` |
+| A secret key (token / apikey / password) registered without `config.WithHide()` | Add `config.WithHide()` — otherwise `boost.print.config.enabled=true` prints the secret into the boot log |
 | Reading config inside `init()` (before `boost.Start` runs) | Read at call time, not init time |
 | Mutating env vars in tests (`os.Setenv`) | Use `config.Add(...)` with the test default; if you must override at runtime, use a koanf provider in the test setup |
 | Hard-coding what should be tunable (timeouts, URLs, retry budgets) | Register with `config.Add` and a sensible default |

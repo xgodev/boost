@@ -4,7 +4,7 @@ description: "Use when a Go service needs the concrete implementation behind a d
 license: MIT
 metadata:
   author: jpfaria
-  version: "0.1.0"
+  version: "0.2.0"
 allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent
 ---
 
@@ -92,6 +92,25 @@ func Module() fx.Option {
 
 Zero change to `domain/`, `application/`, the other impls, or `main`.
 
+## Dev default = memory (boot with zero external infra)
+
+Default the provider to `memory` so the service boots standalone in dev — **production overrides to the real backend via env** (`MYAPP_REDIS_PROVIDER=boost`, …). The payoff is real only if the `memory` arm wires *nothing* that touches the network:
+
+- The dispatcher provides **only** the in-memory impl for `memory`. The real factory (`mongofact.NewConn`, `redisfact.NewClient`) is never invoked → no eager Mongo ping that blocks boot, no Redis client spamming `connection refused` and downing the process.
+- **Cache port:** consumers depend on `cache.Driver` (the interface), not the concrete `*cacheredis.Client`. The selector wires the Redis driver for `boost`, a noop / in-memory driver for `memory` — same `Manager[T]` either way.
+- **Health checkers** take their client/conn as an **optional fx dep** and noop when it's nil, so selecting `memory` doesn't force the real connection to exist just to satisfy `/health`:
+
+```go
+type RedisHealthParams struct {
+	fx.In
+	Client *goredis.Client `optional:"true"` // nil when redis.provider=memory
+}
+func NewRedisChecker(p RedisHealthParams) health.Checker {
+	if p.Client == nil { return health.Noop{} }
+	return &redisChecker{client: p.Client}
+}
+```
+
 ## Red flags
 
 | Red flag | Fix |
@@ -102,3 +121,7 @@ Zero change to `domain/`, `application/`, the other impls, or `main`.
 | The shared `*mongo.Database` provided globally even when `memory` is selected | Let each impl module carry its own conn `Module()`, so it's only wired when that case is chosen |
 | `//go:build mongodb` build tags to pick the impl | One binary, runtime `config` switch — env-tunable per environment, no rebuild |
 | Dispatcher panics / silently falls back on an unknown value | `default:` = the safe local impl, OR return `fx.Error(...)` to fail-fast at boot |
+| The `memory` arm still constructs the real client (eager ping / dial) | The memory case provides ONLY the in-memory impl — never call the boost factory, so there is no network at boot |
+| Production silently boots in-memory because the default is `memory` | Deploy MUST set `<key>=boost` (real) via env; state it in the `config.Add` description |
+| Cache consumers depend on the concrete `*cacheredis.Client` | Depend on `cache.Driver` (interface) so the `memory` arm can swap a noop driver |
+| Health checker hard-requires the real client/conn | Take it as an `optional:"true"` fx dep and noop when nil |
