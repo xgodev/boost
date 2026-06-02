@@ -22,6 +22,13 @@ func ErrorHandlerJSON(err error, c e.Context) {
 }
 
 func errorHandler(err error, c e.Context, contentType string) {
+	if pol, ok := errors.IgnoreOf(err); ok && pol&errors.IgnoreAsSuccess != 0 {
+		if er := c.NoContent(http.StatusOK); er != nil {
+			c.Logger().Error(er)
+		}
+		return
+	}
+
 	var (
 		status  int
 		message string
@@ -50,32 +57,10 @@ func errorHandler(err error, c e.Context, contentType string) {
 	}
 }
 
-// ErrorStatusCode translates to the respective status code.
+// ErrorStatusCode translates err to the respective HTTP status code.
 func ErrorStatusCode(err error) int {
-
-	switch {
-	case errors.IsNotFound(err):
-		return http.StatusNotFound
-	case errors.IsMethodNotAllowed(err):
-		return http.StatusMethodNotAllowed
-	case errors.IsNotValid(err) || errors.IsBadRequest(err):
-		return http.StatusBadRequest
-	case errors.IsServiceUnavailable(err):
-		return http.StatusServiceUnavailable
-	case errors.IsConflict(err) || errors.IsAlreadyExists(err):
-		return http.StatusConflict
-	case errors.IsNotImplemented(err) || errors.IsNotProvisioned(err):
-		return http.StatusNotImplemented
-	case errors.IsUnauthorized(err):
-		return http.StatusUnauthorized
-	case errors.IsForbidden(err):
-		return http.StatusForbidden
-	case errors.IsNotSupported(err) || errors.IsNotAssigned(err):
+	if _, ok := err.(validator.ValidationErrors); ok {
 		return http.StatusUnprocessableEntity
-	default:
-		if _, ok := err.(validator.ValidationErrors); ok {
-			return http.StatusUnprocessableEntity
-		}
-		return http.StatusInternalServerError
 	}
+	return response.HTTPStatusFor(errors.Classify(err))
 }

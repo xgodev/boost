@@ -1,10 +1,10 @@
 ---
 name: boost-model-errors
-description: "Use when creating, wrapping, or matching errors in a Go service that imports github.com/xgodev/boost/model/errors. Covers the typed error catalog (BadRequest, NotFound, Conflict, Forbidden, Internal, NotValid, etc.), how Echo's error_handler plugin and the function publisher deadletter middleware match on these types, and why fmt.Errorf(%w) defeats both. Triggers on imports of github.com/xgodev/boost/model/errors, on questions about error wrapping in boost, on echo.NewHTTPError uses in a boost handler, or on Wrap / NotValidf / Internalf / NewBadRequest naming."
+description: "Use when creating, wrapping, or matching errors in a Go service that imports github.com/xgodev/boost/model/errors. Covers the typed error catalog (BadRequest, NotFound, Conflict, Forbidden, Internal, NotValid, etc.), how Echo's error_handler plugin and the function publisher deadletter middleware match on these types, why fmt.Errorf(%w) defeats both, and how to register custom (non-boost) errors so they map to HTTP/gRPC codes or get ignored. Triggers on imports of github.com/xgodev/boost/model/errors, on questions about error wrapping in boost, on echo.NewHTTPError uses in a boost handler, on Wrap / NotValidf / Internalf / NewBadRequest naming, or on errors.Register / RegisterMatch / Classify / Ignore / Kind, mapping a custom error to a status code, or ignoring an error."
 license: MIT
 metadata:
   author: jpfaria
-  version: "0.1.0"
+  version: "0.2.0"
 allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent
 ---
 
@@ -34,6 +34,50 @@ Two boost subsystems pattern-match on the unwrapped error type name:
 
 `fmt.Errorf("%w", err)` defeats both because `errors.As(target *NotFound)` can't unwrap an opaque wrapped error of unknown concrete type. Always use `bootsterrors.Wrap`.
 
+The HTTP (Echo + function/CloudEvents) and gRPC error handlers resolve the status
+via `bootsterrors.Classify(err) Kind` — registered custom errors first, then the
+built-in `Is*` catalog. The `Kind → HTTP status` table lives in
+`model/restresponse` (`HTTPStatusFor`) and is shared by Echo and the function
+adapter; the `Kind → gRPC code` table lives in the gRPC `server` package.
+
+## Registering custom errors (map your own error → code, or ignore)
+
+For an application error that is **not** a boost type, register it once at boot
+(before serving) against a semantic `Kind`. It then resolves to the right HTTP
+status and gRPC code across all three transports — no per-transport wiring.
+
+```go
+import bootsterrors "github.com/xgodev/boost/model/errors"
+
+// "XptoError behaves like NotFound" → HTTP 404 / gRPC NotFound, everywhere.
+bootsterrors.Register(ErrXpto, bootsterrors.KindNotFound)         // matches via errors.Is
+
+bootsterrors.RegisterMatch(func(err error) bool {                // matches by type
+    _, ok := bootsterrors.Cause(err).(*MyTypedErr)               // Cause, like Is* does
+    return ok
+}, bootsterrors.KindConflict)
+
+// Ignore: no opts == treat as success (HTTP 200 / gRPC OK) AND silence the log.
+bootsterrors.Ignore(ErrNoise)
+bootsterrors.Ignore(ErrAudit, bootsterrors.IgnoreSilenceLog)     // status normal, just no log
+bootsterrors.Ignore(ErrExpected, bootsterrors.IgnoreAsSuccess)   // 200/OK, still logged
+bootsterrors.Ignore(ErrBoth, bootsterrors.IgnoreAsSuccess, bootsterrors.IgnoreSilenceLog) // explicit both
+```
+
+Opts are OR-combined; passing none is equivalent to passing both. `Ignore` matches
+via `errors.Is`; `IgnoreMatch(func(error) bool, ...IgnoreOption)` matches by predicate.
+
+`Kind` values mirror the catalog: `KindNotFound`, `KindBadRequest`, `KindNotValid`,
+`KindConflict`, `KindAlreadyExists`, `KindForbidden`, `KindUnauthorized`,
+`KindServiceUnavailable`, `KindNotImplemented`, `KindNotProvisioned`,
+`KindNotSupported`, `KindNotAssigned`, `KindMethodNotAllowed`,
+`KindTooManyRequests`, `KindTimeout`, `KindInternal` (default).
+
+Precedence in `Classify`: registered matchers (registration order, first wins) →
+built-in `Is*` → `KindInternal`. The `match` predicate runs while the registry
+lock is held — it must not call back into the registry (`Register`/`Classify`/
+`Ignore`/…) or it self-deadlocks.
+
 ## Red flags
 
 | Red flag | Fix |
@@ -42,3 +86,5 @@ Two boost subsystems pattern-match on the unwrapped error type name:
 | `echo.NewHTTPError(404, "...")` in a handler | `bootsterrors.NewNotFound(err, "...")` |
 | Returning a raw upstream error to a handler caller | Wrap with the right `bootsterrors.New<Type>` so the matcher can route it |
 | Inventing a custom error struct for things `model/errors` already covers | Use the existing type — extending the catalog needs an upstream PR, not a local workaround |
+| A genuinely app-specific error returning 500 because the handler doesn't know it | `bootsterrors.Register(err, Kind…)` / `RegisterMatch(...)` at boot so it maps to the right code in HTTP and gRPC |
+| Editing the Echo/gRPC switch by hand to add a case for your error | Register it instead — the switch is now a shared `Classify` + `Kind` table |
