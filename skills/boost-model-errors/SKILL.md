@@ -4,7 +4,7 @@ description: "Use when creating, wrapping, or matching errors in a Go service th
 license: MIT
 metadata:
   author: jpfaria
-  version: "0.2.0"
+  version: "0.3.0"
 allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent
 ---
 
@@ -32,7 +32,7 @@ Two boost subsystems pattern-match on the unwrapped error type name:
 | Echo `error_handler` plugin | HTTP responses (see `boost-factory-echo`) | `*errors.NotFound` → 404, `*errors.BadRequest` → 400, `*errors.Conflict` → 409, `*errors.Forbidden` → 403, `*errors.Internal` → 500, `*errors.NotValid` → 422 |
 | Function `publisher` middleware (deadletter mode) | Event handlers (see `boost-bootstrap-middleware`) | `NotValid` → `notvalid` deadletter topic; `Internal` → retry / alerting; etc. |
 
-`fmt.Errorf("%w", err)` defeats both because `errors.As(target *NotFound)` can't unwrap an opaque wrapped error of unknown concrete type. Always use `bootsterrors.Wrap`.
+`fmt.Errorf("%w", err)` defeats both: the matchers walk boost's `Cause()` (the `causer` interface), and a stdlib `*fmt.wrapError` is **not** a `causer`, so the boost type underneath stays invisible. Never wrap a boost error with `fmt.Errorf` — see **Wrapping & propagation** below.
 
 The HTTP (Echo + function/CloudEvents) and gRPC error handlers resolve the status
 via `bootsterrors.Classify(err) Kind` — registered custom errors first, then the
@@ -78,11 +78,39 @@ built-in `Is*` → `KindInternal`. The `match` predicate runs while the registry
 lock is held — it must not call back into the registry (`Register`/`Classify`/
 `Ignore`/…) or it self-deadlocks.
 
+## Wrapping & propagation — never `fmt.Errorf`
+
+boost classification walks `Cause()`, **not** stdlib `Unwrap()`. Two verified consequences:
+
+- `fmt.Errorf("ctx: %w", boostErr)` makes `IsServiceUnavailable(...)` / `Classify(...)` return the WRONG kind — `Cause()` is single-level and a `*fmt.wrapError` isn't a `causer`, so the boost type underneath is invisible → `KindInternal` / 500 leaks out the edge.
+- boost typed errors expose `Cause()` but have **no stdlib `Unwrap()`**, so `errors.Is(boostErr, context.Canceled)` never matches, and `Annotatef(boostErr, msg)` — while it keeps `Is*` working — **breaks** stdlib `errors.Is(_, sentinel)`.
+
+So where `err` is already a boost error (app / use-case / propagating layers), **don't wrap — propagate**:
+
+```go
+if err != nil {
+    return Result{}, err   // already boost-typed: keeps its kind AND stdlib errors.Is(_, sentinel)
+}
+```
+
+Add classification only at the boundary where the cause is **non-boost** — with a boost constructor, never `fmt.Errorf`:
+
+| You have | Use |
+|---|---|
+| an already-boost `err` to bubble up | `return X, err` (propagate) |
+| a real non-boost cause (json/driver/transport `err`) | `errors.NewServiceUnavailable(err, msg)` / `NewInternal(err, msg)` |
+| a synthetic cause (HTTP status, "not found in cart") | `errors.ServiceUnavailablef("…%d…", code)` (no separate cause) |
+| boot/config parse failure | `errors.NewInternal(err, "config: …")` |
+
+`fmt.Sprintf(...)` for building a message string stays fine — only `fmt.Errorf` is banned.
+
 ## Red flags
 
 | Red flag | Fix |
 |---|---|
 | `fmt.Errorf("%w", err)` for an error that flows through Echo or function middleware | `bootsterrors.Wrap(err, bootsterrors.<Type>(...))` |
+| `fmt.Errorf("ctx: %w", boostErr)` to add a breadcrumb in app/use-case code | Propagate: `return X, err`. The boost kind + stdlib `errors.Is` survive; a breadcrumb isn't worth losing classification. |
+| `Annotatef(boostErr, …)` expecting stdlib `errors.Is(_, sentinel)` to still match | It won't — boost has no stdlib `Unwrap`. Propagate the error; match downstream with `Is*` / `Cause`. |
 | `echo.NewHTTPError(404, "...")` in a handler | `bootsterrors.NewNotFound(err, "...")` |
 | Returning a raw upstream error to a handler caller | Wrap with the right `bootsterrors.New<Type>` so the matcher can route it |
 | Inventing a custom error struct for things `model/errors` already covers | Use the existing type — extending the catalog needs an upstream PR, not a local workaround |
