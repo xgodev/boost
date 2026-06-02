@@ -16,5 +16,6 @@ func init() {
 func ConfigAdd(path string) {
 	apiv1.ConfigAdd(path + ".apiOptions")
 	grpcv1.ConfigAdd(path + ".grpcOptions")
-	config.Add(path+".enableOtel", "", "enable OpenTelemetry tracing")
+
+	config.Add(path+".otel.enabled", "true", "enable OpenTelemetry tracing")
 }

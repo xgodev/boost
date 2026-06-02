@@ -42,7 +42,7 @@ func NewClientWithOptions(ctx context.Context, o *Options, plugins ...clientgrpc
 	grpcDialOpts := grpcv1.ApplyDialOptions(ctx, &o.GRPCOptions, plugins...)
 
 	clientConfig := &pubsub.ClientConfig{}
-	if o.EnableOtel {
+	if o.Otel.Enabled {
 		otelboost.StartMeterProvider(ctx)
 		otelboost.StartTracerProvider(ctx)
 
