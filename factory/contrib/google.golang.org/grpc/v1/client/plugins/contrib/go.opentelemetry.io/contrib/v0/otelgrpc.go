@@ -3,9 +3,11 @@ package contrib
 import (
 	"context"
 
+	otelboost "github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/stats/opentelemetry"
 )
 
 // Register returns the gRPC DialOptions to enable OpenTelemetry stats handler.
@@ -47,8 +49,13 @@ func (p *OpenTelemetry) Register(ctx context.Context) ([]grpc.DialOption, []grpc
 	logger := log.FromContext(ctx)
 	logger.Debug("OpenTelemetry gRPC stats handler enabled")
 
-	// Use StatsHandler as recommended (UnaryClientInterceptor and StreamClientInterceptor are deprecated)
 	return []grpc.DialOption{
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+		opentelemetry.DialOption(opentelemetry.Options{
+			MetricsOptions: opentelemetry.MetricsOptions{
+				MeterProvider: otelboost.MeterProvider,
+				Metrics:       opentelemetry.DefaultMetrics(),
+			},
+		}),
 	}, nil
 }

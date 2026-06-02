@@ -3,11 +3,16 @@ package pubsub
 import (
 	"context"
 
-	"cloud.google.com/go/pubsub"
+	"cloud.google.com/go/pubsub/v2"
 	apiv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/api/v0"
 	grpcv1 "github.com/xgodev/boost/factory/contrib/cloud.google.com/grpc/v1"
+	otelboost "github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	clientgrpc "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/client"
 	"github.com/xgodev/boost/wrapper/log"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/stats/opentelemetry"
+
 	"google.golang.org/api/option"
 )
 
@@ -33,13 +38,27 @@ func NewClientWithConfigPath(ctx context.Context, path string, plugins ...client
 func NewClientWithOptions(ctx context.Context, o *Options, plugins ...clientgrpc.Plugin) (*pubsub.Client, error) {
 	logger := log.FromContext(ctx)
 
-	// API-level options
 	apiOpts := apiv1.ApplyAPIOptions(ctx, &o.APIOptions)
-
-	// gRPC-level DialOptions
 	grpcDialOpts := grpcv1.ApplyDialOptions(ctx, &o.GRPCOptions, plugins...)
 
-	// collect ClientOption
+	clientConfig := &pubsub.ClientConfig{}
+	if o.EnableOtel {
+		otelboost.StartMeterProvider(ctx)
+		otelboost.StartTracerProvider(ctx)
+
+		opts := opentelemetry.Options{
+			MetricsOptions: opentelemetry.MetricsOptions{
+
+				MeterProvider: otelboost.MeterProvider,
+				Metrics:       opentelemetry.DefaultMetrics(),
+			},
+		}
+
+		grpcDialOpts = append(grpcDialOpts, grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
+		grpcDialOpts = append(grpcDialOpts, opentelemetry.DialOption(opts))
+		clientConfig.EnableOpenTelemetryTracing = true
+	}
+
 	clientOpts := make([]option.ClientOption, 0, len(apiOpts)+len(grpcDialOpts))
 	clientOpts = append(clientOpts, apiOpts...)
 	for _, dop := range grpcDialOpts {
@@ -47,5 +66,6 @@ func NewClientWithOptions(ctx context.Context, o *Options, plugins ...clientgrpc
 	}
 
 	logger.Debugf("creating Pub/Sub client for project %s", o.APIOptions.ProjectID)
-	return pubsub.NewClient(ctx, o.APIOptions.ProjectID, clientOpts...)
+
+	return pubsub.NewClientWithConfig(ctx, o.APIOptions.ProjectID, clientConfig, clientOpts...)
 }

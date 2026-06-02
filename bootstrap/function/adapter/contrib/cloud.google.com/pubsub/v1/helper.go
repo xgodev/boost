@@ -1,11 +1,12 @@
 package pubsub
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
+	"sync"
+
+	"cloud.google.com/go/pubsub/v2"
 	"github.com/xgodev/boost/bootstrap/function"
 	"github.com/xgodev/boost/wrapper/log"
-	"sync"
 )
 
 // Helper assists in creating event handlers for Pub/Sub with multiple topics.

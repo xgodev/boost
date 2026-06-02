@@ -1,7 +1,7 @@
 package pubsub
 
 import (
-	"cloud.google.com/go/pubsub"
+	"cloud.google.com/go/pubsub/v2"
 	co "github.com/spf13/cobra"
 	"github.com/xgodev/boost/bootstrap/function"
 )

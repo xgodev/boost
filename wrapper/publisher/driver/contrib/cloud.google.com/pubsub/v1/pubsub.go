@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/pubsub"
+	"cloud.google.com/go/pubsub/v2"
 	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/matryer/try"
 
@@ -21,7 +21,7 @@ type client struct {
 	options *Options
 
 	mu     sync.Mutex
-	topics map[string]*pubsub.Topic
+	topics map[string]*pubsub.Publisher
 }
 
 // NewWithConfigPath returns a publisher configured by a file path.
@@ -47,7 +47,7 @@ func NewWithOptions(ctx context.Context, c *pubsub.Client, options *Options) pub
 	return &client{
 		client:  c,
 		options: options,
-		topics:  make(map[string]*pubsub.Topic),
+		topics:  make(map[string]*pubsub.Publisher),
 	}
 }
 
@@ -151,14 +151,14 @@ func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.Publ
 }
 
 // getTopic returns a cached Pub/Sub topic or creates it on first use.
-func (p *client) getTopic(subject string) *pubsub.Topic {
+func (p *client) getTopic(subject string) *pubsub.Publisher {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	if t, ok := p.topics[subject]; ok {
 		return t
 	}
-	t := p.client.Topic(subject)
+	t := p.client.Publisher(subject)
 	t.PublishSettings = p.options.Settings
 	p.topics[subject] = t
 	return t

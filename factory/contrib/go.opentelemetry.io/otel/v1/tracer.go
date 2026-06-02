@@ -2,9 +2,10 @@ package otel
 
 import (
 	"context"
+	"sync"
+
 	"github.com/go-logr/logr"
 	"go.opentelemetry.io/otel/propagation"
-	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/xgodev/boost/wrapper/log"
@@ -75,7 +76,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		startOptions = append(startOptions,
 			sdktrace.WithBatcher(exporter),
-			sdktrace.WithSampler(sdktrace.AlwaysSample()),
+			sdktrace.WithSampler(sdktrace.TraceIDRatioBased(1.0)),
 			sdktrace.WithResource(rs),
 		)
 
