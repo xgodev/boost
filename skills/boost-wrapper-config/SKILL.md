@@ -4,7 +4,7 @@ description: "Use when registering or reading configuration in a Go service that
 license: MIT
 metadata:
   author: jpfaria
-  version: "0.1.0"
+  version: "0.2.0"
 allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(git:*) Agent
 ---
 
@@ -13,34 +13,67 @@ allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(g
 ## Register every tunable up front
 
 ```go
-import "github.com/xgodev/boost/wrapper/config"
+import (
+    "time"
+
+    "github.com/xgodev/boost/wrapper/config"
+)
 
 const root = "myapp.outbound"
 
 func init() {
-    config.Add(root+".subject", "default-topic", "downstream subject")
-    config.Add(root+".timeout", "10s", "publish timeout")
-    config.Add(root+".maxAttempts", 5, "retry budget")
+    // Pass the default in its NATIVE type — koanf infers the type from the
+    // value. Env overrides still arrive as strings and are parsed on read,
+    // so a Duration registered as 10*time.Second still accepts MYAPP_..="2h".
+    config.Add(root+".subject", "default-topic", "downstream subject")       // string
+    config.Add(root+".timeout", 10*time.Second, "publish timeout")           // time.Duration
+    config.Add(root+".maxAttempts", 5, "retry budget")                       // int
+    config.Add(root+".sampleRate", 0.01, "trace sampling rate")              // float64
+    config.Add(root+".enabled", true, "feature toggle")                      // bool
+    config.Add(root+".regions", []string{"sa-east-1"}, "allowed regions")    // []string (env: comma-separated)
+    config.Add(root+".ports", []int{8080, 9090}, "listen ports")             // []int
+    config.Add(root+".labels", map[string]string{"team": "cart"}, "tags")    // map[string]string
 }
 
-// later, after boost.Start ran
+// later, after boost.Start ran — read with the matching typed getter:
 subj := config.String(root + ".subject")
 to   := config.Duration(root + ".timeout")
 n    := config.Int(root + ".maxAttempts")
+regs := config.Strings(root + ".regions")
 ```
 
 Every `config.Add` call shows up in the boot banner and in `boost-config dump`. `os.Getenv` is invisible to both, so operators can't discover what's tunable.
 
+**Register the default in its native type** (`10*time.Second`, `0.01`, `true`, `[]string{...}`) — not a stringified form (`"10s"`, `"0.01"`). The native literal self-documents the type and matches the getter; the env override still accepts a readable string because env values are always parsed on read.
+
 ## API surface
 
-| API | Returns |
+Pick the getter that matches the registered default's type.
+
+| Getter | Returns |
 |---|---|
 | `config.String(key)` | string |
 | `config.Int(key)` | int |
+| `config.Int64(key)` | int64 |
+| `config.Float64(key)` | float64 |
 | `config.Bool(key)` | bool |
 | `config.Duration(key)` | time.Duration |
-| `config.Float64(key)` | float64 |
-| `config.StringSlice(key)` | []string |
+| `config.Time(key, layout)` | time.Time |
+| `config.Bytes(key)` | []byte |
+| `config.Strings(key)` | []string |
+| `config.Ints(key)` | []int |
+| `config.Int64s(key)` | []int64 |
+| `config.Float64s(key)` | []float64 |
+| `config.Bools(key)` | []bool |
+| `config.StringMap(key)` | map[string]string |
+| `config.IntMap(key)` | map[string]int |
+| `config.Int64Map(key)` | map[string]int64 |
+| `config.Float64Map(key)` | map[string]float64 |
+| `config.BoolMap(key)` | map[string]bool |
+| `config.Unmarshal(&v)` / `config.UnmarshalWithPath(key, &v)` | decode a subtree into a struct |
+| `config.Exists(key)` / `config.Get(key)` / `config.All()` | presence check / raw value / full dump |
+
+The slice getter is `config.Strings` (plural) — there is no `StringSlice`. For a config subtree that maps onto a struct (nested objects, lists of objects), register the shape in a file/env and read it with `config.UnmarshalWithPath(key, &out)` instead of hand-parsing a JSON string.
 
 ## Env override is automatic
 
@@ -54,4 +87,7 @@ A key registered as `myapp.outbound.subject` is overridden at deploy time by env
 | Reading config inside `init()` (before `boost.Start` runs) | Read at call time, not init time |
 | Mutating env vars in tests (`os.Setenv`) | Use `config.Add(...)` with the test default; if you must override at runtime, use a koanf provider in the test setup |
 | Hard-coding what should be tunable (timeouts, URLs, retry budgets) | Register with `config.Add` and a sensible default |
+| Stringified default for a typed value (`"10s"`, `"0.01"`, `"[]"`) | Pass the native type (`10*time.Second`, `0.01`, `[]string{}`) so it self-documents and matches the getter |
+| Reaching for a non-existent `config.StringSlice` | Use `config.Strings` (plural); see the API table for the full set |
+| Hand-parsing a JSON string for a struct/map config | `config.UnmarshalWithPath(key, &out)`, or a typed map getter (`config.StringMap`, …) |
 | "Just one operator override, harmless" rationalization | Same fix — discoverability and test reproducibility don't allow exceptions |
