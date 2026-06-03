@@ -80,10 +80,11 @@ lock is held — it must not call back into the registry (`Register`/`Classify`/
 
 ## Wrapping & propagation — never `fmt.Errorf`
 
-boost classification walks `Cause()`, **not** stdlib `Unwrap()`. Two verified consequences:
+boost **classification** (`Classify` / `Is*`) walks `Cause()` — single-level — **not** stdlib `Unwrap()`. The consequence that still bites:
 
 - `fmt.Errorf("ctx: %w", boostErr)` makes `IsServiceUnavailable(...)` / `Classify(...)` return the WRONG kind — `Cause()` is single-level and a `*fmt.wrapError` isn't a `causer`, so the boost type underneath is invisible → `KindInternal` / 500 leaks out the edge.
-- boost typed errors expose `Cause()` but have **no stdlib `Unwrap()`**, so `errors.Is(boostErr, context.Canceled)` never matches, and `Annotatef(boostErr, msg)` — while it keeps `Is*` working — **breaks** stdlib `errors.Is(_, sentinel)`.
+
+Note: boost typed errors **do** implement stdlib `Unwrap()`, so `errors.Is` / `errors.As` traverse them — `errors.Is(boostErr, context.Canceled)` works, and propagating or `Annotate`-ing a boost error keeps stdlib sentinel matching. Only boost's own `Cause()`-based **classification** is single-level, which is why `fmt.Errorf("%w")` still defeats the edge's kind mapping even though `errors.Is` would see through it.
 
 So where `err` is already a boost error (app / use-case / propagating layers), **don't wrap — propagate**:
 
@@ -110,7 +111,7 @@ Add classification only at the boundary where the cause is **non-boost** — wit
 |---|---|
 | `fmt.Errorf("%w", err)` for an error that flows through Echo or function middleware | `bootsterrors.Wrap(err, bootsterrors.<Type>(...))` |
 | `fmt.Errorf("ctx: %w", boostErr)` to add a breadcrumb in app/use-case code | Propagate: `return X, err`. The boost kind + stdlib `errors.Is` survive; a breadcrumb isn't worth losing classification. |
-| `Annotatef(boostErr, …)` expecting stdlib `errors.Is(_, sentinel)` to still match | It won't — boost has no stdlib `Unwrap`. Propagate the error; match downstream with `Is*` / `Cause`. |
+| `fmt.Errorf("%w", boostErr)` then expecting `Classify` / `Is*` to still classify it | They won't — classification uses single-level `Cause()`, not stdlib unwrap, so the boost kind underneath is invisible. Propagate the boost error, or re-classify with a boost constructor. (stdlib `errors.Is` *would* see through, but the edge's kind→code mapping won't.) |
 | `echo.NewHTTPError(404, "...")` in a handler | `bootsterrors.NewNotFound(err, "...")` |
 | Returning a raw upstream error to a handler caller | Wrap with the right `bootsterrors.New<Type>` so the matcher can route it |
 | Inventing a custom error struct for things `model/errors` already covers | Use the existing type — extending the catalog needs an upstream PR, not a local workaround |
