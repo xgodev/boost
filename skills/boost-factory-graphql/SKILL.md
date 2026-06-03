@@ -10,6 +10,10 @@ allowed-tools: Read Edit Write Glob Grep Bash(go:*) Bash(golangci-lint:*) Bash(g
 
 **REQUIRED BACKGROUND:** `boost-start`, `boost-factory-echo` (typical mount point).
 
+> This factory wraps **`graphql-go/graphql`** (code-first). If your service uses
+> **gqlgen** (schema-first + Federation 2) instead, see `gqlgen-field-resolvers`
+> for the resolver / model-binding / DataLoader patterns — a different library.
+
 ```go
 import (
     gqlfact "github.com/xgodev/boost/factory/contrib/graphql-go/graphql/v0"
