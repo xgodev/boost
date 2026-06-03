@@ -35,6 +35,24 @@ rdb, err := redisfact.NewClusterClient(ctx)
 
 Configure under `boost.factory.redis.*` (override `BOOST_FACTORY_REDIS_*`).
 
+## Config keys (single vs cluster differ — don't mix them up)
+
+| Topology | Endpoint key | Env override |
+|---|---|---|
+| Single (`NewClient`) | `boost.factory.redis.client.addr` (one `host:port`) | `BOOST_FACTORY_REDIS_CLIENT_ADDR` |
+| Cluster (`NewClusterClient`) | `boost.factory.redis.cluster.addrs` (comma-separated `host:port` list) | `BOOST_FACTORY_REDIS_CLUSTER_ADDRS` |
+
+Common knobs (same prefix): `...dialTimeout`, `...readTimeout`,
+`...writeTimeout`, `...maxRetries`, `...minRetryBackoff`,
+`...maxRetryBackoff` → `BOOST_FACTORY_REDIS_DIALTIMEOUT`, etc.
+
+The endpoint must be a **resolvable** address from inside the runtime.
+In Kubernetes that's the **Service FQDN**
+(`<svc>.<ns>.svc.cluster.local:6379`), never a node/master DNS or a
+hardcoded IP — the latter fails intermittently with
+`dial tcp: lookup ... no such host`. A single-instance service that sets
+`...cluster.addrs` (or vice versa) silently connects to nothing.
+
 ## Factory vs cache abstraction
 
 | Use case | Reach for |
