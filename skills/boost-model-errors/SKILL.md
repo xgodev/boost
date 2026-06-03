@@ -105,6 +105,41 @@ Add classification only at the boundary where the cause is **non-boost** — wit
 
 `fmt.Sprintf(...)` for building a message string stays fine — only `fmt.Errorf` is banned.
 
+## GraphQL transport — gqlgen `ErrorPresenter`
+
+The Echo / gRPC / function edges map boost errors to a code automatically. GraphQL (gqlgen) returns **HTTP 200** with the error inside the `errors[]` array, so the Echo `error_handler` never sees a resolver error. Wire the equivalent at the gqlgen layer — the 4th transport over the same catalog:
+
+```go
+srv.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
+    gqlErr := graphql.DefaultErrorPresenter(ctx, e)
+    if gqlErr.Extensions == nil {
+        gqlErr.Extensions = map[string]any{}
+    }
+    // Classify()/Is* use single-level Cause() and don't cross fmt.Errorf("%w");
+    // walk the stdlib chain (boost errors implement Unwrap) and match each node.
+    for err := e; err != nil; err = errors.Unwrap(err) {
+        switch {
+        case bootsterrors.IsNotFound(err):
+            gqlErr.Extensions["code"] = "NOT_FOUND"
+        case bootsterrors.IsServiceUnavailable(err):
+            gqlErr.Extensions["code"] = "UPSTREAM_UNAVAILABLE"
+        case bootsterrors.IsForbidden(err), bootsterrors.IsConflict(err):
+            gqlErr.Extensions["code"] = "FORBIDDEN"
+        case bootsterrors.IsBadRequest(err), bootsterrors.IsNotValid(err):
+            gqlErr.Extensions["code"] = "BAD_USER_INPUT"
+        default:
+            continue
+        }
+        return gqlErr
+    }
+    gqlErr.Extensions["code"] = "INTERNAL_SERVER_ERROR"
+    gqlErr.Message = "internal server error" // never leak internals
+    return gqlErr
+})
+```
+
+Same boost catalog as the other transports; only the public code strings differ. Resolvers/use cases keep returning boost typed errors — the presenter is the only GraphQL-specific piece.
+
 ## Red flags
 
 | Red flag | Fix |
