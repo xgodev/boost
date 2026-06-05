@@ -93,7 +93,7 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 	var exporter *otlptrace.Exporter
 	var err error
 
-	switch options.Protocol {
+	switch options.Trace.Protocol {
 	case "grpc":
 		exporter, err = NewGRPCTracerExporter(ctx, options)
 	default:
@@ -105,9 +105,9 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	var exporterOpts []otlptracehttp.Option
 
-	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Endpoint))
+	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Trace.Endpoint))
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlptracehttp.WithInsecure())
 	}
 
@@ -121,10 +121,10 @@ func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Ex
 
 func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	exporterOpts := []otlptracegrpc.Option{
-		otlptracegrpc.WithEndpoint(options.Endpoint),
+		otlptracegrpc.WithEndpoint(options.Trace.Endpoint),
 	}
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlptracegrpc.WithInsecure())
 	} else if options.TLS.Cert != "" {
 		creds, err := credentials.NewClientTLSFromFile(options.TLS.Cert, "")

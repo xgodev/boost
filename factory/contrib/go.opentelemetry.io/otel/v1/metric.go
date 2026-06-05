@@ -114,9 +114,7 @@ func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter
 	var exporter sdkmetric.Exporter
 	var err error
 
-	//return NewHTTPMeterExporter(ctx, options)
-
-	switch options.Protocol {
+	switch options.Metric.Protocol {
 	case "grpc":
 		exporter, err = NewGRPCMeterExporter(ctx, options)
 	default:
@@ -127,12 +125,10 @@ func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter
 
 func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
 	exporterOpts := []otlpmetrichttp.Option{
-		otlpmetrichttp.WithEndpoint("localhost:9090"),
-		otlpmetrichttp.WithURLPath("/api/v1/otlp/v1/metrics"),
-		otlpmetrichttp.WithInsecure(),
+		otlpmetrichttp.WithEndpoint(options.Metric.Endpoint),
 	}
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlpmetrichttp.WithInsecure())
 	}
 
@@ -148,9 +144,11 @@ func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Expo
 }
 
 func NewGRPCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
-	var exporterOpts []otlpmetricgrpc.Option
+	exporterOpts := []otlpmetricgrpc.Option{
+		otlpmetricgrpc.WithEndpoint(options.Metric.Endpoint),
+	}
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlpmetricgrpc.WithInsecure())
 	} else {
 		creds, err := credentials.NewClientTLSFromFile(options.TLS.Cert, "")
