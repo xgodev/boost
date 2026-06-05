@@ -148,9 +148,7 @@ func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Expo
 }
 
 func NewGRPCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
-	exporterOpts := []otlpmetricgrpc.Option{
-		// otlpmetricgrpc.WithEndpoint("localhost:9090"),
-	}
+	var exporterOpts []otlpmetricgrpc.Option
 
 	if IsInsecure() {
 		exporterOpts = append(exporterOpts, otlpmetricgrpc.WithInsecure())

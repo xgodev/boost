@@ -10,6 +10,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -51,20 +52,16 @@ func init() {
 }
 
 type OpenTelemetry[T any] struct {
+	Tracer trace.Tracer
 }
 
 func (c *OpenTelemetry[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
 
 	//initMeter() // lazy-init meter, safe to call multiple times
 
-	tp := xotel.TracerProvider
-	if tp == nil {
-		tp = otel.GetTracerProvider()
-	}
-	tracer := tp.Tracer("boost_function_tracer")
-
-	ctxTrace, span := tracer.Start(ctx.GetContext(), "ProcessMessage")
+	ctxTrace, span := c.Tracer.Start(ctx.GetContext(), "ProcessMessage")
 	defer span.End()
+	ctx.SetContext(ctxTrace)
 
 	// Medindo a latência manualmente
 	startTime := time.Now()
@@ -108,5 +105,5 @@ func NewAnyErrorMiddleware[T any]() middleware.AnyErrorMiddleware[T] {
 }
 
 func NewOpenTelemetry[T any]() *OpenTelemetry[T] {
-	return &OpenTelemetry[T]{}
+	return &OpenTelemetry[T]{Tracer: xotel.TracerProvider.Tracer("boost_function")}
 }

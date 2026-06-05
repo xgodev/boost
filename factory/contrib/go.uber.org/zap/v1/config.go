@@ -25,7 +25,7 @@ func init() {
 
 	config.Add(consoleEnabled, true, "enable/disable console logging")
 	config.Add(consoleLevel, "INFO", "console log level")
-	config.Add(consoleFormatter, "JSON", "formatter TEXT/JSON")
+	config.Add(consoleFormatter, "TEXT", "formatter TEXT/JSON")
 	config.Add(fileEnabled, false, "enable/disable file logging")
 	config.Add(fileLevel, "INFO", "console log level")
 	config.Add(filePath, "/tmp", "log path")
@@ -33,6 +33,6 @@ func init() {
 	config.Add(fileMaxSize, 100, "log file max size (MB)")
 	config.Add(fileCompress, true, "log file compress")
 	config.Add(fileMaxAge, 28, "log file max age (days)")
-	config.Add(fileFormatter, "JSON", "formatter TEXT/JSON")
+	config.Add(fileFormatter, "TEXT", "formatter TEXT/JSON")
 
 }

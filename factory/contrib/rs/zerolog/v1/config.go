@@ -28,5 +28,5 @@ func init() {
 	config.Add(fileMaxSize, 100, "log file max size (MB)")
 	config.Add(fileCompress, true, "log file compress")
 	config.Add(fileMaxAge, 28, "log file max age (days)")
-	config.Add(formatter, "JSON", "formatter TEXT/JSON/AWS_CLOUD_WATCH")
+	config.Add(formatter, "TEXT", "formatter TEXT/JSON/AWS_CLOUD_WATCH")
 }

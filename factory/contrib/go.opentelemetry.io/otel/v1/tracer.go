@@ -16,7 +16,6 @@ import (
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 	"google.golang.org/grpc/credentials"
 )
 
@@ -46,7 +45,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 	tracerOnce.Do(func() {
 
-		TracerProvider = noop.NewTracerProvider()
+		//TracerProvider = noop.NewTracerProvider()
 
 		logger := log.FromContext(ctx)
 
@@ -76,7 +75,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		startOptions = append(startOptions,
 			sdktrace.WithBatcher(exporter),
-			sdktrace.WithSampler(sdktrace.TraceIDRatioBased(1.0)),
+			sdktrace.WithSampler(sdktrace.TraceIDRatioBased(0.3)),
 			sdktrace.WithResource(rs),
 		)
 

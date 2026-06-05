@@ -3,6 +3,7 @@ package logger
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/model/errors"
@@ -10,8 +11,7 @@ import (
 )
 
 type Logger[T any] struct {
-	options    *Options
-	baseLogger log.Logger
+	options *Options
 }
 
 func NewLogger[T any]() (*Logger[T], error) {
@@ -23,8 +23,7 @@ func NewLogger[T any]() (*Logger[T], error) {
 }
 
 func NewLoggerWithOptions[T any](options *Options) *Logger[T] {
-	var zero T
-	return &Logger[T]{options: options, baseLogger: log.WithTypeOf(zero)}
+	return &Logger[T]{options: options}
 }
 
 func NewAnyErrorMiddleware[T any]() (middleware.AnyErrorMiddleware[T], error) {
@@ -36,7 +35,7 @@ func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErr
 }
 
 func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
-	logger := c.baseLogger.FromContext(ctx.GetContext())
+	logger := log.FromContext(ctx.GetContext()).WithTypeOf(*c)
 	lm := c.logger(logger)
 
 	e, err := ctx.Next(exec, fallbackFunc)
