@@ -46,12 +46,16 @@ func initMeter() {
 	})
 }
 
+func init() {
+	initMeter() // Inicializando o meter
+}
+
 type OpenTelemetry[T any] struct {
 }
 
 func (c *OpenTelemetry[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
 
-	initMeter() // lazy-init meter, safe to call multiple times
+	//initMeter() // lazy-init meter, safe to call multiple times
 
 	tp := xotel.TracerProvider
 	if tp == nil {

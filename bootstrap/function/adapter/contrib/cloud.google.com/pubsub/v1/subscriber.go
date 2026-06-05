@@ -39,9 +39,6 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 	logger.Tracef("pubsub - Subscribing to %s", l.subscription)
 
 	subscription := l.client.Subscriber(l.subscription)
-	subscription.ReceiveSettings = pubsub.ReceiveSettings{
-		MaxOutstandingMessages: int(l.options.Concurrency),
-	}
 
 	err := subscription.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		err := l.processMessage(ctx, msg)
@@ -58,7 +55,7 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		logger.Fatalf("Failed to start subscription %s: %v", l.subscription, err)
 	}
 
-	return nil
+	return err
 }
 
 // processMessage processes each message, retries if needed, and applies backoff

@@ -2,7 +2,6 @@ package pubsub
 
 import (
 	"context"
-	"sync"
 
 	"cloud.google.com/go/pubsub/v2"
 	"github.com/xgodev/boost/bootstrap/function"
@@ -36,27 +35,15 @@ func NewHelper[T any](client *pubsub.Client, handler function.Handler[T]) *Helpe
 
 // Start subscribes to the topics and processes messages concurrently.
 func (h *Helper[T]) Start() {
-	logger := log.WithTypeOf(*h)
-	var wg sync.WaitGroup
 
 	// Subscribe to each subscription in a goroutine
 	for _, subscription := range h.options.Subscriptions {
-		wg.Add(1)
-
-		go func(subscription string) {
-			defer wg.Done()
-
-			subscriber := NewSubscriber[T](h.client, h.handler, subscription, h.options)
-
+		go func() {
 			// Subscribe to the subscription
-			if err := subscriber.Subscribe(context.Background()); err != nil {
+			if err := NewSubscriber[T](h.client, h.handler, subscription, h.options).Subscribe(context.Background()); err != nil {
+				logger := log.WithTypeOf(*h)
 				logger.Errorf("Failed to subscribe to subscription %s: %v", subscription, err)
-			} else {
-				logger.Infof("Successfully subscribed to subscription %s", subscription)
 			}
-		}(subscription)
+		}()
 	}
-
-	// Wait for all subscriptions to complete
-	wg.Wait()
 }

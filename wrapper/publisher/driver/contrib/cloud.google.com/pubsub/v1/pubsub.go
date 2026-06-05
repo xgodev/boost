@@ -3,13 +3,10 @@ package pubsub
 import (
 	"context"
 	"sync"
-	"time"
 
 	"cloud.google.com/go/pubsub/v2"
 	v2 "github.com/cloudevents/sdk-go/v2"
-	"github.com/matryer/try"
 
-	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
 )
@@ -18,9 +15,8 @@ import (
 type client struct {
 	client  *pubsub.Client
 	options *Options
-
-	mu     sync.Mutex
-	topics map[string]*pubsub.Publisher
+	mu      sync.RWMutex
+	topics  map[string]*pubsub.Publisher
 }
 
 // NewWithConfigPath returns a publisher configured by a file path.
@@ -53,92 +49,48 @@ func NewWithOptions(ctx context.Context, c *pubsub.Client, options *Options) pub
 // Publish sends a batch of events to Pub/Sub.
 func (p *client) Publish(ctx context.Context, events []*v2.Event) ([]publisher.PublishOutput, error) {
 	logger := log.FromContext(ctx).WithTypeOf(*p)
-	logger.Info("publishing to Pub/Sub")
+	logger.Debug("publishing to Pub/Sub")
 
 	if len(events) == 0 {
 		logger.Warn("no messages to publish")
 		return nil, nil
 	}
-	return p.send(ctx, events)
-}
 
-// send publishes events concurrently and aggregates results as they arrive.
-func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.PublishOutput, error) {
-	var wg sync.WaitGroup
-	resultCh := make(chan publisher.PublishOutput, len(events))
-
-	// launch all publishes asynchronously
+	var publishResults []*Output
 	for _, ev := range events {
-		wg.Add(1)
-		go func(ev *v2.Event) {
-			defer wg.Done()
-
-			base := context.WithoutCancel(ctx)
-			pubCtx, cancel := context.WithTimeout(base, p.options.PublishTimeout)
-			defer cancel()
-
-			logger := log.WithField("subject", ev.Subject()).
-				WithField("id", ev.ID())
-
-			raw := ev.Data()
-
-				// Build attributes
-			attrs := map[string]string{
-				"ce_specversion": ev.SpecVersion(),
-				"ce_id":          ev.ID(),
-				"ce_source":      ev.Source(),
-				"ce_type":        ev.Type(),
-				"ce_time":        ev.Time().UTC().Format(time.RFC3339),
-				"ce_path":        "/",
-				"ce_subject":     ev.Subject(),
-			}
-
-			if ct := ev.DataContentType(); ct != "" {
-				attrs["content-type"] = ct
-			} else {
-				attrs["content-type"] = "application/json"
-			}
-
-			msg := &pubsub.Message{ID: ev.ID(), Data: raw, Attributes: attrs, PublishTime: time.Now()}
-			if p.options.OrderingKey {
-				if pk, err := p.getPartitionKey(ev); err == nil {
-					msg.OrderingKey = pk
-				}
-			}
-
-			topic := p.getTopic(ev.Subject())
-			err := try.Do(func(attempt int) (bool, error) {
-				logger.Tracef("publishing to topic %s, attempt %d", ev.Subject(), attempt)
-				r := topic.Publish(pubCtx, msg)
-				if _, err := r.Get(pubCtx); err != nil {
-					log.Error(err)
-					return attempt < 5, errors.NewInternal(err, "Pub/Sub publish failed")
-				}
-				logger.Infof("message published")
-				return false, nil
-			})
-
-			// send result as soon as done
-			resultCh <- publisher.PublishOutput{Event: ev, Error: err}
-		}(ev)
+		msg := buildMessage(ev, p.options.OrderingKey)
+		topic := p.getTopic(ev.Subject())
+		r := topic.Publish(ctx, msg)
+		publishResults = append(publishResults, &Output{
+			PublishOutput: publisher.PublishOutput{Event: ev},
+			Result:        r,
+		})
 	}
 
-	// close channel once all goroutines finish
-	go func() {
-		wg.Wait()
-		close(resultCh)
-	}()
+	for _, result := range publishResults {
+		_, err := result.Result.Get(ctx)
+		if err != nil {
+			logger.Error(err)
+			result.Error = err
+		}
+	}
 
-	// collect results as they arrive
-	var results []publisher.PublishOutput
-	for res := range resultCh {
-		results = append(results, res)
+	results := make([]publisher.PublishOutput, len(publishResults))
+	for i, r := range publishResults {
+		results[i] = r.PublishOutput
 	}
 	return results, nil
 }
 
 // getTopic returns a cached Pub/Sub topic or creates it on first use.
 func (p *client) getTopic(subject string) *pubsub.Publisher {
+	p.mu.RLock()
+	if t, ok := p.topics[subject]; ok {
+		p.mu.RUnlock()
+		return t
+	}
+	p.mu.RUnlock()
+
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -147,12 +99,13 @@ func (p *client) getTopic(subject string) *pubsub.Publisher {
 	}
 	t := p.client.Publisher(subject)
 	t.PublishSettings = p.options.Settings
+	t.EnableMessageOrdering = p.options.OrderingKey
+
 	p.topics[subject] = t
 	return t
 }
 
 // Close stops all cached topics' background goroutines.
-// Call this when the publisher is shutting down.
 func (p *client) Close() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -163,10 +116,7 @@ func (p *client) Close() {
 	p.topics = nil
 }
 
-// getPartitionKey extracts the ordering key extension or uses the event ID.
-func (p *client) getPartitionKey(ev *v2.Event) (string, error) {
-	if key, ok := ev.Extensions()["key"]; ok {
-		return key.(string), nil
-	}
-	return ev.ID(), nil
+type Output struct {
+	publisher.PublishOutput
+	Result *pubsub.PublishResult
 }
