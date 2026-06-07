@@ -6,8 +6,8 @@ import (
 
 	"cloud.google.com/go/pubsub/v2"
 	v2 "github.com/cloudevents/sdk-go/v2"
-
 	"github.com/xgodev/boost/wrapper/log"
+
 	"github.com/xgodev/boost/wrapper/publisher"
 )
 
@@ -48,7 +48,7 @@ func NewWithOptions(ctx context.Context, c *pubsub.Client, options *Options) pub
 
 // Publish sends a batch of events to Pub/Sub.
 func (p *client) Publish(ctx context.Context, events []*v2.Event) ([]publisher.PublishOutput, error) {
-	logger := log.FromContext(ctx).WithTypeOf(*p)
+	logger := log.FromContext(ctx).WithTypeOf(p)
 	logger.Debug("publishing to Pub/Sub")
 
 	if len(events) == 0 {
@@ -70,7 +70,7 @@ func (p *client) Publish(ctx context.Context, events []*v2.Event) ([]publisher.P
 	for _, result := range publishResults {
 		_, err := result.Result.Get(ctx)
 		if err != nil {
-			logger.Error(err)
+			//logger.Error(err)
 			result.Error = err
 		}
 	}

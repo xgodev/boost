@@ -7,20 +7,29 @@ import (
 )
 
 const (
-	root           = "boost.factory.otel"
-	metricEnabled  = root + ".metric.enabled"
-	traceEnabled   = root + ".trace.enabled"
-	consoleEnabled = root + ".console.enabled"
+	root       = "boost.factory.otel"
+	metricRoot = root + ".metric"
+	traceRoot  = root + ".trace"
+	export     = root + ".export"
+	console    = root + ".console"
+
+	metricEnabled  = metricRoot + ".enabled"
+	traceEnabled   = traceRoot + ".enabled"
+	consoleEnabled = console + ".enabled"
 	env            = root + ".env"
 	version        = root + ".version"
 	protocol       = root + ".protocol"
 	endpoint       = root + ".endpoint"
 	insecure       = root + ".insecure"
-	export         = root + ".export"
 	exportInterval = export + ".interval"
 	exportTimeout  = export + ".timeout"
 	attributes     = root + ".attributes"
 	tlsCert        = root + ".tls.cert"
+
+	metricEndpoint = metricRoot + ".endpoint"
+	metricProtocol = metricRoot + ".protocol"
+	traceEndpoint  = traceRoot + ".endpoint"
+	traceProtocol  = traceRoot + ".protocol"
 )
 
 func init() {
@@ -37,6 +46,10 @@ func init() {
 	config.Add(exportTimeout, time.Millisecond*30000, "defines periodic reader timeout for metrics")
 	config.Add(attributes, map[string]string{}, "sets a key/value pair which will be set as attributes on all spans created by the tracer. This option may be used multiple times")
 	config.Add(tlsCert, "", "path to certificate to be used for tls")
+	config.Add(metricEndpoint, "", "host address of the opentelemetry agent for metrics; follows OTEL_EXPORTER_OTLP_METRICS_ENDPOINT env var specification. When empty, falls back to OTEL_EXPORTER_OTLP_ENDPOINT then boost.factory.otel.endpoint")
+	config.Add(metricProtocol, "", "protocol for metrics (http/grpc); follows OTEL_EXPORTER_OTLP_METRICS_PROTOCOL env var specification. When empty, falls back to OTEL_EXPORTER_OTLP_PROTOCOL then boost.factory.otel.protocol")
+	config.Add(traceEndpoint, "", "host address of the opentelemetry agent for traces; follows OTEL_EXPORTER_OTLP_TRACES_ENDPOINT env var specification. When empty, falls back to OTEL_EXPORTER_OTLP_ENDPOINT then boost.factory.otel.endpoint")
+	config.Add(traceProtocol, "", "protocol for traces (http/grpc); follows OTEL_EXPORTER_OTLP_TRACES_PROTOCOL env var specification. When empty, falls back to OTEL_EXPORTER_OTLP_PROTOCOL then boost.factory.otel.protocol")
 }
 
 // IsTraceEnabled returns config value from key boost.factory.otel.enabled where default is true.
