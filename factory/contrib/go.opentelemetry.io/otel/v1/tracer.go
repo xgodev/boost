@@ -45,8 +45,6 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 	tracerOnce.Do(func() {
 
-		//TracerProvider = noop.NewTracerProvider()
-
 		logger := log.FromContext(ctx)
 
 		otel.SetLogger(logr.New(&Logger{}))
