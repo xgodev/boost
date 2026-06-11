@@ -1,0 +1,6 @@
+# k8s.io/apimachinery/pkg/runtime
+../../../../go/pkg/mod/k8s.io/apimachinery@v0.36.0/pkg/runtime/scheme.go:773:32: undefined: util.OpenAPIModelNamer
+# github.com/xgodev/boost/factory/core/database/sql/plugins/contrib/xsam/otelsql/v0
+factory/core/database/sql/plugins/contrib/xsam/otelsql/v0/otel.go:108:9: too many return values
+	have ("go.opentelemetry.io/otel/metric".Registration, error)
+	want (error)

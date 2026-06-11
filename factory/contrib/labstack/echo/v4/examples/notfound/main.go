@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/xgodev/boost"
-	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	"net/http"
 	"os"
+
+	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 
 	e "github.com/labstack/echo/v4"
 	prometheus "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1"

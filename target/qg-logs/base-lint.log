@@ -1,0 +1,2261 @@
+factory/contrib/rs/zerolog/v1/options.go:9:21: undefined: zerolog (typecheck)
+func NewOptions() (*zerolog.Options, error) {
+                    ^
+factory/contrib/rs/zerolog/v1/logger.go:14:9: undefined: zerolog (typecheck)
+	return zerolog.NewLoggerWithOptions(options)
+	       ^
+factory/contrib/rs/zerolog/v1/options.go:10:35: undefined: zerolog (typecheck)
+	return config.NewOptionsWithPath[zerolog.Options](root)
+	                                 ^
+start.go:7:2: `v1` redeclared in this block (typecheck)
+	"github.com/xgodev/boost/wrapper/config/contrib/knadh/koanf/v1"
+	^
+start.go:5:2: other declaration of v1 (typecheck)
+	"github.com/xgodev/boost/factory/contrib/rs/zerolog/v1"
+	^
+start.go:17:13: undefined: koanf (typecheck)
+	config.Set(koanf.New())
+	           ^
+start.go:19:10: undefined: zerolog (typecheck)
+	log.Set(zerolog.NewLogger())
+	        ^
+start.go:22:10: undefined: figure (typecheck)
+		fig := figure.NewColorFigure(config.String(phrase), config.String(fontName), config.String(color), config.Bool(strict))
+		       ^
+bootstrap/function/function.go:60:9: undefined: cobra (typecheck)
+	return cobra.RunContext(ctx, rootCmd, cmds...)
+	       ^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1/helper.go:17:12: undefined: nats (typecheck)
+	conn     *nats.Conn
+	          ^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1/cmd.go:10:23: undefined: nats (typecheck)
+func New[T any](conn *nats.Conn) function.CmdFunc[T] {
+                      ^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1/helper.go:21:40: undefined: nats (typecheck)
+func NewHelperWithOptions[T any](conn *nats.Conn,
+                                       ^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1/helper.go:33:29: undefined: nats (typecheck)
+func NewHelper[T any](conn *nats.Conn, handler function.Handler[T]) *Helper[T] {
+                            ^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http/run.go:55:7: result declared and not used (typecheck)
+		var result []byte
+		    ^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http/run.go:102:20: undefined: validator (typecheck)
+		if _, ok := err.(validator.ValidationErrors); ok {
+		                 ^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http/plugins/contrib/go.opentelemetry.io/contrib/v0/otel.go:63:2: undefined: otel (typecheck)
+	otel.StartTracerProvider(ctx)
+	^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http/plugins/contrib/go.opentelemetry.io/contrib/v0/otel.go:64:2: undefined: otel (typecheck)
+	otel.StartMeterProvider(ctx)
+	^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http/plugins/contrib/go.opentelemetry.io/contrib/v0/otel.go:68:32: undefined: otel (typecheck)
+			otelhttp.WithTracerProvider(otel.TracerProvider),
+			                            ^
+bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http/plugins/contrib/go.opentelemetry.io/contrib/v0/otel.go:69:31: undefined: otel (typecheck)
+			otelhttp.WithMeterProvider(otel.MeterProvider))),
+			                           ^
+factory/contrib/nats-io/nats.go/v1/conn.go:11:59: undefined: nats (typecheck)
+type Plugin func(context.Context) (func(context.Context, *nats.Conn) error, func(context.Context, []nats.Option) ([]nats.Option, error))
+                                                          ^
+factory/contrib/nats-io/nats.go/v1/conn.go:14:85: undefined: nats (typecheck)
+func NewConnWithOptions(ctx context.Context, options *Options, plugins ...Plugin) (*nats.Conn, error) {
+                                                                                    ^
+factory/contrib/nats-io/nats.go/v1/conn.go:64:64: undefined: nats (typecheck)
+func NewConnWithConfigPath(ctx context.Context, path string) (*nats.Conn, error) {
+                                                               ^
+factory/contrib/nats-io/nats.go/v1/conn.go:73:56: undefined: nats (typecheck)
+func NewConn(ctx context.Context, plugins ...Plugin) (*nats.Conn, error) {
+                                                       ^
+factory/contrib/nats-io/nats.go/v1/config.go:29:33: undefined: nats (typecheck)
+	config.Add(path+maxReconnects, nats.DefaultMaxReconnect, "define max reconnects to nats server")
+	                               ^
+factory/contrib/nats-io/nats.go/v1/config.go:30:33: undefined: nats (typecheck)
+	config.Add(path+reconnectWait, nats.DefaultReconnectWait, "define reconnects waiting before reconnect to nats server")
+	                               ^
+factory/contrib/nats-io/nats.go/v1/config.go:31:23: undefined: nats (typecheck)
+	config.Add(path+url, nats.DefaultURL, "define nats server url")
+	                     ^
+factory/contrib/nats-io/nats.go/v1/config.go:32:35: undefined: nats (typecheck)
+	config.Add(path+reconnectJitter, nats.DefaultReconnectJitter, "")
+	                                 ^
+factory/contrib/nats-io/nats.go/v1/config.go:33:38: undefined: nats (typecheck)
+	config.Add(path+reconnectJitterTLS, nats.DefaultReconnectJitterTLS, "")
+	                                    ^
+factory/contrib/nats-io/nats.go/v1/config.go:34:27: undefined: nats (typecheck)
+	config.Add(path+timeout, nats.DefaultTimeout, "")
+	                         ^
+factory/contrib/nats-io/nats.go/v1/config.go:35:32: undefined: nats (typecheck)
+	config.Add(path+pingInterval, nats.DefaultPingInterval, "")
+	                              ^
+factory/contrib/nats-io/nats.go/v1/config.go:36:30: undefined: nats (typecheck)
+	config.Add(path+maxPingOut, nats.DefaultMaxPingOut, "")
+	                            ^
+factory/contrib/nats-io/nats.go/v1/config.go:37:30: undefined: nats (typecheck)
+	config.Add(path+maxChanLen, nats.DefaultMaxChanLen, "")
+	                            ^
+factory/contrib/nats-io/nats.go/v1/config.go:38:36: undefined: nats (typecheck)
+	config.Add(path+reconnectBufSize, nats.DefaultReconnectBufSize, "")
+	                                  ^
+factory/contrib/nats-io/nats.go/v1/config.go:39:32: undefined: nats (typecheck)
+	config.Add(path+drainTimeout, nats.DefaultDrainTimeout, "")
+	                              ^
+factory/contrib/nats-io/nats.go/v1/conn.go:18:12: undefined: nats (typecheck)
+	opts := []nats.Option{
+	          ^
+factory/contrib/nats-io/nats.go/v1/conn.go:19:3: undefined: nats (typecheck)
+		nats.MaxReconnects(options.MaxReconnects),
+		^
+factory/contrib/nats-io/nats.go/v1/conn.go:20:3: undefined: nats (typecheck)
+		nats.ReconnectWait(options.ReconnectWait),
+		^
+factory/contrib/nats-io/nats.go/v1/conn.go:44:15: undefined: nats (typecheck)
+	conn, err := nats.Connect(options.Url, opts...)
+	             ^
+factory/contrib/go.uber.org/zap/v1/options.go:9:21: undefined: zap (typecheck)
+func NewOptions() (*zap.Options, error) {
+                    ^
+factory/contrib/go.uber.org/zap/v1/logger.go:14:9: undefined: zap (typecheck)
+	return zap.NewLoggerWithOptions(options)
+	       ^
+factory/contrib/go.uber.org/zap/v1/options.go:10:35: undefined: zap (typecheck)
+	return config.NewOptionsWithPath[zap.Options](root)
+	                                 ^
+extra/middleware/plugins/contrib/prometheus/client_golang/v1/middleware.go:129:20: undefined: validator (typecheck)
+		if _, ok := err.(validator.ValidationErrors); ok {
+		                 ^
+factory/contrib/afex/hystrix-go/v0/plugins/extra/prometheus/config.go:9:14: undefined: hystrix (typecheck)
+	root      = hystrix.PluginsRoot + ".prometheus"
+	            ^
+factory/contrib/allegro/bigcache/v3/bigcache.go:11:65: undefined: bigcache (typecheck)
+func NewCacheWithConfigPath(ctx context.Context, path string) (*bigcache.BigCache, error) {
+                                                                ^
+factory/contrib/allegro/bigcache/v3/bigcache.go:20:69: undefined: bigcache (typecheck)
+func NewCacheWithOptions(ctx context.Context, opt *Options) (cache *bigcache.BigCache, err error) {
+                                                                    ^
+factory/contrib/allegro/bigcache/v3/bigcache.go:50:38: undefined: bigcache (typecheck)
+func NewCache(ctx context.Context) (*bigcache.BigCache, error) {
+                                     ^
+factory/contrib/allegro/bigcache/v3/bigcache.go:24:9: undefined: bigcache (typecheck)
+	cfg := bigcache.Config{
+	       ^
+factory/contrib/allegro/bigcache/v3/bigcache.go:39:15: undefined: bigcache (typecheck)
+	cache, err = bigcache.New(ctx, cfg)
+	             ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/kinesis/mocks/client.go:22:12: _m.Called undefined (type *Client has no field or method Called) (typecheck)
+	ret := _m.Called(ctx, messages, resource)
+	          ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/kinesis/mocks/client.go:36:12: _m.Called undefined (type *Client has no field or method Called) (typecheck)
+	ret := _m.Called(ctx, input)
+	          ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/mocks/client.go:19:12: _m.Called undefined (type *Client has no field or method Called) (typecheck)
+	ret := _m.Called(ctx, input)
+	          ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/mocks/client.go:33:12: _m.Called undefined (type *Client has no field or method Called) (typecheck)
+	ret := _m.Called(ctx, queueName)
+	          ^
+factory/contrib/aws/aws-sdk-go-v2/v1/plugins/contrib/datadog/dd-trace-go.v1/config.go:9:12: undefined: aws (typecheck)
+	root    = aws.PluginsRoot + ".datadog"
+	          ^
+factory/contrib/elastic/go-elasticsearch/v8/client.go:15:36: undefined: elasticsearch (typecheck)
+type Plugin func(context.Context, *elasticsearch.Client) error
+                                   ^
+factory/contrib/elastic/go-elasticsearch/v8/bulk_indexer.go:11:50: undefined: elasticsearch (typecheck)
+func NewBulkIndexer(ctx context.Context, client *elasticsearch.Client) (esutil.BulkIndexer, error) {
+                                                 ^
+factory/contrib/elastic/go-elasticsearch/v8/bulk_indexer.go:24:77: undefined: elasticsearch (typecheck)
+func NewBulkIndexerWithConfigPath(ctx context.Context, path string, client *elasticsearch.Client) (esutil.BulkIndexer, error) {
+                                                                            ^
+factory/contrib/elastic/go-elasticsearch/v8/bulk_indexer.go:33:83: undefined: elasticsearch (typecheck)
+func NewBulkIndexerWithOptions(ctx context.Context, options *BulkOptions, client *elasticsearch.Client) (bi esutil.BulkIndexer, err error) {
+                                                                                  ^
+factory/contrib/elastic/go-elasticsearch/v8/client.go:18:58: undefined: elasticsearch (typecheck)
+func NewClient(ctx context.Context, plugins ...Plugin) (*elasticsearch.Client, error) {
+                                                         ^
+factory/contrib/elastic/go-elasticsearch/v8/client.go:31:85: undefined: elasticsearch (typecheck)
+func NewClientWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*elasticsearch.Client, error) {
+                                                                                    ^
+factory/contrib/elastic/go-elasticsearch/v8/client.go:40:88: undefined: elasticsearch (typecheck)
+func NewClientWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (client *elasticsearch.Client, err error) {
+                                                                                       ^
+factory/contrib/elastic/go-elasticsearch/v8/client.go:44:9: undefined: elasticsearch (typecheck)
+	cfg := elasticsearch.Config{
+	       ^
+factory/contrib/elastic/go-elasticsearch/v8/client.go:65:16: undefined: elasticsearch (typecheck)
+	client, err = elasticsearch.NewClient(cfg)
+	              ^
+factory/contrib/elastic/go-elasticsearch/v8/plugins/local/extra/health/checker.go:11:10: undefined: elasticsearch (typecheck)
+	client *elasticsearch.Client
+	        ^
+factory/contrib/elastic/go-elasticsearch/v8/plugins/local/extra/health/checker.go:21:25: undefined: elasticsearch (typecheck)
+func NewChecker(client *elasticsearch.Client) *Checker {
+                        ^
+factory/contrib/elastic/go-elasticsearch/v8/plugins/local/extra/health/config.go:9:16: undefined: elasticsearch (typecheck)
+	root        = elasticsearch.PluginsRoot + ".health"
+	              ^
+factory/contrib/elastic/go-elasticsearch/v8/plugins/local/extra/health/health.go:41:56: undefined: elasticsearch (typecheck)
+func (i *Health) Register(ctx context.Context, client *elasticsearch.Client) error {
+                                                       ^
+factory/contrib/elastic/go-elasticsearch/v8/plugins/local/extra/health/health.go:56:44: undefined: elasticsearch (typecheck)
+func Register(ctx context.Context, client *elasticsearch.Client) error {
+                                           ^
+factory/contrib/go-resty/resty/v2/client.go:13:36: undefined: resty (typecheck)
+type Plugin func(context.Context, *resty.Client) error
+                                   ^
+factory/contrib/go-resty/resty/v2/client.go:16:58: undefined: resty (typecheck)
+func NewClient(ctx context.Context, plugins ...Plugin) (*resty.Client, error) {
+                                                         ^
+factory/contrib/go-resty/resty/v2/client.go:25:85: undefined: resty (typecheck)
+func NewClientWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*resty.Client, error) {
+                                                                                    ^
+factory/contrib/go-resty/resty/v2/client.go:34:86: undefined: resty (typecheck)
+func NewClientWithOptions(ctx context.Context, options *Options, plugins ...Plugin) *resty.Client {
+                                                                                     ^
+factory/contrib/go-resty/resty/v2/client.go:40:12: undefined: resty (typecheck)
+	client := resty.New()
+	          ^
+factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log/config.go:9:12: undefined: resty (typecheck)
+	root    = resty.PluginsRoot + ".log"
+	          ^
+factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log/log.go:36:44: undefined: resty (typecheck)
+func Register(ctx context.Context, client *resty.Client) error {
+                                           ^
+factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log/log.go:47:53: undefined: resty (typecheck)
+func (i *Log) Register(ctx context.Context, client *resty.Client) error {
+                                                    ^
+factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log/log.go:81:41: undefined: resty (typecheck)
+func (i *Log) logBeforeResponse(client *resty.Client, request *resty.Request) error {
+                                        ^
+factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log/log.go:106:40: undefined: resty (typecheck)
+func (i *Log) logAfterResponse(client *resty.Client, response *resty.Response) error {
+                                       ^
+factory/contrib/go-resty/resty/v2/plugins/local/extra/health/checker.go:14:11: undefined: resty (typecheck)
+	client  *resty.Client
+	         ^
+factory/contrib/go-resty/resty/v2/plugins/local/extra/health/checker.go:38:25: undefined: resty (typecheck)
+func NewChecker(client *resty.Client, options *Options) *Checker {
+                        ^
+factory/contrib/go-resty/resty/v2/plugins/local/extra/health/config.go:9:16: undefined: resty (typecheck)
+	root        = resty.PluginsRoot + ".health"
+	              ^
+factory/contrib/go-resty/resty/v2/plugins/local/extra/health/health.go:41:44: undefined: resty (typecheck)
+func Register(ctx context.Context, client *resty.Client) error {
+                                           ^
+factory/contrib/go-resty/resty/v2/plugins/local/extra/health/health.go:52:56: undefined: resty (typecheck)
+func (i *Health) Register(ctx context.Context, client *resty.Client) error {
+                                                       ^
+factory/contrib/go-resty/resty/v2/plugins/local/extra/health/checker.go:23:16: undefined: resty (typecheck)
+	var response *resty.Response
+	              ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:7:2: could not import github.com/DataDog/dd-trace-go/v2/ddtrace/ext (-: could not load export data: internal error in importing "github.com/DataDog/dd-trace-go/v2/ddtrace/ext" (unsupported version: 2); please report an issue) (typecheck)
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/ext"
+	^
+factory/contrib/go-resty/resty/v2/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:44:44: undefined: resty (typecheck)
+func Register(ctx context.Context, client *resty.Client) error {
+                                           ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:54:57: undefined: resty (typecheck)
+func (d *Datadog) Register(ctx context.Context, client *resty.Client) error {
+                                                        ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:63:38: undefined: resty (typecheck)
+	client.OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
+	                                    ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:82:33: undefined: resty (typecheck)
+	client.OnAfterResponse(func(c *resty.Client, resp *resty.Response) error {
+	                               ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/dubonzi/otelresty/v1/config.go:9:15: undefined: resty (typecheck)
+	root       = resty.PluginsRoot + ".otel"
+	             ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/dubonzi/otelresty/v1/otelresty.go:42:44: undefined: resty (typecheck)
+func Register(ctx context.Context, client *resty.Client) error {
+                                           ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/dubonzi/otelresty/v1/otelresty.go:60:59: undefined: resty (typecheck)
+func (o *Otelresty) Register(ctx context.Context, client *resty.Client) error {
+                                                          ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/dubonzi/otelresty/v1/otelresty.go:61:28: undefined: otel (typecheck)
+	if !o.options.Enabled || !otel.IsTraceEnabled() {
+	                          ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/dubonzi/otelresty/v1/otelresty.go:70:90: undefined: otel (typecheck)
+	o.options.TracingOptions = append(o.options.TracingOptions, dubresty.WithTracerProvider(otel.TracerProvider))
+	                                                                                        ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/prometheus/client_golang/v1/config.go:9:12: undefined: resty (typecheck)
+	root    = resty.PluginsRoot + ".prometheus"
+	          ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/prometheus/client_golang/v1/prometheus.go:54:44: undefined: resty (typecheck)
+func Register(ctx context.Context, client *resty.Client) error {
+                                           ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/prometheus/client_golang/v1/prometheus.go:65:60: undefined: resty (typecheck)
+func (p *Prometheus) Register(ctx context.Context, client *resty.Client) error {
+                                                           ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/prometheus/client_golang/v1/prometheus.go:103:44: undefined: resty (typecheck)
+func (p *Prometheus) beforeRequest(client *resty.Client, req *resty.Request) error {
+                                           ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/prometheus/client_golang/v1/prometheus.go:110:51: undefined: resty (typecheck)
+func (p *Prometheus) collectAfterResponse(client *resty.Client, res *resty.Response) error {
+                                                  ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/prometheus/client_golang/v1/prometheus.go:120:40: undefined: resty (typecheck)
+func (p *Prometheus) collectError(req *resty.Request, err error) {
+                                       ^
+factory/contrib/go-resty/resty/v2/plugins/contrib/prometheus/client_golang/v1/prometheus.go:124:9: undefined: resty (typecheck)
+	var e *resty.ResponseError
+	       ^
+factory/contrib/go-resty/resty/v2/plugins/extra/requestid/config.go:9:12: undefined: resty (typecheck)
+	root    = resty.PluginsRoot + ".requestid"
+	          ^
+factory/contrib/go-resty/resty/v2/plugins/extra/requestid/requestid.go:31:44: undefined: resty (typecheck)
+func Register(ctx context.Context, client *resty.Client) error {
+                                           ^
+factory/contrib/go-resty/resty/v2/plugins/extra/requestid/requestid.go:42:59: undefined: resty (typecheck)
+func (i *RequestID) Register(ctx context.Context, client *resty.Client) error {
+                                                          ^
+factory/contrib/go-resty/resty/v2/plugins/extra/requestid/requestid.go:58:24: undefined: resty (typecheck)
+func requestId(client *resty.Client, request *resty.Request) error {
+                       ^
+factory/contrib/go-resty/resty/v2/plugins/extra/retry/config.go:11:16: undefined: resty (typecheck)
+	root        = resty.PluginsRoot + ".retry"
+	              ^
+factory/contrib/go-resty/resty/v2/plugins/extra/retry/retry.go:41:44: undefined: resty (typecheck)
+func Register(ctx context.Context, client *resty.Client) error {
+                                           ^
+factory/contrib/go-resty/resty/v2/plugins/extra/retry/retry.go:51:55: undefined: resty (typecheck)
+func (p *Retry) Register(ctx context.Context, client *resty.Client) error {
+                                                      ^
+factory/contrib/go-resty/resty/v2/plugins/extra/retry/retry.go:72:34: undefined: resty (typecheck)
+func statusCodeRetryCondition(r *resty.Response, err error) bool {
+                                 ^
+factory/contrib/go-resty/resty/v2/plugins/extra/retry/retry.go:88:62: undefined: resty (typecheck)
+func addTimeoutRetryCondition(timeout time.Duration) func(r *resty.Response, err error) bool {
+                                                             ^
+factory/contrib/go-resty/resty/v2/plugins/extra/retry/retry.go:90:20: undefined: resty (typecheck)
+	return func(resp *resty.Response, err error) bool {
+	                  ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/datadog/dd-trace-go/v1/config.go:9:18: undefined: mongo (typecheck)
+	root          = mongo.PluginsRoot + ".datadog"
+	                ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:44:50: undefined: mongo (typecheck)
+func (d *Datadog) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                                 ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:67:37: undefined: mongo (typecheck)
+func Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                    ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:7:2: `v1` redeclared in this block (typecheck)
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
+	^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:6:2: other declaration of v1 (typecheck)
+	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
+	^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/go.opentelemetry.io/contrib/v0/config.go:9:12: undefined: mongo (typecheck)
+	root    = mongo.PluginsRoot + ".otel"
+	          ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:43:52: undefined: mongo (typecheck)
+func (d *OtelMongo) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                                   ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:61:37: undefined: mongo (typecheck)
+func Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                    ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:44:28: undefined: otel (typecheck)
+	if !d.options.Enabled || !otel.IsTraceEnabled() {
+	                          ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:52:72: undefined: otel (typecheck)
+		options.SetMonitor(otelmongo.NewMonitor(otelmongo.WithTracerProvider(otel.TracerProvider)))
+		                                                                     ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/prometheus/client_golang/v1/config.go:9:12: undefined: resty (typecheck)
+	root    = resty.PluginsRoot + ".prometheus"
+	          ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/prometheus/client_golang/v1/prometheus.go:63:53: undefined: mongo (typecheck)
+func (d *Prometheus) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                                    ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/contrib/prometheus/client_golang/v1/prometheus.go:82:37: undefined: mongo (typecheck)
+func Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                    ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/local/health/config.go:9:16: undefined: mongo (typecheck)
+	root        = mongo.PluginsRoot + ".health"
+	              ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/local/health/health.go:44:49: undefined: mongo (typecheck)
+func (i *Health) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                                ^
+factory/contrib/go.mongodb.org/mongo-driver/v1/plugins/local/health/health.go:63:37: undefined: mongo (typecheck)
+func Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                    ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/datadog/dd-trace-go/v1/config.go:9:18: undefined: mongo (typecheck)
+	root          = mongo.PluginsRoot + ".datadog"
+	                ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:44:50: undefined: mongo (typecheck)
+func (d *Datadog) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                                 ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:67:37: undefined: mongo (typecheck)
+func Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                    ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/go.opentelemetry.io/contrib/v0/config.go:9:12: undefined: mongo (typecheck)
+	root    = mongo.PluginsRoot + ".otel"
+	          ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:43:52: undefined: mongo (typecheck)
+func (d *OtelMongo) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                                   ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:61:37: undefined: mongo (typecheck)
+func Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                    ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:44:28: undefined: otel (typecheck)
+	if !d.options.Enabled || !otel.IsTraceEnabled() {
+	                          ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/go.opentelemetry.io/contrib/v0/otelmongo.go:52:72: undefined: otel (typecheck)
+		options.SetMonitor(otelmongo.NewMonitor(otelmongo.WithTracerProvider(otel.TracerProvider)))
+		                                                                     ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/prometheus/client_golang/v1/config.go:9:12: undefined: resty (typecheck)
+	root    = resty.PluginsRoot + ".prometheus"
+	          ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/prometheus/client_golang/v1/prometheus.go:63:53: undefined: mongo (typecheck)
+func (d *Prometheus) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                                    ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/prometheus/client_golang/v1/prometheus.go:82:37: undefined: mongo (typecheck)
+func Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                    ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/local/health/config.go:9:16: undefined: mongo (typecheck)
+	root        = mongo.PluginsRoot + ".health"
+	              ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/local/health/health.go:44:49: undefined: mongo (typecheck)
+func (i *Health) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                                ^
+factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/local/health/health.go:63:37: undefined: mongo (typecheck)
+func Register(ctx context.Context) (mongo.ClientOptionsPlugin, mongo.ClientPlugin) {
+                                    ^
+factory/contrib/gocql/gocql/v1/plugins/local/extra/health/config.go:9:16: undefined: gocql (typecheck)
+	root        = gocql.PluginsRoot + ".health"
+	              ^
+factory/contrib/google.golang.org/grpc/v1/server/error.go:29:8: undefined: validator (typecheck)
+		case validator.ValidationErrors:
+		     ^
+factory/contrib/hashicorp/memdb/v1/database.go:11:44: undefined: memdb (typecheck)
+func NewMemDB(ctx context.Context, schema *memdb.DBSchema) (db *memdb.MemDB, err error) {
+                                           ^
+factory/contrib/hashicorp/memdb/v1/database.go:15:12: undefined: memdb (typecheck)
+	db, err = memdb.NewMemDB(schema)
+	          ^
+factory/contrib/jackc/pgx/v5/db.go:28:14: undefined: pgx (typecheck)
+	cfg, err := pgx.ParseConfig(o.ConnectString)
+	            ^
+factory/contrib/jlaffaye/ftp/v0/conn.go:17:9: undefined: try (typecheck)
+	err := try.Do(func(attempt int) (bool, error) {
+	       ^
+model/restresponse/unprocessable_entity_error.go:14:33: undefined: validator (typecheck)
+func NewUnprocessableEntity(err validator.ValidationErrors) UnprocessableEntityError {
+                                ^
+model/restresponse/unprocessable_entity_error.go:16:9: undefined: validator (typecheck)
+	var fe validator.FieldError
+	       ^
+factory/contrib/labstack/echo/v4/server.go:25:12: undefined: echo (typecheck)
+	instance *echo.Echo
+	          ^
+factory/contrib/labstack/echo/v4/server.go:68:30: undefined: echo (typecheck)
+func (s *Server) Instance() *echo.Echo {
+                             ^
+factory/contrib/labstack/echo/v4/server.go:78:37: undefined: echo (typecheck)
+func (s *Server) GET(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
+                                    ^
+factory/contrib/labstack/echo/v4/server.go:83:38: undefined: echo (typecheck)
+func (s *Server) POST(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
+                                     ^
+factory/contrib/labstack/echo/v4/server.go:88:37: undefined: echo (typecheck)
+func (s *Server) PUT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
+                                    ^
+factory/contrib/labstack/echo/v4/server.go:93:40: undefined: echo (typecheck)
+func (s *Server) DELETE(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
+                                       ^
+factory/contrib/labstack/echo/v4/server.go:98:41: undefined: echo (typecheck)
+func (s *Server) OPTIONS(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
+                                        ^
+factory/contrib/labstack/echo/v4/server.go:103:39: undefined: echo (typecheck)
+func (s *Server) PATCH(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
+                                      ^
+factory/contrib/labstack/echo/v4/server.go:108:38: undefined: echo (typecheck)
+func (s *Server) HEAD(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
+                                     ^
+factory/contrib/labstack/echo/v4/server.go:113:41: undefined: echo (typecheck)
+func (s *Server) CONNECT(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
+                                        ^
+factory/contrib/labstack/echo/v4/server.go:118:44: undefined: echo (typecheck)
+func (s *Server) Group(prefix string, m ...echo.MiddlewareFunc) *echo.Group {
+                                           ^
+factory/contrib/labstack/echo/v4/server.go:123:52: undefined: echo (typecheck)
+func (s *Server) Add(method string, path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
+                                                   ^
+factory/contrib/labstack/echo/v4/server.go:128:37: undefined: echo (typecheck)
+func (s *Server) Any(path string, h echo.HandlerFunc, m ...echo.MiddlewareFunc) []*echo.Route {
+                                    ^
+factory/contrib/labstack/echo/v4/server.go:133:36: undefined: echo (typecheck)
+func (s *Server) Use(middleware ...echo.MiddlewareFunc) {
+                                   ^
+factory/contrib/labstack/echo/v4/server.go:138:47: undefined: echo (typecheck)
+func (s *Server) Static(prefix, root string) *echo.Route {
+                                              ^
+factory/contrib/labstack/echo/v4/server.go:143:63: undefined: echo (typecheck)
+func (s *Server) Match(methods []string, path string, handler echo.HandlerFunc, middleware ...echo.MiddlewareFunc) []*echo.Route {
+                                                              ^
+factory/contrib/labstack/echo/v4/server.go:148:36: undefined: echo (typecheck)
+func (s *Server) Pre(middleware ...echo.MiddlewareFunc) {
+                                   ^
+factory/contrib/labstack/echo/v4/server.go:153:47: undefined: echo (typecheck)
+func (s *Server) File(path, file string, m ...echo.MiddlewareFunc) *echo.Route {
+                                              ^
+factory/contrib/labstack/echo/v4/error_handler.go:76:20: undefined: validator (typecheck)
+		if _, ok := err.(validator.ValidationErrors); ok {
+		                 ^
+factory/contrib/labstack/echo/v4/server.go:50:14: undefined: echo (typecheck)
+	instance := echo.New()
+	            ^
+factory/contrib/labstack/echo/v4/plugins/local/extra/health/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".health"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/local/extra/health/health.go:13:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/local/extra/health/health.go:52:56: undefined: echo (typecheck)
+func (i *Health) Register(ctx context.Context, server *echo.Server) error {
+                                                       ^
+factory/contrib/labstack/echo/v4/plugins/local/model/restresponse/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".status"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/local/model/restresponse/status.go:14:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/local/model/restresponse/status.go:53:56: undefined: echo (typecheck)
+func (i *Status) Register(ctx context.Context, server *echo.Server) error {
+                                                       ^
+factory/contrib/labstack/echo/v4/plugins/local/wrapper/log/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".logger"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/local/wrapper/log/log.go:14:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/local/wrapper/log/log.go:53:53: undefined: echo (typecheck)
+func (i *Log) Register(ctx context.Context, server *echo.Server) error {
+                                                    ^
+factory/contrib/labstack/echo/v4/plugins/native/cors/config.go:9:23: undefined: echo (typecheck)
+	root               = echo.PluginsRoot + ".cors"
+	                     ^
+factory/contrib/labstack/echo/v4/plugins/native/cors/cors.go:12:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/native/cors/cors.go:51:54: undefined: echo (typecheck)
+func (i *Cors) Register(ctx context.Context, server *echo.Server) error {
+                                                     ^
+factory/contrib/labstack/echo/v4/plugins/native/gzip/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".gzip"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/native/gzip/gzip.go:12:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/native/gzip/gzip.go:51:54: undefined: echo (typecheck)
+func (i *Gzip) Register(ctx context.Context, server *echo.Server) error {
+                                                     ^
+factory/contrib/labstack/echo/v4/plugins/native/requestid/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".requestId"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/native/requestid/requestid.go:12:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/native/requestid/requestid.go:51:59: undefined: echo (typecheck)
+func (i *RequestID) Register(ctx context.Context, server *echo.Server) error {
+                                                          ^
+factory/contrib/labstack/echo/v4/plugins/extra/error_handler/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".errorHandler"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/extra/error_handler/error_handler.go:11:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/extra/error_handler/error_handler.go:50:62: undefined: echo (typecheck)
+func (i *ErrorHandler) Register(ctx context.Context, server *echo.Server) error {
+                                                             ^
+factory/contrib/labstack/echo/v4/plugins/extra/error_handler/error_handler.go:65:27: undefined: echo (typecheck)
+func errorHandler(server *echo.Server) func(err error, c e.Context) {
+                          ^
+factory/contrib/labstack/echo/v4/plugins/extra/error_handler/error_handler.go:70:5: undefined: echo (typecheck)
+				echo.ErrorHandlerString(err, c)
+				^
+factory/contrib/labstack/echo/v4/plugins/extra/error_handler/error_handler.go:72:5: undefined: echo (typecheck)
+				echo.ErrorHandlerJSON(err, c)
+				^
+factory/contrib/labstack/echo/v4/plugins/local/extra/multi-server/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".multiServer"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/local/extra/multi-server/multiserver.go:14:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/local/extra/multi-server/multiserver.go:53:61: undefined: echo (typecheck)
+func (i *MultiServer) Register(ctx context.Context, server *echo.Server) error {
+                                                            ^
+factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1/config.go:9:21: undefined: echo (typecheck)
+	root             = echo.PluginsRoot + ".prometheus"
+	                   ^
+factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1/prometheus.go:14:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1/prometheus.go:53:60: undefined: echo (typecheck)
+func (i *Prometheus) Register(ctx context.Context, server *echo.Server) error {
+                                                           ^
+factory/contrib/labstack/echo/v4/plugins/contrib/bytedance/sonic/v1/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".bytedanceSonic"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/contrib/bytedance/sonic/v1/sonic.go:76:44: undefined: echo (typecheck)
+func (d DefaultJSONSerializer) Serialize(c echo.Context, i interface{}, indent string) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/contrib/bytedance/sonic/v1/sonic.go:85:46: undefined: echo (typecheck)
+func (d DefaultJSONSerializer) Deserialize(c echo.Context, i interface{}) error {
+                                             ^
+factory/contrib/labstack/echo/v4/plugins/contrib/bytedance/sonic/v1/sonic.go:89:10: undefined: echo (typecheck)
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unmarshal type error: expected=%v, got=%v, field=%v, offset=%v", ute.Type, ute.Value, ute.Field, ute.Offset)).SetInternal(err)
+		       ^
+factory/contrib/labstack/echo/v4/plugins/contrib/bytedance/sonic/v1/sonic.go:91:10: undefined: echo (typecheck)
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Syntax error: offset=%v, error=%v", se.Offset, se.Error())).SetInternal(err)
+		       ^
+factory/contrib/labstack/echo/v4/plugins/contrib/datadog/dd-trace-go/v1/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".datadog"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:13:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/contrib/datadog/dd-trace-go/v1/datadog.go:51:57: undefined: echo (typecheck)
+func (i *Datadog) Register(ctx context.Context, server *echo.Server) error {
+                                                        ^
+factory/contrib/labstack/echo/v4/plugins/contrib/go.opentelemetry.io/contrib/v0/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".otel"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/contrib/go.opentelemetry.io/contrib/v0/otelecho.go:13:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/contrib/go.opentelemetry.io/contrib/v0/otelecho.go:55:58: undefined: echo (typecheck)
+func (i *OtelEcho) Register(ctx context.Context, server *echo.Server) {
+                                                         ^
+factory/contrib/labstack/echo/v4/plugins/contrib/go.opentelemetry.io/contrib/v0/otelecho.go:64:2: undefined: otel (typecheck)
+	otel.StartTracerProvider(ctx)
+	^
+factory/contrib/labstack/echo/v4/plugins/contrib/go.opentelemetry.io/contrib/v0/otelecho.go:65:2: undefined: otel (typecheck)
+	otel.StartMeterProvider(ctx)
+	^
+factory/contrib/labstack/echo/v4/plugins/contrib/go.opentelemetry.io/contrib/v0/otelecho.go:67:90: undefined: otel (typecheck)
+	i.options.TracingOptions = append(i.options.TracingOptions, otelecho.WithTracerProvider(otel.TracerProvider))
+	                                                                                        ^
+factory/contrib/labstack/echo/v4/plugins/contrib/goccy/go-json/v0/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".goccyGoJson"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/contrib/goccy/go-json/v0/json.go:74:44: undefined: echo (typecheck)
+func (d DefaultJSONSerializer) Serialize(c echo.Context, i interface{}, indent string) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/contrib/goccy/go-json/v0/json.go:84:46: undefined: echo (typecheck)
+func (d DefaultJSONSerializer) Deserialize(c echo.Context, i interface{}) error {
+                                             ^
+factory/contrib/labstack/echo/v4/plugins/contrib/goccy/go-json/v0/json.go:75:9: undefined: json (typecheck)
+	enc := json.NewEncoder(c.Response())
+	       ^
+factory/contrib/labstack/echo/v4/plugins/contrib/goccy/go-json/v0/json.go:86:9: undefined: json (typecheck)
+	err := json.NewDecoder(c.Request().Body).Decode(i)
+	       ^
+factory/contrib/labstack/echo/v4/plugins/contrib/goccy/go-json/v0/json.go:89:10: undefined: echo (typecheck)
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Unmarshal type error: expected=%v, got=%v, field=%v, offset=%v", ute.Type, ute.Value, ute.Field, ute.Offset)).SetInternal(err)
+		       ^
+factory/contrib/labstack/echo/v4/plugins/contrib/goccy/go-json/v0/json.go:91:10: undefined: echo (typecheck)
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Syntax error: offset=%v, error=%v", se.Offset, se.Error())).SetInternal(err)
+		       ^
+factory/contrib/labstack/echo/v4/plugins/contrib/hiko1129/echo-pprof/v1/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".pprof"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/contrib/hiko1129/echo-pprof/v1/pprof.go:12:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/contrib/hiko1129/echo-pprof/v1/pprof.go:51:55: undefined: echo (typecheck)
+func (i *PProf) Register(ctx context.Context, server *echo.Server) error {
+                                                      ^
+factory/contrib/labstack/echo/v4/plugins/contrib/swaggo/echo-swagger/v1/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".swagger"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/contrib/swaggo/echo-swagger/v1/swagger.go:12:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/contrib/swaggo/echo-swagger/v1/swagger.go:51:57: undefined: echo (typecheck)
+func (i *Swagger) Register(ctx context.Context, server *echo.Server) error {
+                                                        ^
+factory/contrib/labstack/echo/v4/plugins/extra/semaphore/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".semaphore"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/extra/semaphore/semaphore.go:13:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/extra/semaphore/semaphore.go:53:59: undefined: echo (typecheck)
+func (i *Semaphore) Register(ctx context.Context, server *echo.Server) error {
+                                                          ^
+factory/contrib/labstack/echo/v4/plugins/native/bodydump/bodydump.go:13:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/native/bodydump/bodydump.go:52:58: undefined: echo (typecheck)
+func (i *BodyDump) Register(ctx context.Context, server *echo.Server) error {
+                                                         ^
+factory/contrib/labstack/echo/v4/plugins/native/bodydump/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".bodydump"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/native/bodylimit/bodylimit.go:12:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/native/bodylimit/bodylimit.go:51:59: undefined: echo (typecheck)
+func (i *BodyLimit) Register(ctx context.Context, server *echo.Server) error {
+                                                          ^
+factory/contrib/labstack/echo/v4/plugins/native/bodylimit/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".bodyLimit"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/native/recover/config.go:9:12: undefined: echo (typecheck)
+	root    = echo.PluginsRoot + ".recover"
+	          ^
+factory/contrib/labstack/echo/v4/plugins/native/recover/recover.go:12:44: undefined: echo (typecheck)
+func Register(ctx context.Context, server *echo.Server) error {
+                                           ^
+factory/contrib/labstack/echo/v4/plugins/native/recover/recover.go:51:57: undefined: echo (typecheck)
+func (i *Recover) Register(ctx context.Context, server *echo.Server) error {
+                                                        ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/health/checker.go:12:8: undefined: nats (typecheck)
+	conn *nats.Conn
+	      ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/health/checker.go:28:23: undefined: nats (typecheck)
+func NewChecker(conn *nats.Conn) *Checker {
+                      ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/health/health.go:12:60: undefined: nats (typecheck)
+func Register(ctx context.Context) (func(context.Context, *nats.Conn) error, func(context.Context, []nats.Option) (error, []nats.Option)) {
+                                                           ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/health/health.go:53:54: undefined: nats (typecheck)
+func (i *Health) Register(ctx context.Context, conn *nats.Conn) error {
+                                                     ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/health/health.go:13:41: undefined: nats (typecheck)
+	return func(ctx context.Context, conn *nats.Conn) error {
+	                                       ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/log/logger.go:10:60: undefined: nats (typecheck)
+func Register(ctx context.Context) (func(context.Context, *nats.Conn) error, func(context.Context, []nats.Option) ([]nats.Option, error)) {
+                                                           ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/log/logger.go:20:33: undefined: nats (typecheck)
+func disconnectedErrHandler(nc *nats.Conn, err error) {
+                                ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/log/logger.go:24:29: undefined: nats (typecheck)
+func reconnectedHandler(nc *nats.Conn) {
+                            ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/log/logger.go:28:24: undefined: nats (typecheck)
+func closedHandler(nc *nats.Conn) {
+                       ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/log/logger.go:11:50: undefined: nats (typecheck)
+	return nil, func(ctx context.Context, options []nats.Option) ([]nats.Option, error) {
+	                                                ^
+factory/contrib/nats-io/nats.go/v1/plugins/local/log/logger.go:13:4: undefined: nats (typecheck)
+			nats.DisconnectErrHandler(disconnectedErrHandler),
+			^
+factory/contrib/nats-io/nats.go/v1/plugins/local/log/logger.go:14:4: undefined: nats (typecheck)
+			nats.ReconnectHandler(reconnectedHandler),
+			^
+factory/contrib/nats-io/nats.go/v1/plugins/local/log/logger.go:15:4: undefined: nats (typecheck)
+			nats.ClosedHandler(closedHandler))
+			^
+factory/contrib/panjf2000/ants/v2/ants.go:27:8: undefined: ants (typecheck)
+	pool *ants.Pool
+	      ^
+factory/contrib/panjf2000/ants/v2/ants.go:34:23: undefined: ants (typecheck)
+func NewWrapper(pool *ants.Pool, middlewares ...Middleware) *Wrapper {
+                      ^
+factory/contrib/panjf2000/ants/v2/ants.go:47:9: undefined: ants (typecheck)
+	err := ants.Submit(func() {
+	       ^
+factory/contrib/panjf2000/ants/v2/ants.go:65:9: undefined: ants (typecheck)
+	err := ants.Submit(func() {
+	       ^
+factory/contrib/redis/go-redis/v9/client.go:11:36: undefined: redis (typecheck)
+type Plugin func(context.Context, *redis.Client) error
+                                   ^
+factory/contrib/redis/go-redis/v9/cluster_client.go:13:43: undefined: redis (typecheck)
+type ClusterPlugin func(context.Context, *redis.ClusterClient) error
+                                          ^
+factory/contrib/redis/go-redis/v9/client.go:14:58: undefined: redis (typecheck)
+func NewClient(ctx context.Context, plugins ...Plugin) (*redis.Client, error) {
+                                                         ^
+factory/contrib/redis/go-redis/v9/client.go:24:85: undefined: redis (typecheck)
+func NewClientWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*redis.Client, error) {
+                                                                                    ^
+factory/contrib/redis/go-redis/v9/client.go:33:88: undefined: redis (typecheck)
+func NewClientWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (client *redis.Client, err error) {
+                                                                                       ^
+factory/contrib/redis/go-redis/v9/client.go:59:34: undefined: redis (typecheck)
+func failOverClient(o *Options) *redis.Client {
+                                 ^
+factory/contrib/redis/go-redis/v9/client.go:78:36: undefined: redis (typecheck)
+func standaloneClient(o *Options) *redis.Client {
+                                   ^
+factory/contrib/redis/go-redis/v9/cluster_client.go:16:72: undefined: redis (typecheck)
+func NewClusterClient(ctx context.Context, plugins ...ClusterPlugin) (*redis.ClusterClient, error) {
+                                                                       ^
+factory/contrib/redis/go-redis/v9/cluster_client.go:26:99: undefined: redis (typecheck)
+func NewClusterClientWithConfigPath(ctx context.Context, path string, plugins ...ClusterPlugin) (*redis.ClusterClient, error) {
+                                                                                                  ^
+factory/contrib/redis/go-redis/v9/cluster_client.go:35:102: undefined: redis (typecheck)
+func NewClusterClientWithOptions(ctx context.Context, o *Options, plugins ...ClusterPlugin) (client *redis.ClusterClient, err error) {
+                                                                                                     ^
+factory/contrib/redis/go-redis/v9/client.go:60:9: undefined: redis (typecheck)
+	return redis.NewFailoverClient(&redis.FailoverOptions{
+	       ^
+factory/contrib/redis/go-redis/v9/client.go:79:9: undefined: redis (typecheck)
+	return redis.NewClient(&redis.Options{
+	       ^
+factory/contrib/redis/go-redis/v9/cluster_client.go:39:11: undefined: redis (typecheck)
+	client = redis.NewClusterClient(&redis.ClusterOptions{
+	         ^
+factory/contrib/redis/go-redis/v9/plugins/local/extra/health/client_checker.go:11:10: undefined: redis (typecheck)
+	client *redis.Client
+	        ^
+factory/contrib/redis/go-redis/v9/plugins/local/extra/health/cluster_checker.go:11:10: undefined: redis (typecheck)
+	client *redis.ClusterClient
+	        ^
+factory/contrib/redis/go-redis/v9/plugins/local/extra/health/client_checker.go:20:31: undefined: redis (typecheck)
+func NewClientChecker(client *redis.Client) *ClientChecker {
+                              ^
+factory/contrib/redis/go-redis/v9/plugins/local/extra/health/client_health.go:41:62: undefined: redis (typecheck)
+func (i *ClientHealth) Register(ctx context.Context, client *redis.Client) error {
+                                                             ^
+factory/contrib/redis/go-redis/v9/plugins/local/extra/health/client_health.go:56:50: undefined: redis (typecheck)
+func ClientRegister(ctx context.Context, client *redis.Client) error {
+                                                 ^
+factory/contrib/redis/go-redis/v9/plugins/local/extra/health/cluster_checker.go:20:38: undefined: redis (typecheck)
+func NewClusterClientChecker(client *redis.ClusterClient) *ClusterClientChecker {
+                                     ^
+factory/contrib/redis/go-redis/v9/plugins/local/extra/health/cluster_health.go:41:63: undefined: redis (typecheck)
+func (i *ClusterHealth) Register(ctx context.Context, client *redis.ClusterClient) error {
+                                                              ^
+factory/contrib/redis/go-redis/v9/plugins/local/extra/health/cluster_health.go:56:51: undefined: redis (typecheck)
+func ClusterRegister(ctx context.Context, client *redis.ClusterClient) error {
+                                                  ^
+factory/contrib/redis/go-redis/v9/plugins/local/extra/health/config.go:9:16: undefined: redis (typecheck)
+	root        = redis.PluginsRoot + ".health"
+	              ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/datadog/dd-trace-go/v1/client.go:47:56: undefined: redis (typecheck)
+func (d *Client) Register(ctx context.Context, client *redis.Client) error {
+                                                       ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/datadog/dd-trace-go/v1/client.go:64:50: undefined: redis (typecheck)
+func ClientRegister(ctx context.Context, client *redis.Client) error {
+                                                 ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/datadog/dd-trace-go/v1/cluster.go:46:57: undefined: redis (typecheck)
+func (d *Cluster) Register(ctx context.Context, client *redis.ClusterClient) error {
+                                                        ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/datadog/dd-trace-go/v1/cluster.go:63:51: undefined: redis (typecheck)
+func ClusterRegister(ctx context.Context, client *redis.ClusterClient) error {
+                                                  ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/datadog/dd-trace-go/v1/config.go:9:12: undefined: redis (typecheck)
+	root    = redis.PluginsRoot + ".datadog"
+	          ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/client.go:41:56: undefined: redis (typecheck)
+func (d *Client) Register(ctx context.Context, client *redis.Client) error {
+                                                       ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/client.go:58:50: undefined: redis (typecheck)
+func ClientRegister(ctx context.Context, client *redis.Client) error {
+                                                 ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/cluster.go:41:57: undefined: redis (typecheck)
+func (d *Cluster) Register(ctx context.Context, client *redis.ClusterClient) error {
+                                                        ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/cluster.go:58:51: undefined: redis (typecheck)
+func ClusterRegister(ctx context.Context, client *redis.ClusterClient) error {
+                                                  ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/config.go:9:12: undefined: redis (typecheck)
+	root    = redis.PluginsRoot + ".prometheus"
+	          ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:48:16: undefined: redis (typecheck)
+func NewHook() redis.Hook {
+               ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:52:33: undefined: redis (typecheck)
+func (hook *Hook) DialHook(next redis.DialHook) redis.DialHook {
+                                ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:58:36: undefined: redis (typecheck)
+func (hook *Hook) ProcessHook(next redis.ProcessHook) redis.ProcessHook {
+                                   ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:73:44: undefined: redis (typecheck)
+func (hook *Hook) ProcessPipelineHook(next redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+                                           ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:88:58: undefined: redis (typecheck)
+func (hook *Hook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
+                                                         ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:92:57: undefined: redis (typecheck)
+func (hook *Hook) AfterProcess(ctx context.Context, cmd redis.Cmder) error {
+                                                        ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:105:69: undefined: redis (typecheck)
+func (hook *Hook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+                                                                    ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:109:68: undefined: redis (typecheck)
+func (hook *Hook) AfterProcessPipeline(ctx context.Context, cmds []redis.Cmder) error {
+                                                                   ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:59:39: undefined: redis (typecheck)
+	return func(ctx context.Context, cmd redis.Cmder) error {
+	                                     ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:74:42: undefined: redis (typecheck)
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+	                                        ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:110:35: undefined: redis (typecheck)
+	if err := hook.AfterProcess(ctx, redis.NewCmd(ctx, "pipeline")); err != nil {
+	                                 ^
+factory/contrib/redis/go-redis/v9/plugins/contrib/prometheus/client_golang/v1/hook.go:126:39: undefined: redis (typecheck)
+	return err != nil && !errors.Is(err, redis.Nil)
+	                                     ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/client.go:8:2: `v9` redeclared in this block (typecheck)
+	"github.com/redis/go-redis/v9"
+	^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/client.go:7:2: other declaration of v9 (typecheck)
+	"github.com/redis/go-redis/extra/redisotel/v9"
+	^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/cluster.go:8:2: `v9` redeclared in this block (typecheck)
+	"github.com/redis/go-redis/v9"
+	^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/cluster.go:5:2: other declaration of v9 (typecheck)
+	"github.com/redis/go-redis/extra/redisotel/v9"
+	^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/client.go:43:56: undefined: redis (typecheck)
+func (d *Client) Register(ctx context.Context, client *redis.Client) error {
+                                                       ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/client.go:70:50: undefined: redis (typecheck)
+func ClientRegister(ctx context.Context, client *redis.Client) error {
+                                                 ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/cluster.go:43:57: undefined: redis (typecheck)
+func (d *Cluster) Register(ctx context.Context, client *redis.ClusterClient) error {
+                                                        ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/cluster.go:70:51: undefined: redis (typecheck)
+func ClusterRegister(ctx context.Context, client *redis.ClusterClient) error {
+                                                  ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/config.go:9:12: undefined: redis (typecheck)
+	root    = redis.PluginsRoot + ".otel"
+	          ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/client.go:52:5: undefined: otel (typecheck)
+	if otel.IsMetricEnabled() {
+	   ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/client.go:53:13: undefined: redisotel (typecheck)
+		if err := redisotel.InstrumentMetrics(client, redisotel.WithMeterProvider(otel.MeterProvider)); err != nil {
+		          ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/client.go:58:5: undefined: otel (typecheck)
+	if otel.IsTraceEnabled() {
+	   ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/client.go:59:13: undefined: redisotel (typecheck)
+		if err := redisotel.InstrumentTracing(client, redisotel.WithTracerProvider(otel.TracerProvider)); err != nil {
+		          ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/cluster.go:52:5: undefined: otel (typecheck)
+	if otel.IsMetricEnabled() {
+	   ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/cluster.go:53:13: undefined: redisotel (typecheck)
+		if err := redisotel.InstrumentMetrics(client, redisotel.WithMeterProvider(otel.MeterProvider)); err != nil {
+		          ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/cluster.go:58:5: undefined: otel (typecheck)
+	if otel.IsTraceEnabled() {
+	   ^
+factory/contrib/redis/go-redis/v9/plugins/native/otel/v9/cluster.go:59:13: undefined: redisotel (typecheck)
+		if err := redisotel.InstrumentTracing(client, redisotel.WithTracerProvider(otel.TracerProvider)); err != nil {
+		          ^
+factory/contrib/sirupsen/logrus/v1/logger.go:33:17: undefined: logrus (typecheck)
+func options() *logrus.Options {
+                ^
+factory/contrib/sirupsen/logrus/v1/options.go:9:21: undefined: logrus (typecheck)
+func NewOptions() (*logrus.Options, error) {
+                    ^
+factory/contrib/sirupsen/logrus/v1/logger.go:30:9: undefined: logrus (typecheck)
+	return logrus.NewLoggerWithOptions(options)
+	       ^
+factory/contrib/sirupsen/logrus/v1/options.go:10:35: undefined: logrus (typecheck)
+	return config.NewOptionsWithPath[logrus.Options](root)
+	                                 ^
+factory/core/database/sql/plugins/contrib/xsam/otelsql/v0/config.go:1: : # github.com/xgodev/boost/factory/core/database/sql/plugins/contrib/xsam/otelsql/v0
+factory/core/database/sql/plugins/contrib/xsam/otelsql/v0/otel.go:108:9: too many return values
+	have ("go.opentelemetry.io/otel/metric".Registration, error)
+	want (error) (typecheck)
+package otelsql
+factory/local/extra/middleware/plugins/contrib/afex/hystrix-go/v0/hystrix.go:21:9: undefined: hystrix (typecheck)
+	return hystrix.NewAnyErrorMiddleware[R](ctx, name)
+	       ^
+factory/local/extra/middleware/plugins/contrib/afex/hystrix-go/v0/hystrix.go:33:9: undefined: hystrix (typecheck)
+	return hystrix.NewAnyMiddleware[R](ctx, name)
+	       ^
+factory/local/extra/middleware/plugins/contrib/afex/hystrix-go/v0/hystrix.go:45:9: undefined: hystrix (typecheck)
+	return hystrix.NewErrorMiddleware(ctx, name)
+	       ^
+factory/local/extra/middleware/plugins/contrib/datadog/dd-trace-go/v1/span.go:16:9: undefined: datadog (typecheck)
+	return datadog.NewAnyErrorMiddleware[R](ctx, name, "wrapper")
+	       ^
+factory/local/extra/middleware/plugins/contrib/datadog/dd-trace-go/v1/span.go:25:9: undefined: datadog (typecheck)
+	return datadog.NewAnyMiddleware[R](ctx, name, "wrapper")
+	       ^
+factory/local/extra/middleware/plugins/contrib/datadog/dd-trace-go/v1/span.go:34:9: undefined: datadog (typecheck)
+	return datadog.NewErrorMiddleware(ctx, name, "wrapper")
+	       ^
+factory/local/extra/middleware/plugins/contrib/prometheus/client_golang/v1/prometheus.go:16:9: undefined: prometheus (typecheck)
+	return prometheus.NewAnyErrorMiddleware[R](ctx)
+	       ^
+factory/local/extra/middleware/plugins/contrib/prometheus/client_golang/v1/prometheus.go:25:9: undefined: prometheus (typecheck)
+	return prometheus.NewAnyMiddleware[R](ctx)
+	       ^
+factory/local/extra/middleware/plugins/contrib/prometheus/client_golang/v1/prometheus.go:34:9: undefined: prometheus (typecheck)
+	return prometheus.NewErrorMiddleware(ctx)
+	       ^
+fx/modules/factory/contrib/cloud.google.com/pubsub/v1/module.go:22:5: undefined: pubsub (typecheck)
+				pubsub.NewClient,
+				^
+fx/modules/bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v1/module.go:25:14: undefined: pubsub (typecheck)
+					Target: pubsub.New[T],
+					        ^
+fx/modules/factory/contrib/confluentinc/confluent-kafka-go/v2/module.go:21:5: undefined: confluent (typecheck)
+				confluent.NewProducer,
+				^
+fx/modules/factory/contrib/confluentinc/confluent-kafka-go/v2/module.go:37:5: undefined: confluent (typecheck)
+				confluent.NewConsumer,
+				^
+fx/modules/bootstrap/function/adapter/contrib/confluentinc/confluent-kafka-go/v2/module.go:25:14: undefined: confluent (typecheck)
+					Target: confluent.New[T],
+					        ^
+fx/modules/factory/contrib/nats-io/nats.go/v1/module.go:21:5: undefined: nats (typecheck)
+				nats.NewConn,
+				^
+fx/modules/bootstrap/function/adapter/contrib/nats-io/nats.go/v1/module.go:25:14: undefined: nats (typecheck)
+					Target: nats.New[T],
+					        ^
+fx/modules/extra/multiserver/module.go:37:13: undefined: cobra (typecheck)
+					return cobra.RunContext(
+					       ^
+fx/modules/factory/contrib/cloud.google.com/bigquery/v1/module.go:22:5: undefined: bigquery (typecheck)
+				bigquery.NewClient,
+				^
+fx/modules/factory/contrib/coocood/freecache/v1/module.go:21:5: undefined: freecache (typecheck)
+				freecache.NewCache,
+				^
+fx/modules/factory/contrib/elastic/go-elasticsearch/v8/module.go:29:49: undefined: elasticsearch (typecheck)
+				func(ctx context.Context, p clientParams) (*elasticsearch.Client, error) {
+				                                            ^
+fx/modules/factory/contrib/go-resty/resty/v2/module.go:18:12: undefined: resty (typecheck)
+	Plugins []resty.Plugin `optional:"true"`
+	          ^
+fx/modules/factory/contrib/go-resty/resty/v2/module.go:31:13: undefined: resty (typecheck)
+					return resty.NewClient(ctx, p.Plugins...) //nolint:wrapcheck  // This must be resolved in another task
+					       ^
+fx/modules/factory/contrib/go.mongodb.org/mongo-driver/v1/module.go:19:12: undefined: mongo (typecheck)
+	Plugins []mongo.Plugin `optional:"true"`
+	          ^
+fx/modules/factory/contrib/go.mongodb.org/mongo-driver/v1/module.go:31:43: undefined: mongo (typecheck)
+				func(ctx context.Context, p params) (*mongo.Conn, error) {
+				                                      ^
+fx/modules/factory/contrib/go.mongodb.org/mongo-driver/v1/module.go:34:16: undefined: mongo (typecheck)
+				func(conn *mongo.Conn) *m.Database {
+				           ^
+fx/modules/factory/contrib/go.mongodb.org/mongo-driver/v1/module.go:32:13: undefined: mongo (typecheck)
+					return mongo.NewConn(ctx, p.Plugins...) //nolint:wrapcheck  // This must be resolved in another task
+					       ^
+fx/modules/factory/contrib/go.mongodb.org/mongo-driver/v2/module.go:19:12: undefined: mongo (typecheck)
+	Plugins []mongo.Plugin `optional:"true"`
+	          ^
+fx/modules/factory/contrib/go.mongodb.org/mongo-driver/v2/module.go:31:43: undefined: mongo (typecheck)
+				func(ctx context.Context, p params) (*mongo.Conn, error) {
+				                                      ^
+fx/modules/factory/contrib/go.mongodb.org/mongo-driver/v2/module.go:34:16: undefined: mongo (typecheck)
+				func(conn *mongo.Conn) *m.Database {
+				           ^
+fx/modules/factory/contrib/go.mongodb.org/mongo-driver/v2/module.go:32:13: undefined: mongo (typecheck)
+					return mongo.NewConn(ctx, p.Plugins...) //nolint:wrapcheck  // This must be resolved in another task
+					       ^
+fx/modules/factory/contrib/labstack/echo/v4/module.go:17:12: undefined: echo (typecheck)
+	Plugins []echo.Plugin `optional:"true"`
+	          ^
+fx/modules/factory/contrib/labstack/echo/v4/module.go:31:43: undefined: echo (typecheck)
+				func(ctx context.Context, p params) (*echo.Server, error) {
+				                                      ^
+fx/modules/factory/contrib/labstack/echo/v4/module.go:34:15: undefined: echo (typecheck)
+				func(srv *echo.Server) *e.Echo {
+				          ^
+fx/modules/factory/contrib/labstack/echo/v4/module.go:41:24: undefined: echo (typecheck)
+					Target: func(srv *echo.Server) server.Server {
+					                  ^
+fx/modules/factory/contrib/labstack/echo/v4/module.go:32:13: undefined: echo (typecheck)
+					return echo.NewServer(ctx, p.Plugins...)
+					       ^
+fx/modules/factory/contrib/lovoo/goka/v1/module.go:21:5: undefined: goka (typecheck)
+				goka.NewEmitter,
+				^
+fx/modules/factory/contrib/redis/go-redis/v9/module.go:17:12: undefined: redis (typecheck)
+	Plugins []redis.ClusterPlugin `optional:"true"`
+	          ^
+fx/modules/factory/contrib/redis/go-redis/v9/module.go:41:12: undefined: redis (typecheck)
+	Plugins []redis.Plugin `optional:"true"`
+	          ^
+fx/modules/factory/contrib/redis/go-redis/v9/module.go:30:13: undefined: redis (typecheck)
+					return redis.NewClusterClient(ctx, p.Plugins...)
+					       ^
+fx/modules/factory/contrib/redis/go-redis/v9/module.go:54:13: undefined: redis (typecheck)
+					return redis.NewClient(ctx, p.Plugins...)
+					       ^
+fx/modules/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v1/module.go:22:5: undefined: pubsub (typecheck)
+				pubsub.New,
+				^
+fx/modules/wrapper/publisher/driver/contrib/confluentinc/confluent-kafka-go/v2/module.go:22:5: undefined: confluent (typecheck)
+				confluent.New,
+				^
+fx/modules/wrapper/publisher/driver/contrib/lovoo/goka/v1/module.go:22:5: undefined: goka (typecheck)
+				goka.New,
+				^
+wrapper/publisher/driver/contrib/nats-io/nats.go/v1/nats.go:17:8: undefined: nats (typecheck)
+	conn *nats.Conn
+	      ^
+wrapper/publisher/driver/contrib/nats-io/nats.go/v1/nats.go:21:16: undefined: nats (typecheck)
+func New(conn *nats.Conn) publisher.Driver {
+               ^
+wrapper/publisher/driver/contrib/nats-io/nats.go/v1/nats.go:74:11: undefined: nats (typecheck)
+		msg := &nats.Msg{
+		        ^
+fx/modules/wrapper/publisher/driver/contrib/nats-io/nats.go/v1/module.go:22:5: undefined: nats (typecheck)
+				nats.New,
+				^
+wrapper/cache/codec/contrib/goccy/go-json/v0/codec.go:15:9: undefined: json (typecheck)
+	enc := json.NewEncoder(&buf)
+	       ^
+wrapper/cache/codec/contrib/goccy/go-json/v0/codec.go:27:9: undefined: json (typecheck)
+	dec := json.NewDecoder(&buf)
+	       ^
+wrapper/cache/codec/contrib/shamaton/msgpack/v2/codec.go:12:11: undefined: msgpack (typecheck)
+	b, err = msgpack.Marshal(data)
+	         ^
+wrapper/cache/codec/contrib/shamaton/msgpack/v2/codec.go:18:8: undefined: msgpack (typecheck)
+	err = msgpack.Unmarshal(b, data)
+	      ^
+wrapper/cache/codec/contrib/vmihailenco/msgpack/v5/codec.go:12:11: undefined: msgpack (typecheck)
+	b, err = msgpack.Marshal(data)
+	         ^
+wrapper/cache/codec/contrib/vmihailenco/msgpack/v5/codec.go:18:8: undefined: msgpack (typecheck)
+	err = msgpack.Unmarshal(b, data)
+	      ^
+wrapper/cache/driver/contrib/go-redis/redis/v7/client_driver.go:10:11: undefined: redis (typecheck)
+	cache   *redis.Client
+	         ^
+wrapper/cache/driver/contrib/go-redis/redis/v7/cluster_driver.go:10:11: undefined: redis (typecheck)
+	cache   *redis.ClusterClient
+	         ^
+wrapper/cache/driver/contrib/go-redis/redis/v7/client_driver.go:32:23: undefined: redis (typecheck)
+func NewClient(cache *redis.Client, options *Options) *Client {
+                      ^
+wrapper/cache/driver/contrib/go-redis/redis/v7/cluster_driver.go:33:24: undefined: redis (typecheck)
+func NewCluster(cache *redis.ClusterClient, options *Options) *Cluster {
+                       ^
+wrapper/cache/driver/contrib/go-redis/redis/v8/client_driver.go:10:11: undefined: redis (typecheck)
+	cache   *redis.Client
+	         ^
+wrapper/cache/driver/contrib/go-redis/redis/v8/cluster_driver.go:10:11: undefined: redis (typecheck)
+	cache   *redis.ClusterClient
+	         ^
+wrapper/cache/driver/contrib/go-redis/redis/v8/client_driver.go:33:23: undefined: redis (typecheck)
+func NewClient(cache *redis.Client, options *Options) *Client {
+                      ^
+wrapper/cache/driver/contrib/go-redis/redis/v8/cluster_driver.go:33:24: undefined: redis (typecheck)
+func NewCluster(cache *redis.ClusterClient, options *Options) *Cluster {
+                       ^
+wrapper/cache/driver/contrib/redis/go-redis/v9/client_driver.go:11:11: undefined: redis (typecheck)
+	cache   *redis.Client
+	         ^
+wrapper/cache/driver/contrib/redis/go-redis/v9/cluster_driver.go:11:11: undefined: redis (typecheck)
+	cache   *redis.ClusterClient
+	         ^
+wrapper/cache/driver/contrib/redis/go-redis/v9/client_driver.go:33:23: undefined: redis (typecheck)
+func NewClient(cache *redis.Client, options *Options) *Client {
+                      ^
+wrapper/cache/driver/contrib/redis/go-redis/v9/cluster_driver.go:38:24: undefined: redis (typecheck)
+func NewCluster(cache *redis.ClusterClient, options *Options) *Cluster {
+                       ^
+wrapper/cache/driver/contrib/redis/go-redis/v9/client_driver.go:22:21: undefined: redis (typecheck)
+		if errors.Is(err, redis.Nil) {
+		                  ^
+wrapper/cache/driver/contrib/redis/go-redis/v9/cluster_driver.go:24:21: undefined: redis (typecheck)
+		if errors.Is(err, redis.Nil) {
+		                  ^
+wrapper/cache/driver/contrib/stretchr/testify/v1/driver.go:16:12: _m.Called undefined (type *Driver has no field or method Called) (typecheck)
+	ret := _m.Called(ctx, key)
+	          ^
+wrapper/cache/driver/contrib/stretchr/testify/v1/driver.go:30:12: _m.Called undefined (type *Driver has no field or method Called) (typecheck)
+	ret := _m.Called(ctx, key)
+	          ^
+wrapper/cache/driver/contrib/stretchr/testify/v1/driver.go:53:12: _m.Called undefined (type *Driver has no field or method Called) (typecheck)
+	ret := _m.Called(ctx, key, data)
+	          ^
+wrapper/publisher/mocks/driver.go:21:12: _m.Called undefined (type *Driver has no field or method Called) (typecheck)
+	ret := _m.Called(_a0, _a1)
+	          ^
+wrapper/publisher/mocks/driver.go:58:26: mock.AssertExpectations undefined (type *Driver has no field or method AssertExpectations) (typecheck)
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+	                        ^
+bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v1/subscriber_test.go:9:2: could not import sync/atomic (-: could not load export data: internal error in importing "sync/atomic" (unsupported version: 2); please report an issue) (typecheck)
+	"sync/atomic"
+	^
+bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v1/subscriber.go:69:2: in declared and not used (typecheck)
+	in, err := l.generateCloudEvent(msg)
+	^
+bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v1/subscriber.go:77:3: msgCtx declared and not used (typecheck)
+		msgCtx, cancel := context.WithTimeout(ctx, l.options.ProcessTimeout)
+		^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper.go:16:12: undefined: nats (typecheck)
+	conn     *nats.Conn
+	          ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/subscriber.go:16:11: undefined: nats (typecheck)
+	conn    *nats.Conn
+	         ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/cmd.go:10:23: undefined: nats (typecheck)
+func New[T any](conn *nats.Conn) function.CmdFunc[T] {
+                      ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper.go:20:40: undefined: nats (typecheck)
+func NewHelperWithOptions[T any](conn *nats.Conn, handler function.Handler[T], options *Options) *Helper[T] {
+                                       ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper.go:31:29: undefined: nats (typecheck)
+func NewHelper[T any](conn *nats.Conn, handler function.Handler[T]) *Helper[T] {
+                            ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/subscriber.go:23:33: undefined: nats (typecheck)
+func NewSubscriber[T any](conn *nats.Conn, handler function.Handler[T], subject string,
+                                ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/subscriber.go:34:58: undefined: nats (typecheck)
+func (l *Subscriber[T]) Subscribe(ctx context.Context) (*nats.Subscription, error) {
+                                                         ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/subscriber.go:38:32: undefined: nats (typecheck)
+func (l *Subscriber[T]) h(msg *nats.Msg) {
+                               ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/subscriber.go:62:2: ctx declared and not used (typecheck)
+	ctx := logger.ToContext(context.Background())
+	^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper_test.go:35:16: undefined: nats (typecheck)
+	options, _ := nats.NewOptions()
+	              ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper_test.go:37:13: undefined: nats (typecheck)
+	conn, _ := nats.NewConnWithOptions(ctx, options)
+	           ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper_test.go:62:5: s.Run undefined (type *NatsHelperSuite has no field or method Run) (typecheck)
+		s.Run(tt.name, func() {
+		  ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper_test.go:64:6: s.Assert undefined (type *NatsHelperSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, tt.want), "NewHelperWithOptions() = %v, want %v")
+			  ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper_test.go:75:16: undefined: nats (typecheck)
+	options, _ := nats.NewOptions()
+	              ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper_test.go:77:13: undefined: nats (typecheck)
+	conn, _ := nats.NewConnWithOptions(ctx, options)
+	           ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper_test.go:102:5: s.Run undefined (type *NatsHelperSuite has no field or method Run) (typecheck)
+		s.Run(tt.name, func() {
+		  ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper_test.go:103:11: cannot infer T (/tmp/qg-baseline-go/bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper.go:31:16) (typecheck)
+			got := NewHelper(tt.args.conn, tt.args.handler)
+			       ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/helper_test.go:104:6: s.Assert undefined (type *NatsHelperSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, tt.want), "NewHelperWithOptions() = %v, want %v")
+			  ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/subscriber_test.go:41:15: undefined: nats (typecheck)
+	var options *nats.Options
+	             ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/subscriber_test.go:48:17: undefined: nats (typecheck)
+	options, err = nats.NewOptions()
+	               ^
+bootstrap/function/adapter/contrib/nats-io/nats.go/v1/subscriber_test.go:53:15: undefined: nats (typecheck)
+	conn, err := nats.NewConnWithOptions(context.Background(), options)
+	             ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:45:5: s.Run undefined (type *SqsClientSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:47:6: s.Assert undefined (type *SqsClientSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:65:7: m.On undefined (type *mockSqsClient has no field or method On) (typecheck)
+				m.On("SendMessage", mock.Anything, mock.Anything).Once().Return(&sqs.SendMessageOutput{
+				  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:80:7: m.On undefined (type *mockSqsClient has no field or method On) (typecheck)
+				m.On("SendMessage", mock.Anything, mock.Anything).Once().Return(nil, errors.New("OPs!"))
+				  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:92:5: s.Run undefined (type *SqsClientSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:97:6: s.Assert undefined (type *SqsClientSuite has no field or method Assert) (typecheck)
+			s.Assert().True(t.wantErr(err), "unexpected error %v", err)
+			  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:98:6: m.AssertExpectations undefined (type *mockSqsClient has no field or method AssertExpectations) (typecheck)
+			m.AssertExpectations(s.T())
+			  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:130:7: m.On undefined (type *mockSqsClient has no field or method On) (typecheck)
+				m.On("GetQueueUrl", mock.Anything, mock.Anything).Once().Return(&sqs.GetQueueUrlOutput{
+				  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:146:7: m.On undefined (type *mockSqsClient has no field or method On) (typecheck)
+				m.On("GetQueueUrl", mock.Anything, mock.Anything).
+				  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:161:7: m.On undefined (type *mockSqsClient has no field or method On) (typecheck)
+				m.On("GetQueueUrl", mock.Anything, mock.Anything).
+				  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:176:7: m.On undefined (type *mockSqsClient has no field or method On) (typecheck)
+				m.On("GetQueueUrl", mock.Anything, mock.Anything).
+				  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:192:5: s.Run undefined (type *SqsClientSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:197:6: s.Assert undefined (type *SqsClientSuite has no field or method Assert) (typecheck)
+			s.Assert().True(t.wantErr(err), "unexpected error %v", err)
+			  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:198:6: s.Assert undefined (type *SqsClientSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:199:6: m.AssertExpectations undefined (type *mockSqsClient has no field or method AssertExpectations) (typecheck)
+			m.AssertExpectations(s.T())
+			  ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:219:12: _m.Called undefined (type *mockSqsClient has no field or method Called) (typecheck)
+	ret := _m.Called(_ca...)
+	          ^
+factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs/client_test.go:249:12: _m.Called undefined (type *mockSqsClient has no field or method Called) (typecheck)
+	ret := _m.Called(_ca...)
+	          ^
+factory/contrib/golang.org/x/text/v0/language/config_test.go:35:9: suite.Run undefined (type *ConfigSuite has no field or method Run) (typecheck)
+		suite.Run(tc.Description, func() {
+		      ^
+factory/contrib/golang.org/x/text/v0/language/config_test.go:37:23: suite.T undefined (type *ConfigSuite has no field or method T) (typecheck)
+			assert.Equal(suite.T(), tc.Expected, result)
+			                   ^
+factory/contrib/golang.org/x/text/v0/language/config_test.go:54:9: suite.Run undefined (type *ConfigSuite has no field or method Run) (typecheck)
+		suite.Run(tc.Description, func() {
+		      ^
+factory/contrib/golang.org/x/text/v0/language/config_test.go:56:23: suite.T undefined (type *ConfigSuite has no field or method T) (typecheck)
+			assert.Equal(suite.T(), tc.ExpectedValue, result)
+			                   ^
+factory/contrib/golang.org/x/text/v0/language/context_test.go:46:9: suite.Run undefined (type *ContextSuite has no field or method Run) (typecheck)
+		suite.Run(tc.Description, func() {
+		      ^
+factory/contrib/golang.org/x/text/v0/language/context_test.go:50:24: suite.T undefined (type *ContextSuite has no field or method T) (typecheck)
+				assert.Error(suite.T(), err)
+				                   ^
+factory/contrib/golang.org/x/text/v0/language/context_test.go:53:22: suite.T undefined (type *ContextSuite has no field or method T) (typecheck)
+				assert.Nil(suite.T(), err)
+				                 ^
+factory/contrib/golang.org/x/text/v0/language/context_test.go:54:24: suite.T undefined (type *ContextSuite has no field or method T) (typecheck)
+				assert.Equal(suite.T(), tc.ExpectedLang, langTag.String())
+				                   ^
+factory/contrib/golang.org/x/text/v0/language/context_test.go:93:9: suite.Run undefined (type *ContextSuite has no field or method Run) (typecheck)
+		suite.Run(tc.Description, func() {
+		      ^
+factory/contrib/golang.org/x/text/v0/language/context_test.go:96:24: suite.T undefined (type *ContextSuite has no field or method T) (typecheck)
+				assert.Error(suite.T(), err)
+				                   ^
+factory/contrib/golang.org/x/text/v0/language/context_test.go:98:26: suite.T undefined (type *ContextSuite has no field or method T) (typecheck)
+				assert.NoError(suite.T(), err)
+				                     ^
+factory/contrib/golang.org/x/text/v0/language/context_test.go:99:24: suite.T undefined (type *ContextSuite has no field or method T) (typecheck)
+				assert.Equal(suite.T(), tc.ExpectedResult, result)
+				                   ^
+factory/contrib/golang.org/x/text/v0/language/tag_test.go:38:9: suite.Run undefined (type *TagSuite has no field or method Run) (typecheck)
+		suite.Run(tc.Description, func() {
+		      ^
+factory/contrib/golang.org/x/text/v0/language/tag_test.go:42:24: suite.T undefined (type *TagSuite has no field or method T) (typecheck)
+				assert.Error(suite.T(), err)
+				                   ^
+factory/contrib/golang.org/x/text/v0/language/tag_test.go:44:26: suite.T undefined (type *TagSuite has no field or method T) (typecheck)
+				assert.NoError(suite.T(), err)
+				                     ^
+factory/contrib/golang.org/x/text/v0/language/tag_test.go:45:24: suite.T undefined (type *TagSuite has no field or method T) (typecheck)
+				assert.Equal(suite.T(), tc.ExpectedResult, result)
+				                   ^
+model/errors/path.go:8:2: could not import sync/atomic (-: could not load export data: internal error in importing "sync/atomic" (unsupported version: 2); please report an issue) (typecheck)
+	"sync/atomic"
+	^
+model/errors/alreadyexists_test.go:45:5: s.Run undefined (type *AlreadyExistsSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/alreadyexists_test.go:47:6: s.Assert undefined (type *AlreadyExistsSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/alreadyexists_test.go:78:5: s.Run undefined (type *AlreadyExistsSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/alreadyexists_test.go:80:6: s.Assert undefined (type *AlreadyExistsSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/alreadyexists_test.go:100:5: s.Run undefined (type *AlreadyExistsSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/alreadyexists_test.go:102:6: s.Assert undefined (type *AlreadyExistsSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/badrequest_test.go:45:5: s.Run undefined (type *BadRequestSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/badrequest_test.go:47:6: s.Assert undefined (type *BadRequestSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/badrequest_test.go:78:5: s.Run undefined (type *BadRequestSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/badrequest_test.go:80:6: s.Assert undefined (type *BadRequestSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/badrequest_test.go:100:5: s.Run undefined (type *BadRequestSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/badrequest_test.go:102:6: s.Assert undefined (type *BadRequestSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/conflict_test.go:45:5: s.Run undefined (type *ConflictSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/conflict_test.go:47:6: s.Assert undefined (type *ConflictSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/conflict_test.go:78:5: s.Run undefined (type *ConflictSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/conflict_test.go:80:6: s.Assert undefined (type *ConflictSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/conflict_test.go:100:5: s.Run undefined (type *ConflictSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/conflict_test.go:102:6: s.Assert undefined (type *ConflictSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/error_test.go:110:5: s.Run undefined (type *ErrorSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/error_test.go:112:6: s.Assert undefined (type *ErrorSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/forbidden_test.go:45:5: s.Run undefined (type *ForbiddenSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/forbidden_test.go:47:6: s.Assert undefined (type *ForbiddenSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/forbidden_test.go:78:5: s.Run undefined (type *ForbiddenSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/forbidden_test.go:80:6: s.Assert undefined (type *ForbiddenSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/forbidden_test.go:100:5: s.Run undefined (type *ForbiddenSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/forbidden_test.go:102:6: s.Assert undefined (type *ForbiddenSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/internal_test.go:45:5: s.Run undefined (type *InternalSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/internal_test.go:47:6: s.Assert undefined (type *InternalSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/internal_test.go:78:5: s.Run undefined (type *InternalSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/internal_test.go:80:6: s.Assert undefined (type *InternalSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/internal_test.go:100:5: s.Run undefined (type *InternalSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/internal_test.go:102:6: s.Assert undefined (type *InternalSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/methodnotallowed_test.go:45:5: s.Run undefined (type *MethodNotAllowedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/methodnotallowed_test.go:47:6: s.Assert undefined (type *MethodNotAllowedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/methodnotallowed_test.go:78:5: s.Run undefined (type *MethodNotAllowedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/methodnotallowed_test.go:80:6: s.Assert undefined (type *MethodNotAllowedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/methodnotallowed_test.go:100:5: s.Run undefined (type *MethodNotAllowedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/methodnotallowed_test.go:102:6: s.Assert undefined (type *MethodNotAllowedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notassigned_test.go:45:5: s.Run undefined (type *NotAssignedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notassigned_test.go:47:6: s.Assert undefined (type *NotAssignedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notassigned_test.go:78:5: s.Run undefined (type *NotAssignedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notassigned_test.go:80:6: s.Assert undefined (type *NotAssignedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notassigned_test.go:100:5: s.Run undefined (type *NotAssignedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notassigned_test.go:102:6: s.Assert undefined (type *NotAssignedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notfound_test.go:45:5: s.Run undefined (type *NotFoundSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notfound_test.go:47:6: s.Assert undefined (type *NotFoundSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notfound_test.go:78:5: s.Run undefined (type *NotFoundSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notfound_test.go:80:6: s.Assert undefined (type *NotFoundSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notfound_test.go:100:5: s.Run undefined (type *NotFoundSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notfound_test.go:102:6: s.Assert undefined (type *NotFoundSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notimplemented_test.go:45:5: s.Run undefined (type *NotImplementedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notimplemented_test.go:47:6: s.Assert undefined (type *NotImplementedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notimplemented_test.go:78:5: s.Run undefined (type *NotImplementedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notimplemented_test.go:80:6: s.Assert undefined (type *NotImplementedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notimplemented_test.go:100:5: s.Run undefined (type *NotImplementedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notimplemented_test.go:102:6: s.Assert undefined (type *NotImplementedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notprovisioned_test.go:45:5: s.Run undefined (type *NotProvisionedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notprovisioned_test.go:47:6: s.Assert undefined (type *NotProvisionedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notprovisioned_test.go:78:5: s.Run undefined (type *NotProvisionedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notprovisioned_test.go:80:6: s.Assert undefined (type *NotProvisionedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notprovisioned_test.go:100:5: s.Run undefined (type *NotProvisionedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notprovisioned_test.go:102:6: s.Assert undefined (type *NotProvisionedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notsupported_test.go:45:5: s.Run undefined (type *NotSupportedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notsupported_test.go:47:6: s.Assert undefined (type *NotSupportedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notsupported_test.go:78:5: s.Run undefined (type *NotSupportedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notsupported_test.go:80:6: s.Assert undefined (type *NotSupportedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notsupported_test.go:100:5: s.Run undefined (type *NotSupportedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notsupported_test.go:102:6: s.Assert undefined (type *NotSupportedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notvalid_test.go:45:5: s.Run undefined (type *NotValidSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notvalid_test.go:47:6: s.Assert undefined (type *NotValidSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notvalid_test.go:78:5: s.Run undefined (type *NotValidSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notvalid_test.go:80:6: s.Assert undefined (type *NotValidSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/notvalid_test.go:100:5: s.Run undefined (type *NotValidSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/notvalid_test.go:102:6: s.Assert undefined (type *NotValidSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/path_test.go:40:5: s.Run undefined (type *PathSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/path_test.go:42:6: s.Assert undefined (type *PathSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/serviceunavailable_test.go:45:5: s.Run undefined (type *ServiceUnavailableSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/serviceunavailable_test.go:47:6: s.Assert undefined (type *ServiceUnavailableSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/serviceunavailable_test.go:78:5: s.Run undefined (type *ServiceUnavailableSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/serviceunavailable_test.go:80:6: s.Assert undefined (type *ServiceUnavailableSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/serviceunavailable_test.go:100:5: s.Run undefined (type *ServiceUnavailableSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/serviceunavailable_test.go:102:6: s.Assert undefined (type *ServiceUnavailableSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/timeout_test.go:45:5: s.Run undefined (type *TimeoutSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/timeout_test.go:47:6: s.Assert undefined (type *TimeoutSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/timeout_test.go:78:5: s.Run undefined (type *TimeoutSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/timeout_test.go:80:6: s.Assert undefined (type *TimeoutSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/timeout_test.go:100:5: s.Run undefined (type *TimeoutSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/timeout_test.go:102:6: s.Assert undefined (type *TimeoutSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/toomanyrequests_test.go:45:5: s.Run undefined (type *TooManyRequestsSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/toomanyrequests_test.go:47:6: s.Assert undefined (type *TooManyRequestsSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/toomanyrequests_test.go:78:5: s.Run undefined (type *TooManyRequestsSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/toomanyrequests_test.go:80:6: s.Assert undefined (type *TooManyRequestsSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/toomanyrequests_test.go:100:5: s.Run undefined (type *TooManyRequestsSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/toomanyrequests_test.go:102:6: s.Assert undefined (type *TooManyRequestsSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/unauthorized_test.go:45:5: s.Run undefined (type *UnauthorizedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/unauthorized_test.go:47:6: s.Assert undefined (type *UnauthorizedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/unauthorized_test.go:78:5: s.Run undefined (type *UnauthorizedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/unauthorized_test.go:80:6: s.Assert undefined (type *UnauthorizedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got.Error(), t.want.Error()), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/unauthorized_test.go:100:5: s.Run undefined (type *UnauthorizedSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/unauthorized_test.go:102:6: s.Assert undefined (type *UnauthorizedSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+model/errors/unformatter_test.go:79:5: s.Run undefined (type *UnformatterSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+model/errors/unformatter_test.go:84:6: s.Assert undefined (type *UnformatterSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(stackTrace, strings.Split(stack, "\n")), "got  %v\nwant %v", stackTrace, strings.Split(stack, "\n"))
+			  ^
+wrapper/cache/manager_test.go:62:5: s.Run undefined (type *ManagerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/manager_test.go:73:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(manager.Set(ctx, key, value))
+				  ^
+wrapper/cache/manager_test.go:81:6: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(got == t.wantErr)
+			  ^
+wrapper/cache/manager_test.go:123:5: s.Run undefined (type *ManagerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/manager_test.go:134:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(drv1.Set(ctx, key, b))
+				  ^
+wrapper/cache/manager_test.go:142:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(drv2.Set(ctx, key, b))
+				  ^
+wrapper/cache/manager_test.go:147:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(manager.Set(ctx, key, value))
+				  ^
+wrapper/cache/manager_test.go:155:6: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(gotErr == t.wantErr)
+			  ^
+wrapper/cache/manager_test.go:156:6: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+			s.Assert().Equal(t.want, got)
+			  ^
+wrapper/cache/manager_test.go:185:5: s.Run undefined (type *ManagerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/manager_test.go:219:9: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+						s.Assert().Failf(err.Error(), "error on codec: %s", name)
+						  ^
+wrapper/cache/manager_test.go:246:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(drv.Set(ctx, key, b), "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:248:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(err, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:249:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:266:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(manager.Set(ctx, key, value), "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:268:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(err, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:269:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:277:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().True(gotErr == t.wantErr)
+				  ^
+wrapper/cache/manager_test.go:278:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().Equal(t.want, got)
+				  ^
+wrapper/cache/manager_test.go:308:5: s.Run undefined (type *ManagerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/manager_test.go:343:9: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+						s.Assert().Failf(err.Error(), "error on codec: %s", name)
+						  ^
+wrapper/cache/manager_test.go:370:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(drv.Set(ctx, key, b), "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:372:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(err, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:373:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:390:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(manager.Set(ctx, key, value), "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:392:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(err, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:393:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:401:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().True(gotErr == t.wantErr)
+				  ^
+wrapper/cache/manager_test.go:402:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().Equal(t.want, got)
+				  ^
+wrapper/cache/manager_test.go:463:5: s.Run undefined (type *ManagerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/manager_test.go:496:9: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+						s.Assert().Failf(err.Error(), "error on encode codec: %s", name)
+						  ^
+wrapper/cache/manager_test.go:523:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(drv.Set(ctx, key, b), "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:525:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(err, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:526:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:543:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(manager.Set(ctx, key, value), "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:545:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(err, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:546:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:554:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().True(gotErr == t.wantErr)
+				  ^
+wrapper/cache/manager_test.go:555:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().Equal(t.want, got)
+				  ^
+wrapper/cache/manager_test.go:818:5: s.Run undefined (type *ManagerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/manager_test.go:851:9: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+						s.Assert().Failf(err.Error(), "error on encode codec: %s", name)
+						  ^
+wrapper/cache/manager_test.go:878:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(drv.Set(ctx, key, b), "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:880:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(err, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:881:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:898:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(manager.Set(ctx, key, value), "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:900:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().Nilf(err, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:901:8: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+					s.Assert().NotEmpty(res, "codec: %s", name)
+					  ^
+wrapper/cache/manager_test.go:935:5: s.Run undefined (type *ManagerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/manager_test.go:939:11: undefined: bigcache (typecheck)
+			cfg := bigcache.DefaultConfig(1 * time.Minute)
+			       ^
+wrapper/cache/manager_test.go:942:13: undefined: bigcache (typecheck)
+			fc, _ := bigcache.New(ctx, cfg)
+			         ^
+wrapper/cache/manager_test.go:949:7: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(drv.Set(ctx, key, b))
+				  ^
+wrapper/cache/manager_test.go:960:6: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(gotErr == t.wantErr)
+			  ^
+wrapper/cache/manager_test.go:966:6: s.Assert undefined (type *ManagerSuite has no field or method Assert) (typecheck)
+			s.Assert().Equal(v, got)
+			  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver.go:10:9: undefined: bigcache (typecheck)
+	cache *bigcache.BigCache
+	       ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver.go:38:17: undefined: bigcache (typecheck)
+func New(cache *bigcache.BigCache) *Driver {
+                ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:52:5: s.Run undefined (type *DriverSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:56:11: undefined: bigcache (typecheck)
+			cfg := bigcache.DefaultConfig(1 * time.Minute)
+			       ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:59:13: undefined: bigcache (typecheck)
+			fc, _ := bigcache.New(ctx, cfg)
+			         ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:66:7: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(drv.Set(ctx, key, b))
+				  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:74:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().True(got == t.wantErr)
+			  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:109:5: s.Run undefined (type *DriverSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:113:11: undefined: bigcache (typecheck)
+			cfg := bigcache.DefaultConfig(1 * time.Minute)
+			       ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:116:13: undefined: bigcache (typecheck)
+			fc, _ := bigcache.New(ctx, cfg)
+			         ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:123:7: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(drv.Set(ctx, key, b))
+				  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:134:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().True(gotErr == t.wantErr)
+			  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:135:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().Equal(t.want, got)
+			  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:167:5: s.Run undefined (type *DriverSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:171:11: undefined: bigcache (typecheck)
+			cfg := bigcache.DefaultConfig(1 * time.Minute)
+			       ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:174:13: undefined: bigcache (typecheck)
+			fc, _ := bigcache.New(ctx, cfg)
+			         ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:181:7: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(drv.Set(ctx, key, b))
+				  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:192:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().True(gotErr == t.wantErr)
+			  ^
+wrapper/cache/driver/contrib/allegro/bigcache/v3/driver_test.go:198:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().Equal(v, got)
+			  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:52:5: s.Run undefined (type *DriverSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:63:7: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(drv.Set(ctx, key, b))
+				  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:71:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().True(got == t.wantErr)
+			  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:106:5: s.Run undefined (type *DriverSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:117:7: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(drv.Set(ctx, key, b))
+				  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:128:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().True(gotErr == t.wantErr)
+			  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:129:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().Equal(t.want, got)
+			  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:161:5: s.Run undefined (type *DriverSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:172:7: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+				s.Assert().Nil(drv.Set(ctx, key, b))
+				  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:183:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().True(gotErr == t.wantErr)
+			  ^
+wrapper/cache/driver/contrib/coocood/freecache/v1/driver_test.go:189:6: s.Assert undefined (type *DriverSuite has no field or method Assert) (typecheck)
+			s.Assert().Equal(v, got)
+			  ^
+wrapper/config/contrib/knadh/koanf/v1/provider_test.go:146:5: s.Run undefined (type *ConfigSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/config/contrib/knadh/koanf/v1/provider_test.go:151:6: s.Assert undefined (type *ConfigSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/wrapper_test.go:92:7: l.On undefined (type *LoggerMock has no field or method On) (typecheck)
+				l.On("WithField", mock.Anything, mock.Anything).Times(1).Return(l)
+				  ^
+wrapper/log/wrapper_test.go:99:7: l.On undefined (type *LoggerMock has no field or method On) (typecheck)
+				l.On("WithError", mock.Anything, mock.Anything).Times(1).Return(l)
+				  ^
+wrapper/log/wrapper_test.go:106:7: l.On undefined (type *LoggerMock has no field or method On) (typecheck)
+				l.On("WithFields", mock.Anything).Times(1).Return(l)
+				  ^
+wrapper/log/wrapper_test.go:118:7: l.On undefined (type *LoggerMock has no field or method On) (typecheck)
+				l.On("WithTypeOf", mock.Anything).Times(1).Return(l)
+				  ^
+wrapper/log/wrapper_test.go:127:5: s.Run undefined (type *WrapperSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/wrapper_test.go:130:7: l.On undefined (type *LoggerMock has no field or method On) (typecheck)
+				l.On(t.name, mock.Anything).Times(1)
+				  ^
+wrapper/log/wrapper_test.go:136:6: l.AssertExpectations undefined (type *LoggerMock has no field or method AssertExpectations) (typecheck)
+			l.AssertExpectations(s.T())
+			  ^
+wrapper/log/wrapper_test.go:154:5: s.Run undefined (type *WrapperSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/wrapper_test.go:157:6: s.Assert undefined (type *WrapperSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/wrapper_test.go:172:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:180:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:187:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:195:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:202:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:210:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:215:12: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	ret := _m.Called()
+	          ^
+wrapper/log/wrapper_test.go:231:12: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	ret := _m.Called(ctx)
+	          ^
+wrapper/log/wrapper_test.go:249:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:257:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:262:12: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	ret := _m.Called()
+	          ^
+wrapper/log/wrapper_test.go:280:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:288:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:296:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:301:12: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	ret := _m.Called(ctx)
+	          ^
+wrapper/log/wrapper_test.go:319:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:327:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:334:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:342:5: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	_m.Called(_ca...)
+	   ^
+wrapper/log/wrapper_test.go:347:12: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	ret := _m.Called(err)
+	          ^
+wrapper/log/wrapper_test.go:363:12: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	ret := _m.Called(key, value)
+	          ^
+wrapper/log/wrapper_test.go:379:12: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	ret := _m.Called(keyValues)
+	          ^
+wrapper/log/wrapper_test.go:395:12: _m.Called undefined (type *LoggerMock has no field or method Called) (typecheck)
+	ret := _m.Called(obj)
+	          ^
+wrapper/log/example_test.go:12:10: undefined: logrus (typecheck)
+	log.Set(logrus.NewLogger(logrus.WithFormatter(text.New(text.WithDisableTimestamp(true)))))
+	        ^
+wrapper/log/example_test.go:42:10: undefined: logrus (typecheck)
+	log.Set(logrus.NewLogger(
+	        ^
+wrapper/log/example_test.go:43:3: undefined: logrus (typecheck)
+		logrus.WithFormatter(text.New(text.WithDisableTimestamp(true))),
+		^
+wrapper/log/example_test.go:82:10: undefined: logrus (typecheck)
+	log.Set(logrus.NewLogger(
+	        ^
+wrapper/log/example_test.go:83:3: undefined: logrus (typecheck)
+		logrus.WithFormatter(text.New(text.WithDisableTimestamp(true))),
+		^
+wrapper/log/contrib/go.uber.org/zap/v1/logger.go:59:14: undefined: lumberjack (typecheck)
+		lumber := &lumberjack.Logger{
+		           ^
+wrapper/log/contrib/go.uber.org/zap/v1/options_test.go:101:5: s.Run undefined (type *OptionsSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/go.uber.org/zap/v1/options_test.go:105:6: s.Assert undefined (type *OptionsSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/rs/zerolog/v1/logger.go:153:19: undefined: lumberjack (typecheck)
+		fileHandler := &lumberjack.Logger{
+		                ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:108:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:110:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want()), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:159:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:161:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:258:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:263:8: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+					s.Assert().True(strings.Contains(got, w), "got %v\nmust contain %v", got, w)
+					  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:290:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:294:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().False(false, "got an unexpected error = %v", e)
+			  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:297:7: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+				s.Assert().True(strings.Contains(got, w), "got %v\nmust contain %v", got, w)
+				  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:402:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:405:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, want), "got  %v\nwant %v", got, want)
+			  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:422:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:424:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:441:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:443:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:460:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:463:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:490:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/logger_test.go:492:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/rs/zerolog/v1/options_test.go:89:5: s.Run undefined (type *OptionsSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/rs/zerolog/v1/options_test.go:93:6: s.Assert undefined (type *OptionsSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger.go:51:19: undefined: lumberjack (typecheck)
+	var fileHandler *lumberjack.Logger
+	                 ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger.go:60:18: undefined: lumberjack (typecheck)
+		fileHandler = &lumberjack.Logger{
+		               ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:116:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:118:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want()), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:167:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:169:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:266:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:270:7: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+				s.Assert().True(strings.Contains(got, t.want), "got %v\nmust contain %v", got, t.want)
+				  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:296:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:300:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().False(false, "got an unexpected error = %v", e)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:302:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(strings.Contains(got, t.want), "got %v\nmust contain %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:402:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:405:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, want), "got  %v\nwant %v", got, want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:422:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:424:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:441:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:443:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:460:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:463:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:480:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:482:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:562:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:566:7: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+				s.Assert().True(strings.Contains(got, t.want), "got %v\nmust contain %v", got, t.want)
+				  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:592:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:596:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().False(false, "got an unexpected error = %v", e)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:598:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(strings.Contains(got, t.want), "got %v\nmust contain %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:689:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:692:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, want), "got  %v\nwant %v", got, want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:713:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:715:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:732:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:734:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:751:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:754:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:771:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:773:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:817:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:820:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, want), "got  %v\nwant %v", got, want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:852:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:854:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:879:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:881:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:906:5: s.Run undefined (type *LoggerSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/logger_test.go:908:6: s.Assert undefined (type *LoggerSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/options_test.go:102:5: s.Run undefined (type *OptionsSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/options_test.go:106:6: s.Assert undefined (type *OptionsSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, t.want), "got  %v\nwant %v", got, t.want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/formatter/cloudwatch/formatter_test.go:81:5: s.Run undefined (type *FormatterSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/formatter/cloudwatch/formatter_test.go:84:6: s.Assert undefined (type *FormatterSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, want), "got  %v\nwant %v", got, want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/formatter/json/formatter_test.go:124:5: s.Run undefined (type *FormatterSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/formatter/json/formatter_test.go:127:6: s.Assert undefined (type *FormatterSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, want), "got  %v\nwant %v", got, want)
+			  ^
+wrapper/log/contrib/sirupsen/logrus/v1/formatter/text/formatter_test.go:220:5: s.Run undefined (type *FormatterSuite has no field or method Run) (typecheck)
+		s.Run(t.name, func() {
+		  ^
+wrapper/log/contrib/sirupsen/logrus/v1/formatter/text/formatter_test.go:223:6: s.Assert undefined (type *FormatterSuite has no field or method Assert) (typecheck)
+			s.Assert().True(reflect.DeepEqual(got, want), "\ngot  %v\nwant %v", got, want)
+			  ^
+wrapper/publisher/util/json_bytes_test.go:38:4: s.Assert undefined (type *UtilSuite has no field or method Assert) (typecheck)
+	s.Assert().True(err == nil, "Error on call JSONBytes: %s", err)
+	  ^
+wrapper/publisher/util/json_bytes_test.go:39:4: s.Assert undefined (type *UtilSuite has no field or method Assert) (typecheck)
+	s.Assert().True(reflect.DeepEqual(gotBytes, wantBytes), "Error got %s want %s", gotBytes, wantBytes)
+	  ^

@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
+	"os"
+
 	"github.com/xgodev/boost"
 	log2 "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log"
 	c "github.com/xgodev/boost/factory/contrib/spf13/cobra/v1"
-	"os"
 
 	r "github.com/go-resty/resty/v2"
 	"github.com/spf13/cobra"
@@ -72,7 +73,7 @@ func main() {
 		Version: "1.0.0",
 	}
 
-	if err := c.Run(rootCMD, cmds...); err != nil {
+	if err := c.RunContext(ctx, rootCMD, cmds...); err != nil {
 		logger.Errorf(err.Error())
 	}
 
