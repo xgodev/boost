@@ -73,7 +73,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		startOptions = append(startOptions,
 			sdktrace.WithBatcher(exporter),
-			sdktrace.WithSampler(sdktrace.TraceIDRatioBased(0.3)),
+			sdktrace.WithSampler(sdktrace.TraceIDRatioBased(options.Trace.Ratio)),
 			sdktrace.WithResource(rs),
 		)
 

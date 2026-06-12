@@ -32,6 +32,7 @@ type Options struct {
 	Trace struct {
 		Endpoint string
 		Protocol string
+		Ratio    float64
 	}
 	Attributes map[string]string
 	TLS        struct {
@@ -129,6 +130,13 @@ func NewOptions() (*Options, error) {
 		opts.Trace.Protocol = v
 	} else {
 		opts.Trace.Protocol = opts.Protocol
+	}
+
+	// Trace sampling ratio: OTEL_TRACES_SAMPLER_ARG → config → default (1.0)
+	if v := os.Getenv("OTEL_TRACES_SAMPLER_ARG"); v != "" {
+		if r, err := fmt.Sscanf(v, "%f", &opts.Trace.Ratio); err != nil || r != 1 {
+			return nil, fmt.Errorf("OTEL_TRACES_SAMPLER_ARG: invalid ratio %q", v)
+		}
 	}
 
 	// Export interval: OTEL_METRIC_EXPORT_INTERVAL → config → default
