@@ -1,11 +1,12 @@
 package pubsub
 
 import (
-	"github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v1"
-	"github.com/xgodev/boost/fx/modules/bootstrap/function"
-	fxpubsub "github.com/xgodev/boost/fx/modules/factory/contrib/cloud.google.com/pubsub/v1"
-	"go.uber.org/fx"
 	"sync"
+
+	pubsub "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v2"
+	"github.com/xgodev/boost/fx/modules/bootstrap/function"
+	fxpubsub "github.com/xgodev/boost/fx/modules/factory/contrib/cloud.google.com/pubsub/v2"
+	"go.uber.org/fx"
 )
 
 var once sync.Once

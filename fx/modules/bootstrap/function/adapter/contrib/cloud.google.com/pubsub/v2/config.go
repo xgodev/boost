@@ -16,7 +16,7 @@ func init() {
 	config.Add(version, "v1", "defines the pubsub version: v1 or v2")
 }
 
-// IsEnabled returns true when the adapter is enabled and the configured version is v1 (the default).
+// IsEnabled returns true when the adapter is enabled and the configured version is v2.
 func IsEnabled() bool {
-	return config.Bool(enabled) && config.String(version) != "v2"
+	return config.Bool(enabled) && config.String(version) == "v2"
 }

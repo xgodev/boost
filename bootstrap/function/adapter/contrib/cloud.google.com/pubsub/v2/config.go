@@ -1,9 +1,10 @@
 package pubsub
 
 import (
+	"time"
+
 	"github.com/xgodev/boost/bootstrap/function/adapter"
 	"github.com/xgodev/boost/wrapper/config"
-	"time"
 )
 
 const (
@@ -19,7 +20,7 @@ const (
 
 func init() {
 	config.Add(subscriptions, []string{"changeme"}, "pubsub listener topics")
-	config.Add(backoff, true, "pubsub backoff")
+	config.Add(backoff, false, "pubsub backoff")
 	config.Add(backoffBase, 1*time.Second, "pubsub backoff base")
 	config.Add(maxBackoff, 5*time.Second, "pubsub max backoff")
 	config.Add(retryLimit, 3, "pubsub retry limit")

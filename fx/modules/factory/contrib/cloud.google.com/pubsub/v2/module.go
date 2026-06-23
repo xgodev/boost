@@ -1,9 +1,9 @@
 package pubsub
 
 import (
-	"github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v1"
 	"sync"
 
+	pubsub "github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v2"
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
 	"go.uber.org/fx"
 )
