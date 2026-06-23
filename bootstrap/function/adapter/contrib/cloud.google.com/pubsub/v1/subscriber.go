@@ -42,6 +42,8 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		if err != nil {
 			log.Errorf("processing failed: %v", err)
 			msg.Nack()
+
+			return
 		}
 
 		msg.Ack()

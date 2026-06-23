@@ -12,6 +12,6 @@ const (
 )
 
 func init() {
-	config.Add(level, "DEBUG", "defines log level")
+	config.Add(level, "INFO", "defines log level")
 	config.Add(errorStack, false, "defines if error stack should be logged")
 }

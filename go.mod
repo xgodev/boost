@@ -5,6 +5,7 @@ go 1.26.4
 require (
 	cloud.google.com/go/bigquery v1.77.0
 	cloud.google.com/go/firestore v1.22.0
+	cloud.google.com/go/pubsub v1.50.2
 	cloud.google.com/go/pubsub/v2 v2.6.0
 	github.com/DataDog/dd-trace-go/contrib/aws/aws-sdk-go-v2/v2 v2.8.2
 	github.com/DataDog/dd-trace-go/contrib/database/sql/v2 v2.8.2
@@ -118,7 +119,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	cloud.google.com/go/iam v1.11.0 // indirect
 	cloud.google.com/go/longrunning v1.0.0 // indirect
-	cloud.google.com/go/pubsub v1.50.2 // indirect
 	github.com/DataDog/datadog-agent/comp/core/tagger/origindetection v0.80.0 // indirect
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.80.0 // indirect
 	github.com/DataDog/datadog-agent/pkg/opentelemetry-mapping-go/otlp/attributes v0.80.0 // indirect
@@ -204,6 +204,7 @@ require (
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/flatbuffers v25.12.19+incompatible // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-tpm v0.9.5 // indirect
 	github.com/google/pprof v0.0.0-20260604005048-7023385849c0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
@@ -309,6 +310,7 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	github.com/zeebo/xxh3 v1.1.0 // indirect
+	go.einride.tech/aip v0.83.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/collector/component v1.60.0 // indirect
