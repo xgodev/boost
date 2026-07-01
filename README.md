@@ -68,12 +68,27 @@ func main() {
 
 ### Claude Code plugin
 
-This repo ships a [Claude Code](https://claude.com/claude-code) plugin (`golang-boost`) that teaches AI agents how to write boost-shaped Go code — Iron Laws (`boost.Start`, handler typing, config layer), HTTP APIs with Echo, event-driven functions, and the maintainer-side layout for new contribs. Install once in your Claude Code session:
+A [Claude Code](https://claude.com/claude-code) plugin (`golang-boost`) teaches
+AI agents how to write boost-shaped Go code — Iron Laws (`boost.Start`, handler
+typing, config layer), HTTP APIs with Echo, event-driven functions, and the
+maintainer-side layout for new contribs. The plugin lives in its own repo,
+**[`xgodev/boost-claude`](https://github.com/xgodev/boost-claude)**, so
+installing it no longer clones this entire framework. Install once in your
+Claude Code session:
 
 ```
-/plugin marketplace add xgodev/boost
-/plugin install golang-boost@xgodev
+/plugin marketplace add xgodev/boost-claude
+/plugin install golang-boost@xgodev-boost
 ```
+
+> **Moved from this repo.** The plugin used to be distributed from
+> `xgodev/boost` directly. If you installed it that way, migrate:
+> ```
+> /plugin uninstall golang-boost@xgodev-boost
+> /plugin marketplace remove xgodev-boost
+> /plugin marketplace add xgodev/boost-claude
+> /plugin install golang-boost@xgodev-boost
+> ```
 
 #### Update
 
@@ -86,13 +101,13 @@ Inside Claude Code:
 From the CLI:
 
 ```bash
-claude plugin update golang-boost@xgodev
+claude plugin update golang-boost@xgodev-boost
 ```
 
 If it reports `Plugin "..." not found`, pass the scope explicitly:
 
 ```bash
-claude plugin update golang-boost@xgodev --scope user   # or: project | local | managed
+claude plugin update golang-boost@xgodev-boost --scope user   # or: project | local | managed
 ```
 
 Use `claude plugin list` to find the scope where the plugin is installed.
@@ -103,7 +118,7 @@ Claude Code checks for plugin updates at startup, but **third-party
 marketplaces have auto-update disabled by default** — only Anthropic's
 official marketplaces update on their own. To enable it:
 
-Interactive: run `/plugin` → **Marketplaces** → select `xgodev` →
+Interactive: run `/plugin` → **Marketplaces** → select `xgodev-boost` →
 **Enable auto-update**.
 
 Or declaratively, in `~/.claude/settings.json` (global) — add
@@ -113,10 +128,10 @@ Or declaratively, in `~/.claude/settings.json` (global) — add
 ```json
 {
   "extraKnownMarketplaces": {
-    "xgodev": {
+    "xgodev-boost": {
       "source": {
         "source": "git",
-        "url": "git@github.com:xgodev/boost.git"
+        "url": "git@github.com:xgodev/boost-claude.git"
       },
       "autoUpdate": true
     }

@@ -16,17 +16,20 @@ factory por componente sob `factory/contrib/`.
    o SDK upstream direto — use `factory/contrib/<x>`.
 5. **Compatibilidade retroativa.** API pública de um componente não quebra sem
    bump de major e justificativa. Mudança observável → teste antes.
-6. **O plugin `golang-boost` co-evolui com o código.** Mudou um componente →
-   atualize a skill correspondente em `skills/boost-*` no mesmo PR. Skill nova
-   para componente novo. Versão do plugin sobe (`.claude-plugin/plugin.json`)
-   quando o conteúdo muda — sem bump, auto-update não reconhece.
+6. **O plugin `golang-boost` vive em `xgodev/boost-claude` e co-evolui.** As
+   skills NÃO ficam mais neste repo. Mudou um componente → atualize a skill
+   `boost-*` correspondente **em `xgodev/boost-claude`**, em PR próprio lá.
+   Skill nova para componente novo. Bump do `plugin.json` daquele repo quando o
+   conteúdo muda — sem bump, auto-update não reconhece. (O acoplamento "mesmo
+   PR" virou disciplina entre dois repos; sem o PR no boost-claude, a doc fica
+   defasada.)
 
 ### Red flags — PARAR e reportar
 
 - SDK upstream instanciado direto (sem passar pela factory)
 - `os.Getenv` / logger de terceiro fora do wrapper
 - API pública alterada sem teste e sem nota de compat
-- Componente tocado sem a skill `boost-*` correspondente atualizada
+- Componente tocado sem a skill `boost-*` correspondente atualizada em `xgodev/boost-claude`
 - `git push` sem quality-gate verde
 - Issue ou PR ausentes (ver `docs/development/gitflow.md`)
 
@@ -42,35 +45,35 @@ factory por componente sob `factory/contrib/`.
 - Teste valida comportamento, não só cobre linha. Bug fix → teste vermelho
   primeiro (TDD).
 
-## Skills do plugin (este repo É o plugin)
+## Skills do plugin (vivem em `xgodev/boost-claude`)
 
-- `skills/boost-*` — skills de **consumo** (como usar boost). Distribuídas no
-  plugin `golang-boost`.
-- `skills/boost-maintainer` — guia de manutenção (criar nova factory/skill).
-  Leia antes de adicionar componente.
+As skills `boost-*` foram extraídas para o repo
+**[`xgodev/boost-claude`](https://github.com/xgodev/boost-claude)** — assim
+instalar o plugin não clona mais o framework inteiro. Este repo (`boost`) **não
+é mais um marketplace**.
 
-O plugin `golang-boost` é distribuído pelo marketplace **`xgodev-boost`**
-(declarado em `.claude-plugin/marketplace.json` deste repo):
+- `boost-*` — skills de **consumo** (como usar boost), distribuídas no plugin
+  `golang-boost`.
+- `boost-maintainer` — guia de manutenção (criar nova factory/skill). Leia em
+  `boost-claude` antes de adicionar componente.
+
+Instalação (a partir do novo repo):
 
 ```
-/plugin marketplace add xgodev/boost
+/plugin marketplace add xgodev/boost-claude
 /plugin install golang-boost@xgodev-boost
 ```
 
-`marketplace.json` declara `name: "xgodev-boost"` (único globalmente). Há
-também o umbrella `xgodev/claude-plugin` (marketplace `xgodev`) que re-lista
-este plugin como `boost@xgodev` — usar um caminho ou outro, não os dois.
+O marketplace continua se chamando `xgodev-boost` e o plugin `golang-boost` —
+só mudou a URL do `marketplace add`. O umbrella `xgodev/claude-plugin`
+(marketplace `xgodev`) re-lista este plugin como `boost@xgodev`; ao mover, o
+`source` lá precisa apontar para `xgodev/boost-claude` (ajuste em outro repo).
 
-Dependências declaradas em `.claude-plugin/plugin.json` — instalar
-`golang-boost` puxa automaticamente:
-
-- `quality-gate@xgodev-quality-gate` — gate comparativo pré-push (ver
-  `docs/development/quality-gate.md`), publicado direto em
-  `xgodev/quality-gate` (marketplace `xgodev-quality-gate`).
-
-Pré-requisito: o marketplace da dep precisa estar adicionado antes do install
-(`/plugin marketplace add xgodev/quality-gate`); sem ele a dep fica
-unresolved e o plugin é desabilitado com `dependency-unsatisfied`.
+Dependência (declarada no `plugin.json` de `boost-claude`):
+`quality-gate@xgodev-quality-gate` — gate comparativo pré-push (ver
+`docs/development/quality-gate.md`). Pré-requisito antes do install:
+`/plugin marketplace add xgodev/quality-gate`; sem ele a dep fica unresolved e
+o plugin é desabilitado com `dependency-unsatisfied`.
 
 ## Referências (ler quando precisar)
 
@@ -78,8 +81,6 @@ unresolved e o plugin é desabilitado com `dependency-unsatisfied`.
 |---|---|
 | `docs/development/gitflow.md` | Issue, branch, commit, PR, fechamento |
 | `docs/development/quality-gate.md` | Gate comparativo antes do push |
-| `skills/boost-maintainer/SKILL.md` | Adicionar factory/componente/skill |
-| `skills/boost-start/SKILL.md` | Sequência de boot |
-| `skills/boost-wrapper-log/SKILL.md` | Logging via wrapper |
-| `skills/boost-wrapper-config/SKILL.md` | Config namespacing |
+| `xgodev/boost-claude` → `skills/boost-maintainer/SKILL.md` | Adicionar factory/componente/skill |
+| `xgodev/boost-claude` → `skills/boost-*` | Skills de consumo (boot, log, config, factories…) |
 | README de cada pacote (`factory/`, `wrapper/`, `bootstrap/`, …) | API do componente |
