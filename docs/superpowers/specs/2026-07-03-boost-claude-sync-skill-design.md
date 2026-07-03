@@ -42,26 +42,42 @@ Mudança puramente interna (refactor sem efeito em API pública, config key,
 default ou comportamento documentado) não exige sync — a skill instrui a
 avaliar isso explicitamente.
 
+## Estrutura real do boost-claude (verificada 2026-07-03)
+
+O boost-claude foi reestruturado (0.16.0): **não existem mais 58 skills
+`boost-*`**. Há uma única skill de entrada `skills/boost/` com índice
+(`SKILL.md`) e folhas em `skills/boost/references/<grupo>/<nome>.md`
+(grupos: `factory/`, `wrapper/`, `bootstrap/`, `extra/`, `fx/`, mais
+folhas soltas `start.md`, `model-errors.md`, `plugins.md`,
+`CONTRIBUTING.md`). O Iron Law #6 do CLAUDE.md deste repo está defasado
+(cita `boost-*` e `boost-maintainer`) — atualizar junto.
+
 ## Workflow da skill (resumo)
 
-1. Identificar componente(s) tocado(s) no diff.
-2. Derivar o nome da skill: convenção `boost-<área>-<componente>`
-   (ex.: `factory/contrib/labstack/echo` → `boost-factory-echo`;
-   `wrapper/log` → `boost-wrapper-log`). Confirmar por busca em
-   `skills/` no boost-claude — há irregulares (`boost-start`,
-   `boost-fx-modules`, `boost-model-errors`,
-   `boost-wrapper-log-backends`, `gqlgen-field-resolvers`).
-3. Garantir clone local de `xgodev/boost-claude` em
+1. Avaliar se a mudança é observável (API pública, config key, default,
+   comportamento documentado, README). Refactor interno puro → sem sync.
+2. Garantir clone local de `xgodev/boost-claude` em
    `~/Projetos/github.com/xgodev/boost-claude` (clonar se ausente,
-   `git pull` se presente).
-4. Branch própria no boost-claude; atualizar/criar/remover a skill:
-   - componente novo → ler `skills/boost-maintainer/SKILL.md` lá antes;
-   - componente removido → remover diretório da skill.
+   `git pull origin main` se presente). Branch única: `main`.
+3. Mapear path do boost → reference: `factory/contrib/<vendor>/<lib>/vN`
+   → `references/factory/<lib>.md`; `wrapper/<x>` → `references/wrapper/<x>.md`
+   (contribs de log → `log-backends.md`); `bootstrap/...` →
+   `references/bootstrap/*.md`; `extra/<x>` → `references/extra/<x>.md`;
+   `fx/modules` → `references/fx/modules.md`; `model/errors` →
+   `model-errors.md`; `start.go`/`config.go` raiz → `start.md`.
+4. Branch própria no boost-claude; editar a(s) reference(s):
+   - componente novo → ler `references/CONTRIBUTING.md` lá antes; criar
+     folha nova + linha no arquivo de grupo (`factory/<domínio>.md` etc.)
+     + índice em `skills/boost/SKILL.md`;
+   - componente removido → remover folha + entradas de índice.
 5. Bump de versão em `.claude-plugin/plugin.json` (sem bump o auto-update
    não reconhece).
 6. Commit local no boost-claude. **PR não é aberto automaticamente** —
    listado como próximo passo; só executar quando o usuário pedir
    (regra global: no unrequested shared-state actions).
+7. A parte local (clone, edit, bump, commit) é SEMPRE executável na
+   própria sessão — "faço depois" não é opção (falha observada no
+   baseline: agente adiou o sync inteiro como "não executável").
 
 ## Hook
 
