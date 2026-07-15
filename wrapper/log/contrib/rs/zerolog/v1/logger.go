@@ -69,8 +69,7 @@ func NewLoggerWithOptions(options *Options) log.Logger {
 		fields:         log.Fields{},
 		errorFieldName: errorField,
 	}
-
-	log.Set(logger)
+	
 	return logger
 }
 
