@@ -7,6 +7,7 @@ import (
 	"time"
 
 	e "github.com/labstack/echo/v4"
+	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
@@ -83,6 +84,7 @@ func loggerMiddleware(level string) e.MiddlewareFunc {
 			ctx = logger.ToContext(ctx)
 			c.SetRequest(req.WithContext(ctx))
 
+			var err error
 			defer func() {
 				stop := time.Now()
 
@@ -93,13 +95,17 @@ func loggerMiddleware(level string) e.MiddlewareFunc {
 
 				var method func(format string, args ...interface{})
 
-				switch level {
-				case "TRACE":
-					method = logger.Tracef
-				case "INFO":
-					method = logger.Infof
-				default:
+				if pol, ok := errors.IgnoreOf(err); ok && pol&errors.IgnoreSilenceLog != 0 {
 					method = logger.Debugf
+				} else {
+					switch level {
+					case "TRACE":
+						method = logger.Tracef
+					case "INFO":
+						method = logger.Infof
+					default:
+						method = logger.Debugf
+					}
 				}
 
 				method("%s %s %-7s %s %3d %s %s %13v %s %s",
@@ -116,7 +122,6 @@ func loggerMiddleware(level string) e.MiddlewareFunc {
 				)
 			}()
 
-			var err error
 			if err = next(c); err != nil {
 				c.Error(err)
 			}
