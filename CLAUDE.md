@@ -16,17 +16,21 @@ factory por componente sob `factory/contrib/`.
    o SDK upstream direto — use `factory/contrib/<x>`.
 5. **Compatibilidade retroativa.** API pública de um componente não quebra sem
    bump de major e justificativa. Mudança observável → teste antes.
-6. **O plugin `golang-boost` co-evolui com o código.** Mudou um componente →
-   atualize a skill correspondente em `skills/boost-*` no mesmo PR. Skill nova
-   para componente novo. Versão do plugin sobe (`.claude-plugin/plugin.json`)
-   quando o conteúdo muda — sem bump, auto-update não reconhece.
+6. **O plugin `golang-boost` vive em `xgodev/boost-claude` e co-evolui.** A
+   doc de consumo lá é uma única skill (`skills/boost/`) com folhas em
+   `skills/boost/references/<grupo>/<nome>.md`. Mudou um componente → siga a
+   skill de projeto **`boost-claude-sync`** (`.claude/skills/`): atualizar a
+   reference correspondente, índices e bump do `plugin.json`, em PR próprio
+   lá. Sem bump, auto-update não reconhece. (O acoplamento "mesmo PR" virou
+   disciplina entre dois repos; sem o PR no boost-claude, a doc fica
+   defasada.)
 
 ### Red flags — PARAR e reportar
 
 - SDK upstream instanciado direto (sem passar pela factory)
 - `os.Getenv` / logger de terceiro fora do wrapper
 - API pública alterada sem teste e sem nota de compat
-- Componente tocado sem a skill `boost-*` correspondente atualizada
+- Componente tocado sem a reference correspondente atualizada em `xgodev/boost-claude` (skill `boost-claude-sync` não seguida)
 - `git push` sem quality-gate verde
 - Issue ou PR ausentes (ver `docs/development/gitflow.md`)
 
@@ -42,19 +46,31 @@ factory por componente sob `factory/contrib/`.
 - Teste valida comportamento, não só cobre linha. Bug fix → teste vermelho
   primeiro (TDD).
 
-## Skills do plugin (este repo É o plugin)
+## Doc do plugin (vive em `xgodev/boost-claude`)
 
-- `skills/boost-*` — skills de **consumo** (como usar boost). Distribuídas no
-  plugin `golang-boost`.
-- `skills/boost-maintainer` — guia de manutenção (criar nova factory/skill).
-  Leia antes de adicionar componente.
+A doc de consumo do boost vive no repo
+**[`xgodev/boost-claude`](https://github.com/xgodev/boost-claude)** como uma
+única skill de entrada `skills/boost/` (índice + folhas em
+`skills/boost/references/<grupo>/<nome>.md`). Este repo (`boost`) **não é
+marketplace nem contém skills do plugin**.
 
-Skills Go gerais (samber) vêm de plugin externo, não vivem no repo:
+- `skills/boost/references/<grupo>/<nome>.md` — doc de consumo por
+  componente (como usar boost).
+- `skills/boost/references/CONTRIBUTING.md` — guia de manutenção (layout,
+  construtores, config). Leia antes de adicionar componente novo.
+- Sync ao mudar componente aqui → skill de projeto `boost-claude-sync`
+  (`.claude/skills/`).
+
+Instalação (marketplace central `xgodev-plugins`):
 
 ```
-/plugin marketplace add samber/cc
-/plugin install cc-skills-golang@samber
+/plugin marketplace add xgodev/claude-plugin
+/plugin install golang-boost@xgodev-plugins
 ```
+
+A dependência `quality-gate` (gate comparativo pré-push, ver
+`docs/development/quality-gate.md`) vive no mesmo marketplace e é resolvida
+automaticamente no install.
 
 ## Referências (ler quando precisar)
 
@@ -62,8 +78,7 @@ Skills Go gerais (samber) vêm de plugin externo, não vivem no repo:
 |---|---|
 | `docs/development/gitflow.md` | Issue, branch, commit, PR, fechamento |
 | `docs/development/quality-gate.md` | Gate comparativo antes do push |
-| `skills/boost-maintainer/SKILL.md` | Adicionar factory/componente/skill |
-| `skills/boost-start/SKILL.md` | Sequência de boot |
-| `skills/boost-wrapper-log/SKILL.md` | Logging via wrapper |
-| `skills/boost-wrapper-config/SKILL.md` | Config namespacing |
+| `xgodev/boost-claude` → `skills/boost/references/CONTRIBUTING.md` | Adicionar factory/componente |
+| `xgodev/boost-claude` → `skills/boost/references/` | Doc de consumo (boot, log, config, factories…) |
+| `.claude/skills/boost-claude-sync/SKILL.md` | Sync da doc ao mudar componente |
 | README de cada pacote (`factory/`, `wrapper/`, `bootstrap/`, …) | API do componente |

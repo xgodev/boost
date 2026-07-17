@@ -2,20 +2,22 @@ package otel
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
+	prometheusCore "github.com/prometheus/client_golang/prometheus"
 	"github.com/xgodev/boost/wrapper/log"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
-
 	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/metric/noop"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"google.golang.org/grpc/credentials"
-	"sync"
-	"time"
 )
 
 var MeterProvider metric.MeterProvider
@@ -44,12 +46,13 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 
 	metricOnce.Do(func() {
 
-		MeterProvider = noop.NewMeterProvider()
-
 		logger := log.FromContext(ctx)
-
 		otel.SetLogger(logr.New(&Logger{}))
 
+		prometheusRegister, err := prometheus.New(prometheus.WithRegisterer(prometheusCore.DefaultRegisterer))
+		if err != nil {
+			logger.WithError(err).Errorf("error creating prometheus exporter")
+		}
 		exporter, err := NewMeterExporter(ctx, options)
 		if err != nil {
 			logger.WithError(err).Errorf("error creating opentelemetry exporter")
@@ -79,6 +82,7 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 
 		startOptions = append(startOptions,
 			sdkmetric.WithReader(periodicReader),
+			sdkmetric.WithReader(prometheusRegister),
 			sdkmetric.WithResource(rs),
 		)
 
@@ -87,12 +91,17 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 		otel.SetMeterProvider(prov)
 		MeterProvider = prov
 
+		err = runtime.Start(runtime.WithMinimumReadMemStatsInterval(5 * time.Second))
+		if err != nil {
+			logger.WithError(err).Errorf("error starting runtime instrumentation")
+
+		}
+
 		log.Infof("started opentelemetry meter: %s", options.Service)
 	})
 }
 
 func NewReader(options *Options, exporter sdkmetric.Exporter) (sdkmetric.Reader, error) {
-
 	periodicReaderOpts := []sdkmetric.PeriodicReaderOption{
 		sdkmetric.WithInterval(options.Export.Interval),
 		sdkmetric.WithTimeout(options.Export.Timeout),
@@ -105,7 +114,7 @@ func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter
 	var exporter sdkmetric.Exporter
 	var err error
 
-	switch options.Protocol {
+	switch options.Metric.Protocol {
 	case "grpc":
 		exporter, err = NewGRPCMeterExporter(ctx, options)
 	default:
@@ -116,10 +125,10 @@ func NewMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter
 
 func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
 	exporterOpts := []otlpmetrichttp.Option{
-		otlpmetrichttp.WithEndpoint(options.Endpoint),
+		otlpmetrichttp.WithEndpoint(options.Metric.Endpoint),
 	}
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlpmetrichttp.WithInsecure())
 	}
 
@@ -136,10 +145,10 @@ func NewHTTPMeterExporter(ctx context.Context, options *Options) (sdkmetric.Expo
 
 func NewGRPCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Exporter, error) {
 	exporterOpts := []otlpmetricgrpc.Option{
-		otlpmetricgrpc.WithEndpoint(options.Endpoint),
+		otlpmetricgrpc.WithEndpoint(options.Metric.Endpoint),
 	}
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlpmetricgrpc.WithInsecure())
 	} else {
 		creds, err := credentials.NewClientTLSFromFile(options.TLS.Cert, "")
@@ -153,6 +162,7 @@ func NewGRPCMeterExporter(ctx context.Context, options *Options) (sdkmetric.Expo
 		ctx,
 		exporterOpts...,
 	)
+
 	if err != nil {
 		return nil, err
 	}

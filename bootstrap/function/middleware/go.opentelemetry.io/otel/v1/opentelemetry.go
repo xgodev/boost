@@ -1,43 +1,50 @@
 package opentelemetry
 
 import (
+	"sync"
 	"time"
 
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/extra/middleware"
 	xotel "github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
 	meter                    metric.Meter
 	messagesProcessed        metric.Int64Counter
 	messageProcessingLatency metric.Float64Histogram
+	initOnce                 sync.Once
 )
 
 func initMeter() {
-	// Inicializando um Meter (usando noop como um exemplo)
-	meter = xotel.MeterProvider.Meter("boost_function")
+	initOnce.Do(func() {
+		mp := xotel.MeterProvider
+		if mp == nil {
+			mp = otel.GetMeterProvider()
+		}
+		meter = mp.Meter("boost_function")
 
-	// Configurando o contador de mensagens processadas
-	var err error
-	messagesProcessed, err = meter.Int64Counter(
-		"boost_function_messages_processed_total",
-		metric.WithDescription("Number of messages processed"),
-	)
-	if err != nil {
-		panic("Failed to create counter: " + err.Error())
-	}
+		var err error
+		messagesProcessed, err = meter.Int64Counter(
+			"boost_function_messages_processed_total",
+			metric.WithDescription("Number of messages processed"),
+		)
+		if err != nil {
+			panic("Failed to create counter: " + err.Error())
+		}
 
-	// Configurando o histograma para latência de processamento
-	messageProcessingLatency, err = meter.Float64Histogram(
-		"boost_function_message_processing_latency_seconds",
-		metric.WithDescription("Time taken to process message"),
-	)
-	if err != nil {
-		panic("Failed to create histogram: " + err.Error())
-	}
+		messageProcessingLatency, err = meter.Float64Histogram(
+			"boost_function_message_processing_latency_seconds",
+			metric.WithDescription("Time taken to process message"),
+		)
+		if err != nil {
+			panic("Failed to create histogram: " + err.Error())
+		}
+	})
 }
 
 func init() {
@@ -45,15 +52,14 @@ func init() {
 }
 
 type OpenTelemetry[T any] struct {
+	Tracer trace.Tracer
 }
 
 func (c *OpenTelemetry[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
-
-	// Iniciando um novo span para tracing
-	tracer := xotel.NewTracer("boost_function_tracer")
-
-	ctxTrace, span := tracer.Start(ctx.GetContext(), "ProcessMessage")
+	
+	ctxTrace, span := c.Tracer.Start(ctx.GetContext(), "ProcessMessage")
 	defer span.End()
+	ctx.SetContext(ctxTrace)
 
 	// Medindo a latência manualmente
 	startTime := time.Now()
@@ -97,5 +103,5 @@ func NewAnyErrorMiddleware[T any]() middleware.AnyErrorMiddleware[T] {
 }
 
 func NewOpenTelemetry[T any]() *OpenTelemetry[T] {
-	return &OpenTelemetry[T]{}
+	return &OpenTelemetry[T]{Tracer: xotel.TracerProvider.Tracer("boost_function")}
 }

@@ -8,7 +8,7 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	v2 "github.com/cloudevents/sdk-go/v2"
-	"github.com/matryer/try"
+	"gopkg.in/matryer/try.v1"
 
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"

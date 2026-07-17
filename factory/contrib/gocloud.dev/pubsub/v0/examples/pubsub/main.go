@@ -2,58 +2,51 @@ package main
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 	"github.com/xgodev/boost"
-	"github.com/xgodev/boost/factory/contrib/gocloud.dev/pubsub/v0"
+	fpubsub "github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v1"
 	"github.com/xgodev/boost/wrapper/log"
-	p "gocloud.dev/pubsub"
+	"github.com/xgodev/boost/wrapper/publisher"
+	drvpubsub "github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v1"
+
+	v2 "github.com/cloudevents/sdk-go/v2"
 )
 
 func main() {
-
 	boost.Start()
 
 	ctx := context.Background()
-
 	logger := log.FromContext(ctx)
 
-	topic, err := pubsub.NewTopic(ctx)
+	// Create pubsub v2 client
+	client, err := fpubsub.NewClient(ctx)
 	if err != nil {
-		logger.Fatalf(err.Error())
+		logger.Fatal(err.Error())
 	}
 
-	meta := map[string]string{}
-
-	data := []byte("Hello, World!")
-
-	message := &p.Message{
-		Body:     data,
-		Metadata: meta,
+	// Create publisher driver
+	driver, err := drvpubsub.New(ctx, client)
+	if err != nil {
+		logger.Fatal(err.Error())
 	}
 
-	if err := topic.Send(ctx, message); err != nil {
-		logger.Fatalf(err.Error())
+	p := publisher.New(driver)
+
+	// Build a CloudEvent
+	event := v2.NewEvent()
+	event.SetID(uuid.New().String())
+	event.SetSource("example/source")
+	event.SetType("example.type")
+	event.SetSubject("test-topic")
+	if err := event.SetData("application/json", map[string]string{"message": "Hello, Pub/Sub v2!"}); err != nil {
+		logger.Fatal(err.Error())
 	}
 
-	defer topic.Shutdown(ctx)
+	// Publish the event
+	if err := p.Publish(ctx, []*v2.Event{&event}); err != nil {
+		logger.Fatal(err.Error())
+	}
 
-	logger.Infof("sucesss message send")
-
-	// Don't works using memory
-	// subscription, err := gocloud.NewSubscription(ctx)
-	// if err != nil {
-	// 	logger.Fatalf(err.Error())
-	// }
-
-	// Loop on received messages.
-	// for {
-	// 	m, err := subscription.Receive(ctx)
-	// 	if err != nil {
-	// 		logger.Info("Receiving message: %v", err)
-	// 		break
-	// 	}
-	// 	logger.Info("Got message: ", string(m.Body))
-	// 	m.Ack()
-	// }
-
-	// defer subscription.Shutdown(ctx)
+	logger.Infof("event published successfully")
 }

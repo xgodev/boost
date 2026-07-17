@@ -105,8 +105,9 @@ func (p *OTel) InitDB(ctx context.Context, db *sql.DB) error {
 		opts = append(opts, otelsql.WithMeterProvider(otelboost.MeterProvider))
 	}
 
-	return otelsql.RegisterDBStatsMetrics(
+	_, err := otelsql.RegisterDBStatsMetrics(
 		db,
 		opts...,
 	)
+	return err
 }

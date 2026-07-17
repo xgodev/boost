@@ -8,12 +8,15 @@ import (
 const (
 	Root    = driver.Root + ".pubsub"
 	enabled = Root + ".enabled"
+	version = Root + ".version"
 )
 
 func init() {
-	config.Add(enabled, true, "enables/disables the nats driver")
+	config.Add(enabled, true, "enables/disables the pubsub driver")
+	config.Add(version, "v1", "defines the pubsub version: v1 or v2")
 }
 
+// IsEnabled returns true when the driver is enabled and the configured version is v1 (the default).
 func IsEnabled() bool {
-	return config.Bool(enabled)
+	return config.Bool(enabled) && config.String(version) != "v2"
 }
