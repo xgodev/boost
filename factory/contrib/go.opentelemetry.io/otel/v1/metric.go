@@ -49,7 +49,7 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 		logger := log.FromContext(ctx)
 		otel.SetLogger(logr.New(&Logger{}))
 
-		defaultt, err := prometheus.New(prometheus.WithRegisterer(prometheusCore.DefaultRegisterer))
+		prometheusRegister, err := prometheus.New(prometheus.WithRegisterer(prometheusCore.DefaultRegisterer))
 		if err != nil {
 			logger.WithError(err).Errorf("error creating prometheus exporter")
 		}
@@ -82,7 +82,7 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 
 		startOptions = append(startOptions,
 			sdkmetric.WithReader(periodicReader),
-			sdkmetric.WithReader(defaultt),
+			sdkmetric.WithReader(prometheusRegister),
 			sdkmetric.WithResource(rs),
 		)
 

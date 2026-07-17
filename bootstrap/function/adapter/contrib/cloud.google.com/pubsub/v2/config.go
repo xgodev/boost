@@ -24,6 +24,6 @@ func init() {
 	config.Add(backoffBase, 1*time.Second, "pubsub backoff base")
 	config.Add(maxBackoff, 5*time.Second, "pubsub max backoff")
 	config.Add(retryLimit, 3, "pubsub retry limit")
-	config.Add(concurrency, 10, "pubsub retry limit")
+	config.Add(concurrency, 10, "pubsub concurrency")
 	config.Add(processTimeout, 5*time.Second, "pubsub process timeout")
 }

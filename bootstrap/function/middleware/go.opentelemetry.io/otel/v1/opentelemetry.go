@@ -56,9 +56,7 @@ type OpenTelemetry[T any] struct {
 }
 
 func (c *OpenTelemetry[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
-
-	//initMeter() // lazy-init meter, safe to call multiple times
-
+	
 	ctxTrace, span := c.Tracer.Start(ctx.GetContext(), "ProcessMessage")
 	defer span.End()
 	ctx.SetContext(ctxTrace)

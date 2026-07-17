@@ -2,6 +2,7 @@ package logger
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
@@ -35,13 +36,13 @@ func NewAnyErrorMiddlewareWithOptions[T any](options *Options) middleware.AnyErr
 
 func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.AnyErrorExecFunc[T], fallbackFunc middleware.AnyErrorReturnFunc[T]) (T, error) {
 	logger := log.FromContext(ctx.GetContext()).WithTypeOf(*c)
+	lm := c.logger(logger)
 
 	e, err := ctx.Next(exec, fallbackFunc)
 	if err != nil {
+		logger.Error(err.Error())
 		if c.options.ErrorStack {
-			logger.WithField("stack", errors.ErrorStack(err)).Error(err.Error())
-		} else {
-			logger.Error(err.Error())
+			fmt.Println(errors.ErrorStack(err))
 		}
 	}
 
@@ -64,20 +65,25 @@ func (c *Logger[T]) Exec(ctx *middleware.AnyErrorContext[T], exec middleware.Any
 		if err != nil {
 			logger.Errorf("error on marshall event for logging. %s", err.Error())
 		} else {
-			c.logger(logger)(string(j))
+			lm(string(j))
 		}
 	}
 
 	return e, err
 }
 
-func (c *Logger[T]) logger(logger log.Logger) func(s string) {
+func (c *Logger[T]) logger(logger log.Logger) func(format string, args ...interface{}) {
+
+	var method func(format string, args ...interface{})
+
 	switch c.options.Level {
 	case "TRACE":
-		return func(s string) { logger.Trace(s) }
+		method = logger.Tracef
 	case "DEBUG":
-		return func(s string) { logger.Debug(s) }
+		method = logger.Debugf
 	default:
-		return func(s string) { logger.Info(s) }
+		method = logger.Infof
 	}
+
+	return method
 }
