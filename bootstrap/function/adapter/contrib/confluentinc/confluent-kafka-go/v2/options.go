@@ -19,5 +19,11 @@ type Options struct {
 
 // DefaultOptions returns options based in config.
 func DefaultOptions() (*Options, error) {
-	return config.NewOptionsWithPath[Options](root)
+	opts, err := config.NewOptionsWithPath[Options](root)
+	if err != nil {
+		return nil, err
+	}
+	// Backward compat (issue #48): merge any values still set under the legacy
+	// ".kafka_confluent" root via a config file. Absent -> no-op. Deprecated.
+	return config.MergeOptionsWithPath[Options](opts, legacyRoot)
 }
