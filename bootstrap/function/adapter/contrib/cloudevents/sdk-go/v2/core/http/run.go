@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	ce "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
 	cehttp "github.com/cloudevents/sdk-go/v2/protocol/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/xgodev/boost/model/errors"
 	response "github.com/xgodev/boost/model/restresponse"
 	"github.com/xgodev/boost/wrapper/log"
+	"net/http"
 )
 
 // Plugin defines a function to process plugin.
@@ -40,7 +42,7 @@ func Run[T any](fn function.Handler[T], opts []client.Option, plugins ...Plugin)
 
 	logger.Infof("listening on :%d%s\n", 8080, "/")
 
-	return c.StartReceiver(ctx, fn)
+	return c.StartReceiver(ctx, Wrapper(fn))
 }
 
 func Wrapper[T any](fn function.Handler[T]) func(context.Context, ce.Event) ce.Result {

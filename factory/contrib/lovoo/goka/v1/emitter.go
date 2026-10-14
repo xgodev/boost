@@ -58,6 +58,7 @@ func (e *Emitter) EmitSyncWithHeaders(ctx context.Context, topic string, key str
 	if err != nil {
 		return err
 	}
+
 	return ge.EmitSyncWithHeaders(key, msg, headers)
 }
 
@@ -72,12 +73,12 @@ func newEmitter(ctx context.Context, o *Options, topic string) (*goka.Emitter, e
 
 	t := goka.Stream(topic)
 
-	emitter, err := goka.NewEmitter(o.Brokers, t, new(codec.Bytes), goka.WithEmitterLogger(&Logger{}))
+	emitter, err := goka.NewEmitter(o.Brokers, t, new(codec.Bytes), goka.WithEmitterLogger(NewLogger()))
 	if err != nil {
 		log.Fatalf("error creating emitter: %v", err)
 	}
 
-	logger.Infof("Created kafka connection to %v", o.Brokers)
+	logger.Debugf("Created kafka connection to %v", o.Brokers)
 
 	return emitter, err
 }
