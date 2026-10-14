@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"context"
+
 	prom "github.com/prometheus/client_golang/prometheus"
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	"github.com/xgodev/boost/wrapper/log"

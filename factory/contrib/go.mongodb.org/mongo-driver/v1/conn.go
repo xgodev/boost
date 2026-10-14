@@ -2,9 +2,10 @@ package mongo
 
 import (
 	"context"
+	"strings"
+
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -151,7 +152,7 @@ func clientOptions(ctx context.Context, o *Options) (*options.ClientOptions, err
 			logger.Debugf("mongodb cmd - %v %s %s %v", startedEvent.ConnectionID, startedEvent.CommandName, startedEvent.DatabaseName, startedEvent.RequestID)
 		},
 		Succeeded: func(ctx context.Context, succeededEvent *event.CommandSucceededEvent) {
-			logger.Debugf("mongodb cmd - %v %s %vus %v", succeededEvent.ConnectionID, succeededEvent.CommandName, succeededEvent.DurationNanos, succeededEvent.RequestID)
+			logger.Debugf("mongodb cmd - %v %s %vus %v", succeededEvent.ConnectionID, succeededEvent.CommandName, succeededEvent.Duration.Nanoseconds(), succeededEvent.RequestID)
 		},
 		Failed: func(ctx context.Context, failedEvent *event.CommandFailedEvent) {
 			logger.Errorf("mongodb cmd - %v %s %s %v", failedEvent.ConnectionID, failedEvent.CommandName, failedEvent.Failure, failedEvent.RequestID)

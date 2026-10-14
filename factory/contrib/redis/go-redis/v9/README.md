@@ -116,6 +116,7 @@ options := &redis.Options{
     PoolSize:        10,
     MinIdleConns:    2,
     PoolTimeout:     time.Second * 4,
+    IdleTimeout:     time.Minute * 5, // config key: boost.factory.redis.idleTimeout (default 5m)
     
     // Standalone client options
     Client: redis.ClientOptions{

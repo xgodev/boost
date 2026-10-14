@@ -1,6 +1,9 @@
 package pubsub
 
 import (
+	"time"
+
+	"cloud.google.com/go/pubsub"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
@@ -9,7 +12,10 @@ type Options struct {
 	Log struct {
 		Level string
 	}
-	OrderingKey bool
+	OrderingKey    bool
+	Settings       pubsub.PublishSettings
+	Timeout        time.Duration
+	PublishTimeout time.Duration
 }
 
 // NewOptions returns options from config file or environment vars.

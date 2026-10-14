@@ -3,6 +3,7 @@ package logger
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/xgodev/boost/extra/middleware"
 	"github.com/xgodev/boost/model/errors"

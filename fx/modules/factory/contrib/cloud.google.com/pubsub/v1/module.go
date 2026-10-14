@@ -10,9 +10,12 @@ import (
 
 var once sync.Once
 
-// Module fx module for bigQuery client.
+// Module fx module for pubsub client.
 func Module() fx.Option {
 	options := fx.Options()
+	if !IsEnabled() {
+		return options
+	}
 
 	once.Do(func() {
 

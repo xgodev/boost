@@ -61,9 +61,6 @@ func (i *OtelEcho) Register(ctx context.Context, server *echo.Server) {
 
 	logger.Trace("enabling opentelemetry middleware in echo")
 
-	otel.StartTracerProvider(ctx)
-	otel.StartMeterProvider(ctx)
-
 	i.options.TracingOptions = append(i.options.TracingOptions, otelecho.WithTracerProvider(otel.TracerProvider))
 
 	server.Use(otelecho.Middleware("", i.options.TracingOptions...))
