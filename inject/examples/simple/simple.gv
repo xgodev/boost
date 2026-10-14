@@ -1,17 +1,16 @@
 digraph InjectGraph {
-        graph [splines=true, overlap=false];
-        node [fontname="Arial", shape=box, style=filled];
-        edge [color="#606060"];
-    "simple_FooBar" [label="FooBar", shape=ellipse, fillcolor="#90EE90"];
-"simple_FooBar" -> "simple_Bar";
-"simple_FooBar" -> "simple_Foz";
-"simple_FooBaz" [label="FooBaz", shape=ellipse, fillcolor="#90EE90"];
-"simple_FooBaz" -> "simple_Foz";
-"annotated_LorenMethod" [label="LorenMethod", shape=ellipse, fillcolor="#90EE90"];
-"annotated_LorenMethod" -> "simple_Foo";
-"annotated_LorenMethod" -> "simple_Foz";
-"simple_Foo" [label="Foo", shape=ellipse, fillcolor="#90EE90"];
-"simple_Foo" -> "simple_Foz";
-"simple_Foz" [label="Foz", shape=octagon, fillcolor="#FFD700"];
-"simple_Bar" [label="Bar", shape=octagon, fillcolor="#FFD700"];
+	graph [splines=true, overlap=false];
+	node [fontname="Arial", style=filled];
+	edge [color="#606060"];
+	"github.com/xgodev/boost/inject/examples/simple/app.Announce" [label="app.Announce", shape=octagon, fillcolor="#FFD700"];
+	"github.com/xgodev/boost/inject/examples/simple/app.NewBoard" [label="app.NewBoard", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/app.NewBoard" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+	"github.com/xgodev/boost/inject/examples/simple/greeting.NewFormalGreeter" [label="greeting.NewFormalGreeter", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/greeting.NewFormalGreeter" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+	"github.com/xgodev/boost/inject/examples/simple/greeting.NewGreeter" [label="greeting.NewGreeter", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/greeting.NewGreeter" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+	"github.com/xgodev/boost/inject/examples/simple/names.Alice" [label="names.Alice", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/names.Alice" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+	"github.com/xgodev/boost/inject/examples/simple/names.Bob" [label="names.Bob", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/names.Bob" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
 }

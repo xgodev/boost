@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"go/types"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/tools/go/packages"
@@ -72,11 +73,30 @@ func (c *Collector) visitPath(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		return err
 	}
-	if info.IsDir() && !strings.Contains(path, "/.") && !strings.Contains(path, "/vendor") {
-		log.Tracef("visiting basePath %s", path)
-		return c.load(path)
+	if !info.IsDir() {
+		return nil
 	}
-	return nil
+	if c.skipDir(path) {
+		return filepath.SkipDir
+	}
+	log.Tracef("visiting basePath %s", path)
+	return c.load(path)
+}
+
+// skipDir reports whether a directory under basePath must not be scanned:
+// hidden directories, vendor and testdata. Only the part below basePath is
+// checked, so a basePath inside a hidden directory is still scanned.
+func (c *Collector) skipDir(path string) bool {
+	rel, err := filepath.Rel(c.basePath, path)
+	if err != nil || rel == "." {
+		return false
+	}
+	for _, seg := range strings.Split(filepath.ToSlash(rel), "/") {
+		if strings.HasPrefix(seg, ".") || seg == "vendor" || seg == "testdata" {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Collector) isValidLoadValue(value string) bool {

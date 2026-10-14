@@ -44,3 +44,28 @@ func TestCollector_isValidAnnotation(t *testing.T) {
 		})
 	}
 }
+
+func TestCollector_skipDir(t *testing.T) {
+	c := &Collector{basePath: "/work/.solvers/app"}
+
+	tests := []struct {
+		path string
+		skip bool
+	}{
+		{"/work/.solvers/app", false},
+		{"/work/.solvers/app/internal/service", false},
+		{"/work/.solvers/app/.git", true},
+		{"/work/.solvers/app/pkg/.cache", true},
+		{"/work/.solvers/app/vendor", true},
+		{"/work/.solvers/app/pkg/testdata", true},
+		{"/work/.solvers/app/vendored", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.path, func(t *testing.T) {
+			if got := c.skipDir(tt.path); got != tt.skip {
+				t.Errorf("skipDir(%q) = %v, want %v", tt.path, got, tt.skip)
+			}
+		})
+	}
+}

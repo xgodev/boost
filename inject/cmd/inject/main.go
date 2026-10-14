@@ -1,87 +1,76 @@
+// Command inject generates fx modules from @Provide, @Inject and @Invoke
+// annotations. Run it from the application with go:generate:
+//
+//	//go:generate go run github.com/xgodev/boost/inject/cmd/inject --boost.inject.output=gen/inject
 package main
 
 import (
 	"context"
-	"github.com/xgodev/boost"
-	"github.com/xgodev/boost/model/errors"
-	"golang.org/x/tools/go/packages"
-	"os"
-	"os/exec"
+	"path/filepath"
 
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/inject"
+	"github.com/xgodev/boost/model/errors"
+	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 func main() {
-
 	boost.Start()
 
-	basePath, err := os.Getwd()
-	if err != nil {
-		log.Panic(err)
-	}
-
-	basePath = basePath + "/inject/examples/simple"
-
 	ctx := context.Background()
-
-	log.Infof("current path is %s", basePath)
-
-	moduleName, err := moduleName(basePath)
-	if err != nil {
-		Err(err)
+	if err := run(ctx); err != nil {
+		logger := log.FromContext(ctx)
+		logger.Errorf(errors.ErrorStack(err))
+		logger.Fatalf(err.Error())
 	}
-
-	entries, err := inject.CollectEntries(basePath)
-	if err != nil {
-		Err(err)
-	}
-
-	graph, err := inject.NewGraphFromEntries(ctx, entries)
-	if err != nil {
-		Err(err)
-	}
-
-	if err := inject.ExportInjectGraphToGraphviz(graph, basePath+"/simple.gv"); err != nil {
-		Err(err)
-	}
-
-	generator := inject.NewGenerator(moduleName, graph)
-	err = generator.Generate(ctx)
-	if err != nil {
-		Err(err)
-	}
-
-	cmd := exec.Command("go", "mod", "tidy")
-	err = cmd.Run()
-	if err != nil {
-		Err(errors.Wrap(err, errors.Internalf("go mod tidy failed")))
-	}
-
-	cmd = exec.Command("go", "mod", "vendor")
-	err = cmd.Run()
-	if err != nil {
-		Err(errors.Wrap(err, errors.Internalf("go mod vendor failed")))
-	}
-
 }
 
-func Err(err error) {
-	log.Errorf(errors.ErrorStack(err))
-	log.Fatalf(err.Error())
-}
+func run(ctx context.Context) error {
+	logger := log.FromContext(ctx)
 
-func moduleName(basePath string) (string, error) {
-	cfg := &packages.Config{Mode: packages.NeedName | packages.NeedModule, Dir: basePath}
-	pkgs, err := packages.Load(cfg)
+	src, err := filepath.Abs(config.String(path))
 	if err != nil {
-		return "", errors.Wrap(err, errors.Internalf("failed to load packages"))
+		return errors.Wrap(err, errors.Internalf("error resolving %s", config.String(path)))
 	}
-	if len(pkgs) == 0 {
-		return "", errors.Internalf("no packages found in %s", basePath)
+
+	out, err := filepath.Abs(config.String(output))
+	if err != nil {
+		return errors.Wrap(err, errors.Internalf("error resolving %s", config.String(output)))
 	}
-	if pkgs[0].Module == nil {
-		return "", errors.Internalf("no module found in %s", basePath)
+
+	modulePath, moduleDir, err := inject.FindModule(src)
+	if err != nil {
+		return err
 	}
-	return pkgs[0].Module.Path, nil
+
+	logger.Infof("scanning %s (module %s)", src, modulePath)
+
+	entries, err := inject.CollectEntries(src)
+	if err != nil {
+		return err
+	}
+
+	g, err := inject.NewGraphFromEntries(ctx, entries)
+	if err != nil {
+		return err
+	}
+
+	if gv := config.String(graphviz); gv != "" {
+		if err := inject.ExportInjectGraphToGraphviz(g, gv); err != nil {
+			return err
+		}
+	}
+
+	generator := inject.NewGenerator(g, inject.GeneratorOptions{
+		ModulePath: modulePath,
+		ModuleDir:  moduleDir,
+		OutputDir:  out,
+	})
+	if err := generator.Generate(ctx); err != nil {
+		return err
+	}
+
+	logger.Infof("generated %d modules in %s", len(g.Vertices), out)
+	return nil
 }

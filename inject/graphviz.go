@@ -2,83 +2,65 @@ package inject
 
 import (
 	"fmt"
-	"github.com/xgodev/boost/extra/graph"
+	"io"
 	"os"
+	"sort"
+
+	"github.com/xgodev/boost/extra/graph"
+	"github.com/xgodev/boost/model/errors"
 )
 
-// ExportInjectGraphToGraphviz writes the dependency injection graph in Graphviz's DOT format.
-// Each module in the graph is represented with a specific color and shape, with edges illustrating
-// dependencies between modules, configured according to the annotation type (e.g., @Provide, @Inject).
-//
-// Parameters:
-// - g: The dependency graph containing injection components.
-// - filename: The output file name to store the graph in DOT format.
-//
-// Returns:
-// - An error if any failure occurs while writing to the file.
+// ExportInjectGraphToGraphviz writes the dependency graph to filename in
+// Graphviz DOT format. Providers are green ellipses, invokers yellow
+// octagons, and an edge goes from a provider to each component using it.
 func ExportInjectGraphToGraphviz(g *graph.Graph[Component], filename string) error {
 	file, err := os.Create(filename)
 	if err != nil {
-		return fmt.Errorf("error creating DOT file: %w", err)
+		return errors.Wrap(err, errors.Internalf("error creating DOT file %s", filename))
 	}
 	defer file.Close()
 
-	// Basic DOT file header with global styling configurations
-	_, err = file.WriteString(`digraph InjectGraph {
-        graph [splines=true, overlap=false];
-        node [fontname="Arial", shape=box, style=filled];
-        edge [color="#606060"];
-    `)
-	if err != nil {
-		return fmt.Errorf("error writing header to DOT file: %w", err)
+	return WriteGraphviz(file, g)
+}
+
+// WriteGraphviz writes the dependency graph to w in Graphviz DOT format,
+// in a stable order.
+func WriteGraphviz(w io.Writer, g *graph.Graph[Component]) error {
+	if _, err := fmt.Fprint(w, `digraph InjectGraph {
+	graph [splines=true, overlap=false];
+	node [fontname="Arial", style=filled];
+	edge [color="#606060"];
+`); err != nil {
+		return errors.Wrap(err, errors.Internalf("error writing DOT header"))
 	}
 
-	// Iterate over vertices to define nodes in the graph
-	for _, vertex := range g.Vertices {
-		component := vertex.Value
-		nodeID := fmt.Sprintf("%s_%s", component.Entry.Package, component.Entry.Func.Name)
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
 
-		// Define node color and shape based on the presence of `Provide` and `Inject` annotations
-		nodeColor := "#A0A0FF" // Default color
-		nodeShape := "box"     // Default shape for modules
-
-		// Adjust style for @Provide or @Inject based on component annotations
-		for _, ann := range component.Entry.Annotations {
-			if ann.Name == "Provide" {
-				nodeColor = "#90EE90" // Green for providers
-				nodeShape = "ellipse"
-				break
-			} else if ann.Name == "Inject" {
-				nodeColor = "#FFD700" // Yellow for injectors
-				nodeShape = "octagon"
-				break
-			}
+		shape, color := "ellipse", "#90EE90"
+		if comp.Type == AnnotationTypeINVOKE {
+			shape, color = "octagon", "#FFD700"
 		}
 
-		// Write the node to the DOT file with customized attributes
-		_, err = file.WriteString(fmt.Sprintf(
-			"\"%s\" [label=\"%s\", shape=%s, fillcolor=\"%s\"];\n",
-			nodeID, component.Entry.Func.Name, nodeShape, nodeColor,
-		))
-		if err != nil {
-			return fmt.Errorf("error writing node to DOT file: %w", err)
+		if _, err := fmt.Fprintf(w, "\t%q [label=%q, shape=%s, fillcolor=%q];\n",
+			key, comp.Entry.Package+"."+comp.Entry.Func.Name, shape, color); err != nil {
+			return errors.Wrap(err, errors.Internalf("error writing DOT node"))
 		}
 
-		// Iterate over dependencies and write edges between nodes
-		for _, edge := range g.Edges[vertex.Key] {
-			dependencyID := fmt.Sprintf("%s_%s", edge.Value.Entry.Package, edge.Value.Entry.Func.Name)
-			_, err = file.WriteString(fmt.Sprintf("\"%s\" -> \"%s\";\n", nodeID, dependencyID))
-			if err != nil {
-				return fmt.Errorf("error writing edge to DOT file: %w", err)
+		var deps []string
+		for _, adj := range g.Edges[key] {
+			deps = append(deps, adj.Key)
+		}
+		sort.Strings(deps)
+		for _, dep := range deps {
+			if _, err := fmt.Fprintf(w, "\t%q -> %q;\n", key, dep); err != nil {
+				return errors.Wrap(err, errors.Internalf("error writing DOT edge"))
 			}
 		}
 	}
 
-	// Finalize the DOT file
-	_, err = file.WriteString("}\n")
-	if err != nil {
-		return fmt.Errorf("error finalizing DOT file: %w", err)
+	if _, err := fmt.Fprint(w, "}\n"); err != nil {
+		return errors.Wrap(err, errors.Internalf("error writing DOT footer"))
 	}
-
 	return nil
 }

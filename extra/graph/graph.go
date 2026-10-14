@@ -1,10 +1,16 @@
 package graph
 
 import (
+	"errors"
 	"fmt"
-	"github.com/xgodev/boost/wrapper/log"
 	"os"
+	"sort"
+
+	"github.com/xgodev/boost/wrapper/log"
 )
+
+// ErrCycle is returned by TopologicalSort when the graph has a cycle.
+var ErrCycle = errors.New("graph has a cycle")
 
 // Graph represents a generic graph structure with Vertices of any type.
 // It includes maps for Vertices, incoming Edges, and Edges for efficient graph operations.
@@ -143,4 +149,64 @@ func (g *Graph[T]) ExportToGraphviz(filename string) error {
 	}
 
 	return nil
+}
+
+// SortedKeys returns the keys of all vertices in lexical order, so callers
+// that iterate the graph produce the same output on every run.
+func (g *Graph[T]) SortedKeys() []string {
+	keys := make([]string, 0, len(g.Vertices))
+	for key := range g.Vertices {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// TopologicalSort returns the vertices ordered so that every vertex comes
+// after all vertices with an edge into it. Ties are broken by key, so the
+// order is deterministic. When the graph has a cycle, it returns
+// ErrCycle and the keys of the vertices that are part of (or depend on)
+// the cycle.
+func (g *Graph[T]) TopologicalSort() ([]*Vertex[T], []string, error) {
+	incoming := make(map[string]int, len(g.IncomingEdges))
+	for key, count := range g.IncomingEdges {
+		incoming[key] = count
+	}
+
+	var ready []string
+	for _, key := range g.SortedKeys() {
+		if incoming[key] == 0 {
+			ready = append(ready, key)
+		}
+	}
+
+	sorted := make([]*Vertex[T], 0, len(g.Vertices))
+	for len(ready) > 0 {
+		key := ready[0]
+		ready = ready[1:]
+		sorted = append(sorted, g.Vertices[key])
+
+		var next []string
+		for _, adj := range g.Edges[key] {
+			incoming[adj.Key]--
+			if incoming[adj.Key] == 0 {
+				next = append(next, adj.Key)
+			}
+		}
+		sort.Strings(next)
+		ready = append(ready, next...)
+		sort.Strings(ready)
+	}
+
+	if len(sorted) == len(g.Vertices) {
+		return sorted, nil, nil
+	}
+
+	var remaining []string
+	for _, key := range g.SortedKeys() {
+		if incoming[key] > 0 {
+			remaining = append(remaining, key)
+		}
+	}
+	return nil, remaining, ErrCycle
 }

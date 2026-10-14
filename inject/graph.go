@@ -3,260 +3,279 @@ package inject
 import (
 	"context"
 	"fmt"
-	"github.com/cloudevents/sdk-go/v2/event/datacodec/json"
+	"sort"
+	"strings"
+
 	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/extra/graph"
 	"github.com/xgodev/boost/model/errors"
-	ustrings "github.com/xgodev/boost/utils/strings"
 	"github.com/xgodev/boost/wrapper/log"
-	"strings"
 )
 
-// NewGraphFromEntries processes a list of annotation entries, creating a dependency graph
-// based on `Provide` and `Inject` annotations. It validates annotations and constructs
-// a directed graph where each provider links to injectors that depend on it.
+// NewGraphFromEntries builds the dependency graph of the annotated functions.
 //
-// Arguments:
-//   - ctx: context for logging and error handling.
-//   - entries: a slice of `annotation.Entry`, each representing a function or component
-//     with associated annotations.
+// Every function with @Provide or @Invoke becomes a vertex. An edge goes from
+// a provider to each function that consumes what it provides: parameters with
+// @Inject must have a provider in the graph, while parameters without it are
+// linked when a default provider of the same type exists and are otherwise
+// left for the application to provide.
 //
-// Returns:
-// - A pointer to a `graph.Graph[Component]` representing dependencies between components.
-// - An error if the graph generation fails due to invalid annotations or missing providers.
+// It returns a NotValid error for malformed annotations or a dependency
+// cycle, AlreadyExists when two functions provide the same non-group value
+// and NotFound when an @Inject has no provider.
 func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*graph.Graph[Component], error) {
-	// Debug: Encode entries to JSON and log
-	if err := logJSON(ctx, entries); err != nil {
+	g := graph.NewGraph[Component]()
+
+	providers, err := addComponents(g, entries)
+	if err != nil {
 		return nil, err
 	}
 
-	out, in := map[string]Component{}, map[string][]Component{}
+	if err := linkComponents(ctx, g, providers); err != nil {
+		return nil, err
+	}
 
-	// Parse each entry to populate `out` and `in` maps for providers and injectors
+	if _, remaining, err := g.TopologicalSort(); err != nil {
+		return nil, errors.NotValidf("dependency cycle among %s", strings.Join(remaining, ", "))
+	}
+
+	log.FromContext(ctx).Debugf("inject graph built with %d components", len(g.Vertices))
+
+	return g, nil
+}
+
+// addComponents adds a vertex per annotated function and returns the keys of
+// the components providing each value id.
+func addComponents(g *graph.Graph[Component], entries []annotation.Entry) (map[string][]string, error) {
+	providers := map[string][]string{}
+	groups := map[string]bool{}
+
 	for _, entry := range entries {
-		// Skip entry if it is not a valid function or has invalid annotation combinations
-		if !isValidEntry(entry) {
-			continue
+		comp, ok, err := newComponent(entry)
+		if err != nil {
+			return nil, err
 		}
 
-		for _, ann := range entry.Annotations {
-			// Validate each annotation name
-			if !isValidAnnotation(ann.Name) {
-				log.Warnf("Invalid annotation: %s", ann.Name)
+		key := comp.Key()
+		if _, exists := g.Vertices[key]; !ok || exists {
+			// exists: the collector may load the same package by dir and by import path
+			continue
+		}
+		g.AddVertex(key, comp)
+
+		for _, idx := range sortedIndexes(comp.Provides) {
+			ann := comp.Provides[idx]
+			id := xid(entry.Package, entry.Func.Results[idx].Type, ann)
+			providers[id] = append(providers[id], key)
+			groups[id] = ann.Group != ""
+		}
+	}
+
+	for _, id := range sortedKeys(providers) {
+		if keys := providers[id]; len(keys) > 1 && !groups[id] {
+			return nil, errors.AlreadyExistsf("%s is provided by more than one function: %s", id, strings.Join(keys, ", "))
+		}
+	}
+
+	return providers, nil
+}
+
+// linkComponents adds an edge from each provider to the components consuming
+// what it provides.
+func linkComponents(ctx context.Context, g *graph.Graph[Component], providers map[string][]string) error {
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		for i, param := range comp.Entry.Func.Parameters {
+			ann, injected := comp.Injects[i]
+			id := injectID(comp.Entry.Package, param.Type, ann)
+
+			keys := providers[id]
+			if len(keys) == 0 && injected {
+				return errors.NotFoundf("provider not found for %s, required by parameter %d of %s", id, i, key)
+			}
+			if len(keys) == 0 {
+				log.FromContext(ctx).Debugf("parameter %d of %s (%s) has no annotated provider; it must be provided by the application", i, key, param.Type)
 				continue
 			}
 
-			annType, _ := ParseAnnotationType(strings.ToUpper(ann.Name))
-			parsedAnnotation := Annotation{}
-			if err := ann.Decode(&parsedAnnotation); err != nil {
-				return nil, errors.NotValidf("decode error on %s in %s.%s: %w", ann.Name, entry.Path, entry.Func.Name, err)
-			}
-
-			// Process based on annotation type (PROVIDE or INJECT)
-			switch annType {
-			case AnnotationTypePROVIDE:
-				if err := populateOutMap(entry, parsedAnnotation, out); err != nil {
-					return nil, err
+			for _, provider := range keys {
+				if provider == key {
+					return errors.NotValidf("%s depends on the value it provides (%s)", key, id)
 				}
-			case AnnotationTypeINJECT:
-				if err := populateInMap(entry, parsedAnnotation, in); err != nil {
-					return nil, err
-				}
+				g.AddEdge(provider, key)
 			}
-		}
-	}
-
-	// Build and return the graph from populated maps
-	graph, err := buildGraphFromDependencies(ctx, out, in)
-	if err != nil {
-		return nil, err
-	}
-
-	return graph, nil
-}
-
-// populateOutMap adds a PROVIDE annotation entry to the `out` map.
-//
-// This function only adds entries where `Index` in the annotation matches the index
-// of the function result in the entry.
-//
-// Arguments:
-// - entry: `annotation.Entry` containing function metadata.
-// - ann: parsed `Annotation` structure from the `Provide` annotation.
-// - out: map of component IDs to their corresponding provider components.
-//
-// Returns:
-// - Error if the annotation is missing a required `Index` field.
-func populateOutMap(entry annotation.Entry, ann Annotation, out map[string]Component) error {
-	if ann.Index == nil {
-		return errors.NotValidf("index parameter is required in PROVIDE annotation for %s.%s", entry.Path, entry.Func.Name)
-	}
-
-	for i, res := range entry.Func.Results {
-		if i != *ann.Index {
-			continue
-		}
-		id := xid(entry.Package, res.Type, ann)
-		if _, exists := out[id]; !exists {
-			out[id] = Component{Entry: entry, An: ann}
 		}
 	}
 	return nil
 }
 
-// populateInMap adds an INJECT annotation entry to the `in` map.
-//
-// This function only adds entries where `Index` in the annotation matches the index
-// of the function parameter in the entry.
-//
-// Arguments:
-// - entry: `annotation.Entry` containing function metadata.
-// - ann: parsed `Annotation` structure from the `Inject` annotation.
-// - in: map of component IDs to a slice of injector components.
-//
-// Returns:
-// - Error if the annotation is missing a required `Index` field.
-func populateInMap(entry annotation.Entry, ann Annotation, in map[string][]Component) error {
-	if ann.Index == nil {
-		return errors.NotValidf("index parameter is required in INJECT annotation for %s.%s", entry.Path, entry.Func.Name)
+// parsedAnnotation is an inject annotation decoded from an entry.
+type parsedAnnotation struct {
+	kind AnnotationType
+	ann  Annotation
+}
+
+// newComponent parses the inject annotations of an entry. It returns false
+// when the entry does not take part in injection.
+func newComponent(entry annotation.Entry) (Component, bool, error) {
+	parsed, err := parseAnnotations(entry)
+	if err != nil || len(parsed) == 0 {
+		return Component{}, false, err
 	}
 
-	for i, param := range entry.Func.Parameters {
-		if i != *ann.Index {
+	if !entry.IsFunc() {
+		log.Warnf("inject annotations on %s.%s are ignored: only package-level functions can be injected", entry.Path, entry.Struct)
+		return Component{}, false, nil
+	}
+
+	comp := Component{
+		Entry:    entry,
+		Provides: map[int]Annotation{},
+		Injects:  map[int]Annotation{},
+	}
+
+	if comp.Type, err = componentType(entry, parsed); err != nil {
+		return Component{}, false, err
+	}
+
+	for _, p := range parsed {
+		switch p.kind {
+		case AnnotationTypePROVIDE:
+			err = addIndexed(comp.Provides, p.ann, len(entry.Func.Results), "@Provide", "result", entry)
+		case AnnotationTypeINJECT:
+			err = addIndexed(comp.Injects, p.ann, len(entry.Func.Parameters), "@Inject", "parameter", entry)
+		}
+		if err != nil {
+			return Component{}, false, err
+		}
+	}
+
+	if err := validateProvides(entry, comp.Provides); err != nil {
+		return Component{}, false, err
+	}
+	if err := validateInjects(entry, comp.Injects); err != nil {
+		return Component{}, false, err
+	}
+
+	return comp, true, nil
+}
+
+// parseAnnotations decodes the @Provide, @Inject and @Invoke annotations of
+// an entry, ignoring the others.
+func parseAnnotations(entry annotation.Entry) ([]parsedAnnotation, error) {
+	var parsed []parsedAnnotation
+	for _, ann := range entry.Annotations {
+		annType, err := ParseAnnotationType(strings.ToUpper(ann.Name))
+		if err != nil || annType == AnnotationTypeMODULE {
 			continue
 		}
-		id := xid(entry.Package, param.Type, ann)
-		in[id] = append(in[id], Component{Entry: entry, An: ann})
+
+		var a Annotation
+		if err := ann.Decode(&a); err != nil {
+			return nil, errors.NotValidf("decode error on @%s in %s: %v", ann.Name, gid(entry), err)
+		}
+		parsed = append(parsed, parsedAnnotation{kind: annType, ann: a})
+	}
+	return parsed, nil
+}
+
+// componentType tells whether the annotations make the function a provider
+// or an invoker.
+func componentType(entry annotation.Entry, parsed []parsedAnnotation) (AnnotationType, error) {
+	kinds := map[AnnotationType]bool{}
+	for _, p := range parsed {
+		kinds[p.kind] = true
+	}
+
+	switch {
+	case kinds[AnnotationTypePROVIDE] && kinds[AnnotationTypeINVOKE]:
+		return 0, errors.NotValidf("%s cannot have both @Provide and @Invoke", gid(entry))
+	case kinds[AnnotationTypePROVIDE]:
+		return AnnotationTypePROVIDE, nil
+	case kinds[AnnotationTypeINVOKE]:
+		return AnnotationTypeINVOKE, nil
+	default:
+		return 0, errors.NotValidf("%s has @Inject but neither @Provide nor @Invoke", gid(entry))
+	}
+}
+
+func validateProvides(entry annotation.Entry, provides map[int]Annotation) error {
+	for idx, ann := range provides {
+		if entry.Func.Results[idx].Type == "error" {
+			return errors.NotValidf("@Provide on %s points to the error result %d", gid(entry), idx)
+		}
+		if ann.Name != "" && ann.Group != "" {
+			return errors.NotValidf("@Provide on %s result %d cannot have both name and group", gid(entry), idx)
+		}
 	}
 	return nil
 }
 
-// buildGraphFromDependencies constructs a dependency graph from provider and injector mappings.
-//
-// Arguments:
-// - ctx: context for logging and error handling.
-// - out: map where keys are provider IDs and values are provider components.
-// - in: map where keys are injector IDs and values are lists of injector components.
-//
-// Returns:
-// - A pointer to `graph.Graph[Component]` with dependency edges.
-// - Error if a dependency edge cannot be formed due to missing provider.
-func buildGraphFromDependencies(ctx context.Context, out map[string]Component, in map[string][]Component) (*graph.Graph[Component], error) {
-	g := graph.NewGraph[Component]()
-	for _, provider := range out {
-		providerID := gid(provider.Entry)
-		g.AddVertex(providerID, provider)
-	}
-
-	for id, injectors := range in {
-		provider, exists := out[id]
-		if !exists {
-			return nil, errors.NotFoundf("provider not found for %s", id)
+func validateInjects(entry annotation.Entry, injects map[int]Annotation) error {
+	for idx, ann := range injects {
+		if ann.Name != "" && ann.Group != "" {
+			return errors.NotValidf("@Inject on %s parameter %d cannot have both name and group", gid(entry), idx)
 		}
-		for _, injector := range injectors {
-			injectorID := gid(injector.Entry)
-			g.AddVertex(injectorID, injector)
-			g.AddEdge(gid(provider.Entry), injectorID)
+		if _, ok := sliceElem(entry.Func.Parameters[idx].Type); ann.Group != "" && !ok {
+			return errors.NotValidf("@Inject(group=%s) on %s parameter %d must be a slice", ann.Group, gid(entry), idx)
 		}
 	}
-
-	return g, logJSON(ctx, g) // Log final graph
+	return nil
 }
 
-// gid generates a unique identifier for a graph vertex based on the entry's path and function name.
-//
-// Arguments:
-// - entry: `annotation.Entry` struct for which a unique ID is required.
-//
-// Returns:
-// - A string representing a unique identifier for the vertex.
+// addIndexed validates the index of a @Provide/@Inject and stores it.
+func addIndexed(dst map[int]Annotation, ann Annotation, size int, kind, what string, entry annotation.Entry) error {
+	if ann.Index == nil {
+		return errors.NotValidf("index parameter is required in %s annotation for %s", kind, gid(entry))
+	}
+	idx := *ann.Index
+	if idx < 0 || idx >= size {
+		return errors.NotValidf("%s index %d on %s is out of range: the function has %d %s(s)", kind, idx, gid(entry), size, what)
+	}
+	if _, exists := dst[idx]; exists {
+		return errors.NotValidf("%s index %d is declared twice on %s", kind, idx, gid(entry))
+	}
+	dst[idx] = ann
+	return nil
+}
+
+// gid generates a unique identifier for a graph vertex based on the entry's
+// import path and function name.
 func gid(entry annotation.Entry) string {
-	return fmt.Sprintf("%s_%s", entry.Path, entry.Func.Name)
+	return fmt.Sprintf("%s.%s", entry.Path, entry.Func.Name)
 }
 
-// xid generates a unique identifier for dependencies based on package, type, and annotation.
-//
-// This function ensures identifiers are unique even for references (`*Type`) and different
-// annotations with the same type.
-//
-// Arguments:
-// - pkg: the package path of the component.
-// - tp: the type of the dependency (parameter or return type).
-// - ann: the annotation applied to the component.
-//
-// Returns:
-// - A string representing a unique identifier for the dependency.
+// xid identifies a provided or injected value by its qualified type and
+// annotation (default, named or grouped).
 func xid(pkg, tp string, ann Annotation) string {
-	ref := strings.Contains(tp, "*")
-	tp = strings.ReplaceAll(tp, "*", "")
-	if !strings.Contains(tp, ".") {
-		tp = fmt.Sprintf("%s.%s", pkg, tp)
-	}
-	if ref {
-		tp = "*" + tp
-	}
-	return fmt.Sprintf("%s_%s", tp, ann.ID())
+	return fmt.Sprintf("%s_%s", qualifyType(pkg, tp), ann.ID())
 }
 
-// isValidEntry checks if an entry is a valid function and has compatible annotations.
-//
-// This function ensures that the entry is a function and its annotations do not contain
-// conflicting `Provide` and `Inject` annotations.
-//
-// Arguments:
-// - entry: `annotation.Entry` to validate.
-//
-// Returns:
-// - Boolean indicating whether the entry is valid.
-func isValidEntry(entry annotation.Entry) bool {
-	if !entry.IsFunc() || !isValidCombinedAnnotations(entry.Annotations) {
-		log.Debugf("Invalid entry or annotations for %s", entry.Path)
-		return false
+// injectID returns the id a parameter depends on. A group parameter `[]T`
+// depends on the providers of T in that group.
+func injectID(pkg, tp string, ann Annotation) string {
+	if ann.Group != "" {
+		if elem, ok := sliceElem(tp); ok {
+			tp = elem
+		}
 	}
-	return true
+	return xid(pkg, tp, ann)
 }
 
-// isValidCombinedAnnotations checks for conflicting combinations of `Provide` and `Inject` annotations.
-//
-// Arguments:
-// - annotations: a slice of `annotation.Annotation` to check.
-//
-// Returns:
-// - Boolean indicating whether the annotations are valid.
-func isValidCombinedAnnotations(annotations []annotation.Annotation) bool {
-	var all []string
-	for _, ann := range annotations {
-		all = append(all, strings.ToUpper(ann.Name))
+func sortedIndexes(m map[int]Annotation) []int {
+	idx := make([]int, 0, len(m))
+	for i := range m {
+		idx = append(idx, i)
 	}
-	return !ustrings.SliceContainsAll(all, []string{AnnotationTypePROVIDE.String(), AnnotationTypeINJECT.String()})
+	sort.Ints(idx)
+	return idx
 }
 
-// isValidAnnotation verifies if an annotation name is supported.
-//
-// Arguments:
-// - name: the name of the annotation to validate.
-//
-// Returns:
-// - Boolean indicating whether the annotation name is valid.
-func isValidAnnotation(name string) bool {
-	return ustrings.SliceContains(
-		[]string{AnnotationTypeMODULE.String(), AnnotationTypePROVIDE.String(), AnnotationTypeINJECT.String(), AnnotationTypeINVOKE.String()},
-		strings.ToUpper(name))
-}
-
-// logJSON logs the JSON-encoded representation of the data for debugging.
-//
-// Arguments:
-// - ctx: context for error handling.
-// - data: the data to be JSON-encoded and logged.
-//
-// Returns:
-// - Error if encoding fails, nil otherwise.
-func logJSON(ctx context.Context, data interface{}) error {
-	bytes, err := json.Encode(ctx, data)
-	if err != nil {
-		return fmt.Errorf("failed to encode data: %w", err)
+func sortedKeys(m map[string][]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
 	}
-	fmt.Println(string(bytes))
-	return nil
+	sort.Strings(keys)
+	return keys
 }

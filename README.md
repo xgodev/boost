@@ -25,6 +25,7 @@ The project is organized into modular packages, each with specific responsibilit
 - **extra**: Additional functionalities (health checks, middleware, multiserver)
 - **factory**: Factory pattern implementations for various components
 - **fx**: Dependency injection and lifecycle management
+- **inject**: Generator of fx modules from `@Provide`/`@Inject`/`@Invoke` annotations
 - **model**: Data structures and interfaces definitions
 - **utils**: Various utilities
 - **wrapper**: Adapters for external libraries (cache, config, log, publisher)
@@ -173,6 +174,12 @@ The Wrapper package provides adapters for external libraries, including cache, c
 The FX package provides dependency injection and component lifecycle management functionalities.
 
 [FX Documentation](./fx/README.md)
+
+### Inject
+
+The Inject package generates fx modules from `@Provide`, `@Inject` and `@Invoke` comment annotations, checking the dependency graph at generation time.
+
+[Inject Documentation](./inject/README.md)
 
 ### Extra
 
