@@ -68,85 +68,19 @@ func main() {
 
 ### Claude Code plugin
 
-A [Claude Code](https://claude.com/claude-code) plugin (`golang-boost`) teaches
-AI agents how to write boost-shaped Go code — Iron Laws (`boost.Start`, handler
-typing, config layer), HTTP APIs with Echo, event-driven functions, and the
-maintainer-side layout for new contribs. The plugin lives in its own repo,
-**[`xgodev/boost-claude`](https://github.com/xgodev/boost-claude)**, so
-installing it no longer clones this entire framework. Install once in your
-Claude Code session:
+AI agents get boost-shaped Go guidance (Iron Laws, Echo APIs, event-driven
+functions, contrib layout) plus the Quality Gate through the all-in-one
+**`claude-plugin@xgodev`** plugin (repo
+[`xgodev/claude-plugin`](https://github.com/xgodev/claude-plugin)). Install once
+in your Claude Code session:
 
 ```
-/plugin marketplace add xgodev/boost-claude
-/plugin install golang-boost@xgodev-boost
+/plugin marketplace add xgodev/claude-plugin
+/plugin install claude-plugin@xgodev
 ```
 
-> **Moved from this repo.** The plugin used to be distributed from
-> `xgodev/boost` directly. If you installed it that way, migrate:
-> ```
-> /plugin uninstall golang-boost@xgodev-boost
-> /plugin marketplace remove xgodev-boost
-> /plugin marketplace add xgodev/boost-claude
-> /plugin install golang-boost@xgodev-boost
-> ```
-
-#### Update
-
-Inside Claude Code:
-
-```
-/plugin update golang-boost
-```
-
-From the CLI:
-
-```bash
-claude plugin update golang-boost@xgodev-boost
-```
-
-If it reports `Plugin "..." not found`, pass the scope explicitly:
-
-```bash
-claude plugin update golang-boost@xgodev-boost --scope user   # or: project | local | managed
-```
-
-Use `claude plugin list` to find the scope where the plugin is installed.
-
-#### Auto-update
-
-Claude Code checks for plugin updates at startup, but **third-party
-marketplaces have auto-update disabled by default** — only Anthropic's
-official marketplaces update on their own. To enable it:
-
-Interactive: run `/plugin` → **Marketplaces** → select `xgodev-boost` →
-**Enable auto-update**.
-
-Or declaratively, in `~/.claude/settings.json` (global) — add
-`"autoUpdate": true` to the marketplace entry under
-`extraKnownMarketplaces`:
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "xgodev-boost": {
-      "source": {
-        "source": "git",
-        "url": "git@github.com:xgodev/boost-claude.git"
-      },
-      "autoUpdate": true
-    }
-  }
-}
-```
-
-The same works in a project's `.claude/settings.json` to pin auto-update
-for the team via the repo. Restart Claude Code for the change to take
-effect.
-
-> An update is only recognized when the `version` in
-> `.claude-plugin/plugin.json` is incremented. Commits without a
-> version bump do not trigger an update — even with auto-update on, Claude
-> Code reports "already at latest".
+The plugin is maintained in its own repo; this framework repo ships no plugin
+skills or marketplace.
 
 ## Main Components
 
