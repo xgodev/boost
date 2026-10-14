@@ -93,6 +93,15 @@ func (e *Err) Underlying() error {
 	return e.previous
 }
 
+// Unwrap returns the previous error in the stack, making boost typed errors
+// transparent to stdlib errors.Is / errors.As. boost's own Cause() is
+// single-level (the flattened root); Unwrap exposes the full chain so a
+// wrapped sentinel (e.g. context.Canceled) stays discoverable after the error
+// has been classified.
+func (e *Err) Unwrap() error {
+	return e.previous
+}
+
 // Cause returns the most recent error in the error stack that
 // meets one of these criteria: the original error that was raised; the new
 // error that was passed into the Wrap function; the most recently masked

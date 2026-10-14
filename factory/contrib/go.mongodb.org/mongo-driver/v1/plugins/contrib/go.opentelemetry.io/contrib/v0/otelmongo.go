@@ -2,6 +2,7 @@ package contrib
 
 import (
 	"context"
+
 	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
@@ -48,7 +49,6 @@ func (d *OtelMongo) Register(ctx context.Context) (mongo.ClientOptionsPlugin, mo
 		logger := log.FromContext(ctx)
 
 		logger.Trace("integrating opentelemetry in mongo")
-
 		options.SetMonitor(otelmongo.NewMonitor(otelmongo.WithTracerProvider(otel.TracerProvider)))
 
 		logger.Debug("opentelemetry successfully integrated in mongo")

@@ -1,8 +1,8 @@
 package datadog
 
 import (
+	echotrace "github.com/DataDog/dd-trace-go/contrib/labstack/echo.v4/v2"
 	"github.com/xgodev/boost/wrapper/config"
-	echotrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/labstack/echo.v4"
 )
 
 type Options struct {

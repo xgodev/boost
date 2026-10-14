@@ -27,3 +27,10 @@ Godeps/_workspace/
 dist/
 gen/
 .vscode/
+
+# Local Claude Code config (untracked) — but keep versioned internal project
+# skills, hooks and team settings (settings.local.json stays ignored)
+.claude/*
+!.claude/skills/
+!.claude/hooks/
+!.claude/settings.json

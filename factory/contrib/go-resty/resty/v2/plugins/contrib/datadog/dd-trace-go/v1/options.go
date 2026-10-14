@@ -1,8 +1,8 @@
 package datadog
 
 import (
+	ddtrace "github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"github.com/xgodev/boost/wrapper/config"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 )
 
 // Options represents datadog client for resty options.

@@ -1,11 +1,13 @@
 package cobra
 
 import (
+	"context"
 	"fmt"
-	"github.com/xgodev/boost/wrapper/config"
-	"github.com/xgodev/boost/wrapper/config/model"
 	"net"
 	"time"
+
+	"github.com/xgodev/boost/wrapper/config"
+	"github.com/xgodev/boost/wrapper/config/model"
 
 	"github.com/spf13/cobra"
 	"github.com/xgodev/boost/wrapper/log"
@@ -34,6 +36,23 @@ func Run(rootCmd *cobra.Command, cmds ...*cobra.Command) error {
 	rootCmd.PersistentFlags().StringSlice(model.ConfArgument, nil, "path to one or more config files")
 
 	return rootCmd.Execute()
+}
+
+// Run with context and uses the args and run through the command tree finding
+// appropriate matches for commands and then corresponding flags.
+func RunContext(ctx context.Context, rootCmd *cobra.Command, cmds ...*cobra.Command) error {
+
+	rootCmd.AddCommand(cmds...)
+
+	rootCmd.DisableFlagParsing = true
+
+	for _, entry := range config.Entries() {
+		parseFlag(rootCmd, entry)
+	}
+
+	rootCmd.PersistentFlags().StringSlice(model.ConfArgument, nil, "path to one or more config files")
+
+	return rootCmd.ExecuteContext(ctx)
 }
 
 func parseFlag(cmd *cobra.Command, c config.Config) { // nolint

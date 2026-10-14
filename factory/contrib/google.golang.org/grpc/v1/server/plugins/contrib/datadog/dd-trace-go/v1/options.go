@@ -1,8 +1,8 @@
 package datadog
 
 import (
+	grpctrace "github.com/DataDog/dd-trace-go/contrib/google.golang.org/grpc/v2"
 	"github.com/xgodev/boost/wrapper/config"
-	grpctrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/google.golang.org/grpc"
 )
 
 // Options datadog plugin for grpc server options.

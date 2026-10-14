@@ -4,12 +4,11 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/ext"
+	"github.com/DataDog/dd-trace-go/v2/ddtrace/tracer"
 	"github.com/go-resty/resty/v2"
 	datadog "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
 	"github.com/xgodev/boost/wrapper/log"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 // Datadog represents Datadog integration with resty.
@@ -18,7 +17,7 @@ type Datadog struct {
 }
 
 // NewDatadogWithConfigPath returns a new Datadog with options from config path.
-func NewDatadogWithConfigPath(path string, spanOptions ...ddtrace.StartSpanOption) (*Datadog, error) {
+func NewDatadogWithConfigPath(path string, spanOptions ...tracer.StartSpanOption) (*Datadog, error) {
 	o, err := NewOptionsWithPath(path, spanOptions...)
 	if err != nil {
 		return nil, err
@@ -32,7 +31,7 @@ func NewDatadogWithOptions(options *Options) *Datadog {
 }
 
 // NewDatadog returns a new DataDog with default options.
-func NewDatadog(traceOptions ...ddtrace.StartSpanOption) *Datadog {
+func NewDatadog(traceOptions ...tracer.StartSpanOption) *Datadog {
 	o, err := NewOptions(traceOptions...)
 	if err != nil {
 		log.Fatalf(err.Error())
@@ -62,7 +61,7 @@ func (d *Datadog) Register(ctx context.Context, client *resty.Client) error {
 	logger.Trace("integrating resty in datadog")
 
 	client.OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
-		spanOptions := []ddtrace.StartSpanOption{
+		spanOptions := []tracer.StartSpanOption{
 			tracer.ResourceName(request.URL),
 			tracer.SpanType(ext.SpanTypeHTTP),
 			tracer.Tag(ext.HTTPMethod, request.Method),

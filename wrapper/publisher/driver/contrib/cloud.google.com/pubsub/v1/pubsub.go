@@ -8,7 +8,7 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	v2 "github.com/cloudevents/sdk-go/v2"
-	"github.com/matryer/try"
+	"gopkg.in/matryer/try.v1"
 
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
@@ -74,8 +74,11 @@ func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.Publ
 		go func(ev *v2.Event) {
 			defer wg.Done()
 
-			logger := log.FromContext(ctx).WithTypeOf(*p).
-				WithField("subject", ev.Subject()).
+			base := context.WithoutCancel(ctx)
+			pubCtx, cancel := context.WithTimeout(base, p.options.PublishTimeout)
+			defer cancel()
+
+			logger := log.WithField("subject", ev.Subject()).
 				WithField("id", ev.ID())
 
 			// Convert event data
@@ -98,10 +101,15 @@ func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.Publ
 				"ce_id":          ev.ID(),
 				"ce_source":      ev.Source(),
 				"ce_type":        ev.Type(),
-				"content-type":   ev.DataContentType(),
-				"ce_time":        ev.Time().String(),
+				"ce_time":        ev.Time().UTC().Format(time.RFC3339),
 				"ce_path":        "/",
 				"ce_subject":     ev.Subject(),
+			}
+
+			if ct := ev.DataContentType(); ct != "" {
+				attrs["content-type"] = ct
+			} else {
+				attrs["content-type"] = "application/json"
 			}
 
 			msg := &pubsub.Message{ID: ev.ID(), Data: raw, Attributes: attrs, PublishTime: time.Now()}
@@ -114,8 +122,8 @@ func (p *client) send(ctx context.Context, events []*v2.Event) ([]publisher.Publ
 			topic := p.getTopic(ev.Subject())
 			err = try.Do(func(attempt int) (bool, error) {
 				logger.Tracef("publishing to topic %s, attempt %d", ev.Subject(), attempt)
-				r := topic.Publish(ctx, msg)
-				if _, err := r.Get(ctx); err != nil {
+				r := topic.Publish(pubCtx, msg)
+				if _, err := r.Get(pubCtx); err != nil {
 					log.Error(err)
 					return attempt < 5, errors.NewInternal(err, "Pub/Sub publish failed")
 				}
@@ -151,6 +159,7 @@ func (p *client) getTopic(subject string) *pubsub.Topic {
 		return t
 	}
 	t := p.client.Topic(subject)
+	t.PublishSettings = p.options.Settings
 	p.topics[subject] = t
 	return t
 }
