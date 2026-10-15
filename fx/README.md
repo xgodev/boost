@@ -14,6 +14,45 @@ The `modules` subpackage contains implementations of pre-defined modules that ca
 
 The available modules include integrations with various components of the Boost ecosystem, such as caching systems, configuration, logging, and message publishing. Each module is designed to be independent and easily combinable with other modules.
 
+### Factory modules
+
+Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wraps its default constructor. Plugins are optional (`[]Plugin` in the graph). Resources with a close/shutdown are released on app stop.
+
+| Module | Entry points | Provides | Requires from the app |
+|---|---|---|---|
+| `allegro/bigcache/v3` | `Module` | `*bigcache.BigCache` | — |
+| `aws/aws-sdk-go-v2/v1` | `Module` | `aws.Config` | — |
+| `cloud.google.com/bigquery/v1` | `Module` | `*bigquery.Client` | — |
+| `cloud.google.com/firestore/v1` | `Module` | `*firestore.Client` | — |
+| `cloud.google.com/pubsub/v1` | `Module` | `*pubsub.Client` | — |
+| `confluentinc/confluent-kafka-go/v2` | `ProducerModule`, `ConsumerModule` | kafka producer / consumer | — |
+| `coocood/freecache/v1` | `Module` | `*freecache.Cache` | — |
+| `datadog/dd-trace-go/v1` | `TracerModule`, `ProfilerModule` | starts tracer/profiler | — |
+| `elastic/go-elasticsearch/v8` | `Module`, `BulkModule` | `*elasticsearch.Client` | — |
+| `go-resty/resty/v2` | `Module` | `*resty.Client` | — |
+| `go.mongodb.org/mongo-driver/v1`, `v2` | `Module` | `*mongo.Conn`, `*mongo.Database` | — |
+| `go.opentelemetry.io/otel/v1` | `TracerModule`, `MeterModule` | starts tracer/meter providers | — |
+| `gocloud.dev/pubsub/v0` | `TopicModule`, `SubscriptionModule` | `*pubsub.Topic`, `*pubsub.Subscription` | — |
+| `gocql/gocql/v1` | `Module` | `*gocql.Session` | — |
+| `godror/godror/v0` | `Module` | `*sql.DB` | — |
+| `google.golang.org/grpc/v1/client` | `Module` | `*grpc.ClientConn` | — |
+| `google.golang.org/grpc/v1/server` | `Module` | `*server.Server`, `*grpc.Server` | — |
+| `graphql-go/graphql/v0` | `Module` | `*handler.Handler` | `*graphql.Schema` |
+| `hashicorp/memdb/v1` | `Module` | `*memdb.MemDB` | `*memdb.DBSchema` |
+| `jackc/pgx/v5` | `Module` | `*sql.DB` | — |
+| `jlaffaye/ftp/v0` | `Module` | `*ftp.ServerConn` | — |
+| `k8s.io/client-go/v0` | `Module` | `*kubernetes.Clientset` | — |
+| `labstack/echo/v4` | `Module` | `*echo.Server`, `*echo.Echo` | — |
+| `lovoo/goka/v1` | `Module` | goka emitter | — |
+| `mittwald/vaultgo/v0` | `Module` | `*vault.Client` | — |
+| `nats-io/nats.go/v1` | `Module` | nats connection | — |
+| `panjf2000/ants/v2` | `Module` | `*ants.Wrapper` | — |
+| `prometheus/client_golang/v1` | `PusherModule` | starts push gateway pusher (if enabled) | — |
+| `redis/go-redis/v9` | `ClientModule`, `ClusterModule` | `*redis.Client`, `*redis.ClusterClient` | — |
+| `tidwall/buntdb/v1` | `Module` | `*buntdb.DB` | — |
+
+`godror` and `pgx` both provide `*sql.DB`: compose only one per app.
+
 ## How to Use
 
 To use the FX package in your application:
