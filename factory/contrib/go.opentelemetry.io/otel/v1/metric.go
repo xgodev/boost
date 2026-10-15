@@ -20,7 +20,11 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-var MeterProvider metric.MeterProvider
+// MeterProvider is the provider components instrument with. Until
+// StartMeterProvider succeeds it holds OpenTelemetry's global delegate, which
+// forwards to the provider Start registers, so instruments created before
+// Start still report to it.
+var MeterProvider = otel.GetMeterProvider()
 
 // StartMeterProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
 func StartMeterProvider(ctx context.Context, startOptions ...sdkmetric.Option) {
