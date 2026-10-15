@@ -8,8 +8,8 @@ import (
 	"go.uber.org/fx"
 )
 
-func TestTracerAndMeterModulesComposeInOneApp(t *testing.T) {
+func TestModuleGraphIsComplete(t *testing.T) {
 	boost.Start()
 
-	require.NoError(t, fx.ValidateApp(TracerModule(), MeterModule()))
+	require.NoError(t, fx.ValidateApp(Module()))
 }

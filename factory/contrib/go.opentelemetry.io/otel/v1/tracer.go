@@ -2,9 +2,10 @@ package otel
 
 import (
 	"context"
+	"sync"
+
 	"github.com/go-logr/logr"
 	"go.opentelemetry.io/otel/propagation"
-	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/xgodev/boost/wrapper/log"
@@ -15,7 +16,6 @@ import (
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 	"google.golang.org/grpc/credentials"
 )
 
@@ -45,8 +45,6 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 	tracerOnce.Do(func() {
 
-		TracerProvider = noop.NewTracerProvider()
-
 		logger := log.FromContext(ctx)
 
 		otel.SetLogger(logr.New(&Logger{}))
@@ -75,7 +73,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		startOptions = append(startOptions,
 			sdktrace.WithBatcher(exporter),
-			sdktrace.WithSampler(sdktrace.AlwaysSample()),
+			sdktrace.WithSampler(sdktrace.TraceIDRatioBased(options.Trace.Ratio)),
 			sdktrace.WithResource(rs),
 		)
 
@@ -93,7 +91,7 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 	var exporter *otlptrace.Exporter
 	var err error
 
-	switch options.Protocol {
+	switch options.Trace.Protocol {
 	case "grpc":
 		exporter, err = NewGRPCTracerExporter(ctx, options)
 	default:
@@ -105,9 +103,9 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	var exporterOpts []otlptracehttp.Option
 
-	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Endpoint))
+	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Trace.Endpoint))
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlptracehttp.WithInsecure())
 	}
 
@@ -121,10 +119,10 @@ func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Ex
 
 func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	exporterOpts := []otlptracegrpc.Option{
-		otlptracegrpc.WithEndpoint(options.Endpoint),
+		otlptracegrpc.WithEndpoint(options.Trace.Endpoint),
 	}
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlptracegrpc.WithInsecure())
 	} else if options.TLS.Cert != "" {
 		creds, err := credentials.NewClientTLSFromFile(options.TLS.Cert, "")

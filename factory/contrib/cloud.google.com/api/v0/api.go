@@ -2,13 +2,14 @@ package api
 
 import (
 	"context"
+	"net/http"
+	"net/url"
+	"os"
+
 	"github.com/xgodev/boost/wrapper/log"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"net/http"
-	"net/url"
-	"os"
 )
 
 // ApplyAPIOptions retorna os option.ClientOption da biblioteca
@@ -18,7 +19,6 @@ func ApplyAPIOptions(ctx context.Context, o *Options) []option.ClientOption {
 	logger := log.FromContext(ctx)
 
 	var opts []option.ClientOption
-	// proxy
 	if o.Proxy != "" {
 		if u, err := url.Parse(o.Proxy); err == nil {
 			httpc := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(u)}}
@@ -52,8 +52,6 @@ func ApplyAPIOptions(ctx context.Context, o *Options) []option.ClientOption {
 	if o.UserAgent != "" {
 		opts = append(opts, option.WithUserAgent(o.UserAgent))
 	}
-
-	// opts = append(opts, option.WithLogger(log.GetLogger()))
 
 	return opts
 }
