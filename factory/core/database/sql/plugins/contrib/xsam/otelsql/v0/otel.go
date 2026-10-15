@@ -105,8 +105,11 @@ func (p *OTel) InitDB(ctx context.Context, db *sql.DB) error {
 		opts = append(opts, otelsql.WithMeterProvider(otelboost.MeterProvider))
 	}
 
-	return otelsql.RegisterDBStatsMetrics(
+	// intentional: the registration lives as long as the *sql.DB; the Plugin
+	// contract has no close hook to unregister it.
+	_, err := otelsql.RegisterDBStatsMetrics(
 		db,
 		opts...,
 	)
+	return err
 }
