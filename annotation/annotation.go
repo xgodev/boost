@@ -57,25 +57,14 @@ func asMap(value string) map[string]interface{} {
 // splitTopLevel splits s on the commas that are outside double quotes and
 // brackets. ok is false when quotes or brackets are unbalanced.
 func splitTopLevel(s string) (items []string, ok bool) {
-	var depth, start int
-	var inQuote, escaped bool
+	var sc scanner
+	start := 0
 	for i, r := range s {
-		switch {
-		case escaped:
-			escaped = false
-		case inQuote && r == '\\':
-			escaped = true
-		case r == '"':
-			inQuote = !inQuote
-		case inQuote:
-		case r == '(' || r == '[' || r == '{':
-			depth++
-		case r == ')' || r == ']' || r == '}':
-			depth--
-			if depth < 0 {
-				return nil, false
-			}
-		case r == ',' && depth == 0:
+		sep, balanced := sc.step(r)
+		if !balanced {
+			return nil, false
+		}
+		if sep {
 			items = append(items, s[start:i])
 			start = i + 1
 		}
@@ -83,7 +72,35 @@ func splitTopLevel(s string) (items []string, ok bool) {
 	if strings.TrimSpace(s) != "" {
 		items = append(items, s[start:])
 	}
-	return items, !inQuote && depth == 0
+	return items, !sc.inQuote && sc.depth == 0
+}
+
+// scanner tracks double quotes and bracket depth while reading a value.
+type scanner struct {
+	depth   int
+	inQuote bool
+	escaped bool
+}
+
+// step reads r and reports whether it is a top-level comma and whether no
+// closing bracket has appeared without its opening one.
+func (s *scanner) step(r rune) (sep bool, balanced bool) {
+	switch {
+	case s.escaped:
+		s.escaped = false
+	case s.inQuote:
+		s.escaped = r == '\\'
+		s.inQuote = r != '"'
+	case r == '"':
+		s.inQuote = true
+	case strings.ContainsRune("([{", r):
+		s.depth++
+	case strings.ContainsRune(")]}", r):
+		s.depth--
+	case r == ',':
+		return s.depth == 0, true
+	}
+	return false, s.depth >= 0
 }
 
 func typedValue(value string) interface{} {
