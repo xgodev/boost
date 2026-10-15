@@ -20,6 +20,7 @@ Boost is a modular and extensible framework for Go application development, desi
 
 The project is organized into modular packages, each with specific responsibilities:
 
+- **annotation**: Annotations read from Go doc comments (`// @Name(key=value)`)
 - **bootstrap**: Components for application initialization
 - **examples**: Framework usage examples
 - **extra**: Additional functionalities (health checks, middleware, multiserver)
@@ -107,6 +108,12 @@ The Wrapper package provides adapters for external libraries, including cache, c
 The FX package provides dependency injection and component lifecycle management functionalities.
 
 [FX Documentation](./fx/README.md)
+
+### Annotation
+
+The Annotation package collects `// @Name(key=value)` annotations from Go doc comments and returns the annotated structs, methods and functions, for code generators to build on.
+
+[Annotation Documentation](./annotation/README.md)
 
 ### Extra
 
