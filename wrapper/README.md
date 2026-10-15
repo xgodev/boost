@@ -48,6 +48,13 @@ The `publisher` subpackage offers abstractions for message publishing/subscripti
 
 This facilitates asynchronous communication between components and services.
 
+`Publisher.Publish` returns an error when the driver fails or when any event
+fails. A per-event failure comes back as one `Internal` error that joins every
+failed event's error (tagged with its event ID), so `errors.Is`/`errors.As`
+still reach each cause. Middlewares keep receiving the per-event
+`[]PublishOutput` (with each event's `Error`) and a nil chain error; the
+aggregate error is built after the middleware chain.
+
 ## How to Use
 
 To use the Wrapper package in your application:
