@@ -1,0 +1,16 @@
+digraph InjectGraph {
+	graph [splines=true, overlap=false];
+	node [fontname="Arial", style=filled];
+	edge [color="#606060"];
+	"github.com/xgodev/boost/inject/examples/simple/app.Announce" [label="app.Announce", shape=octagon, fillcolor="#FFD700"];
+	"github.com/xgodev/boost/inject/examples/simple/app.NewBoard" [label="app.NewBoard", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/app.NewBoard" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+	"github.com/xgodev/boost/inject/examples/simple/greeting.NewFormalGreeter" [label="greeting.NewFormalGreeter", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/greeting.NewFormalGreeter" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+	"github.com/xgodev/boost/inject/examples/simple/greeting.NewGreeter" [label="greeting.NewGreeter", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/greeting.NewGreeter" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+	"github.com/xgodev/boost/inject/examples/simple/names.Alice" [label="names.Alice", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/names.Alice" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+	"github.com/xgodev/boost/inject/examples/simple/names.Bob" [label="names.Bob", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/names.Bob" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+}
