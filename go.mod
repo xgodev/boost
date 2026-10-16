@@ -52,7 +52,6 @@ require (
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/jedib0t/go-pretty/v6 v6.8.3
 	github.com/jlaffaye/ftp v0.2.4
-	github.com/jpfaria/tests v0.0.4
 	github.com/knadh/koanf v1.5.0
 	github.com/labstack/echo/v4 v4.15.4
 	github.com/labstack/gommon v0.5.0

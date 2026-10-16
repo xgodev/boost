@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/wrapper/log"
-	"github.com/xgodev/boost/wrapper/log/contrib/rs/zerolog/v1"
 	"gopkg.in/yaml.v3"
-	"os"
 )
 
 type RestResponse struct {
@@ -18,14 +19,12 @@ type RestResponse struct {
 
 func main() {
 
-	zerolog.NewLogger(zerolog.WithLevel("TRACE"))
+	boost.Start()
 
 	basePath, err := os.Getwd()
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
-
-	log.Infof("current path is %s", basePath)
 
 	collector, err := annotation.Collect(
 		annotation.WithFilters("Rest", "Boost", "Inject"),
@@ -33,7 +32,7 @@ func main() {
 		annotation.WithPackages("github.com/xgodev/boost/annotation"),
 	)
 	if err != nil {
-		log.Error(err.Error())
+		log.Fatal(err)
 	}
 
 	entries := collector.Entries()
@@ -46,7 +45,7 @@ func main() {
 			if annon.Name == "RestResponse" {
 				rp := RestResponse{}
 				if err := annon.Decode(&rp); err != nil {
-					panic(err)
+					log.Fatal(err)
 				}
 
 				j, _ := json.Marshal(rp)
