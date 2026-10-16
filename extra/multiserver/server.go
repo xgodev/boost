@@ -12,7 +12,12 @@ type d struct {
 	Srv Server
 }
 
-var s []d
+// s records every served server; Check reads it from request goroutines
+// while Serve's goroutines mark servers down, so mu guards it.
+var (
+	mu sync.Mutex
+	s  []d
+)
 
 type Server interface {
 	Serve(context.Context)
@@ -25,28 +30,18 @@ func Serve(ctx context.Context, srvs ...Server) {
 	case 0:
 		panic("no servers configured")
 	case 1:
-		s = append(s, d{
-			Ok:  true,
-			Srv: srvs[0],
-		})
+		i := add(srvs[0])
 		srvs[0].Serve(ctx)
-		s[0].Ok = false
+		markDown(i)
 	default:
 		wg := new(sync.WaitGroup)
-		wg.Add(len(srvs))
 
-		for i, srv := range srvs {
-			i := i
-			srv := srv
-			s = append(s, d{
-				Ok:  true,
-				Srv: srv,
-			})
-			go func() {
+		for _, srv := range srvs {
+			i := add(srv)
+			wg.Go(func() {
 				srv.Serve(ctx)
-				s[i].Ok = false
-				wg.Done()
-			}()
+				markDown(i)
+			})
 		}
 
 		wg.Wait()
@@ -54,12 +49,33 @@ func Serve(ctx context.Context, srvs ...Server) {
 
 }
 
-func Check(ctx context.Context) error {
+func add(srv Server) int {
+	mu.Lock()
+	defer mu.Unlock()
+	s = append(s, d{
+		Ok:  true,
+		Srv: srv,
+	})
+	return len(s) - 1
+}
+
+func markDown(i int) {
+	mu.Lock()
+	defer mu.Unlock()
+	s[i].Ok = false
+}
+
+func snapshot() []d {
+	mu.Lock()
+	defer mu.Unlock()
 	if len(s) == 0 {
 		panic("no servers configured")
 	}
+	return append([]d(nil), s...)
+}
 
-	for _, a := range s {
+func Check(ctx context.Context) error {
+	for _, a := range snapshot() {
 		if !a.Ok {
 			return errors.ServiceUnavailablef("one of servers is down")
 		}
@@ -69,11 +85,7 @@ func Check(ctx context.Context) error {
 }
 
 func Shutdown(ctx context.Context) {
-	if len(s) == 0 {
-		panic("no servers configured")
-	}
-
-	for _, a := range s {
+	for _, a := range snapshot() {
 		a.Srv.Shutdown(ctx)
 	}
 }
