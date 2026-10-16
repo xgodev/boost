@@ -1,0 +1,62 @@
+{{define "door" -}}
+{{.Header}}
+
+package {{.Package}}
+
+import (
+	"sync"
+
+	"go.uber.org/fx"
+{{range .Imports}}
+	{{.Alias}} "{{.Path}}"
+{{- end}}
+)
+{{if .Init}}
+func init() {
+{{- range .Init}}
+	{{.}}
+{{- end}}
+}
+{{end}}
+var {{.Var}}Once sync.Once
+
+// {{.Func}}Module {{.Doc}}
+// It returns an empty option after the first call.
+func {{.Func}}Module() fx.Option {
+	options := fx.Options()
+
+	{{.Var}}Once.Do(func() {
+		options = fx.Module({{printf "%q" .Name}},
+{{- range .Options}}
+			{{.}},
+{{- end}}
+		)
+	})
+
+	return options
+}
+{{end}}
+
+{{define "modules" -}}
+{{.Header}}
+
+package {{.Package}}
+
+import (
+	"go.uber.org/fx"
+{{range .Imports}}
+	{{.Alias}} "{{.Path}}"
+{{- end}}
+)
+
+// Modules returns the doors of app {{.Package}}{{if .Servers}} and the multiserver that runs its servers{{end}}:
+//
+//	fxfact.NewApp({{.Package}}.Modules()...).Run()
+func Modules() []fx.Option {
+	return []fx.Option{
+{{- range .Modules}}
+		{{.}},
+{{- end}}
+	}
+}
+{{end}}

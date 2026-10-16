@@ -192,6 +192,8 @@ func TestNewSpec_Errors(t *testing.T) {
 		{"invalid server name", []annotation.Entry{live(rest("method=GET, path=/live, server=Admin"))}, errors.IsNotValid, "server name"},
 		{"reserved server name", []annotation.Entry{live(rest("method=GET, path=/live, server=function"))}, errors.IsNotValid, "server name"},
 		{"invalid app name", []annotation.Entry{live(rest("method=GET, path=/live, app=my-app"))}, errors.IsNotValid, "app name"},
+		{"app name is a Go keyword", []annotation.Entry{live(rest("method=GET, path=/live, app=go"))}, errors.IsNotValid, "app name"},
+		{"app name main", []annotation.Entry{live(rest("method=GET, path=/live, app=main"))}, errors.IsNotValid, "app name"},
 		{"server used by two kinds", []annotation.Entry{live(rest("method=GET, path=/live, server=grpc")), grpcSvc("register=healthpb.RegisterHealthServer")}, errors.IsNotValid, "grpc"},
 		{"grpc without provide", []annotation.Entry{decl("health", "", "NewServer", nil, []string{"*Server"}, ann("GRPC", "register=healthpb.RegisterHealthServer"))}, errors.IsNotValid, "@Provide"},
 		{"grpc with named provide", []annotation.Entry{decl("health", "", "NewServer", nil, []string{"*Server"},

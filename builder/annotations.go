@@ -1,11 +1,13 @@
 package builder
 
 import (
+	"go/token"
 	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/xgodev/boost/annotation"
+	"github.com/xgodev/boost/inject"
 	"github.com/xgodev/boost/model/errors"
 )
 
@@ -43,14 +45,17 @@ var (
 	restMethods = map[string]bool{
 		"GET": true, "POST": true, "PUT": true, "PATCH": true, "DELETE": true, "HEAD": true, "OPTIONS": true,
 	}
-	// functionAdapters maps the adapter of @Function to the import paths of
-	// the fx modules that run it.
-	functionAdapters = map[string][]string{
-		"cloudevents": {fxAdapterRoot + "/cloudevents/sdk-go/v2/core/http"},
-		"kafka":       {fxAdapterRoot + "/confluentinc/confluent-kafka-go/v2"},
-		"nats":        {fxAdapterRoot + "/nats-io/nats.go/v1"},
-		// the version (v1 or v2) is picked by config, so both are included
-		"pubsub": {fxAdapterRoot + "/cloud.google.com/pubsub/v1", fxAdapterRoot + "/cloud.google.com/pubsub/v2"},
+	// functionAdapters maps the adapter of @Function to the fx modules that
+	// run it, imported under fixed aliases by the generated function door.
+	functionAdapters = map[string][]inject.ImportData{
+		"cloudevents": {{Alias: "cloudeventsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/core/http"}},
+		"kafka":       {{Alias: "kafkafx", Path: fxAdapterRoot + "/confluentinc/confluent-kafka-go/v2"}},
+		"nats":        {{Alias: "natsfx", Path: fxAdapterRoot + "/nats-io/nats.go/v1"}},
+		// each version is enabled by its own config, so both are included
+		"pubsub": {
+			{Alias: "pubsubv1fx", Path: fxAdapterRoot + "/cloud.google.com/pubsub/v1"},
+			{Alias: "pubsubv2fx", Path: fxAdapterRoot + "/cloud.google.com/pubsub/v2"},
+		},
 	}
 
 	restKeys     = []string{"method", "path", "server", "app"}
@@ -81,8 +86,9 @@ func decode(ann annotation.Annotation, where string, keys []string, args any) er
 }
 
 func validateNames(ann, where, app, server string) error {
-	if !identName.MatchString(app) {
-		return errors.NotValidf("@%s on %s: app name %q must match %s", ann, where, app, identName)
+	// the app name is the package name of gen/builder/<app>
+	if !identName.MatchString(app) || token.IsKeyword(app) || app == "main" {
+		return errors.NotValidf("@%s on %s: app name %q must match %s and not be a Go keyword or main", ann, where, app, identName)
 	}
 	if server != "" && (!identName.MatchString(server) || server == functionFile) {
 		return errors.NotValidf("@%s on %s: server name %q must match %s and not be %q", ann, where, server, identName, functionFile)
