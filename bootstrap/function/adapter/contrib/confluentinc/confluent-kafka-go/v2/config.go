@@ -7,7 +7,13 @@ import (
 )
 
 const (
-	root         = adapter.Root + ".kafka_confluent"
+	root = adapter.Root + ".confluent"
+	// legacyRoot is the pre-#48 namespace. Its literal underscore makes every
+	// key unreachable from env vars (the loader can never emit a segment with
+	// an underscore), so it was renamed to ".confluent". Kept only so values
+	// still set under it via a config file keep working. Deprecated.
+	legacyRoot = adapter.Root + ".kafka_confluent"
+
 	topics       = root + ".topics"
 	timeOut      = root + ".timeOut"
 	manualCommit = root + ".manualCommit"
