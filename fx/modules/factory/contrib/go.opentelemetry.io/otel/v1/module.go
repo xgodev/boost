@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	xotel "github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
+	contextfx "github.com/xgodev/boost/fx/modules/core/context"
 	"go.uber.org/fx"
 )
 
@@ -18,6 +19,7 @@ func Module() fx.Option {
 
 	once.Do(func() {
 		options = fx.Options(
+			contextfx.Module(),
 			fx.Invoke(func(ctx context.Context) {
 				xotel.StartTracerProvider(ctx)
 				xotel.StartMeterProvider(ctx)
