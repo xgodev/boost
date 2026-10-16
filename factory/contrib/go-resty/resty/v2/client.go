@@ -6,11 +6,12 @@ import (
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 // Plugin defines a function to process plugin.
-type Plugin func(context.Context, *resty.Client) error
+type Plugin = factory.Plugin[*resty.Client]
 
 // NewClient returns a new resty Client.
 func NewClient(ctx context.Context, plugins ...Plugin) (*resty.Client, error) {
@@ -80,10 +81,8 @@ func NewClientWithOptions(ctx context.Context, options *Options, plugins ...Plug
 		client.SetQueryParam(k, v)
 	}
 
-	for _, plugin := range plugins {
-		if err := plugin(ctx, client); err != nil {
-			panic(err)
-		}
+	if err := factory.ApplyPlugins(ctx, client, plugins...); err != nil {
+		panic(err)
 	}
 
 	logger.Debugf("resty client created for host %s", options.Host)
