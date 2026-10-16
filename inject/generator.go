@@ -58,13 +58,19 @@ func (p *Generator) Generate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	return WriteGenerated(ctx, p.opts.OutputDir, files, generatedHeader)
+}
 
-	if err := removeStale(p.opts.OutputDir, files); err != nil {
+// WriteGenerated writes files, keyed by their slash-separated path relative
+// to dir, and removes the files under dir that start with header and are not
+// in files. Files of other generators and handwritten files are kept.
+func WriteGenerated(ctx context.Context, dir string, files map[string][]byte, header string) error {
+	if err := removeStale(dir, files, header); err != nil {
 		return err
 	}
 
 	for _, name := range sortedFileNames(files) {
-		filePath := filepath.Join(p.opts.OutputDir, filepath.FromSlash(name))
+		filePath := filepath.Join(dir, filepath.FromSlash(name))
 		if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
 			return errors.Wrap(err, errors.Internalf("error creating directory for %s", filePath))
 		}
@@ -80,7 +86,7 @@ func (p *Generator) Generate(ctx context.Context) error {
 // Render returns the generated files keyed by their slash-separated path
 // relative to OutputDir, without touching the disk.
 func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
-	base, err := p.baseImport()
+	base, err := p.opts.BaseImport()
 	if err != nil {
 		return nil, err
 	}
@@ -106,21 +112,21 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 			return nil, errors.AlreadyExistsf("two components generate %s; rename one of the functions", name)
 		}
 
-		src, err := render(tmpl, "module", data)
+		src, err := ExecuteTemplate(tmpl, "module", data)
 		if err != nil {
 			return nil, errors.Wrap(err, errors.Internalf("error generating module of %s", key))
 		}
 		files[name] = src
 
-		genImport := ImportData{Alias: genAlias(vertex.Value.Entry), Path: base + "/" + vertex.Value.Entry.Path}
+		genImport, call := ModuleOf(base, vertex.Value.Entry)
 		if _, ok := rootImports[genImport.Path]; !ok {
 			rootImports[genImport.Path] = struct{}{}
 			root.Imports = append(root.Imports, genImport)
 		}
-		root.Modules = append(root.Modules, genImport.Alias+"."+data.Func+"Module()")
+		root.Modules = append(root.Modules, call)
 	}
 
-	src, err := render(tmpl, "root", root)
+	src, err := ExecuteTemplate(tmpl, "root", root)
 	if err != nil {
 		return nil, errors.Wrap(err, errors.Internalf("error generating root module"))
 	}
@@ -129,21 +135,22 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	return files, nil
 }
 
-// baseImport returns the import path of OutputDir.
-func (p *Generator) baseImport() (string, error) {
-	if p.opts.ModulePath == "" || p.opts.ModuleDir == "" || p.opts.OutputDir == "" {
+// BaseImport returns the import path of OutputDir. It is NotValid when a
+// field is missing or OutputDir is not a subdirectory of ModuleDir.
+func (o GeneratorOptions) BaseImport() (string, error) {
+	if o.ModulePath == "" || o.ModuleDir == "" || o.OutputDir == "" {
 		return "", errors.NotValidf("module path, module dir and output dir are required")
 	}
 
-	rel, err := filepath.Rel(p.opts.ModuleDir, p.opts.OutputDir)
+	rel, err := filepath.Rel(o.ModuleDir, o.OutputDir)
 	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-		return "", errors.NotValidf("output dir %s must be inside the module dir %s", p.opts.OutputDir, p.opts.ModuleDir)
+		return "", errors.NotValidf("output dir %s must be inside the module dir %s", o.OutputDir, o.ModuleDir)
 	}
 	if rel == "." {
-		return "", errors.NotValidf("output dir must be a subdirectory of the module dir %s", p.opts.ModuleDir)
+		return "", errors.NotValidf("output dir must be a subdirectory of the module dir %s", o.ModuleDir)
 	}
 
-	return path.Join(p.opts.ModulePath, filepath.ToSlash(rel)), nil
+	return path.Join(o.ModulePath, filepath.ToSlash(rel)), nil
 }
 
 // moduleData collects what the module template needs for one component.
@@ -182,11 +189,11 @@ func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component]) (Mo
 			continue
 		}
 
-		alias := genAlias(depEntry)
-		data.Deps = append(data.Deps, alias+"."+depEntry.Func.Name+"Module()")
+		depImport, call := ModuleOf(base, depEntry)
+		data.Deps = append(data.Deps, call)
 		if _, ok := imported[depEntry.Path]; !ok {
 			imported[depEntry.Path] = struct{}{}
-			data.Imports = append(data.Imports, ImportData{Alias: alias, Path: base + "/" + depEntry.Path})
+			data.Imports = append(data.Imports, depImport)
 		}
 	}
 
@@ -241,7 +248,9 @@ func goString(s string) string {
 	return fmt.Sprintf("%q", s)
 }
 
-func render(tmpl *template.Template, name string, data any) ([]byte, error) {
+// ExecuteTemplate executes the named template and returns the result
+// formatted with gofmt. It fails when the output is not valid Go.
+func ExecuteTemplate(tmpl *template.Template, name string, data any) ([]byte, error) {
 	var buf bytes.Buffer
 	if err := tmpl.ExecuteTemplate(&buf, name, data); err != nil {
 		return nil, errors.Wrap(err, errors.Internalf("error executing template %s", name))
@@ -254,9 +263,9 @@ func render(tmpl *template.Template, name string, data any) ([]byte, error) {
 	return formatted, nil
 }
 
-// removeStale deletes generated files under dir that are not in keep, then
-// removes the directories left empty.
-func removeStale(dir string, keep map[string][]byte) error {
+// removeStale deletes the files under dir that start with header and are not
+// in keep, then removes the directories left empty.
+func removeStale(dir string, keep map[string][]byte, header string) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return nil
 	}
@@ -286,7 +295,7 @@ func removeStale(dir string, keep map[string][]byte) error {
 		if err != nil {
 			return err
 		}
-		if bytes.HasPrefix(content, []byte(generatedHeader)) {
+		if bytes.HasPrefix(content, []byte(header)) {
 			return os.Remove(p)
 		}
 		return nil
@@ -326,14 +335,28 @@ func packageIdent(name string) string {
 	return name
 }
 
+// Alias returns an import alias for the package name at importPath that does
+// not collide with other packages of the same name: prefix_name_hash.
+func Alias(prefix, name, importPath string) string {
+	return prefix + "_" + packageIdent(name) + "_" + shortHash(importPath)
+}
+
+// ModuleOf returns the import of the package generated for the component
+// declared by entry, given the import path of the output dir (BaseImport),
+// and the call of its module function, such as gen_greet_1a2b3c4d.NewGreeterModule().
+func ModuleOf(base string, entry annotation.Entry) (ImportData, string) {
+	imp := ImportData{Alias: genAlias(entry), Path: base + "/" + entry.Path}
+	return imp, imp.Alias + "." + entry.Func.Name + "Module()"
+}
+
 // srcAlias is the import alias of the package that declares the function.
 func srcAlias(entry annotation.Entry) string {
-	return "src_" + packageIdent(entry.Package) + "_" + shortHash(entry.Path)
+	return Alias("src", entry.Package, entry.Path)
 }
 
 // genAlias is the import alias of the generated package of the function.
 func genAlias(entry annotation.Entry) string {
-	return "gen_" + packageIdent(entry.Package) + "_" + shortHash(entry.Path)
+	return Alias("gen", entry.Package, entry.Path)
 }
 
 func shortHash(s string) string {

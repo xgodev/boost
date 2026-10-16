@@ -30,6 +30,10 @@ type Entry struct {
 	Func        EntryFunc    // Details about the function in the entry
 	Struct      string       // Name of the struct in the entry
 	Annotations []Annotation // Annotations for the entry
+	// Imports maps the name the file uses for each import (its alias, or the
+	// imported package's name) to the import path. Blank and dot imports are
+	// left out. Entries of the same file share the map.
+	Imports map[string]string
 }
 
 func (b *Entry) IsStruct() bool {

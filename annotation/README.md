@@ -76,6 +76,10 @@ and `File` the base name of the file that declares it. `Header.Title` is the fir
 doc line without the leading declaration name and `Header.Description` the doc
 lines after it; annotation lines are not part of the header. `Annotation.Value`
 (`RawValue()`) keeps the text between the parentheses as written.
+`Imports` maps the name the declaring file uses for each import (its alias, or
+the imported package's name, so `github.com/labstack/echo/v4` is `echo`) to the
+import path, which resolves a type such as `echo.Context` written in the file;
+blank and dot imports are left out.
 
 Entries are returned per package (sorted by import path), in source order.
 
