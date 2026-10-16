@@ -128,6 +128,17 @@ files, _ := inject.NewGenerator(g, inject.GeneratorOptions{
 
 `WriteGraphviz`/`ExportInjectGraphToGraphviz` export the graph in DOT format.
 
+Generators built on top of inject (such as [`builder`](../builder)) reuse:
+
+| Function | Purpose |
+|---|---|
+| `GeneratorOptions.BaseImport()` | import path of the output dir |
+| `ModuleOf(base, entry)` | import and module call (`gen_x_hash.NewXModule()`) of a component |
+| `Provider(g, pkg, tp)` | component and result index providing the default value of a type |
+| `Alias(prefix, name, path)` | collision-free import alias (`prefix_name_hash`) |
+| `ExecuteTemplate(tmpl, name, data)` | executes a template and gofmt's the output |
+| `WriteGenerated(ctx, dir, files, header)` | writes files and removes stale ones starting with `header` |
+
 See [`examples/simple`](./examples/simple): its tests run the generated
 application and fail when `gen/` is stale.
 

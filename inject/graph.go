@@ -109,6 +109,24 @@ func linkComponents(ctx context.Context, g *graph.Graph[Component], providers ma
 	return nil
 }
 
+// Provider returns the component that provides the default value (no name,
+// no group) of type tp, written as in package pkg ("*Handler" in package
+// orders and "*orders.Handler" elsewhere are the same type), and the index of
+// that result.
+func Provider(g *graph.Graph[Component], pkg, tp string) (Component, int, bool) {
+	want := xid(pkg, tp, Annotation{})
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		for _, idx := range sortedIndexes(comp.Provides) {
+			ann := comp.Provides[idx]
+			if xid(comp.Entry.Package, comp.Entry.Func.Results[idx].Type, ann) == want {
+				return comp, idx, true
+			}
+		}
+	}
+	return Component{}, 0, false
+}
+
 // parsedAnnotation is an inject annotation decoded from an entry.
 type parsedAnnotation struct {
 	kind AnnotationType
