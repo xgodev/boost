@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 // Plugin defines a function to process plugin.
-type Plugin func(context.Context, *redis.Client) error
+type Plugin = factory.Plugin[*redis.Client]
 
 // NewClient returns a new redis client.
 func NewClient(ctx context.Context, plugins ...Plugin) (*redis.Client, error) {
@@ -45,10 +46,8 @@ func NewClientWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (c
 		return nil, ping.Err()
 	}
 
-	for _, plugin := range plugins {
-		if err := plugin(ctx, client); err != nil {
-			return nil, err
-		}
+	if err := factory.ApplyPlugins(ctx, client, plugins...); err != nil {
+		return nil, err
 	}
 
 	logger.Infof("Connected to Redis server: %s %s", client.Options().Addr, ping.String())
