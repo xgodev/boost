@@ -64,7 +64,9 @@ func (c *Collector) packagesToScan() ([]string, error) {
 	}
 
 	selected := make(map[string]bool)
+	c.names = make(map[string]string)
 	packages.Visit(roots, func(p *packages.Package) bool {
+		c.names[p.PkgPath] = p.Name
 		if p.Module == nil || !c.isAllowedPackage(p.PkgPath) {
 			log.Debugf("the package %s will be ignored", p.PkgPath)
 			return false

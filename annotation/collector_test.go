@@ -2,6 +2,8 @@ package annotation
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCollector_isValidAnnotation(t *testing.T) {
@@ -43,4 +45,13 @@ func TestCollector_isValidAnnotation(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCollector_PackageNameFallsBackToThePath(t *testing.T) {
+	c := &Collector{names: map[string]string{"example.com/sdk-go/v2": "cloudevents"}}
+
+	assert.Equal(t, "cloudevents", c.packageName("example.com/sdk-go/v2"), "the loaded name wins")
+	assert.Equal(t, "echo", c.packageName("github.com/labstack/echo/v4"), "major version suffixes are skipped")
+	assert.Equal(t, "v4", c.packageName("v4"))
+	assert.Equal(t, "strings", c.packageName("strings"))
 }

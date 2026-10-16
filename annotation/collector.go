@@ -4,7 +4,10 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"path"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -21,6 +24,9 @@ type Collector struct {
 	pkgs     []string
 	basePath string
 	entries  []Entry
+	// names maps the import path of every package seen while walking the
+	// import graph to its package name.
+	names map[string]string
 }
 
 func (c *Collector) Entries() []Entry {
@@ -201,6 +207,7 @@ func (c *Collector) filterFiles(p *packages.Package) (entries []Entry) {
 
 	for _, file := range p.Syntax {
 		fileName := filepath.Base(p.Fset.File(file.Pos()).Name())
+		imports := c.fileImports(file)
 
 		for _, ens := range declarations(file) {
 			ans, ok := c.getAnnotations(ens.Comments)
@@ -217,12 +224,46 @@ func (c *Collector) filterFiles(p *packages.Package) (entries []Entry) {
 			ens.Module = modName
 			ens.Package = p.Name
 			ens.Annotations = ans
+			ens.Imports = imports
 			entries = append(entries, ens)
 		}
 	}
 
 	return entries
 }
+
+// fileImports maps the name each import has in the file to its path.
+func (c *Collector) fileImports(file *ast.File) map[string]string {
+	imports := map[string]string{}
+	for _, spec := range file.Imports {
+		// the parser only accepts well-formed string literals here
+		importPath, _ := strconv.Unquote(spec.Path.Value)
+		name := c.packageName(importPath)
+		if spec.Name != nil {
+			name = spec.Name.Name
+		}
+		if name == "_" || name == "." {
+			continue
+		}
+		imports[name] = importPath
+	}
+	return imports
+}
+
+// packageName returns the name of the package at importPath, falling back to
+// the last path element that is not a major version (v2, v3, ...).
+func (c *Collector) packageName(importPath string) string {
+	if name, ok := c.names[importPath]; ok {
+		return name
+	}
+	name := path.Base(importPath)
+	if dir := path.Dir(importPath); dir != "." && majorVersion.MatchString(name) {
+		name = path.Base(dir)
+	}
+	return name
+}
+
+var majorVersion = regexp.MustCompile(`^v[0-9]+$`)
 
 func (c *Collector) getAnnotations(cmts []string) (ans []Annotation, ok bool) {
 	for _, cmt := range cmts {
