@@ -55,6 +55,14 @@ still reach each cause. Middlewares keep receiving the per-event
 `[]PublishOutput` (with each event's `Error`) and a nil chain error; the
 aggregate error is built after the middleware chain.
 
+The Kafka driver (`driver/contrib/confluentinc/confluent-kafka-go/v2`) returns
+only after every produced message has its delivery report, bounded by the
+`ctx` passed to `Publish`: a failed delivery (`TopicPartition.Error`, e.g.
+message timeout or unknown partition) or a `ctx` that ends before the report
+arrives becomes that event's `Error`. Reports go to a delivery channel per
+`Publish` call, so they no longer reach the producer's `Events()` channel; the
+driver logs each delivery at its own `log.level`.
+
 ## How to Use
 
 To use the Wrapper package in your application:
