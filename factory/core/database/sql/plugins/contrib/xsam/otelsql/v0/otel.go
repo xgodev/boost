@@ -4,28 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"errors"
+
 	"github.com/XSAM/otelsql"
 	otelboost "github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
 	"github.com/xgodev/boost/wrapper/log"
 	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
 )
 
-// wrappedConnector delegates Connect to the original connector
-// but returns the wrappedDriver from Driver().
-type wrappedConnector struct {
-	orig          driver.Connector
-	wrappedDriver driver.Driver
+// connectorDriver exposes an already-built connector through
+// driver.DriverContext: otelsql only wraps a connector it gets from
+// OpenConnector, and that wrapper is what instruments each connection.
+type connectorDriver struct {
+	driver.Driver
+	connector driver.Connector
 }
 
-func (w *wrappedConnector) Connect(ctx context.Context) (driver.Conn, error) {
-	logger := log.FromContext(ctx)
-	logger.Tracef("OTel-Connector CONNECT called, driver now: %T", w.wrappedDriver)
-	return w.orig.Connect(ctx)
-}
-
-func (w *wrappedConnector) Driver() driver.Driver {
-	log.Tracef("OTel-Connector DRIVER called, returning: %T", w.wrappedDriver)
-	return w.wrappedDriver
+func (d connectorDriver) OpenConnector(string) (driver.Connector, error) {
+	return d.connector, nil
 }
 
 // OTel instruments database/sql with OpenTelemetry: it wraps the connector
@@ -58,7 +54,7 @@ func NewOTel() *OTel {
 }
 
 // WrapConnector is called before sql.OpenDB. If tracing is enabled,
-// it wraps the connector's Driver() so that each query emits an OTel span.
+// it wraps the connector so that each connection and query emits an OTel span.
 func (p *OTel) WrapConnector(ctx context.Context, connector driver.Connector) (driver.Connector, error) {
 	if !p.options.Enabled || (!otelboost.IsTraceEnabled() && !otelboost.IsMetricEnabled()) {
 		return connector, nil
@@ -77,16 +73,11 @@ func (p *OTel) WrapConnector(ctx context.Context, connector driver.Connector) (d
 		opts = append(opts, otelsql.WithMeterProvider(otelboost.MeterProvider))
 	}
 
-	origDriver := connector.Driver()
-	wrappedDriver := otelsql.WrapDriver(
-		origDriver,
-		opts...,
-	)
-
-	return &wrappedConnector{
-		orig:          connector,
-		wrappedDriver: wrappedDriver,
-	}, nil
+	wrapped, ok := otelsql.WrapDriver(connectorDriver{Driver: connector.Driver(), connector: connector}, opts...).(driver.DriverContext)
+	if !ok {
+		return nil, errors.New("otelsql: wrapped driver does not implement driver.DriverContext")
+	}
+	return wrapped.OpenConnector("")
 }
 
 // InitDB is called immediately after sql.OpenDB. If metrics are enabled,
@@ -105,6 +96,8 @@ func (p *OTel) InitDB(ctx context.Context, db *sql.DB) error {
 		opts = append(opts, otelsql.WithMeterProvider(otelboost.MeterProvider))
 	}
 
+	// intentional: the registration lives as long as the *sql.DB; the Plugin
+	// contract has no close hook to unregister it.
 	_, err := otelsql.RegisterDBStatsMetrics(
 		db,
 		opts...,
