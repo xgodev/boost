@@ -36,7 +36,7 @@ func Implementations(g *graph.Graph[Component]) ([]Implementation, error) {
 			if ann.Group != "" {
 				continue
 			}
-			id := xid(comp.Entry.Package, comp.Entry.Func.Results[idx].Type, ann)
+			id := xid(comp.Entry.Package, comp.Result(idx), ann)
 			providers[id] = append(providers[id], comp)
 		}
 	}
@@ -123,7 +123,7 @@ func newImplementation(id string, comps []Component) (Implementation, bool, erro
 			idx, set.Name = i, ann.Name
 		}
 
-		tp := comp.Entry.Func.Results[idx].Type
+		tp := comp.Result(idx)
 		typePath, typeName, ok := namedType(comp, tp)
 		if !ok {
 			return Implementation{}, false, errors.NotValidf("%s implements %s with %s; an implementation set needs a named type (T, *T, pkg.T or *pkg.T) whose package can be resolved",

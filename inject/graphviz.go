@@ -43,7 +43,7 @@ func WriteGraphviz(w io.Writer, g *graph.Graph[Component]) error {
 		}
 
 		if _, err := fmt.Fprintf(w, "\t%q [label=%q, shape=%s, fillcolor=%q];\n",
-			key, comp.Entry.Package+"."+comp.Entry.Func.Name, shape, color); err != nil {
+			key, comp.Entry.Package+"."+declName(comp.Entry), shape, color); err != nil {
 			return errors.Wrap(err, errors.Internalf("error writing DOT node"))
 		}
 

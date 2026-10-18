@@ -23,8 +23,11 @@ import (
 // Two or more providers of the same non-group value form an implementation
 // set when one of them is marked @Default (see Implementations).
 //
-// It returns a NotValid error for malformed annotations, a dependency cycle
-// or an invalid implementation set, AlreadyExists when two functions provide
+// A struct annotated @Config is a vertex too: it provides *Struct, filled
+// from config.
+//
+// It returns a NotValid error for malformed annotations, a dependency cycle,
+// two @Config in a package or an invalid implementation set, AlreadyExists when two functions provide
 // the same non-group value and none is @Default, and NotFound when an
 // @Inject has no provider.
 func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*graph.Graph[Component], error) {
@@ -32,6 +35,9 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 
 	providers, err := addComponents(g, entries)
 	if err != nil {
+		return nil, err
+	}
+	if err := checkConfigs(g); err != nil {
 		return nil, err
 	}
 
@@ -73,7 +79,7 @@ func addComponents(g *graph.Graph[Component], entries []annotation.Entry) (map[s
 
 		for _, idx := range sortedIndexes(comp.Provides) {
 			ann := comp.Provides[idx]
-			id := xid(entry.Package, entry.Func.Results[idx].Type, ann)
+			id := xid(entry.Package, comp.Result(idx), ann)
 			providers[id] = append(providers[id], key)
 			groups[id] = ann.Group != ""
 		}
@@ -87,6 +93,24 @@ func addComponents(g *graph.Graph[Component], entries []annotation.Entry) (map[s
 	}
 
 	return providers, nil
+}
+
+// checkConfigs fails when a package declares more than one @Config struct:
+// the keys of a package share its root key.
+func checkConfigs(g *graph.Graph[Component]) error {
+	byPath := map[string]string{}
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		if !comp.IsConfig() {
+			continue
+		}
+		if other, dup := byPath[comp.Entry.Path]; dup {
+			return errors.NotValidf("%s and %s are both @Config in %s: the keys of a package share its root key; move one to its own package",
+				other, key, comp.Entry.Path)
+		}
+		byPath[comp.Entry.Path] = key
+	}
+	return nil
 }
 
 // hasDefault reports whether one of the components is marked @Default.
@@ -138,7 +162,7 @@ func Provider(g *graph.Graph[Component], pkg, tp string) (Component, int, bool) 
 		comp := g.Vertices[key].Value
 		for _, idx := range sortedIndexes(comp.Provides) {
 			ann := comp.Provides[idx]
-			if xid(comp.Entry.Package, comp.Entry.Func.Results[idx].Type, ann) == want {
+			if xid(comp.Entry.Package, comp.Result(idx), ann) == want {
 				return comp, idx, true
 			}
 		}
@@ -158,6 +182,12 @@ func newComponent(entry annotation.Entry) (Component, bool, error) {
 	parsed, err := parseAnnotations(entry)
 	if err != nil || len(parsed) == 0 {
 		return Component{}, false, err
+	}
+
+	for _, p := range parsed {
+		if p.kind == AnnotationTypeCONFIG {
+			return newConfig(entry, parsed)
+		}
 	}
 
 	if !entry.IsFunc() {
@@ -202,8 +232,8 @@ func newComponent(entry annotation.Entry) (Component, bool, error) {
 	return comp, true, nil
 }
 
-// parseAnnotations decodes the @Provide, @Inject, @Invoke and @Default
-// annotations of an entry, ignoring the others.
+// parseAnnotations decodes the @Provide, @Inject, @Invoke, @Default and
+// @Config annotations of an entry, ignoring the others.
 func parseAnnotations(entry annotation.Entry) ([]parsedAnnotation, error) {
 	var parsed []parsedAnnotation
 	for _, ann := range entry.Annotations {
@@ -213,9 +243,9 @@ func parseAnnotations(entry annotation.Entry) ([]parsedAnnotation, error) {
 		}
 
 		var a Annotation
-		if annType == AnnotationTypeDEFAULT {
+		if hint, ok := noArguments[annType]; ok {
 			if strings.TrimSpace(ann.Value) != "" {
-				return nil, errors.NotValidf("@Default on %s takes no arguments; the implementation is named after its package", gid(entry))
+				return nil, errors.NotValidf("@%s on %s takes no arguments; %s", ann.Name, gid(entry), hint)
 			}
 			parsed = append(parsed, parsedAnnotation{kind: annType})
 			continue
@@ -226,6 +256,12 @@ func parseAnnotations(entry annotation.Entry) ([]parsedAnnotation, error) {
 		parsed = append(parsed, parsedAnnotation{kind: annType, ann: a})
 	}
 	return parsed, nil
+}
+
+// noArguments are the annotations without arguments, with what replaces them.
+var noArguments = map[AnnotationType]string{
+	AnnotationTypeDEFAULT: "the implementation is named after its package",
+	AnnotationTypeCONFIG:  "the keys are named after the package and the fields",
 }
 
 // componentType tells whether the annotations make the function a provider
@@ -307,9 +343,18 @@ func addIndexed(dst map[int]Annotation, ann Annotation, size int, kind, what str
 }
 
 // gid generates a unique identifier for a graph vertex based on the entry's
-// import path and function name.
+// import path and declaration name.
 func gid(entry annotation.Entry) string {
-	return fmt.Sprintf("%s.%s", entry.Path, entry.Func.Name)
+	return fmt.Sprintf("%s.%s", entry.Path, declName(entry))
+}
+
+// declName is the name of the annotated function, or of the struct for a
+// struct entry.
+func declName(entry annotation.Entry) string {
+	if entry.Func.Name == "" {
+		return entry.Struct
+	}
+	return entry.Func.Name
 }
 
 // xid identifies a provided or injected value by its qualified type and
