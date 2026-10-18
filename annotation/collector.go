@@ -118,7 +118,8 @@ func structDeclarations(genDecl *ast.GenDecl) (entries []Entry) {
 		if !ok {
 			continue
 		}
-		if _, ok := typeSpec.Type.(*ast.StructType); !ok {
+		structType, ok := typeSpec.Type.(*ast.StructType)
+		if !ok {
 			continue
 		}
 		doc := typeSpec.Doc
@@ -127,10 +128,31 @@ func structDeclarations(genDecl *ast.GenDecl) (entries []Entry) {
 		}
 		entries = append(entries, Entry{
 			Struct:   typeSpec.Name.Name,
+			Fields:   structFields(structType),
 			Comments: getComments(doc),
 		})
 	}
 	return entries
+}
+
+// structFields returns one field per name, in order. An embedded field has
+// no name.
+func structFields(structType *ast.StructType) (fields []EntryField) {
+	for _, field := range structType.Fields.List {
+		tp := types.ExprString(field.Type)
+		var tag string
+		if field.Tag != nil {
+			tag, _ = strconv.Unquote(field.Tag.Value)
+		}
+		if len(field.Names) == 0 {
+			fields = append(fields, EntryField{Type: tp, Tag: tag})
+			continue
+		}
+		for _, name := range field.Names {
+			fields = append(fields, EntryField{Name: name.Name, Type: tp, Tag: tag})
+		}
+	}
+	return fields
 }
 
 func funcDeclaration(funcDecl *ast.FuncDecl) Entry {
@@ -315,7 +337,8 @@ func (c *Collector) isAllowedAnnotation(name string) bool {
 
 // parseAnnotation splits `// @Name(values)` into its name and the text between
 // the parentheses. valid is false when the comment does not follow that format:
-// every value must be a key=value pair and quotes and brackets must balance.
+// every value must be a key=value pair or a bare name, and quotes and brackets
+// must balance.
 func parseAnnotation(cmt string) (name string, value string, valid bool) {
 	if !strings.HasPrefix(cmt, annotationPrefix) {
 		return "", "", false
@@ -344,12 +367,16 @@ func parseAnnotation(cmt string) (name string, value string, valid bool) {
 		return name, "", false
 	}
 	for _, item := range items {
-		if !strings.Contains(item, "=") {
+		if !strings.Contains(item, "=") && !bareName.MatchString(strings.TrimSpace(item)) {
 			return name, "", false
 		}
 	}
 	return name, value, true
 }
+
+// bareName is a value without a key, such as the plugin names of
+// @Middleware(log, hystrix). It is kept in Value and left out of Map.
+var bareName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_.-]*$`)
 
 // parseHeader takes the title from the first line of the doc comment, without
 // the leading declaration name, and the description from the lines after it.

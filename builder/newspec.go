@@ -14,17 +14,19 @@ import (
 )
 
 // NewSpec builds the doors declared by the @REST, @GRPC and @Function
-// annotations of entries. g is the inject graph of the same entries: it
-// provides the receivers of handler methods and the values of @GRPC
-// constructors.
+// annotations of entries, and the @Middleware of the constructors each app
+// builds. g is the inject graph of the same entries: it provides the
+// receivers of handler methods and the values of @GRPC constructors. load
+// reads the interfaces @Middleware decorates; it is only called, once, when
+// there is a @Middleware.
 //
 // It returns NotValid for malformed annotations and for handlers that are
 // unexported, in package main or whose signature does not match their door,
 // NotFound when the receiver of a handler method has no provider, and
-// AlreadyExists for a duplicate route or service and for a second @Function
-// in an app.
-func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component]) (*Spec, error) {
-	b := &specBuilder{graph: g, apps: map[string]*appState{}}
+// AlreadyExists for a duplicate route or service, for a second @Function in
+// an app and for two @Middleware that decorate the same interface.
+func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component], load PackageLoader) (*Spec, error) {
+	b := &specBuilder{graph: g, apps: map[string]*appState{}, middlewares: map[string]*Middleware{}}
 
 	seen := map[string]bool{}
 	for _, entry := range entries {
@@ -44,6 +46,8 @@ func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component]) (*Spe
 				err = b.addService(entry, ann)
 			case "Function":
 				err = b.addFunction(entry, ann)
+			case "Middleware":
+				err = b.addMiddleware(entry, ann)
 			}
 			if err != nil {
 				return nil, err
@@ -51,12 +55,16 @@ func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component]) (*Spe
 		}
 	}
 
+	if err := b.loadMiddlewares(load); err != nil {
+		return nil, err
+	}
 	return b.spec(), nil
 }
 
 type specBuilder struct {
-	graph *graph.Graph[inject.Component]
-	apps  map[string]*appState
+	graph       *graph.Graph[inject.Component]
+	apps        map[string]*appState
+	middlewares map[string]*Middleware // by constructor key
 }
 
 type appState struct {
@@ -172,6 +180,9 @@ func (b *specBuilder) addService(entry annotation.Entry, ann annotation.Annotati
 		}
 		index = idx
 	}
+	if err := b.singleConstructor(vertex.Value, ann.Name, where, "its constructor"); err != nil {
+		return err
+	}
 
 	ref, ok := resolve(entry, args.Register)
 	if !ok || !token.IsExported(ref.Name) {
@@ -240,11 +251,26 @@ func (b *specBuilder) handler(entry annotation.Entry, ann string) (Handler, erro
 
 	for _, tp := range []string{"*" + entry.Struct, entry.Struct} {
 		if comp, _, ok := inject.Provider(b.graph, entry.Package, tp); ok {
+			if err := b.singleConstructor(comp, ann, declName(entry), "its receiver "+tp); err != nil {
+				return Handler{}, err
+			}
 			return Handler{Entry: entry, Receiver: &Receiver{Type: tp, Provider: comp}}, nil
 		}
 	}
 	return Handler{}, errors.NotFoundf("@%s on %s: no @Provide returns *%s or %s, so the generated door cannot get the receiver",
 		ann, declName(entry), entry.Struct, entry.Struct)
+}
+
+// singleConstructor fails when comp, the constructor a door is built from,
+// is a member of an implementation set: the door would include that member
+// whatever config chooses.
+func (b *specBuilder) singleConstructor(comp inject.Component, ann, where, what string) error {
+	set, ok := inject.ImplementationOf(b.graph, comp)
+	if !ok {
+		return nil
+	}
+	return errors.NotValidf("@%s on %s: %s comes from %s, one of the implementations of %s.%s (%s) chosen by config; a door is built from one constructor, so serve it from a type that receives the chosen %s",
+		ann, where, what, comp.Key(), set.Path, set.Type, strings.Join(set.Names(), ", "), set.Type)
 }
 
 // checkDecl fails for declarations the generated code cannot call.
@@ -281,9 +307,23 @@ func (b *specBuilder) spec() *Spec {
 			srv.Plugins = serverPlugins(b.graph, srv)
 			app.Servers = append(app.Servers, srv)
 		}
+		app.Middlewares = appMiddlewares(b.middlewares, reached(appRoots(app), b.dependencies))
 		spec.Apps = append(spec.Apps, app)
 	}
 	return spec
+}
+
+// dependencies returns the keys of the providers the component key depends on.
+func (b *specBuilder) dependencies(key string) []string {
+	vertex := b.graph.Vertices[key]
+	if vertex == nil {
+		return nil
+	}
+	var keys []string
+	for _, dep := range vertex.Incoming() {
+		keys = append(keys, dep.Key)
+	}
+	return keys
 }
 
 // declName names a declaration in messages: path.Func, path.Type.Method or path.Type.
@@ -315,7 +355,7 @@ func serverPlugins(g *graph.Graph[inject.Component], srv Server) []inject.Compon
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for idx, ann := range comp.Provides {
-			if ann.Group == "" && ann.Name == name && isPluginSlice(comp.Entry, comp.Entry.Func.Results[idx].Type, pluginPaths[srv.Kind]) {
+			if ann.Group == "" && ann.Name == name && isPluginSlice(comp.Entry, comp.Result(idx), pluginPaths[srv.Kind]) {
 				plugins = append(plugins, comp)
 				break
 			}

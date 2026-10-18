@@ -80,3 +80,72 @@ func main() {
 	fxfact.NewApp(app.Modules()...).Run()
 }
 {{end}}
+
+{{define "decorator" -}}
+{{.Header}}
+
+package {{.Package}}
+
+import (
+	"go.uber.org/fx"
+{{range .Imports}}
+	{{.Alias}} "{{.Path}}"
+{{- end}}
+)
+
+// Decorate{{.Func}} decorates the {{.Interface}} that {{.Constructor}} provides:
+// every consumer in the app receives a {{.Type}}, which runs the middlewares
+// {{.Plugins}} around each method; config can disable each one.
+{{- if .Gate}}
+// It applies only when {{.Member}} is the chosen implementation.
+{{- end}}
+func Decorate{{.Func}}() fx.Option {
+{{- if .Gate}}
+	if {{.Gate}} != "{{.Member}}" {
+		return fx.Options()
+	}
+{{end}}
+	return fx.Options(
+		contextfx.Module(),
+		fx.Decorate({{.Decorate}}),
+	)
+}
+
+// decorate{{.Func}} builds the wrappers of every method of {{.Interface}} once.
+func decorate{{.Func}}(ctx {{.Context}}.Context, next {{.Next}}) ({{.Next}}, error) {
+	d := &{{.Type}}{next: next}
+	var err error
+{{range .Wrappers}}
+	d.{{.Field}}, err = {{.New}}(ctx, &{{$.Fact}}.Options{Name: {{printf "%q" .Name}}},
+{{- range .Plugins}}
+		{{.}},
+{{- end}}
+	)
+	if err != nil {
+		return nil, err
+	}
+{{end}}
+	return d, nil
+}
+
+// {{.Type}} implements {{.Interface}}: each method runs next's in its wrapper.
+type {{.Type}} struct {
+	next {{.Next}}
+{{- range .Wrappers}}
+	{{.Field}} {{.Type}}
+{{- end}}
+}
+{{range .Wrappers}}
+// {{.Method}} runs next.{{.Method}} in the middlewares of {{.Name}}.
+func (d *{{$.Type}}) {{.Method}}(ctx {{$.Context}}.Context{{.Params}}) {{.Results}} {
+	return d.{{.Field}}.Exec(ctx, {{printf "%q" .Name}},
+		func(ctx {{$.Context}}.Context) {{.Results}} {
+			return d.next.{{.Method}}(ctx{{.Args}})
+		},
+		func(_ {{$.Context}}.Context, {{.Return}}) {{.Results}} {
+			return {{.Values}}
+		},
+	)
+}
+{{end -}}
+{{end}}

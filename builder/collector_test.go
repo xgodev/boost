@@ -35,6 +35,17 @@ func Health() {}
 // @Function(adapter=nats)
 func (h *Handler) Consume() {}
 
+// NewDefault is the default implementation of *Handler.
+// @Provide(index=0)
+// @Default
+func NewDefault() *Handler { return &Handler{} }
+
+// Options configures the handler.
+// @Config
+type Options struct {
+	Size int
+}
+
 // Ignored carries no door.
 // @Other(key=value)
 func Ignored() {}
@@ -57,9 +68,12 @@ func Ignored() {}
 	}
 	sort.Strings(names)
 	assert.Equal(t, []string{
+		"Config example.com/collect/app.Options",
+		"Default example.com/collect/app.NewDefault",
 		"Function example.com/collect/app.Handler.Consume",
 		"GRPC example.com/collect/app.Health",
 		"Provide example.com/collect/app.New",
+		"Provide example.com/collect/app.NewDefault",
 		"REST example.com/collect/app.Handler.Get",
 	}, names)
 }

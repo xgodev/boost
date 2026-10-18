@@ -72,7 +72,7 @@ func generate(ctx context.Context, src, out, cmdDir string) error {
 		return err
 	}
 
-	spec, err := builder.NewSpec(entries, g)
+	spec, err := builder.NewSpec(entries, g, builder.LoadPackages(src))
 	if err != nil {
 		return err
 	}

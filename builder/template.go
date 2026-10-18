@@ -30,7 +30,7 @@ type modulesData struct {
 	Header  string
 	Package string
 	Servers bool
-	Imports []inject.ImportData // multiserverfx when the app has servers
+	Imports []inject.ImportData // the decorators, and multiserverfx when the app has servers
 	Modules []string            // module calls, in order
 }
 

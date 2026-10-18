@@ -17,7 +17,8 @@ const (
 	defaultApp        = "api"
 	defaultRESTServer = "rest"
 	defaultGRPCServer = "grpc"
-	functionFile      = "function" // the function door of an app is function_module.go
+	functionFile      = "function"   // the function door of an app is function_module.go
+	middlewareDir     = "middleware" // gen/builder/middleware holds the decorators, so no app takes the name
 )
 
 // restArgs are the arguments of @REST(method=GET, path=/x, server=rest, app=api).
@@ -87,8 +88,8 @@ func decode(ann annotation.Annotation, where string, keys []string, args any) er
 
 func validateNames(ann, where, app, server string) error {
 	// the app name is the package name of gen/builder/<app>
-	if !identName.MatchString(app) || token.IsKeyword(app) || app == "main" {
-		return errors.NotValidf("@%s on %s: app name %q must match %s and not be a Go keyword or main", ann, where, app, identName)
+	if !identName.MatchString(app) || token.IsKeyword(app) || app == "main" || app == middlewareDir {
+		return errors.NotValidf("@%s on %s: app name %q must match %s and not be a Go keyword, main or %s", ann, where, app, identName, middlewareDir)
 	}
 	if server != "" && (!identName.MatchString(server) || server == functionFile) {
 		return errors.NotValidf("@%s on %s: server name %q must match %s and not be %q", ann, where, server, identName, functionFile)

@@ -31,6 +31,10 @@ func TestCollector_isValidAnnotation(t *testing.T) {
 		{"Test16", "// @MyAnnotation(code=201", false},
 		{"Test16", "// @A Param query foo bool true tiam sed efficitur purus", false},
 		{"Test16", "// @Invoke", true},
+		{"bare names", "// @Middleware(log, hystrix)", true},
+		{"bare names and pairs", "// @Middleware(log, name=x)", true},
+		{"words are not a name", "// @Middleware(log hystrix)", false},
+		{"a name starts with a letter", "// @Middleware(0)", false},
 	}
 
 	for _, tt := range tests {
