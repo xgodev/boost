@@ -143,22 +143,8 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 		addRoot(ModuleOf(base, vertex.Value.Entry))
 	}
 
-	keys := map[string]string{}
-	for _, set := range sets {
-		key := set.Key(p.opts.ModulePath)
-		if other, dup := keys[key]; dup {
-			return nil, errors.AlreadyExistsf("the implementations of %s.%s and of %s are chosen by the same config key %s; rename a package", set.Path, set.Type, other, key)
-		}
-		keys[key] = set.Path + "." + set.Type
-
-		if _, exists := files[set.File()]; exists {
-			return nil, errors.AlreadyExistsf("two implementation sets generate %s; rename one of the types", set.File())
-		}
-		src, err := ExecuteTemplate(tmpl, "implementation", implementationData(base, key, set))
-		if err != nil {
-			return nil, errors.Wrap(err, errors.Internalf("error generating the implementation switch of %s.%s", set.Path, set.Type))
-		}
-		files[set.File()] = src
+	if err := p.renderImplementations(tmpl, base, sets, files); err != nil {
+		return nil, err
 	}
 
 	src, err := ExecuteTemplate(tmpl, "root", root)
@@ -168,6 +154,29 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	files["module.go"] = src
 
 	return files, nil
+}
+
+// renderImplementations adds the switch file of each implementation set to
+// files. It is AlreadyExists when two sets share a config key or a file.
+func (p *Generator) renderImplementations(tmpl *template.Template, base string, sets []Implementation, files map[string][]byte) error {
+	keys := map[string]string{}
+	for _, set := range sets {
+		key := set.Key(p.opts.ModulePath)
+		if other, dup := keys[key]; dup {
+			return errors.AlreadyExistsf("the implementations of %s.%s and of %s are chosen by the same config key %s; rename a package", set.Path, set.Type, other, key)
+		}
+		keys[key] = set.Path + "." + set.Type
+
+		if _, exists := files[set.File()]; exists {
+			return errors.AlreadyExistsf("two implementation sets generate %s; rename one of the types", set.File())
+		}
+		src, err := ExecuteTemplate(tmpl, "implementation", implementationData(base, key, set))
+		if err != nil {
+			return errors.Wrap(err, errors.Internalf("error generating the implementation switch of %s.%s", set.Path, set.Type))
+		}
+		files[set.File()] = src
+	}
+	return nil
 }
 
 // BaseImport returns the import path of OutputDir. It is NotValid when a
