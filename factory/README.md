@@ -21,6 +21,7 @@ The `core` subpackage contains factory implementations for fundamental system co
 The `contrib` directory contains factory implementations for integration with third-party libraries and frameworks, including:
 
 - gRPC: For communication between services
+- MCP (modelcontextprotocol/go-sdk): Model Context Protocol server and client
 - Google Cloud Platform (GCP): Integration with GCP services
 - Confluent: For working with Apache Kafka
 - Ollama: Integration with AI models
