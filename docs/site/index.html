@@ -75,14 +75,14 @@
 <div class="ide" role="tabpanel" id="p-src" aria-labelledby="t-src">
 <div class="files" role="tablist" aria-orientation="vertical" aria-label="Files you write">
 <div class="dir" role="none" style="--d:0">internal/app/api/rest/</div>
-<div class="dir" role="none" style="--d:1">handler/reservestock/</div>
-<button class="file" type="button" role="tab" id="ft-internal-app-api-rest-handler-reservestock-handler-go" aria-selected="true" aria-controls="fp-internal-app-api-rest-handler-reservestock-handler-go" tabindex="0" style="--d:2"><span class="fname">handler.go</span><span class="hint a">@REST</span></button>
+<div class="dir" role="none" style="--d:1">handler/stock/reserver/</div>
+<button class="file" type="button" role="tab" id="ft-internal-app-api-rest-handler-stock-reserver-handler-go" aria-selected="true" aria-controls="fp-internal-app-api-rest-handler-stock-reserver-handler-go" tabindex="0" style="--d:2"><span class="fname">handler.go</span><span class="hint a">@REST</span></button>
 <button class="file" type="button" role="tab" id="ft-internal-app-api-rest-plugins-go" aria-selected="false" aria-controls="fp-internal-app-api-rest-plugins-go" tabindex="-1" style="--d:1"><span class="fname">plugins.go</span><span class="hint a">@Provide</span></button>
 <div class="dir" role="none" style="--d:0">internal/pkg/domain/</div>
-<div class="dir" role="none" style="--d:1">service/reservestock/</div>
-<button class="file" type="button" role="tab" id="ft-internal-pkg-domain-service-reservestock-service-go" aria-selected="false" aria-controls="fp-internal-pkg-domain-service-reservestock-service-go" tabindex="-1" style="--d:2"><span class="fname">service.go</span><span class="hint">interface</span></button>
+<div class="dir" role="none" style="--d:1">service/stock/reserver/</div>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-domain-service-stock-reserver-service-go" aria-selected="false" aria-controls="fp-internal-pkg-domain-service-stock-reserver-service-go" tabindex="-1" style="--d:2"><span class="fname">service.go</span><span class="hint">interface</span></button>
 <div class="dir" role="none" style="--d:2">local/</div>
-<button class="file" type="button" role="tab" id="ft-internal-pkg-domain-service-reservestock-local-service-go" aria-selected="false" aria-controls="fp-internal-pkg-domain-service-reservestock-local-service-go" tabindex="-1" style="--d:3"><span class="fname">service.go</span><span class="hint a">@Middleware</span></button>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-domain-service-stock-reserver-local-service-go" aria-selected="false" aria-controls="fp-internal-pkg-domain-service-stock-reserver-local-service-go" tabindex="-1" style="--d:3"><span class="fname">service.go</span><span class="hint a">@Middleware</span></button>
 <div class="dir" role="none" style="--d:1">repository/stock/</div>
 <button class="file" type="button" role="tab" id="ft-internal-pkg-domain-repository-stock-repository-go" aria-selected="false" aria-controls="fp-internal-pkg-domain-repository-stock-repository-go" tabindex="-1" style="--d:2"><span class="fname">repository.go</span><span class="hint">interface</span></button>
 <div class="dir" role="none" style="--d:0">internal/pkg/datastore/stock/</div>
@@ -94,24 +94,24 @@
 <button class="file" type="button" role="tab" id="ft-doc-go" aria-selected="false" aria-controls="fp-doc-go" tabindex="-1" style="--d:0"><span class="fname">doc.go</span><span class="hint">go:generate</span></button>
 </div>
 <div class="panes">
-<div class="pane" role="tabpanel" id="fp-internal-app-api-rest-handler-reservestock-handler-go" aria-labelledby="ft-internal-app-api-rest-handler-reservestock-handler-go"><div class="pane-path"><span class="k k-ann">you write</span>internal/app/api/rest/handler/reservestock/handler.go</div><pre class="code" tabindex="0"><span class="c">// Package reservestock serves POST /stock/:sku/reserve.</span>
-<span class="kw">package</span> reservestock
+<div class="pane" role="tabpanel" id="fp-internal-app-api-rest-handler-stock-reserver-handler-go" aria-labelledby="ft-internal-app-api-rest-handler-stock-reserver-handler-go"><div class="pane-path"><span class="k k-ann">you write</span>internal/app/api/rest/handler/stock/reserver/handler.go</div><pre class="code" tabindex="0"><span class="c">// Package reserver serves POST /stock/:sku/reserve.</span>
+<span class="kw">package</span> reserver
 
 <span class="kw">import</span> (
 	<span class="st">&quot;net/http&quot;</span>
 
-	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/reservestock&quot;</span>
+	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver&quot;</span>
 	<span class="st">&quot;github.com/labstack/echo/v4&quot;</span>
 )
 
 <span class="c">// Handler reserves one unit of an item.</span>
 <span class="kw">type</span> <span class="ty">Handler</span> <span class="kw">struct</span> {
-	svc <span class="ty">reservestock.Service</span>
+	svc <span class="ty">reserver.Service</span>
 }
 
 <span class="c">// New provides the handler to the generated rest door.</span>
 <span class="c">// </span><span class="a">@Provide</span><span class="c">(index=0)</span>
-<span class="kw">func</span> <span class="fn">New</span>(svc <span class="ty">reservestock.Service</span>) *<span class="ty">Handler</span> {
+<span class="kw">func</span> <span class="fn">New</span>(svc <span class="ty">reserver.Service</span>) *<span class="ty">Handler</span> {
 	<span class="kw">return</span> &amp;<span class="ty">Handler</span>{svc: svc}
 }
 
@@ -137,8 +137,8 @@
 <span class="kw">func</span> <span class="fn">Plugins</span>() []<span class="ty">boostecho.Plugin</span> {
 	<span class="kw">return</span> []<span class="ty">boostecho.Plugin</span>{error_handler.Register}
 }</pre></div>
-<div class="pane" role="tabpanel" id="fp-internal-pkg-domain-service-reservestock-service-go" aria-labelledby="ft-internal-pkg-domain-service-reservestock-service-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/domain/service/reservestock/service.go</div><pre class="code" tabindex="0"><span class="c">// Package reservestock reserves one unit of an item.</span>
-<span class="kw">package</span> reservestock
+<div class="pane" role="tabpanel" id="fp-internal-pkg-domain-service-stock-reserver-service-go" aria-labelledby="ft-internal-pkg-domain-service-stock-reserver-service-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/domain/service/stock/reserver/service.go</div><pre class="code" tabindex="0"><span class="c">// Package reserver reserves one unit of an item.</span>
+<span class="kw">package</span> reserver
 
 <span class="kw">import</span> <span class="st">&quot;context&quot;</span>
 
@@ -146,14 +146,14 @@
 <span class="kw">type</span> <span class="ty">Service</span> <span class="kw">interface</span> {
 	Reserve(ctx <span class="ty">context.Context</span>, sku <span class="ty">string</span>) <span class="ty">error</span>
 }</pre></div>
-<div class="pane" role="tabpanel" id="fp-internal-pkg-domain-service-reservestock-local-service-go" aria-labelledby="ft-internal-pkg-domain-service-reservestock-local-service-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/domain/service/reservestock/local/service.go</div><pre class="code" tabindex="0"><span class="c">// Package local reserves stock in process, on the stock repository.</span>
+<div class="pane" role="tabpanel" id="fp-internal-pkg-domain-service-stock-reserver-local-service-go" aria-labelledby="ft-internal-pkg-domain-service-stock-reserver-local-service-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/domain/service/stock/reserver/local/service.go</div><pre class="code" tabindex="0"><span class="c">// Package local reserves stock in process, on the stock repository.</span>
 <span class="kw">package</span> local
 
 <span class="kw">import</span> (
 	<span class="st">&quot;context&quot;</span>
 
 	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/repository/stock&quot;</span>
-	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/reservestock&quot;</span>
+	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver&quot;</span>
 )
 
 <span class="kw">type</span> <span class="ty">service</span> <span class="kw">struct</span> {
@@ -163,7 +163,7 @@
 <span class="c">// New provides the service, wrapped in the log and prometheus middlewares.</span>
 <span class="c">// </span><span class="a">@Provide</span><span class="c">(index=0)</span>
 <span class="c">// </span><span class="a">@Middleware</span><span class="c">(log, prometheus)</span>
-<span class="kw">func</span> <span class="fn">New</span>(repo <span class="ty">stock.Repository</span>) <span class="ty">reservestock.Service</span> {
+<span class="kw">func</span> <span class="fn">New</span>(repo <span class="ty">stock.Repository</span>) <span class="ty">reserver.Service</span> {
 	<span class="kw">return</span> &amp;<span class="ty">service</span>{repo: repo}
 }
 
@@ -274,16 +274,16 @@
 <button class="file" type="button" role="tab" id="ft-gen-builder-api-modules-go" aria-selected="false" aria-controls="fp-gen-builder-api-modules-go" tabindex="-1" style="--d:2"><span class="fname">modules.go</span><span class="hint">app api</span></button>
 <button class="file" type="button" role="tab" id="ft-gen-builder-api-rest-module-go" aria-selected="false" aria-controls="fp-gen-builder-api-rest-module-go" tabindex="-1" style="--d:2"><span class="fname">rest_module.go</span><span class="hint a">@REST</span></button>
 <div class="dir" role="none" style="--d:1">builder/middleware/…/local/</div>
-<button class="file" type="button" role="tab" id="ft-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-reservestock-local-new-middleware-go" aria-selected="false" aria-controls="fp-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-reservestock-local-new-middleware-go" tabindex="-1" style="--d:2"><span class="fname">new_middleware.go</span><span class="hint a">@Middleware</span></button>
+<button class="file" type="button" role="tab" id="ft-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" aria-selected="false" aria-controls="fp-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" tabindex="-1" style="--d:2"><span class="fname">new_middleware.go</span><span class="hint a">@Middleware</span></button>
 <div class="dir" role="none" style="--d:1">implementation/…/stock/</div>
 <button class="file" type="button" role="tab" id="ft-gen-implementation-github-com-acme-shop-internal-pkg-domain-repository-stock-repository-implementation-go" aria-selected="false" aria-controls="fp-gen-implementation-github-com-acme-shop-internal-pkg-domain-repository-stock-repository-implementation-go" tabindex="-1" style="--d:2"><span class="fname">repository_implementation.go</span><span class="hint a">@Default</span></button>
 <div class="dir" role="none" style="--d:1">github.com/acme/shop/internal_/</div>
 <div class="dir" role="none" style="--d:2">app/api/rest/</div>
 <button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-app-api-rest-plugins-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-app-api-rest-plugins-module-go" tabindex="-1" style="--d:3"><span class="fname">plugins_module.go</span></button>
-<div class="dir" role="none" style="--d:3">handler/reservestock/</div>
-<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-app-api-rest-handler-reservestock-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-app-api-rest-handler-reservestock-new-module-go" tabindex="-1" style="--d:4"><span class="fname">new_module.go</span></button>
+<div class="dir" role="none" style="--d:3">handler/stock/reserver/</div>
+<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-app-api-rest-handler-stock-reserver-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-app-api-rest-handler-stock-reserver-new-module-go" tabindex="-1" style="--d:4"><span class="fname">new_module.go</span></button>
 <div class="dir" role="none" style="--d:2">pkg/domain/service/…/local/</div>
-<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-pkg-domain-service-reservestock-local-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-pkg-domain-service-reservestock-local-new-module-go" tabindex="-1" style="--d:3"><span class="fname">new_module.go</span></button>
+<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-module-go" tabindex="-1" style="--d:3"><span class="fname">new_module.go</span></button>
 <div class="dir" role="none" style="--d:2">pkg/datastore/stock/</div>
 <button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-pkg-datastore-stock-memory-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-pkg-datastore-stock-memory-new-module-go" tabindex="-1" style="--d:3"><span class="fname">memory/new_module.go</span></button>
 <button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-new-module-go" tabindex="-1" style="--d:3"><span class="fname">mongodb/new_module.go</span></button>
@@ -315,9 +315,9 @@
 	<span class="st">&quot;go.uber.org/fx&quot;</span>
 
 	gen_rest_54b9e997 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest&quot;</span>
-	gen_reservestock_59eaa3fd <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest/handler/reservestock&quot;</span>
+	gen_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest/handler/stock/reserver&quot;</span>
 	gen_mongodb_1bacb721 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/datastore/stock/mongodb&quot;</span>
-	gen_local_ae09494f <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/domain/service/reservestock/local&quot;</span>
+	gen_local_9afcd4bd <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local&quot;</span>
 	impl_stock_3bb9e74c <span class="st">&quot;github.com/acme/shop/gen/implementation/github.com/acme/shop/internal_/pkg/domain/repository/stock&quot;</span>
 )
 
@@ -325,10 +325,10 @@
 <span class="kw">func</span> <span class="fn">Module</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
 	<span class="kw">return</span> <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options(
 		gen_rest_54b9e997.PluginsModule(),
-		gen_reservestock_59eaa3fd.NewModule(),
+		gen_reserver_5a8b66f7.NewModule(),
 		impl_stock_3bb9e74c.RepositoryImplementationModule(),
 		gen_mongodb_1bacb721.OptionsModule(),
-		gen_local_ae09494f.NewModule(),
+		gen_local_9afcd4bd.NewModule(),
 	)
 }</pre></div>
 <div class="pane" role="tabpanel" id="fp-gen-builder-api-modules-go" aria-labelledby="ft-gen-builder-api-modules-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/builder/api/modules.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by builder; DO NOT EDIT.</span>
@@ -338,7 +338,7 @@
 <span class="kw">import</span> (
 	<span class="st">&quot;go.uber.org/fx&quot;</span>
 
-	mw_local_09b0c854 <span class="st">&quot;github.com/acme/shop/gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/reservestock/local&quot;</span>
+	mw_local_84108acd <span class="st">&quot;github.com/acme/shop/gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local&quot;</span>
 	multiserverfx <span class="st">&quot;github.com/xgodev/boost/fx/modules/extra/multiserver&quot;</span>
 )
 
@@ -348,7 +348,7 @@
 <span class="kw">func</span> <span class="fn">Modules</span>() []<span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
 	<span class="kw">return</span> []<span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span>{
 		RestModule(),
-		mw_local_09b0c854.DecorateNew(),
+		mw_local_84108acd.DecorateNew(),
 		multiserverfx.Module(),
 	}
 }</pre></div>
@@ -362,8 +362,8 @@
 	<span class="st">&quot;go.uber.org/fx&quot;</span>
 
 	gen_rest_54b9e997 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest&quot;</span>
-	gen_reservestock_59eaa3fd <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest/handler/reservestock&quot;</span>
-	src_reservestock_59eaa3fd <span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/reservestock&quot;</span>
+	gen_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest/handler/stock/reserver&quot;</span>
+	src_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/stock/reserver&quot;</span>
 	boostecho <span class="st">&quot;github.com/xgodev/boost/factory/contrib/labstack/echo/v4&quot;</span>
 	echofx <span class="st">&quot;github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4&quot;</span>
 )
@@ -378,9 +378,9 @@
 	restOnce.Do(<span class="kw">func</span>() {
 		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;api.rest&quot;</span>,
 			echofx.Module(),
-			gen_reservestock_59eaa3fd.NewModule(),
+			gen_reserver_5a8b66f7.NewModule(),
 			gen_rest_54b9e997.PluginsModule(),
-			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Invoke(<span class="kw">func</span>(srv *<span class="ty">boostecho.Server</span>, h0 *<span class="ty">src_reservestock_59eaa3fd.Handler</span>) {
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Invoke(<span class="kw">func</span>(srv *<span class="ty">boostecho.Server</span>, h0 *<span class="ty">src_reserver_5a8b66f7.Handler</span>) {
 				srv.Add(<span class="st">&quot;POST&quot;</span>, <span class="st">&quot;/stock/:sku/reserve&quot;</span>, h0.Handle)
 			}),
 		)
@@ -388,7 +388,7 @@
 
 	<span class="kw">return</span> options
 }</pre></div>
-<div class="pane" role="tabpanel" id="fp-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-reservestock-local-new-middleware-go" aria-labelledby="ft-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-reservestock-local-new-middleware-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/reservestock/local/new_middleware.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by builder; DO NOT EDIT.</span>
+<div class="pane" role="tabpanel" id="fp-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" aria-labelledby="ft-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local/new_middleware.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by builder; DO NOT EDIT.</span>
 
 <span class="kw">package</span> local
 
@@ -396,7 +396,7 @@
 	<span class="st">&quot;go.uber.org/fx&quot;</span>
 
 	context <span class="st">&quot;context&quot;</span>
-	src_reservestock_b4cc847d <span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/reservestock&quot;</span>
+	src_reserver_399f2048 <span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver&quot;</span>
 	middleware <span class="st">&quot;github.com/xgodev/boost/extra/middleware&quot;</span>
 	fmiddleware <span class="st">&quot;github.com/xgodev/boost/factory/local/extra/middleware&quot;</span>
 	prometheusmw <span class="st">&quot;github.com/xgodev/boost/factory/local/extra/middleware/plugins/contrib/prometheus/client_golang/v1&quot;</span>
@@ -404,7 +404,7 @@
 	contextfx <span class="st">&quot;github.com/xgodev/boost/fx/modules/core/context&quot;</span>
 )
 
-<span class="c">// DecorateNew decorates the reservestock.Service that local.New provides:</span>
+<span class="c">// DecorateNew decorates the reserver.Service that local.New provides:</span>
 <span class="c">// every consumer in the app receives a newDecorator, which runs the middlewares</span>
 <span class="c">// log, prometheus around each method; config can disable each one.</span>
 <span class="kw">func</span> <span class="fn">DecorateNew</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
@@ -414,12 +414,12 @@
 	)
 }
 
-<span class="c">// decorateNew builds the wrappers of every method of reservestock.Service once.</span>
-<span class="kw">func</span> <span class="fn">decorateNew</span>(ctx <span class="ty">context.Context</span>, next <span class="ty">src_reservestock_b4cc847d.Service</span>) (<span class="ty">src_reservestock_b4cc847d.Service</span>, <span class="ty">error</span>) {
+<span class="c">// decorateNew builds the wrappers of every method of reserver.Service once.</span>
+<span class="kw">func</span> <span class="fn">decorateNew</span>(ctx <span class="ty">context.Context</span>, next <span class="ty">src_reserver_399f2048.Service</span>) (<span class="ty">src_reserver_399f2048.Service</span>, <span class="ty">error</span>) {
 	d := &amp;<span class="ty">newDecorator</span>{next: next}
 	<span class="kw">var</span> err <span class="ty">error</span>
 
-	d.reserveWrapper, err = fmiddleware.NewErrorWrapperWithOptions(ctx, &amp;<span class="ty">fmiddleware.Options</span>{Name: <span class="st">&quot;reservestock.service.reserve&quot;</span>},
+	d.reserveWrapper, err = fmiddleware.NewErrorWrapperWithOptions(ctx, &amp;<span class="ty">fmiddleware.Options</span>{Name: <span class="st">&quot;reserver.service.reserve&quot;</span>},
 		logmw.NewError,
 		prometheusmw.NewError,
 	)
@@ -430,15 +430,15 @@
 	<span class="kw">return</span> d, <span class="kw">nil</span>
 }
 
-<span class="c">// newDecorator implements reservestock.Service: each method runs next&#x27;s in its wrapper.</span>
+<span class="c">// newDecorator implements reserver.Service: each method runs next&#x27;s in its wrapper.</span>
 <span class="kw">type</span> <span class="ty">newDecorator</span> <span class="kw">struct</span> {
-	next           <span class="ty">src_reservestock_b4cc847d.Service</span>
+	next           <span class="ty">src_reserver_399f2048.Service</span>
 	reserveWrapper *<span class="ty">middleware.ErrorWrapper</span>
 }
 
-<span class="c">// Reserve runs next.Reserve in the middlewares of reservestock.service.reserve.</span>
+<span class="c">// Reserve runs next.Reserve in the middlewares of reserver.service.reserve.</span>
 <span class="kw">func</span> (d *<span class="ty">newDecorator</span>) <span class="fn">Reserve</span>(ctx <span class="ty">context.Context</span>, a1 <span class="ty">string</span>) <span class="ty">error</span> {
-	<span class="kw">return</span> d.reserveWrapper.Exec(ctx, <span class="st">&quot;reservestock.service.reserve&quot;</span>,
+	<span class="kw">return</span> d.reserveWrapper.Exec(ctx, <span class="st">&quot;reserver.service.reserve&quot;</span>,
 		<span class="kw">func</span>(ctx <span class="ty">context.Context</span>) <span class="ty">error</span> {
 			<span class="kw">return</span> d.next.Reserve(ctx, a1)
 		},
@@ -525,37 +525,37 @@
 
 	<span class="kw">return</span> options
 }</pre></div>
-<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-app-api-rest-handler-reservestock-new-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-app-api-rest-handler-reservestock-new-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/app/api/rest/handler/reservestock/new_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-app-api-rest-handler-stock-reserver-new-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-app-api-rest-handler-stock-reserver-new-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/app/api/rest/handler/stock/reserver/new_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
 
-<span class="kw">package</span> reservestock
+<span class="kw">package</span> reserver
 
 <span class="kw">import</span> (
 	<span class="st">&quot;sync&quot;</span>
 
 	<span class="st">&quot;go.uber.org/fx&quot;</span>
 
-	gen_local_ae09494f <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/domain/service/reservestock/local&quot;</span>
-	src_reservestock_59eaa3fd <span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/reservestock&quot;</span>
+	gen_local_9afcd4bd <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local&quot;</span>
+	src_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/stock/reserver&quot;</span>
 )
 
 <span class="kw">var</span> NewOnce <span class="ty">sync.Once</span>
 
-<span class="c">// NewModule registers github.com/acme/shop/internal/app/api/rest/handler/reservestock.New and the modules it depends on.</span>
+<span class="c">// NewModule registers github.com/acme/shop/internal/app/api/rest/handler/stock/reserver.New and the modules it depends on.</span>
 <span class="c">// It returns an empty option after the first call, so a constructor shared by</span>
 <span class="c">// several modules is registered only once.</span>
 <span class="kw">func</span> <span class="fn">NewModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
 	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
 
 	NewOnce.Do(<span class="kw">func</span>() {
-		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/reservestock.New&quot;</span>,
-			gen_local_ae09494f.NewModule(),
-			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_reservestock_59eaa3fd.New),
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/stock/reserver.New&quot;</span>,
+			gen_local_9afcd4bd.NewModule(),
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_reserver_5a8b66f7.New),
 		)
 	})
 
 	<span class="kw">return</span> options
 }</pre></div>
-<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-pkg-domain-service-reservestock-local-new-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-pkg-domain-service-reservestock-local-new-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/pkg/domain/service/reservestock/local/new_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local/new_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
 
 <span class="kw">package</span> local
 
@@ -565,21 +565,21 @@
 	<span class="st">&quot;go.uber.org/fx&quot;</span>
 
 	impl_stock_3bb9e74c <span class="st">&quot;github.com/acme/shop/gen/implementation/github.com/acme/shop/internal_/pkg/domain/repository/stock&quot;</span>
-	src_local_ae09494f <span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/reservestock/local&quot;</span>
+	src_local_9afcd4bd <span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver/local&quot;</span>
 )
 
 <span class="kw">var</span> NewOnce <span class="ty">sync.Once</span>
 
-<span class="c">// NewModule registers github.com/acme/shop/internal/pkg/domain/service/reservestock/local.New and the modules it depends on.</span>
+<span class="c">// NewModule registers github.com/acme/shop/internal/pkg/domain/service/stock/reserver/local.New and the modules it depends on.</span>
 <span class="c">// It returns an empty option after the first call, so a constructor shared by</span>
 <span class="c">// several modules is registered only once.</span>
 <span class="kw">func</span> <span class="fn">NewModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
 	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
 
 	NewOnce.Do(<span class="kw">func</span>() {
-		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/reservestock/local.New&quot;</span>,
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver/local.New&quot;</span>,
 			impl_stock_3bb9e74c.RepositoryImplementationModule(),
-			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_local_ae09494f.New),
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_local_9afcd4bd.New),
 		)
 	})
 
@@ -815,9 +815,9 @@ srv.Serve(ctx)</pre>
         <div class="graph" aria-label="Dependency graph">
           <div class="gnode"><span class="a">@Default</span><span class="fnn">memory.New | mongodb.New</span><span class="ty">stock.Repository</span></div>
           <div class="garrow">↓</div>
-          <div class="gnode"><span class="a">@Middleware</span><span class="fnn">local.New(repo)</span><span class="ty">reservestock.Service</span></div>
+          <div class="gnode"><span class="a">@Middleware</span><span class="fnn">local.New(repo)</span><span class="ty">reserver.Service</span></div>
           <div class="garrow">↓</div>
-          <div class="gnode"><span class="a">@Provide</span><span class="fnn">reservestock.New(svc)</span><span class="ty">*Handler</span></div>
+          <div class="gnode"><span class="a">@Provide</span><span class="fnn">reserver.New(svc)</span><span class="ty">*Handler</span></div>
           <div class="garrow">↓</div>
           <div class="gnode"><span class="a">@REST</span><span class="fnn">Handler.Handle</span><span class="ty">POST /stock/:sku/reserve</span></div>
         </div>

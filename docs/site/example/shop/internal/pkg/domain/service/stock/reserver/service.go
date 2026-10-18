@@ -1,5 +1,5 @@
-// Package reservestock reserves one unit of an item.
-package reservestock
+// Package reserver reserves one unit of an item.
+package reserver
 
 import "context"
 

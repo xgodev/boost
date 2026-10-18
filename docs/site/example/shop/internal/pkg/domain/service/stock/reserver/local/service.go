@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"github.com/acme/shop/internal/pkg/domain/repository/stock"
-	"github.com/acme/shop/internal/pkg/domain/service/reservestock"
+	"github.com/acme/shop/internal/pkg/domain/service/stock/reserver"
 )
 
 type service struct {
@@ -15,7 +15,7 @@ type service struct {
 // New provides the service, wrapped in the log and prometheus middlewares.
 // @Provide(index=0)
 // @Middleware(log, prometheus)
-func New(repo stock.Repository) reservestock.Service {
+func New(repo stock.Repository) reserver.Service {
 	return &service{repo: repo}
 }
 

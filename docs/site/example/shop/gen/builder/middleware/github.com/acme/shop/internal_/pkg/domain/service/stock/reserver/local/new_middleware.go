@@ -6,7 +6,7 @@ import (
 	"go.uber.org/fx"
 
 	context "context"
-	src_reservestock_b4cc847d "github.com/acme/shop/internal/pkg/domain/service/reservestock"
+	src_reserver_399f2048 "github.com/acme/shop/internal/pkg/domain/service/stock/reserver"
 	middleware "github.com/xgodev/boost/extra/middleware"
 	fmiddleware "github.com/xgodev/boost/factory/local/extra/middleware"
 	prometheusmw "github.com/xgodev/boost/factory/local/extra/middleware/plugins/contrib/prometheus/client_golang/v1"
@@ -14,7 +14,7 @@ import (
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
 )
 
-// DecorateNew decorates the reservestock.Service that local.New provides:
+// DecorateNew decorates the reserver.Service that local.New provides:
 // every consumer in the app receives a newDecorator, which runs the middlewares
 // log, prometheus around each method; config can disable each one.
 func DecorateNew() fx.Option {
@@ -24,12 +24,12 @@ func DecorateNew() fx.Option {
 	)
 }
 
-// decorateNew builds the wrappers of every method of reservestock.Service once.
-func decorateNew(ctx context.Context, next src_reservestock_b4cc847d.Service) (src_reservestock_b4cc847d.Service, error) {
+// decorateNew builds the wrappers of every method of reserver.Service once.
+func decorateNew(ctx context.Context, next src_reserver_399f2048.Service) (src_reserver_399f2048.Service, error) {
 	d := &newDecorator{next: next}
 	var err error
 
-	d.reserveWrapper, err = fmiddleware.NewErrorWrapperWithOptions(ctx, &fmiddleware.Options{Name: "reservestock.service.reserve"},
+	d.reserveWrapper, err = fmiddleware.NewErrorWrapperWithOptions(ctx, &fmiddleware.Options{Name: "reserver.service.reserve"},
 		logmw.NewError,
 		prometheusmw.NewError,
 	)
@@ -40,15 +40,15 @@ func decorateNew(ctx context.Context, next src_reservestock_b4cc847d.Service) (s
 	return d, nil
 }
 
-// newDecorator implements reservestock.Service: each method runs next's in its wrapper.
+// newDecorator implements reserver.Service: each method runs next's in its wrapper.
 type newDecorator struct {
-	next           src_reservestock_b4cc847d.Service
+	next           src_reserver_399f2048.Service
 	reserveWrapper *middleware.ErrorWrapper
 }
 
-// Reserve runs next.Reserve in the middlewares of reservestock.service.reserve.
+// Reserve runs next.Reserve in the middlewares of reserver.service.reserve.
 func (d *newDecorator) Reserve(ctx context.Context, a1 string) error {
-	return d.reserveWrapper.Exec(ctx, "reservestock.service.reserve",
+	return d.reserveWrapper.Exec(ctx, "reserver.service.reserve",
 		func(ctx context.Context) error {
 			return d.next.Reserve(ctx, a1)
 		},
