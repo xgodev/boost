@@ -15,7 +15,15 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+// ran: Module and contextfx are once-guarded per process, so a rerun
+// (-count>1) gets an empty graph.
+var ran bool
+
 func TestModule(t *testing.T) {
+	if ran {
+		t.Skip("Module is once-guarded; the first run covers it")
+	}
+	ran = true
 	upstream := mcp.NewServer(&mcp.Implementation{Name: "upstream", Version: "1.0.0"}, nil)
 	ts := httptest.NewServer(mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server { return upstream }, nil))
 	defer ts.Close()

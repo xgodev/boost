@@ -18,7 +18,15 @@ type servers struct {
 	All []ms.Server `group:"extra.multiserver.servers"`
 }
 
+// ran: Module and contextfx are once-guarded per process, so a rerun
+// (-count>1) gets an empty graph.
+var ran bool
+
 func TestModule(t *testing.T) {
+	if ran {
+		t.Skip("Module is once-guarded; the first run covers it")
+	}
+	ran = true
 	boost.Start()
 
 	var (

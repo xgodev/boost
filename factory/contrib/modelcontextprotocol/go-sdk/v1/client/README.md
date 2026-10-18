@@ -42,7 +42,7 @@ Root `boost.factory.mcp.client` (env `BOOST_FACTORY_MCP_CLIENT_*`).
 | Key | Default | Description |
 |---|---|---|
 | `.name` | `""` | implementation name sent on initialize; empty uses `boost.applicationName` |
-| `.version` | `1.0.0` | implementation version sent on initialize |
+| `.version` | `""` | implementation version sent on initialize; empty uses the binary's main module version (`go version -m`), `0.0.0` when unstamped |
 | `.transport` | `HTTP` | `HTTP` (streamable HTTP endpoint) or `COMMAND` (subprocess over stdio) |
 | `.endpoint` | `http://localhost:8090/mcp` | HTTP transport server URL |
 | `.maxRetries` | `5` | HTTP reconnect attempts; negative disables (env `..._MAX__RETRIES`) |

@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/internal/buildinfo"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/config"
 	koanf "github.com/xgodev/boost/wrapper/config/contrib/knadh/koanf/v1"
@@ -98,7 +99,7 @@ func TestNewOptions_Defaults(t *testing.T) {
 	o, err := NewOptions()
 	require.NoError(t, err)
 	assert.Equal(t, boost.ApplicationName(), o.Name)
-	assert.Equal(t, "1.0.0", o.Version)
+	assert.Equal(t, buildinfo.Version(), o.Version, "empty version uses the binary's module version")
 	assert.Equal(t, TransportHTTP, o.Transport)
 	assert.Equal(t, "http://localhost:8090/mcp", o.Endpoint)
 	assert.Equal(t, 5, o.MaxRetries)

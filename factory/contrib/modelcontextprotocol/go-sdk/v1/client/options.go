@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/internal/buildinfo"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
@@ -41,6 +42,9 @@ func withDefaults(o *Options, err error) (*Options, error) {
 	}
 	if o.Name == "" {
 		o.Name = boost.ApplicationName()
+	}
+	if o.Version == "" {
+		o.Version = buildinfo.Version()
 	}
 	return o, nil
 }

@@ -38,7 +38,7 @@ Root `boost.factory.mcp.server` (env `BOOST_FACTORY_MCP_SERVER_*`).
 | Key | Default | Description |
 |---|---|---|
 | `.name` | `""` | implementation name sent on initialize; empty uses `boost.applicationName` |
-| `.version` | `1.0.0` | implementation version sent on initialize |
+| `.version` | `""` | implementation version sent on initialize; empty uses the binary's main module version (`go version -m`), `0.0.0` when unstamped |
 | `.instructions` | `""` | instructions the client may add to its system prompt |
 | `.transport` | `HTTP` | `HTTP` (streamable HTTP on port/path) or `STDIO` |
 | `.port` | `8090` | HTTP transport port |

@@ -29,8 +29,7 @@ func init() {
 // the application calls.
 func ConfigAdd(path string) {
 	config.Add(path+name, "", "implementation name sent on initialize; empty uses boost.applicationName")
-	// TODO(maintainer-review): same fixed 1.0.0 as the server; no boost-wide app version key exists.
-	config.Add(path+version, "1.0.0", "implementation version sent on initialize")
+	config.Add(path+version, "", "implementation version sent on initialize; empty uses the binary's main module version (0.0.0 when unstamped)")
 	config.Add(path+transport, TransportHTTP, "transport: HTTP (streamable HTTP endpoint) or COMMAND (subprocess over stdio)")
 	config.Add(path+endpoint, "http://localhost:8090/mcp", "HTTP transport server URL")
 	config.Add(path+maxRetries, 5, "HTTP transport reconnect attempts; negative disables")

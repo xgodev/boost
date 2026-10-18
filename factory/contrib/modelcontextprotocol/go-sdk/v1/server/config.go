@@ -31,9 +31,7 @@ func init() {
 // second MCP server (another port, another tool set) from its own path.
 func ConfigAdd(path string) {
 	config.Add(path+name, "", "implementation name sent on initialize; empty uses boost.applicationName")
-	// TODO(maintainer-review): MCP requires an implementation version; there is
-	// no boost-wide app version key, so this defaults to a fixed 1.0.0.
-	config.Add(path+version, "1.0.0", "implementation version sent on initialize")
+	config.Add(path+version, "", "implementation version sent on initialize; empty uses the binary's main module version (0.0.0 when unstamped)")
 	config.Add(path+instructions, "", "instructions the client may add to its system prompt")
 	config.Add(path+transport, TransportHTTP, "transport: HTTP (streamable HTTP on port/path) or STDIO")
 	// TODO(maintainer-review): 8090 keeps clear of echo (8080) and gRPC (9090)
