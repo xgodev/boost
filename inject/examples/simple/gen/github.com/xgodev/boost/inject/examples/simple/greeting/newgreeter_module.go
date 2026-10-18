@@ -20,6 +20,7 @@ func NewGreeterModule() fx.Option {
 
 	NewGreeterOnce.Do(func() {
 		options = fx.Module("github.com/xgodev/boost/inject/examples/simple/greeting.NewGreeter",
+			OptionsModule(),
 			fx.Provide(src_greeting_872ee6bf.NewGreeter),
 		)
 	})

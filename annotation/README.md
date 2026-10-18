@@ -18,9 +18,11 @@ func FooFunc(ctx context.Context) error { ... }
 
 - `// @Name` or `// @Name(key=value, ...)`. A space between the name and the
   parentheses is allowed; `//@Name` (no space after `//`) is not an annotation.
-- Every value is a `key=value` pair. Words after the name without parentheses
-  (`// @Param query foo bool`) are not a valid annotation and are ignored with a
-  warning.
+- Every value is a `key=value` pair or a bare name (a letter or `_`, then
+  letters, digits, `_`, `.` or `-`), as in `// @Middleware(log, hystrix)`. Bare
+  names stay in `Value`/`RawValue()` and are left out of `Map`. Words after the
+  name without parentheses (`// @Param query foo bool`) or with spaces inside a
+  value without `=` are not a valid annotation and are ignored with a warning.
 - Values are split on top-level commas. Commas inside double quotes or brackets
   belong to the value, and only the first `=` separates the key
   (`filter=a=b` is `filter: "a=b"`).
@@ -67,6 +69,9 @@ Standard library packages are never scanned.
 Each `Entry` is an annotated struct type, method or function:
 
 - `IsStruct()`: a struct type. Interfaces and other non-struct types are not reported.
+  `Fields` lists its fields in order, one per name (`A, B string` is two), with
+  the type as written and the tag without the backquotes; an embedded field has
+  an empty `Name`.
 - `IsMethod()`: a method, with `Struct` set to its receiver type (`T`, `*T` or a
   generic `T[K]`), wherever in the package the type is declared.
 - `IsFunc()`: a package-level function.
@@ -76,6 +81,10 @@ and `File` the base name of the file that declares it. `Header.Title` is the fir
 doc line without the leading declaration name and `Header.Description` the doc
 lines after it; annotation lines are not part of the header. `Annotation.Value`
 (`RawValue()`) keeps the text between the parentheses as written.
+`Imports` maps the name the declaring file uses for each import (its alias, or
+the imported package's name, so `github.com/labstack/echo/v4` is `echo`) to the
+import path, which resolves a type such as `echo.Context` written in the file;
+blank and dot imports are left out.
 
 Entries are returned per package (sorted by import path), in source order.
 

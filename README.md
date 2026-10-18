@@ -22,6 +22,7 @@ The project is organized into modular packages, each with specific responsibilit
 
 - **annotation**: Annotations read from Go doc comments (`// @Name(key=value)`)
 - **bootstrap**: Components for application initialization
+- **builder**: Generator of REST, gRPC and function doors from `@REST`/`@GRPC`/`@Function` annotations, on top of inject
 - **examples**: Framework usage examples
 - **extra**: Additional functionalities (health checks, middleware, multiserver)
 - **factory**: Factory pattern implementations for various components
@@ -121,6 +122,12 @@ The Annotation package collects `// @Name(key=value)` annotations from Go doc co
 The Inject package generates fx modules from `@Provide`, `@Inject` and `@Invoke` comment annotations, checking the dependency graph at generation time.
 
 [Inject Documentation](./inject/README.md)
+
+### Builder
+
+The Builder package generates the doors of an application (REST routes on echo, gRPC services and the event function) from `@REST`, `@GRPC` and `@Function` annotations, one `Modules()` and the `main` of every app, on top of inject.
+
+[Builder Documentation](./builder/README.md)
 
 ### Extra
 

@@ -20,7 +20,10 @@ func fixtureModule(t *testing.T) string {
 		"go.mod": "module example.com/fixture\n\ngo 1.21\n",
 		"app/service.go": `package app
 
-import "example.com/fixture/dep"
+import (
+	"example.com/fixture/dep"
+	"example.com/fixture/dep/v2"
+)
 
 // Service handles requests.
 // It is the main entry point.
@@ -29,7 +32,7 @@ type Service struct{}
 
 // Get fetches a resource.
 // @Rest(method=GET, path=/a)
-func (s *Service) Get() string { return dep.Hello() }
+func (s *Service) Get() string { return dep.Hello() + depv2.Two() }
 
 // @Rest(method=POST)
 func (s Service) Post() {}
@@ -55,8 +58,35 @@ func (b *Box[T]) Read() T { return b.v }
 `,
 		"app/other.go": `package app
 
+import (
+	"strings"
+
+	d2 "example.com/fixture/dep"
+	_ "embed"
+	. "fmt"
+)
+
 // @Rest(method=PUT)
-func (s *Service) Put() {}
+func (s *Service) Put() { _ = strings.ToUpper(d2.Hello()); Sprint() }
+`,
+		"app/options.go": `package app
+
+import "time"
+
+// @Boost(kind=fields)
+type Options struct {
+	A, B    string ` + "`" + `default:"x" desc:"letters"` + "`" + `
+	Timeout time.Duration
+	Base
+	hidden int
+}
+
+type Base struct{}
+`,
+		"dep/v2/dep.go": `package depv2
+
+// Two says two.
+func Two() string { return "2" }
 `,
 		"dep/dep.go": `package dep
 
@@ -143,6 +173,24 @@ func TestCollect_ClassifiesMethods(t *testing.T) {
 	assert.True(t, newSvc[0].IsFunc())
 }
 
+func TestCollect_FileImports(t *testing.T) {
+	entries := collectEntries(t, WithPath(fixtureModule(t)))
+
+	get := find(entries, "Service", "Get")
+	require.Len(t, get, 1)
+	assert.Equal(t, map[string]string{
+		"dep":   "example.com/fixture/dep",
+		"depv2": "example.com/fixture/dep/v2",
+	}, get[0].Imports, "unaliased imports use the package name, not the last path element")
+
+	put := find(entries, "Service", "Put")
+	require.Len(t, put, 1)
+	assert.Equal(t, map[string]string{
+		"strings": "strings",
+		"d2":      "example.com/fixture/dep",
+	}, put[0].Imports, "aliases win; blank and dot imports are left out")
+}
+
 func TestCollect_TypeDeclarations(t *testing.T) {
 	entries := collectEntries(t, WithPath(fixtureModule(t)))
 
@@ -151,6 +199,22 @@ func TestCollect_TypeDeclarations(t *testing.T) {
 	assert.Equal(t, "grouped", grouped[0].Annotations[0].Map["kind"])
 
 	assert.Empty(t, find(entries, "Repo", ""), "interfaces are not structs")
+}
+
+func TestCollect_StructFields(t *testing.T) {
+	entries := collectEntries(t, WithPath(fixtureModule(t)))
+
+	options := find(entries, "Options", "")
+	require.Len(t, options, 1)
+	assert.Equal(t, []EntryField{
+		{Name: "A", Type: "string", Tag: `default:"x" desc:"letters"`},
+		{Name: "B", Type: "string", Tag: `default:"x" desc:"letters"`},
+		{Name: "Timeout", Type: "time.Duration"},
+		{Type: "Base"},
+		{Name: "hidden", Type: "int"},
+	}, options[0].Fields, "one field per name, in order; an embedded field has no name")
+
+	assert.Empty(t, find(entries, "Service", "")[0].Fields, "an empty struct has no fields")
 }
 
 func TestCollect_FiltersMatchTheAnnotationName(t *testing.T) {

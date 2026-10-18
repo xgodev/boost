@@ -28,6 +28,8 @@ dist/
 gen/
 # inject examples commit their generated modules (checked by their tests)
 !/inject/examples/*/gen/
+# builder examples too: their mains import gen/builder/<app>
+!/builder/examples/*/gen/
 .vscode/
 
 # Local Claude Code config (untracked) — but keep versioned internal project

@@ -1,0 +1,151 @@
+{{define "door" -}}
+{{.Header}}
+
+package {{.Package}}
+
+import (
+	"sync"
+
+	"go.uber.org/fx"
+{{range .Imports}}
+	{{.Alias}} "{{.Path}}"
+{{- end}}
+)
+{{if .Init}}
+func init() {
+{{- range .Init}}
+	{{.}}
+{{- end}}
+}
+{{end}}
+var {{.Var}}Once sync.Once
+
+// {{.Func}}Module {{.Doc}}
+// It returns an empty option after the first call.
+func {{.Func}}Module() fx.Option {
+	options := fx.Options()
+
+	{{.Var}}Once.Do(func() {
+		options = fx.Module({{printf "%q" .Name}},
+{{- range .Options}}
+			{{.}},
+{{- end}}
+		)
+	})
+
+	return options
+}
+{{end}}
+
+{{define "modules" -}}
+{{.Header}}
+
+package {{.Package}}
+
+import (
+	"go.uber.org/fx"
+{{range .Imports}}
+	{{.Alias}} "{{.Path}}"
+{{- end}}
+)
+
+// Modules returns the doors of app {{.Package}}{{if .Servers}} and the multiserver that runs its servers{{end}}:
+//
+//	fxfact.NewApp({{.Package}}.Modules()...).Run()
+func Modules() []fx.Option {
+	return []fx.Option{
+{{- range .Modules}}
+		{{.}},
+{{- end}}
+	}
+}
+{{end}}
+
+{{define "main" -}}
+{{.Header}}
+
+// Command {{.App}} runs app {{.App}}: the doors builder generates in
+// {{.Import}}.
+package main
+
+import (
+	"github.com/xgodev/boost"
+	fxfact "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1"
+	app "{{.Import}}"
+)
+
+func main() {
+	boost.Start()
+
+	fxfact.NewApp(app.Modules()...).Run()
+}
+{{end}}
+
+{{define "decorator" -}}
+{{.Header}}
+
+package {{.Package}}
+
+import (
+	"go.uber.org/fx"
+{{range .Imports}}
+	{{.Alias}} "{{.Path}}"
+{{- end}}
+)
+
+// Decorate{{.Func}} decorates the {{.Interface}} that {{.Constructor}} provides:
+// every consumer in the app receives a {{.Type}}, which runs the middlewares
+// {{.Plugins}} around each method; config can disable each one.
+{{- if .Gate}}
+// It applies only when {{.Member}} is the chosen implementation.
+{{- end}}
+func Decorate{{.Func}}() fx.Option {
+{{- if .Gate}}
+	if {{.Gate}} != "{{.Member}}" {
+		return fx.Options()
+	}
+{{end}}
+	return fx.Options(
+		contextfx.Module(),
+		fx.Decorate({{.Decorate}}),
+	)
+}
+
+// decorate{{.Func}} builds the wrappers of every method of {{.Interface}} once.
+func decorate{{.Func}}(ctx {{.Context}}.Context, next {{.Next}}) ({{.Next}}, error) {
+	d := &{{.Type}}{next: next}
+	var err error
+{{range .Wrappers}}
+	d.{{.Field}}, err = {{.New}}(ctx, &{{$.Fact}}.Options{Name: {{printf "%q" .Name}}},
+{{- range .Plugins}}
+		{{.}},
+{{- end}}
+	)
+	if err != nil {
+		return nil, err
+	}
+{{end}}
+	return d, nil
+}
+
+// {{.Type}} implements {{.Interface}}: each method runs next's in its wrapper.
+type {{.Type}} struct {
+	next {{.Next}}
+{{- range .Wrappers}}
+	{{.Field}} {{.Type}}
+{{- end}}
+}
+{{range .Wrappers}}
+// {{.Method}} runs next.{{.Method}} in the middlewares of {{.Name}}.
+func (d *{{$.Type}}) {{.Method}}(ctx {{$.Context}}.Context{{.Params}}) {{.Results}} {
+	return d.{{.Field}}.Exec(ctx, {{printf "%q" .Name}},
+		func(ctx {{$.Context}}.Context) {{.Results}} {
+			return d.next.{{.Method}}(ctx{{.Args}})
+		},
+		func(_ {{$.Context}}.Context, {{.Return}}) {{.Results}} {
+			return {{.Values}}
+		},
+	)
+}
+{{end -}}
+{{end}}

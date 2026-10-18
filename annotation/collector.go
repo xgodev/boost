@@ -4,7 +4,10 @@ import (
 	"go/ast"
 	"go/token"
 	"go/types"
+	"path"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -21,6 +24,9 @@ type Collector struct {
 	pkgs     []string
 	basePath string
 	entries  []Entry
+	// names maps the import path of every package seen while walking the
+	// import graph to its package name.
+	names map[string]string
 }
 
 func (c *Collector) Entries() []Entry {
@@ -112,7 +118,8 @@ func structDeclarations(genDecl *ast.GenDecl) (entries []Entry) {
 		if !ok {
 			continue
 		}
-		if _, ok := typeSpec.Type.(*ast.StructType); !ok {
+		structType, ok := typeSpec.Type.(*ast.StructType)
+		if !ok {
 			continue
 		}
 		doc := typeSpec.Doc
@@ -121,10 +128,31 @@ func structDeclarations(genDecl *ast.GenDecl) (entries []Entry) {
 		}
 		entries = append(entries, Entry{
 			Struct:   typeSpec.Name.Name,
+			Fields:   structFields(structType),
 			Comments: getComments(doc),
 		})
 	}
 	return entries
+}
+
+// structFields returns one field per name, in order. An embedded field has
+// no name.
+func structFields(structType *ast.StructType) (fields []EntryField) {
+	for _, field := range structType.Fields.List {
+		tp := types.ExprString(field.Type)
+		var tag string
+		if field.Tag != nil {
+			tag, _ = strconv.Unquote(field.Tag.Value)
+		}
+		if len(field.Names) == 0 {
+			fields = append(fields, EntryField{Type: tp, Tag: tag})
+			continue
+		}
+		for _, name := range field.Names {
+			fields = append(fields, EntryField{Name: name.Name, Type: tp, Tag: tag})
+		}
+	}
+	return fields
 }
 
 func funcDeclaration(funcDecl *ast.FuncDecl) Entry {
@@ -201,6 +229,7 @@ func (c *Collector) filterFiles(p *packages.Package) (entries []Entry) {
 
 	for _, file := range p.Syntax {
 		fileName := filepath.Base(p.Fset.File(file.Pos()).Name())
+		imports := c.fileImports(file)
 
 		for _, ens := range declarations(file) {
 			ans, ok := c.getAnnotations(ens.Comments)
@@ -217,12 +246,46 @@ func (c *Collector) filterFiles(p *packages.Package) (entries []Entry) {
 			ens.Module = modName
 			ens.Package = p.Name
 			ens.Annotations = ans
+			ens.Imports = imports
 			entries = append(entries, ens)
 		}
 	}
 
 	return entries
 }
+
+// fileImports maps the name each import has in the file to its path.
+func (c *Collector) fileImports(file *ast.File) map[string]string {
+	imports := map[string]string{}
+	for _, spec := range file.Imports {
+		// the parser only accepts well-formed string literals here
+		importPath, _ := strconv.Unquote(spec.Path.Value)
+		name := c.packageName(importPath)
+		if spec.Name != nil {
+			name = spec.Name.Name
+		}
+		if name == "_" || name == "." {
+			continue
+		}
+		imports[name] = importPath
+	}
+	return imports
+}
+
+// packageName returns the name of the package at importPath, falling back to
+// the last path element that is not a major version (v2, v3, ...).
+func (c *Collector) packageName(importPath string) string {
+	if name, ok := c.names[importPath]; ok {
+		return name
+	}
+	name := path.Base(importPath)
+	if dir := path.Dir(importPath); dir != "." && majorVersion.MatchString(name) {
+		name = path.Base(dir)
+	}
+	return name
+}
+
+var majorVersion = regexp.MustCompile(`^v[0-9]+$`)
 
 func (c *Collector) getAnnotations(cmts []string) (ans []Annotation, ok bool) {
 	for _, cmt := range cmts {
@@ -274,7 +337,8 @@ func (c *Collector) isAllowedAnnotation(name string) bool {
 
 // parseAnnotation splits `// @Name(values)` into its name and the text between
 // the parentheses. valid is false when the comment does not follow that format:
-// every value must be a key=value pair and quotes and brackets must balance.
+// every value must be a key=value pair or a bare name, and quotes and brackets
+// must balance.
 func parseAnnotation(cmt string) (name string, value string, valid bool) {
 	if !strings.HasPrefix(cmt, annotationPrefix) {
 		return "", "", false
@@ -303,12 +367,16 @@ func parseAnnotation(cmt string) (name string, value string, valid bool) {
 		return name, "", false
 	}
 	for _, item := range items {
-		if !strings.Contains(item, "=") {
+		if !strings.Contains(item, "=") && !bareName.MatchString(strings.TrimSpace(item)) {
 			return name, "", false
 		}
 	}
 	return name, value, true
 }
+
+// bareName is a value without a key, such as the plugin names of
+// @Middleware(log, hystrix). It is kept in Value and left out of Map.
+var bareName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_.-]*$`)
 
 // parseHeader takes the title from the first line of the doc comment, without
 // the leading declaration name, and the description from the lines after it.

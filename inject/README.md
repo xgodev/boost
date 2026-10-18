@@ -16,7 +16,10 @@ function plus a root `Module()` that wires the whole application.
 | `@Inject(index=N)` | `@Provide`/`@Invoke` function | parameter `N` must have a provider in the graph |
 | `@Inject(name=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` receives the named value `X` |
 | `@Inject(group=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` (a slice `[]T`) receives every `T` of group `X` |
+| `@Inject(name=X, index=N, plugins=[a, b])` | `@Provide`/`@Invoke` function | parameter `N`, a factory client (`*resty.Client`, ...), is built by the generator with the plugins `a` and `b` (see below) |
 | `@Invoke` | function | the function runs when the application starts (`fx.Invoke`) |
+| `@Default` | `@Provide` constructor | default implementation of a value with two or more providers; config picks one (see below) |
+| `@Config` | struct | the struct's fields are config keys; the generator registers them and provides `*Struct` (see below) |
 
 `index` is the zero-based position of the result or parameter and is always
 required. A parameter without `@Inject` is linked to a default provider of
@@ -72,8 +75,14 @@ The output mirrors the import path of each annotated function:
 gen/
   module.go                                   # package gen: func Module() fx.Option
   github.com/acme/app/greeting/newgreeter_module.go
+  github.com/acme/app/greeting/options_module.go   # @Config struct Options
   github.com/acme/app/app/announce_module.go
+  github.com/acme/app/internal_/stock/new_module.go  # source in github.com/acme/app/internal/stock
 ```
+
+An `internal` element of the import path is written `internal_` (`GenPath`):
+the generated packages import each other across `gen/`, and Go lets only the
+tree above an `internal/` directory import what is in it.
 
 Each `<func>_module.go` declares `<Func>Module()`, an `fx.Module` with the
 modules it depends on and `fx.Provide`/`fx.Invoke` of the function, wrapped in
@@ -92,6 +101,176 @@ func main() {
 }
 ```
 
+## Default implementation
+
+Two or more constructors may provide the same value (same type and name, no
+group) when one of them is marked `@Default`: they form an implementation
+set and config chooses which one is wired. The implementation is named after
+its package.
+
+```go
+package memory // example.com/app/stock/memory
+
+// @Provide(index=0)
+// @Default
+func New() stock.Service { ... }
+```
+
+```go
+package unlimited // example.com/app/stock/unlimited
+
+// @Provide(index=0)
+func New(c *Client) stock.Service { ... }
+```
+
+The generator writes the switch in
+`gen/implementation/<type import path>/<type>_implementation.go`:
+
+```
+gen/implementation/example.com/app/stock/service_implementation.go
+  ServiceImplementationModule()  // includes only the chosen implementation's module
+  ServiceImplementation()        // name of the chosen implementation
+```
+
+- The key is the package path of the type, relative to the Go module, plus
+  the value name, plus `implementation`: `stock.implementation` (env
+  `STOCK_IMPLEMENTATION`), `stock.formal.implementation` for
+  `@Provide(name=formal)`. `_` splits segments and `a-b` becomes `aB`, so the
+  key is always reachable from an environment variable. A type outside the
+  module uses its full import path.
+- Unset, the key holds the `@Default` package name.
+- Only the chosen implementation's module is included: the others, and what
+  only they depend on, are never built.
+- An unknown name fails the boot with an error naming the key, the value and
+  the valid names; it never falls back to the default.
+- Every consumer and the root `Module()` include the switch instead of the
+  implementations. The graph still links consumers to every implementation,
+  so cycles are found whatever the config says.
+
+"Default implementation" (`@Default`) is not "default provider" (a
+`@Provide` without `name`): a set of named values has a default
+implementation too.
+
+## Config
+
+A package that needs settings declares a struct marked `@Config`; the
+generator writes the `config.Add` registration and provides `*Struct` to the
+constructors that receive it. The package never imports `wrapper/config`.
+
+```go
+package resty // example.com/app/internal/pkg/client/quote/resty
+
+// @Config
+type Options struct {
+	BaseURL string        `default:"http://localhost" desc:"quote API base URL"`
+	Timeout time.Duration `default:"2s" desc:"call timeout"`
+	Token   string        `hide:"true" desc:"API token"`
+}
+
+// @Provide(index=0)
+func New(o *Options) quote.Service { ... }
+```
+
+The generator writes `gen/<import path>/options_module.go`:
+
+```go
+const optionsRoot = "internal.pkg.client.quote.resty"
+
+func init() {
+	// env INTERNAL_PKG_CLIENT_QUOTE_RESTY_BASE__URL
+	config.Add(optionsRoot+".baseUrl", "http://localhost", "quote API base URL")
+	// env INTERNAL_PKG_CLIENT_QUOTE_RESTY_TIMEOUT
+	config.Add(optionsRoot+".timeout", 2*time.Second, "call timeout")
+	// env INTERNAL_PKG_CLIENT_QUOTE_RESTY_TOKEN
+	config.Add(optionsRoot+".token", "", "API token", config.WithHide())
+}
+
+func OptionsModule() fx.Option // provides *resty.Options from config.NewOptionsWithPath
+```
+
+- `@Config` takes no arguments and goes on an exported struct outside
+  package `main`; at most one per package.
+- Every exported field is a key, unless tagged `config:"-"`. Supported types:
+  `string`, `bool`, `int`, `int8`..`int64`, `uint`, `uint8`..`uint64`,
+  `float32`, `float64`, `time.Duration` and `[]string`.
+- `desc` is required. `default` is optional (the zero value without it) and
+  is parsed when generating: `strconv` rules for bool and numbers,
+  `time.ParseDuration` for durations, a comma list for `[]string`.
+  `hide:"true"` registers a secret (`config.WithHide()`). `config:"name"`
+  renames the key segment; it must be lowerCamel (`^[a-z][a-zA-Z0-9]*$`).
+- The root key is the package path relative to the Go module, with the
+  segment rules of the implementation key (its full import path outside
+  the module). The field segment is the field's words in lowerCamel
+  (`BaseURL` -> `baseUrl`, `HTTPTimeout` -> `httpTimeout`), which is what
+  the env loader builds from `BASE__URL`: the env var of each key is
+  written next to its `config.Add`.
+- Values are read when the module is built, after `boost.Start()` loaded
+  flags, env vars and config files; a `[]string` env value is split by
+  commas.
+
+## Factory clients
+
+A parameter whose type is a client a boost factory builds, with `@Inject`,
+is built by the generator: one client per name, each with its own config and
+the plugins its `@Inject` lists. The app writes no factory module.
+
+```go
+package resty // example.com/app/internal/pkg/client/quote/resty
+
+// @Provide(index=0)
+// @Inject(index=0, name=quote, plugins=[otel, prometheus])
+func New(c *resty.Client) quote.Repository { ... }
+```
+
+The generator writes `gen/client/<client type import path>/<name>_<type>.go`
+(`default_client.go` for an `@Inject` without `name`):
+
+```go
+const quoteClientRoot = "boost.factory.resty.clients.quote"
+
+func init() {
+	factory.ConfigAdd(quoteClientRoot)
+	otelplugin.ConfigAdd(quoteClientRoot + ".plugins.otel")
+	prometheusplugin.ConfigAdd(quoteClientRoot + ".plugins.prometheus")
+}
+
+func QuoteClientModule() fx.Option // provides *resty.Client `name:"quote"`
+
+func newQuoteClient(ctx context.Context) (*resty.Client, error) {
+	otel, err := otelplugin.NewOtelrestyWithConfigPath(quoteClientRoot + ".plugins.otel")
+	...
+	return factory.NewClientWithConfigPath(ctx, quoteClientRoot, otel.Register, prometheus.Register)
+}
+```
+
+| Client type | Factory | Plugins |
+|---|---|---|
+| `*resty.Client` (`github.com/go-resty/resty/v2`) | `factory/contrib/go-resty/resty/v2` | `log`, `health`, `otel`, `datadog`, `prometheus`, `retry`, `requestid` |
+| `*redis.Client`, `*redis.ClusterClient` (`github.com/redis/go-redis/v9`) | `factory/contrib/redis/go-redis/v9` | `health`, `otel`, `datadog`, `prometheus` |
+| `*mongo.Conn` (`factory/contrib/go.mongodb.org/mongo-driver/v1`, `/v2`) | the same package | `health`, `otel`, `datadog`, `prometheus` |
+
+- **Name.** `name=x` is the client `x`; without `name` it is the default
+  client of the factory. A name is lowerCamel (`^[a-z][a-zA-Z0-9]*$`) so an
+  env var reaches its keys.
+- **Config.** The default client keeps the factory's root
+  (`boost.factory.resty.*`); a named one lives under
+  `<factory root>.clients.<name>` (`boost.factory.resty.clients.quote.host`,
+  env `BOOST_FACTORY_RESTY_CLIENTS_QUOTE_HOST`) with the factory's defaults.
+  Each plugin sits under the client
+  (`boost.factory.resty.clients.quote.plugins.otel.enabled`, default
+  `true`): the annotation chooses the plugins, config only turns one off.
+- **Shared.** Consumers with the same type and name share one client. Each
+  may list `plugins` only if the lists are equal; a consumer without
+  `plugins` takes the client as the others declare it; no list anywhere is a
+  client without plugins.
+- **The app wins.** When a `@Provide` of the app provides the value (same
+  type and name), it is used and nothing is generated. A client parameter
+  without `@Inject` is left to the app.
+- Every consumer's module and the root `Module()` include
+  `<Name>ClientModule()`. fx builds the client only when a consumer is
+  built, so a client of an implementation that config did not choose is
+  never built.
+
 ## Validation
 
 The generator fails, without touching the output directory, when:
@@ -101,14 +280,36 @@ The generator fails, without touching the output directory, when:
 - `@Provide` points to an `error` result, or uses both `name` and `group`;
 - `@Inject(group=...)` is on a parameter that is not a slice;
 - two functions provide the same value (same type and name; groups may have
-  many providers);
-- an `@Inject` parameter has no provider;
+  many providers) and none is `@Default`;
+- `@Default` takes arguments, is not on a function with exactly one
+  `@Provide`, is on a group, or its value has no other provider;
+- an implementation set has two `@Default`, a member with more than one
+  `@Provide`, two members in packages with the same name, members providing
+  different types, or a type that is not named (`T`, `*T`, `pkg.T`,
+  `*pkg.T`);
+- a consumer of an implementation set lives in a member's package (the
+  switch would import itself);
+- two generated config keys (of `@Config` fields or implementation
+  switches) are equal, or one is the parent of another (`a.b` and `a.b.c`);
+- `@Config` takes arguments, is on a function, an unexported struct or in
+  package `main`, is combined with another inject annotation, or appears
+  twice in a package;
+- a `@Config` field is embedded, has an unsupported type, lacks `desc`, has
+  a `default` that does not parse for its type or a `config` name that is
+  not lowerCamel, or is unexported and tagged;
+- an `@Inject` parameter has no provider and is not a factory client;
+- `plugins` is on a `@Provide`, on a parameter that is not a factory client
+  or that the app provides, or with `group`; lists an unknown or repeated
+  plugin; or differs between two consumers of one client;
+- a client name is not lowerCamel, or two clients would be written to the
+  same file (`name=default` and the unnamed client);
 - the dependencies have a cycle, or a function depends on what it provides;
 - an annotated function is unexported or in package `main` (the generated
   code must import it);
 - the output directory is not inside the Go module.
 
-Annotations on structs and methods are ignored with a warning.
+Annotations other than `@Config` on structs, and annotations on methods,
+are ignored with a warning.
 
 ## Library
 
@@ -127,6 +328,20 @@ files, _ := inject.NewGenerator(g, inject.GeneratorOptions{
 ```
 
 `WriteGraphviz`/`ExportInjectGraphToGraphviz` export the graph in DOT format.
+
+Generators built on top of inject (such as [`builder`](../builder)) reuse:
+
+| Function | Purpose |
+|---|---|
+| `GeneratorOptions.BaseImport()` | import path of the output dir |
+| `GenPath(importPath)` | directory under the output dir that mirrors a package (`internal` written `internal_`) |
+| `ModuleOf(base, entry)` | import and module call (`gen_x_hash.NewXModule()`, `gen_x_hash.OptionsModule()` for a `@Config`) of a component |
+| `ConfigKey(modulePath, importPath)` / `ConfigEnv(root, segment)` | root config key of a package's `@Config` and the env var of one of its keys |
+| `Provider(g, pkg, tp)` | component and result index providing the default value of a type |
+| `Alias(prefix, name, path)` | collision-free import alias (`prefix_name_hash`) |
+| `Clients(g)` / `Client.Module(base)` | factory clients the generator builds, and the import and module call of one |
+| `ExecuteTemplate(tmpl, name, data)` | executes a template and gofmt's the output |
+| `WriteGenerated(ctx, dir, files, header)` | writes files and removes stale ones starting with `header` |
 
 See [`examples/simple`](./examples/simple): its tests run the generated
 application and fail when `gen/` is stale.

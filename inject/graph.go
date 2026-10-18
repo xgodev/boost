@@ -18,16 +18,29 @@ import (
 // a provider to each function that consumes what it provides: parameters with
 // @Inject must have a provider in the graph, while parameters without it are
 // linked when a default provider of the same type exists and are otherwise
-// left for the application to provide.
+// left for the application to provide. An @Inject client parameter
+// (*resty.Client, ...) without a provider is a client inject builds (see
+// Clients).
 //
-// It returns a NotValid error for malformed annotations or a dependency
-// cycle, AlreadyExists when two functions provide the same non-group value
-// and NotFound when an @Inject has no provider.
+// Two or more providers of the same non-group value form an implementation
+// set when one of them is marked @Default (see Implementations).
+//
+// A struct annotated @Config is a vertex too: it provides *Struct, filled
+// from config.
+//
+// It returns a NotValid error for malformed annotations, a dependency cycle,
+// two @Config in a package, an invalid implementation set or invalid client
+// plugins, AlreadyExists when two functions provide the same non-group value
+// and none is @Default or two clients share a file, and NotFound when an
+// @Inject has no provider.
 func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*graph.Graph[Component], error) {
 	g := graph.NewGraph[Component]()
 
 	providers, err := addComponents(g, entries)
 	if err != nil {
+		return nil, err
+	}
+	if err := checkConfigs(g); err != nil {
 		return nil, err
 	}
 
@@ -37,6 +50,13 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 
 	if _, remaining, err := g.TopologicalSort(); err != nil {
 		return nil, errors.NotValidf("dependency cycle among %s", strings.Join(remaining, ", "))
+	}
+
+	if _, err := Implementations(g); err != nil {
+		return nil, err
+	}
+	if _, err := Clients(g); err != nil {
+		return nil, err
 	}
 
 	log.FromContext(ctx).Debugf("inject graph built with %d components", len(g.Vertices))
@@ -65,19 +85,48 @@ func addComponents(g *graph.Graph[Component], entries []annotation.Entry) (map[s
 
 		for _, idx := range sortedIndexes(comp.Provides) {
 			ann := comp.Provides[idx]
-			id := xid(entry.Package, entry.Func.Results[idx].Type, ann)
+			id := xid(entry.Package, comp.Result(idx), ann)
 			providers[id] = append(providers[id], key)
 			groups[id] = ann.Group != ""
 		}
 	}
 
 	for _, id := range sortedKeys(providers) {
-		if keys := providers[id]; len(keys) > 1 && !groups[id] {
-			return nil, errors.AlreadyExistsf("%s is provided by more than one function: %s", id, strings.Join(keys, ", "))
+		if keys := providers[id]; len(keys) > 1 && !groups[id] && !hasDefault(g, keys) {
+			return nil, errors.AlreadyExistsf("%s is provided by more than one function: %s; mark one @Default to choose the implementation by config",
+				id, strings.Join(keys, ", "))
 		}
 	}
 
 	return providers, nil
+}
+
+// checkConfigs fails when a package declares more than one @Config struct:
+// the keys of a package share its root key.
+func checkConfigs(g *graph.Graph[Component]) error {
+	byPath := map[string]string{}
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		if !comp.IsConfig() {
+			continue
+		}
+		if other, dup := byPath[comp.Entry.Path]; dup {
+			return errors.NotValidf("%s and %s are both @Config in %s: the keys of a package share its root key; move one to its own package",
+				other, key, comp.Entry.Path)
+		}
+		byPath[comp.Entry.Path] = key
+	}
+	return nil
+}
+
+// hasDefault reports whether one of the components is marked @Default.
+func hasDefault(g *graph.Graph[Component], keys []string) bool {
+	for _, key := range keys {
+		if g.Vertices[key].Value.Default {
+			return true
+		}
+	}
+	return false
 }
 
 // linkComponents adds an edge from each provider to the components consuming
@@ -90,6 +139,10 @@ func linkComponents(ctx context.Context, g *graph.Graph[Component], providers ma
 			id := injectID(comp.Entry.Package, param.Type, ann)
 
 			keys := providers[id]
+			if _, client := clientFactory(comp.Entry, param.Type); len(keys) == 0 && injected && client && ann.Group == "" {
+				log.FromContext(ctx).Debugf("parameter %d of %s (%s) is a client inject builds", i, key, param.Type)
+				continue
+			}
 			if len(keys) == 0 && injected {
 				return errors.NotFoundf("provider not found for %s, required by parameter %d of %s", id, i, key)
 			}
@@ -109,6 +162,24 @@ func linkComponents(ctx context.Context, g *graph.Graph[Component], providers ma
 	return nil
 }
 
+// Provider returns the component that provides the default value (no name,
+// no group) of type tp, written as in package pkg ("*Handler" in package
+// orders and "*orders.Handler" elsewhere are the same type), and the index of
+// that result.
+func Provider(g *graph.Graph[Component], pkg, tp string) (Component, int, bool) {
+	want := xid(pkg, tp, Annotation{})
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		for _, idx := range sortedIndexes(comp.Provides) {
+			ann := comp.Provides[idx]
+			if xid(comp.Entry.Package, comp.Result(idx), ann) == want {
+				return comp, idx, true
+			}
+		}
+	}
+	return Component{}, 0, false
+}
+
 // parsedAnnotation is an inject annotation decoded from an entry.
 type parsedAnnotation struct {
 	kind AnnotationType
@@ -121,6 +192,12 @@ func newComponent(entry annotation.Entry) (Component, bool, error) {
 	parsed, err := parseAnnotations(entry)
 	if err != nil || len(parsed) == 0 {
 		return Component{}, false, err
+	}
+
+	for _, p := range parsed {
+		if p.kind == AnnotationTypeCONFIG {
+			return newConfig(entry, parsed)
+		}
 	}
 
 	if !entry.IsFunc() {
@@ -140,6 +217,8 @@ func newComponent(entry annotation.Entry) (Component, bool, error) {
 
 	for _, p := range parsed {
 		switch p.kind {
+		case AnnotationTypeDEFAULT:
+			comp.Default = true
 		case AnnotationTypePROVIDE:
 			err = addIndexed(comp.Provides, p.ann, len(entry.Func.Results), "@Provide", "result", entry)
 		case AnnotationTypeINJECT:
@@ -153,6 +232,9 @@ func newComponent(entry annotation.Entry) (Component, bool, error) {
 	if err := validateProvides(entry, comp.Provides); err != nil {
 		return Component{}, false, err
 	}
+	if err := validateDefault(comp); err != nil {
+		return Component{}, false, err
+	}
 	if err := validateInjects(entry, comp.Injects); err != nil {
 		return Component{}, false, err
 	}
@@ -160,8 +242,8 @@ func newComponent(entry annotation.Entry) (Component, bool, error) {
 	return comp, true, nil
 }
 
-// parseAnnotations decodes the @Provide, @Inject and @Invoke annotations of
-// an entry, ignoring the others.
+// parseAnnotations decodes the @Provide, @Inject, @Invoke, @Default and
+// @Config annotations of an entry, ignoring the others.
 func parseAnnotations(entry annotation.Entry) ([]parsedAnnotation, error) {
 	var parsed []parsedAnnotation
 	for _, ann := range entry.Annotations {
@@ -171,12 +253,25 @@ func parseAnnotations(entry annotation.Entry) ([]parsedAnnotation, error) {
 		}
 
 		var a Annotation
+		if hint, ok := noArguments[annType]; ok {
+			if strings.TrimSpace(ann.Value) != "" {
+				return nil, errors.NotValidf("@%s on %s takes no arguments; %s", ann.Name, gid(entry), hint)
+			}
+			parsed = append(parsed, parsedAnnotation{kind: annType})
+			continue
+		}
 		if err := ann.Decode(&a); err != nil {
 			return nil, errors.NotValidf("decode error on @%s in %s: %v", ann.Name, gid(entry), err)
 		}
 		parsed = append(parsed, parsedAnnotation{kind: annType, ann: a})
 	}
 	return parsed, nil
+}
+
+// noArguments are the annotations without arguments, with what replaces them.
+var noArguments = map[AnnotationType]string{
+	AnnotationTypeDEFAULT: "the implementation is named after its package",
+	AnnotationTypeCONFIG:  "the keys are named after the package and the fields",
 }
 
 // componentType tells whether the annotations make the function a provider
@@ -190,6 +285,8 @@ func componentType(entry annotation.Entry, parsed []parsedAnnotation) (Annotatio
 	switch {
 	case kinds[AnnotationTypePROVIDE] && kinds[AnnotationTypeINVOKE]:
 		return 0, errors.NotValidf("%s cannot have both @Provide and @Invoke", gid(entry))
+	case kinds[AnnotationTypeDEFAULT] && !kinds[AnnotationTypePROVIDE]:
+		return 0, errors.NotValidf("@Default on %s needs a @Provide: it marks the default implementation of the provided value", gid(entry))
 	case kinds[AnnotationTypePROVIDE]:
 		return AnnotationTypePROVIDE, nil
 	case kinds[AnnotationTypeINVOKE]:
@@ -207,6 +304,25 @@ func validateProvides(entry annotation.Entry, provides map[int]Annotation) error
 		if ann.Name != "" && ann.Group != "" {
 			return errors.NotValidf("@Provide on %s result %d cannot have both name and group", gid(entry), idx)
 		}
+		if ann.Plugins != "" {
+			return errors.NotValidf("@Provide on %s result %d cannot have plugins: plugins go on the @Inject of a client parameter", gid(entry), idx)
+		}
+	}
+	return nil
+}
+
+// validateDefault checks that a @Default function provides one non-group value.
+func validateDefault(comp Component) error {
+	if !comp.Default {
+		return nil
+	}
+	if len(comp.Provides) != 1 {
+		return errors.NotValidf("@Default on %s needs exactly one @Provide", gid(comp.Entry))
+	}
+	for idx, ann := range comp.Provides {
+		if ann.Group != "" {
+			return errors.NotValidf("@Default on %s result %d: a group has no default implementation, every provider joins it", gid(comp.Entry), idx)
+		}
 	}
 	return nil
 }
@@ -218,6 +334,39 @@ func validateInjects(entry annotation.Entry, injects map[int]Annotation) error {
 		}
 		if _, ok := sliceElem(entry.Func.Parameters[idx].Type); ann.Group != "" && !ok {
 			return errors.NotValidf("@Inject(group=%s) on %s parameter %d must be a slice", ann.Group, gid(entry), idx)
+		}
+		if err := validatePlugins(entry, idx, ann); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// validatePlugins checks the plugins of an @Inject: the parameter is a client
+// inject builds and every plugin is one of its factory.
+func validatePlugins(entry annotation.Entry, idx int, ann Annotation) error {
+	if ann.Plugins == "" {
+		return nil
+	}
+
+	tp := entry.Func.Parameters[idx].Type
+	f, ok := clientFactory(entry, tp)
+	switch {
+	case ann.Group != "":
+		return errors.NotValidf("@Inject on %s parameter %d cannot have both group and plugins: plugins configure one client", gid(entry), idx)
+	case !ok:
+		return errors.NotValidf("@Inject on %s parameter %d has plugins, but %s is not a client inject builds (%s)",
+			gid(entry), idx, tp, strings.Join(supportedClients(), ", "))
+	}
+
+	plugins, err := parsePlugins(ann.Plugins)
+	if err != nil {
+		return errors.NewNotValid(err, fmt.Sprintf("@Inject on %s parameter %d", gid(entry), idx))
+	}
+	for _, plugin := range plugins {
+		if _, ok := f.Plugins[plugin]; !ok {
+			return errors.NotValidf("@Inject on %s parameter %d: %s has no plugin %s; its plugins are %s",
+				gid(entry), idx, tp, plugin, strings.Join(f.PluginNames(), ", "))
 		}
 	}
 	return nil
@@ -240,9 +389,18 @@ func addIndexed(dst map[int]Annotation, ann Annotation, size int, kind, what str
 }
 
 // gid generates a unique identifier for a graph vertex based on the entry's
-// import path and function name.
+// import path and declaration name.
 func gid(entry annotation.Entry) string {
-	return fmt.Sprintf("%s.%s", entry.Path, entry.Func.Name)
+	return fmt.Sprintf("%s.%s", entry.Path, declName(entry))
+}
+
+// declName is the name of the annotated function, or of the struct for a
+// struct entry.
+func declName(entry annotation.Entry) string {
+	if entry.Func.Name == "" {
+		return entry.Struct
+	}
+	return entry.Func.Name
 }
 
 // xid identifies a provided or injected value by its qualified type and
