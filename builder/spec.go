@@ -4,6 +4,8 @@
 package builder
 
 import (
+	"go/types"
+
 	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/inject"
 )
@@ -28,6 +30,9 @@ type App struct {
 	Name     string
 	Servers  []Server  // sorted by name
 	Function *Function // nil when the app has no @Function
+	// Middlewares are the @Middleware of the constructors the doors of the
+	// app build, sorted by constructor.
+	Middlewares []Middleware
 }
 
 // Server is one echo or gRPC server of an app, with its own config path.
@@ -76,4 +81,13 @@ type Handler struct {
 type Receiver struct {
 	Type     string // provided type as written in the handler's package: "*Handler" or "Handler"
 	Provider inject.Component
+}
+
+// Middleware is a @Middleware annotation: the plugins run around every method
+// of the interface its constructor provides.
+type Middleware struct {
+	Provider  inject.Component // the annotated constructor
+	Index     int              // result index of the interface value
+	Plugins   []string         // plugin names, the outermost first
+	Interface *types.Named     // the provided interface
 }

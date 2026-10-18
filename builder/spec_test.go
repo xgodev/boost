@@ -74,7 +74,7 @@ func newTestSpec(t *testing.T, entries []annotation.Entry) (*Spec, error) {
 	t.Helper()
 	g, err := inject.NewGraphFromEntries(context.Background(), entries)
 	require.NoError(t, err)
-	return NewSpec(entries, g)
+	return NewSpec(entries, g, nil)
 }
 
 func routeNames(routes []Route) (out []string) {

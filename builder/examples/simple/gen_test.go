@@ -27,7 +27,7 @@ func TestGeneratedCodeIsUpToDate(t *testing.T) {
 	g, err := inject.NewGraphFromEntries(ctx, entries)
 	require.NoError(t, err)
 
-	spec, err := builder.NewSpec(entries, g)
+	spec, err := builder.NewSpec(entries, g, builder.LoadPackages("."))
 	require.NoError(t, err)
 
 	out, err := filepath.Abs("gen")
