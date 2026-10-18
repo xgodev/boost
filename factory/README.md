@@ -39,6 +39,40 @@ To use the Factory package in your application:
 2. Configure the necessary parameters
 3. Use the factory to create instances of the required objects
 
+## Plugins
+
+Factories accept plugins as a variadic argument and run them right after
+building the component. The contract lives in this package:
+
+```go
+// Plugin customizes a component T built by a factory.
+type Plugin[T any] func(context.Context, T) error
+
+// ApplyPlugins runs plugins in order and stops at the first error.
+func ApplyPlugins[T any](ctx context.Context, target T, plugins ...Plugin[T]) error
+```
+
+The per-factory plugin types are aliases of it, so a plugin written against
+either name is interchangeable:
+
+| Factory | Alias |
+|---|---|
+| `contrib/redis/go-redis/v9` | `Plugin = factory.Plugin[*redis.Client]`, `ClusterPlugin = factory.Plugin[*redis.ClusterClient]` |
+| `contrib/labstack/echo/v4` | `Plugin = factory.Plugin[*Server]` |
+| `contrib/go-resty/resty/v2` | `Plugin = factory.Plugin[*resty.Client]` |
+| `contrib/elastic/go-elasticsearch/v8` | `Plugin = factory.Plugin[*elasticsearch.Client]` |
+| `contrib/gocql/gocql/v1` | `Plugin = factory.Plugin[*gocql.Session]` |
+| `contrib/aws/aws-sdk-go-v2/v1` | `Plugin = factory.Plugin[*aws.Config]` |
+| `contrib/go.mongodb.org/mongo-driver/v1`, `v2` | `ClientOptionsPlugin = factory.Plugin[*options.ClientOptions]`, `ClientPlugin = factory.Plugin[*mongo.Client]` |
+
+Factories whose plugins have a different shape (gRPC, NATS, Hystrix, the
+mongo `Plugin` pair) keep their own types.
+
+Plugin packages sit under each factory's `plugins/` directory:
+`contrib/` integrates a third-party library, `native/` wraps the upstream
+library's own middleware, `extra/` is boost-authored and generic, and
+`local/` wires another boost package (health, log, cache).
+
 ## Integration with Other Packages
 
 The Factory integrates with other components of the Boost framework:

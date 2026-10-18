@@ -7,12 +7,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	c "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/factory/core/net/http/client"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 // Plugin defines a function to process plugin.
-type Plugin func(context.Context, *aws.Config) error
+type Plugin = factory.Plugin[*aws.Config]
 
 // NewConfig returns aws config.
 func NewConfig(ctx context.Context, plugins ...Plugin) (aws.Config, error) {
@@ -57,10 +58,8 @@ func NewConfigWithOptions(ctx context.Context, options *Options, plugins ...Plug
 	cfg.Retryer = retryerConfig(options)
 	cfg.HTTPClient = httpClient
 
-	for _, plugin := range plugins {
-		if err := plugin(ctx, &cfg); err != nil {
-			return aws.Config{}, err
-		}
+	if err := factory.ApplyPlugins(ctx, &cfg, plugins...); err != nil {
+		return aws.Config{}, err
 	}
 
 	return cfg, nil

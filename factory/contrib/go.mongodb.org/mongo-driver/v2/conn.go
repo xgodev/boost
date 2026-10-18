@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 
@@ -23,10 +24,10 @@ type Conn struct {
 }
 
 // ClientOptionsPlugin defines a mongo client options plugin signature.
-type ClientOptionsPlugin func(context.Context, *options.ClientOptions) error
+type ClientOptionsPlugin = factory.Plugin[*options.ClientOptions]
 
 // ClientPlugin defines a mongo client plugin signature.
-type ClientPlugin func(context.Context, *mongo.Client) error
+type ClientPlugin = factory.Plugin[*mongo.Client]
 
 // Plugin defines a function to process plugin.
 type Plugin func(context.Context) (ClientOptionsPlugin, ClientPlugin)
@@ -78,11 +79,9 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 		return nil, errors.NewInternal(err, "failed to create client options")
 	}
 
-	for _, clientOptionsPlugin := range clientOptionsPlugins {
-		if err := clientOptionsPlugin(ctx, co); err != nil {
-			logger.Errorf("Failed to apply client options plugin: %v", err)
-			return nil, errors.NewInternal(err, "failed to apply client options plugin")
-		}
+	if err := factory.ApplyPlugins(ctx, co, clientOptionsPlugins...); err != nil {
+		logger.Errorf("Failed to apply client options plugin: %v", err)
+		return nil, errors.NewInternal(err, "failed to apply client options plugin")
 	}
 
 	var client *mongo.Client
@@ -93,11 +92,9 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 		return nil, err
 	}
 
-	for _, clientPlugin := range clientPlugins {
-		if err := clientPlugin(ctx, client); err != nil {
-			logger.Errorf("Failed to apply client plugin: %v", err)
-			return nil, errors.NewInternal(err, "failed to apply client plugin")
-		}
+	if err := factory.ApplyPlugins(ctx, client, clientPlugins...); err != nil {
+		logger.Errorf("Failed to apply client plugin: %v", err)
+		return nil, errors.NewInternal(err, "failed to apply client plugin")
 	}
 
 	conn = &Conn{

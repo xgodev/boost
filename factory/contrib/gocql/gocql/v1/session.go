@@ -5,11 +5,12 @@ import (
 	"strings"
 
 	"github.com/gocql/gocql"
+	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 // Plugin defines a gocql plugin signature.
-type Plugin func(context.Context, *gocql.Session) error
+type Plugin = factory.Plugin[*gocql.Session]
 
 // NewSessionWithConfigPath returns a new session with options from config path.
 func NewSessionWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*gocql.Session, error) {
@@ -120,10 +121,8 @@ func NewSessionWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (
 		return nil, err
 	}
 
-	for _, plugin := range plugins {
-		if err := plugin(ctx, session); err != nil {
-			panic(err)
-		}
+	if err := factory.ApplyPlugins(ctx, session, plugins...); err != nil {
+		panic(err)
 	}
 
 	logger.Infof("Connected to Cassandra server: %v", strings.Join(o.Hosts, ","))

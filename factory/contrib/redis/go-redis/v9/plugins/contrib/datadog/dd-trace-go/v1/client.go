@@ -45,19 +45,7 @@ func NewClientWithOptions(options *Options) *Client {
 
 // Register registers this datadog client to redis client.
 func (d *Client) Register(ctx context.Context, client *redis.Client) error {
-	if !d.options.Enabled {
-		return nil
-	}
-
-	logger := log.FromContext(ctx)
-
-	logger.Trace("integrating redis in datadog")
-
-	redistrace.WrapClient(client, d.options.TraceOptions...)
-
-	logger.Debug("redis successfully integrated in datadog")
-
-	return nil
+	return register(ctx, d.options, client)
 }
 
 // ClientRegister registers a new datadog client to redis client.
@@ -68,4 +56,21 @@ func ClientRegister(ctx context.Context, client *redis.Client) error {
 	}
 	d := NewClientWithOptions(o)
 	return d.Register(ctx, client)
+}
+
+// register integrates any redis client (single node or cluster) using o.
+func register(ctx context.Context, o *Options, client redis.UniversalClient) error {
+	if !o.Enabled {
+		return nil
+	}
+
+	logger := log.FromContext(ctx)
+
+	logger.Trace("integrating redis in datadog")
+
+	redistrace.WrapClient(client, o.TraceOptions...)
+
+	logger.Debug("redis successfully integrated in datadog")
+
+	return nil
 }
