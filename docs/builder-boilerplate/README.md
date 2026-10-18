@@ -3,7 +3,9 @@
 Status (2026-10-18): piece 1 (`@Middleware`) implemented in #72 (PR #73,
 stacked on #69), skill updated in claude-plugin 1.24.3. Piece 2 (`@Default`
 implementation switch) implemented in #75 (PR #78, stacked on #73), skill
-updated in claude-plugin 1.24.5. Next: piece 3.
+updated in claude-plugin 1.24.5. Piece 3 (`@Config` struct -> generated
+`config.Add` and `*Struct` provider) implemented in #80 (stacked on #78).
+Next: piece 4.
 
 ## Intent
 
@@ -37,7 +39,14 @@ it teaches stops asking for hand-written wiring.
 - Middleware: the list lives in the annotation (`@Middleware(log, ...)`),
   config only turns each plugin off. Design:
   `docs/superpowers/specs/2026-10-18-builder-middleware-design.md`.
+- Implementation switch: `@Default` on one of the providers of a value; the
+  implementation is named after its package. Design:
+  `docs/superpowers/specs/2026-10-18-implementation-switch-design.md`.
+- Config: `@Config` on a struct whose fields carry `default`/`desc` tags;
+  the generated file in `gen/` registers the keys and provides `*Struct`,
+  so the package never imports `config`; only simple types. Design:
+  `docs/superpowers/specs/2026-10-18-config-generation-design.md`.
 
 ## Open
 
-- Annotation syntax of pieces 2-4.
+- Annotation syntax of piece 4.
