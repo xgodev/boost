@@ -12,13 +12,14 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/factory/contrib/golang.org/x/net/v0/http2/server"
 	"github.com/xgodev/boost/wrapper/log"
 	"golang.org/x/net/http2"
 )
 
 // Plugin defines an echo server Plugin function to execute.
-type Plugin func(context.Context, *Server) error
+type Plugin = factory.Plugin[*Server]
 
 // Server represents a echo server.
 type Server struct {
@@ -55,10 +56,8 @@ func NewServerWithOptions(ctx context.Context, opt *Options, plugins ...Plugin) 
 
 	srv := &Server{instance: instance, options: opt}
 
-	for _, plugin := range plugins {
-		if err := plugin(ctx, srv); err != nil {
-			panic(err)
-		}
+	if err := factory.ApplyPlugins(ctx, srv, plugins...); err != nil {
+		panic(err)
 	}
 
 	return srv

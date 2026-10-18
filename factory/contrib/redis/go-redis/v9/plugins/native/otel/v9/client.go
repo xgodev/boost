@@ -41,7 +41,22 @@ func NewClientWithOptions(options *Options) *Client {
 
 // Register registers this otel client to redis client.
 func (d *Client) Register(ctx context.Context, client *redis.Client) error {
-	if !d.options.Enabled {
+	return register(ctx, d.options, client)
+}
+
+// ClientRegister registers a new otel client to redis client.
+func ClientRegister(ctx context.Context, client *redis.Client) error {
+	o, err := NewOptions()
+	if err != nil {
+		return err
+	}
+	d := NewClientWithOptions(o)
+	return d.Register(ctx, client)
+}
+
+// register integrates any redis client (single node or cluster) using o.
+func register(ctx context.Context, o *Options, client redis.UniversalClient) error {
+	if !o.Enabled {
 		return nil
 	}
 
@@ -64,14 +79,4 @@ func (d *Client) Register(ctx context.Context, client *redis.Client) error {
 	logger.Debug("redis successfully integrated in otel")
 
 	return nil
-}
-
-// ClientRegister registers a new otel client to redis client.
-func ClientRegister(ctx context.Context, client *redis.Client) error {
-	o, err := NewOptions()
-	if err != nil {
-		return err
-	}
-	d := NewClientWithOptions(o)
-	return d.Register(ctx, client)
 }
