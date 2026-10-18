@@ -7,12 +7,13 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/wrapper/config"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 // Plugin defines a function to process plugin.
-type Plugin func(context.Context, *elasticsearch.Client) error
+type Plugin = factory.Plugin[*elasticsearch.Client]
 
 // NewClient returns elasticsearch client with default options.
 func NewClient(ctx context.Context, plugins ...Plugin) (*elasticsearch.Client, error) {
@@ -74,10 +75,8 @@ func NewClientWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (c
 		return nil, err
 	}
 
-	for _, plugin := range plugins {
-		if err := plugin(ctx, client); err != nil {
-			panic(err)
-		}
+	if err := factory.ApplyPlugins(ctx, client, plugins...); err != nil {
+		panic(err)
 	}
 
 	logger.Infof("Connected to Elastic Search server: %v status: %s", strings.Join(o.Addresses, ","), res.Status())

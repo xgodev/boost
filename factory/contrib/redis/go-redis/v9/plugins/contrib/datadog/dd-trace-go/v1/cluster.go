@@ -5,7 +5,6 @@ import (
 	redistrace "github.com/DataDog/dd-trace-go/contrib/redis/go-redis.v9/v2"
 	"github.com/redis/go-redis/v9"
 	datadog "github.com/xgodev/boost/factory/contrib/datadog/dd-trace-go/v1"
-	"github.com/xgodev/boost/wrapper/log"
 )
 
 // Cluster represents a datadog client for redis cluster client.
@@ -44,19 +43,7 @@ func NewClusterWithOptions(options *Options) *Cluster {
 
 // Register registers this datadog client on redis cluster client.
 func (d *Cluster) Register(ctx context.Context, client *redis.ClusterClient) error {
-	if !d.options.Enabled {
-		return nil
-	}
-
-	logger := log.FromContext(ctx)
-
-	logger.Trace("integrating redis in datadog")
-
-	redistrace.WrapClient(client, d.options.TraceOptions...)
-
-	logger.Debug("redis successfully integrated in datadog")
-
-	return nil
+	return register(ctx, d.options, client)
 }
 
 // ClusterRegister registers a new datadog client on redis cluster client.
