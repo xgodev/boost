@@ -81,11 +81,10 @@ Counted from the repo on 2026-10-18. Recount before publishing.
 | 38 | upstream libraries: distinct `org/repo` under `factory/contrib/` |
 | 219 | tags since 2024-07 (latest `v1.1.1`) |
 
-The 48/58/38 include the MCP factory (server and client), which is on
-`feature/70-mcp-factory` (#70); `develop` alone counts 46/54/37.
+The 48/58/38 include the MCP factory (server and client, #70).
 
-`annotation` and `inject` are on `develop` and `builder` is on feature branches
-(#67, #72); none of them is in a tag yet. `@Default` (#75) is a design, not
+`annotation`, `inject` and the MCP factory are on `develop` and `builder` is on
+feature branches (#67, #72); none of them is in a tag yet. `@Default` (#75) is a design, not
 code. The page shows all of them as released. The builder has no `@MCP` door:
 #70 leaves it out of scope.
 
