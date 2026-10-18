@@ -18,9 +18,11 @@ func FooFunc(ctx context.Context) error { ... }
 
 - `// @Name` or `// @Name(key=value, ...)`. A space between the name and the
   parentheses is allowed; `//@Name` (no space after `//`) is not an annotation.
-- Every value is a `key=value` pair. Words after the name without parentheses
-  (`// @Param query foo bool`) are not a valid annotation and are ignored with a
-  warning.
+- Every value is a `key=value` pair or a bare name (a letter or `_`, then
+  letters, digits, `_`, `.` or `-`), as in `// @Middleware(log, hystrix)`. Bare
+  names stay in `Value`/`RawValue()` and are left out of `Map`. Words after the
+  name without parentheses (`// @Param query foo bool`) or with spaces inside a
+  value without `=` are not a valid annotation and are ignored with a warning.
 - Values are split on top-level commas. Commas inside double quotes or brackets
   belong to the value, and only the first `=` separates the key
   (`filter=a=b` is `filter: "a=b"`).

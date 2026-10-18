@@ -315,7 +315,8 @@ func (c *Collector) isAllowedAnnotation(name string) bool {
 
 // parseAnnotation splits `// @Name(values)` into its name and the text between
 // the parentheses. valid is false when the comment does not follow that format:
-// every value must be a key=value pair and quotes and brackets must balance.
+// every value must be a key=value pair or a bare name, and quotes and brackets
+// must balance.
 func parseAnnotation(cmt string) (name string, value string, valid bool) {
 	if !strings.HasPrefix(cmt, annotationPrefix) {
 		return "", "", false
@@ -344,12 +345,16 @@ func parseAnnotation(cmt string) (name string, value string, valid bool) {
 		return name, "", false
 	}
 	for _, item := range items {
-		if !strings.Contains(item, "=") {
+		if !strings.Contains(item, "=") && !bareName.MatchString(strings.TrimSpace(item)) {
 			return name, "", false
 		}
 	}
 	return name, value, true
 }
+
+// bareName is a value without a key, such as the plugin names of
+// @Middleware(log, hystrix). It is kept in Value and left out of Map.
+var bareName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_.-]*$`)
 
 // parseHeader takes the title from the first line of the doc comment, without
 // the leading declaration name, and the description from the lines after it.
