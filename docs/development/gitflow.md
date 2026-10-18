@@ -51,9 +51,12 @@ tag + GitHub Release.
 3. `gh release create vX.Y.Z --verify-tag --latest --generate-notes
    --notes-start-tag <tag anterior>`, com uma seção `Behavior / API changes`
    no topo (`--notes`) quando houver.
+4. Versão do site: a versão em `docs/site/index.html` é fixa (barra do topo,
+   hero, diff do `go.mod`, timeline). Atualizar para a tag nova por PR em
+   `develop`.
 
-O site (`docs/site/`) não depende disso: publica sozinho a cada push em
-`develop` (`.github/workflows/site.yml`).
+O site (`docs/site/`) publica sozinho a cada push em `develop` que mexe em
+`docs/site/` (`.github/workflows/site.yml`).
 
 ## Rastreabilidade — comentários na issue
 
