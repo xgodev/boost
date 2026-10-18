@@ -125,7 +125,7 @@ The Inject package generates fx modules from `@Provide`, `@Inject` and `@Invoke`
 
 ### Builder
 
-The Builder package generates the doors of an application (REST routes on echo, gRPC services and the event function) from `@REST`, `@GRPC` and `@Function` annotations, and one `Modules()` per app, on top of inject.
+The Builder package generates the doors of an application (REST routes on echo, gRPC services and the event function) from `@REST`, `@GRPC` and `@Function` annotations, one `Modules()` and the `main` of every app, on top of inject.
 
 [Builder Documentation](./builder/README.md)
 

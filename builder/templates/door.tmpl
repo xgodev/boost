@@ -60,3 +60,23 @@ func Modules() []fx.Option {
 	}
 }
 {{end}}
+
+{{define "main" -}}
+{{.Header}}
+
+// Command {{.App}} runs app {{.App}}: the doors builder generates in
+// {{.Import}}.
+package main
+
+import (
+	"github.com/xgodev/boost"
+	fxfact "github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1"
+	app "{{.Import}}"
+)
+
+func main() {
+	boost.Start()
+
+	fxfact.NewApp(app.Modules()...).Run()
+}
+{{end}}

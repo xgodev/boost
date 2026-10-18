@@ -1,5 +1,5 @@
-// Command builder generates the inject modules and the door modules of
-// every app from the annotations of an application, in one pass. Run it
+// Command builder generates the inject modules, the door modules and the
+// main of every app from the annotations of an application, in one pass. Run it
 // from the application with go:generate:
 //
 //	//go:generate go run github.com/xgodev/boost/builder/cmd/builder --boost.builder.output=gen
@@ -41,12 +41,18 @@ func run(ctx context.Context) error {
 		return errors.Wrap(err, errors.Internalf("error resolving %s", config.String(output)))
 	}
 
-	return generate(ctx, src, out)
+	mains, err := filepath.Abs(config.String(cmd))
+	if err != nil {
+		return errors.Wrap(err, errors.Internalf("error resolving %s", config.String(cmd)))
+	}
+
+	return generate(ctx, src, out, mains)
 }
 
 // generate writes the inject modules and the doors of the annotations under
-// src to out. It writes nothing when an annotation is not valid.
-func generate(ctx context.Context, src, out string) error {
+// src to out, and the main of every app to cmdDir. It writes nothing when an
+// annotation is not valid or the main of an app was written by hand.
+func generate(ctx context.Context, src, out, cmdDir string) error {
 	logger := log.FromContext(ctx)
 
 	modulePath, moduleDir, err := inject.FindModule(src)
@@ -71,20 +77,27 @@ func generate(ctx context.Context, src, out string) error {
 		return err
 	}
 
-	opts := inject.GeneratorOptions{ModulePath: modulePath, ModuleDir: moduleDir, OutputDir: out}
+	opts := builder.Options{
+		GeneratorOptions: inject.GeneratorOptions{ModulePath: modulePath, ModuleDir: moduleDir, OutputDir: out},
+		CmdDir:           cmdDir,
+	}
 	doors := builder.NewGenerator(spec, opts)
 
-	// render the doors before writing anything, so an error leaves out untouched
+	// render the doors and mains before writing anything, so an error leaves
+	// out and cmdDir untouched
 	if _, err := doors.Render(ctx); err != nil {
 		return err
 	}
-	if err := inject.NewGenerator(g, opts).Generate(ctx); err != nil {
+	if _, err := doors.RenderCmd(ctx); err != nil {
+		return err
+	}
+	if err := inject.NewGenerator(g, opts.GeneratorOptions).Generate(ctx); err != nil {
 		return err
 	}
 	if err := doors.Generate(ctx); err != nil {
 		return err
 	}
 
-	logger.Infof("generated %d inject modules and %d apps in %s", len(g.Vertices), len(spec.Apps), out)
+	logger.Infof("generated %d inject modules and %d apps in %s, mains in %s", len(g.Vertices), len(spec.Apps), out, cmdDir)
 	return nil
 }

@@ -34,6 +34,13 @@ type modulesData struct {
 	Modules []string            // module calls, in order
 }
 
+// mainData feeds the template of cmd/<app>/main.go.
+type mainData struct {
+	Header string
+	App    string
+	Import string // import path of gen/builder/<app>
+}
+
 func newTemplate() (*template.Template, error) {
 	tmpl, err := template.New("builder").Parse(doorTemplate)
 	if err != nil {

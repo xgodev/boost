@@ -12,8 +12,9 @@ import (
 	"github.com/xgodev/boost/inject"
 )
 
-// TestGeneratedCodeIsUpToDate fails when gen/ differs from what cmd/builder
-// produces for the annotations in this example. Run go generate.
+// TestGeneratedCodeIsUpToDate fails when gen/ or the mains under cmd/ differ
+// from what cmd/builder produces for the annotations in this example. Run go
+// generate.
 func TestGeneratedCodeIsUpToDate(t *testing.T) {
 	ctx := context.Background()
 
@@ -31,34 +32,56 @@ func TestGeneratedCodeIsUpToDate(t *testing.T) {
 
 	out, err := filepath.Abs("gen")
 	require.NoError(t, err)
-	opts := inject.GeneratorOptions{ModulePath: modulePath, ModuleDir: moduleDir, OutputDir: out}
-
-	files, err := inject.NewGenerator(g, opts).Render(ctx)
+	cmd, err := filepath.Abs("cmd")
 	require.NoError(t, err)
-	doors, err := builder.NewGenerator(spec, opts).Render(ctx)
-	require.NoError(t, err)
-	for name, src := range doors {
-		files[name] = src
+	opts := builder.Options{
+		GeneratorOptions: inject.GeneratorOptions{ModulePath: modulePath, ModuleDir: moduleDir, OutputDir: out},
+		CmdDir:           cmd,
 	}
 
-	onDisk := map[string]string{}
-	require.NoError(t, filepath.WalkDir(out, func(p string, d os.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
+	files, err := inject.NewGenerator(g, opts.GeneratorOptions).Render(ctx)
+	require.NoError(t, err)
+	doors := builder.NewGenerator(spec, opts)
+	rendered, err := doors.Render(ctx)
+	require.NoError(t, err)
+	for name, src := range rendered {
+		files[name] = src
+	}
+	mains, err := doors.RenderCmd(ctx)
+	require.NoError(t, err)
+
+	const hint = "run go generate ./builder/examples/simple"
+	onDisk := readGo(t, out, func(string) bool { return true })
+	for name, src := range files {
+		assert.Equal(t, string(src), onDisk[name], "gen/%s is stale: %s", name, hint)
+		delete(onDisk, name)
+	}
+	assert.Empty(t, onDisk, "files in gen/ not produced by the generator: %s", hint)
+
+	onDisk = readGo(t, cmd, func(name string) bool { return filepath.Base(name) == "main.go" })
+	for name, src := range mains {
+		assert.Equal(t, string(src), onDisk[name], "cmd/%s is stale: %s", name, hint)
+		delete(onDisk, name)
+	}
+	assert.Empty(t, onDisk, "mains in cmd/ not produced by the generator: %s", hint)
+}
+
+// readGo returns the content of the files under dir that keep accepts, keyed
+// by their slash-separated path relative to dir.
+func readGo(t *testing.T, dir string, keep func(name string) bool) map[string]string {
+	t.Helper()
+	files := map[string]string{}
+	require.NoError(t, filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !keep(p) {
 			return err
 		}
-		rel, err := filepath.Rel(out, p)
+		rel, err := filepath.Rel(dir, p)
 		if err != nil {
 			return err
 		}
 		content, err := os.ReadFile(p)
-		onDisk[filepath.ToSlash(rel)] = string(content)
+		files[filepath.ToSlash(rel)] = string(content)
 		return err
 	}))
-
-	const hint = "gen/ is stale: run go generate ./builder/examples/simple"
-	for name, src := range files {
-		assert.Equal(t, string(src), onDisk[name], "%s: %s", name, hint)
-		delete(onDisk, name)
-	}
-	assert.Empty(t, onDisk, "files not produced by the generator: %s", hint)
+	return files
 }
