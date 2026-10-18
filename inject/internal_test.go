@@ -63,7 +63,7 @@ func TestGenerator_RenderInternalPackages(t *testing.T) {
 	mongodb := at("internal/pkg/datastore/stock/mongodb", "New", nil, []string{"stock.Repository"}, provide("index=0"))
 	mongodb.Imports = stock
 	clock := at("internal/pkg/clock", "New", nil, []string{"*Clock"}, provide("index=0"))
-	service := at("internal/pkg/domain/service/reservestock/local", "New", []string{"stock.Repository", "*clock.Clock"}, []string{"*Service"}, provide("index=0"))
+	service := at("internal/pkg/domain/service/stock/reserver/local", "New", []string{"stock.Repository", "*clock.Clock"}, []string{"*Service"}, provide("index=0"))
 	service.Imports = map[string]string{"stock": stock["stock"], "clock": testModule + "/internal/pkg/clock"}
 
 	files, err := NewGenerator(newTestGraph(t, []annotation.Entry{memory, mongodb, clock, service}), testOptions("/mod")).Render(context.Background())
