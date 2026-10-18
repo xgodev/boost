@@ -1,12 +1,37 @@
-# boost website — mockup
+# boost website
 
 Issues: [#74](https://github.com/xgodev/boost/issues/74),
-[#82](https://github.com/xgodev/boost/issues/82) (hero example). Mockup: [`mockup.html`](mockup.html),
-with its styles in [`mockup.css`](mockup.css) and its script in [`mockup.js`](mockup.js).
-Open the HTML in a browser; only Google Fonts load from the network.
+[#82](https://github.com/xgodev/boost/issues/82) (hero example),
+[#88](https://github.com/xgodev/boost/issues/88) (publishing). Page:
+[`index.html`](index.html), with its styles in [`site.css`](site.css), its script
+in [`site.js`](site.js). Open the HTML in a browser; only Google Fonts load
+from the network.
 
-Scope: the page's design and content. Hosting, domain and the production build
-come later.
+## Publishing
+
+Live at <https://xgodev.github.io/boost/>, published from `develop`.
+
+- [`.github/workflows/site.yml`](../../.github/workflows/site.yml) deploys to
+  GitHub Pages on every push to `develop` that touches `docs/site/**`. It can
+  also be run by hand (`workflow_dispatch`).
+- Everything in `docs/site` ships except `example/` and this README.
+- Pages source is "GitHub Actions" (repo settings), not a branch. The
+  `github-pages` environment allows deploys from `develop`.
+- The repo's homepage (About) points to the site.
+
+## Logo
+
+Go gopher on a jetpack ([#81](https://github.com/xgodev/boost/issues/81)). The
+gopher was designed by Renée French and is licensed
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): the page footer
+carries the credit, and so must every other place the logo ships.
+
+| File | Use |
+|---|---|
+| `logo.svg` | the mark in the nav, next to the `boost` wordmark (Bricolage Grotesque 800, loaded only for those five letters) |
+| `favicon.svg` | browser tab: head only, so it still reads at 16 px |
+| `favicon-32.png` | tab icon for browsers without SVG favicons |
+| `apple-touch-icon.png` | 180 px home-screen icon, full mark on navy |
 
 ## Positioning
 
@@ -58,7 +83,7 @@ path (`// github.com/xgodev/boost/factory`, …).
 | `#packages` | Every piece has one job. | Bento: factories, plugins, wrappers, middleware onion, inject graph, annotation, builder doors (`@REST`, `@GRPC`, `@Function`, `@Middleware`, `@Default`), functions, MCP |
 | `#builder` | From annotation to binary in two commands. | Annotate → `go generate ./...` → `go run ./cmd/api`, generated file tree |
 | `#compat` | Upgrade boost. Keep your code. | Public API as a contract, SDK majors side by side (mongo-driver v1/v2), comparative quality gate, `go.mod` diff, release timeline |
-| `#integrations` | 38 libraries. Same shape every time. | Upstream libraries by group, each with its version path |
+| `#integrations` | 39 libraries. Same shape every time. | Upstream libraries by group, each with its version path |
 | `#agents` | — | `claude-plugin@xgodev` install, the 5 Iron Laws |
 | final CTA | Start with one line. | `go get` |
 
@@ -86,7 +111,7 @@ Everything in the window is real: the sources, the files `go generate` wrote
 1. edit the app in `example/shop` and run `go generate ./...` there
 2. `go build ./...` and run it; paste new terminal output into `RUN` in
    [`example/build_hero.py`](example/build_hero.py)
-3. from `docs/site`: `python3 example/build_hero.py example/shop mockup.html`,
+3. from `docs/site`: `python3 example/build_hero.py example/shop index.html`,
    which rewrites the page between the `hero:start` and `hero:end` comments
 
 `example/shop` is its own module with `replace github.com/xgodev/boost =>
@@ -112,16 +137,16 @@ reader can check what boost builds on.
 
 ## Numbers used on the page
 
-Counted from the repo on 2026-10-18. Recount before publishing.
+Counted from the repo on 2026-10-18 (#88). Recount when a factory or library is added.
 
 | Number | What |
 |---|---|
 | 48 | factories: directories under `factory/contrib/` with a `New…`/`Register…` constructor in non-test, non-example Go files, outside `/plugins/` and `/internal/` |
 | 58 | plugins: the same count, only `/plugins/` directories |
-| 38 | upstream libraries: distinct `org/repo` under `factory/contrib/` |
-| 219 | tags since 2024-07 (latest `v1.1.1`) |
+| 39 | upstream libraries: the 40 `org/repo` directories under `factory/contrib/`, minus `cloud.google.com/grpc`, which wraps `google.golang.org/grpc` (already counted). `cloud.google.com/api` is `google.golang.org/api` |
+| 220 | tags since 2024-07 (latest `v1.1.1`) |
 
-The 48/58/38 include the MCP factory (server and client, #70).
+The 48/58/39 include the MCP factory (server and client, #70).
 
 `annotation`, `inject` and the MCP factory are on `develop`. `builder`,
 `@Middleware`, `@Default`, `@Config` and the `internal_` fix are on feature

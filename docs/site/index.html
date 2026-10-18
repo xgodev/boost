@@ -3,18 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Boost Site Mockup</title>
+<title>boost: enterprise Go services, built fast</title>
+<meta name="description" content="Boot, config, logs, 48 factories, middleware, health and code generation in one Go framework. You write the business logic.">
+<link rel="canonical" href="https://xgodev.github.io/boost/">
+<meta name="theme-color" content="#0F172A">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xgodev.github.io/boost/">
+<meta property="og:title" content="boost: enterprise Go services, built fast">
+<meta property="og:description" content="Boot, config, logs, 48 factories, middleware, health and code generation in one Go framework. You write the business logic.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="mockup.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&text=boost&display=swap">
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
 
 <header class="nav">
   <div class="wrap">
     <a class="brand" href="#top" aria-label="boost home">
-      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 13l7-7 7 7" fill="none" stroke="#22C55E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 19l7-7 7 7" fill="none" stroke="#F8FAFC" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/></svg>
+      <img src="logo.svg" width="34" height="38" alt="">
       boost
     </a>
     <nav class="nav-links" aria-label="Main">
@@ -47,9 +58,9 @@
     </div>
     <div class="proof" aria-label="Project facts">
       <span><b>48</b>factories</span>
-      <span><b>38</b>libraries</span>
+      <span><b>39</b>libraries</span>
       <span><b>58</b>plugins</span>
-      <span><b>219</b>releases since 2024</span>
+      <span><b>220</b>releases since 2024</span>
     </div>
 
     <p class="hero-cap">A complete service: one route, a service, a repository and two datastores. The generated files and the run are the real output.</p>
@@ -755,7 +766,7 @@ srv.GET(<span class="st">"/stock/:sku"</span>, Get)
 srv.Serve(ctx)</pre>
         <div class="stats">
           <div class="stat"><b>48</b><span>factories</span></div>
-          <div class="stat"><b>38</b><span>upstream libraries</span></div>
+          <div class="stat"><b>39</b><span>upstream libraries</span></div>
           <div class="stat"><b>58</b><span>plugins</span></div>
         </div>
       </article>
@@ -931,14 +942,14 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
 <pre class="code" style="min-height:0"> <span class="kw">module</span> github.com/acme/shop
 
  <span class="kw">require</span> (
-<span class="del">-	github.com/xgodev/boost v1.0.0</span><span class="add">+	github.com/xgodev/boost v1.1.1</span> )
+<span class="del">-	github.com/xgodev/boost v1.1.0</span><span class="add">+	github.com/xgodev/boost v1.1.1</span> )
 
 <span class="pr">$</span> go build ./... &amp;&amp; go test ./...
 <span class="ok">ok</span>  github.com/acme/shop/...</pre>
           <div class="diff-foot"><span>1 line changed in go.mod</span><b>0 lines changed in your code</b></div>
         </div>
         <div class="timeline" aria-label="Release history">
-          <span>2024-07</span><span class="bar" aria-hidden="true"></span><span class="tag">v1.0.0-dev.219</span><span class="tag">v1.0.0</span><span class="tag">v1.1.0</span><span class="tag now">v1.1.1</span>
+          <span>2024-07</span><span class="bar" aria-hidden="true"></span><span class="tag">v1.0.0-dev.219</span><span class="tag">v1.1.0</span><span class="tag now">v1.1.1</span>
         </div>
       </div>
     </div>
@@ -950,7 +961,7 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
   <div class="wrap">
     <div class="sec-head">
       <div class="eyebrow">factory/contrib</div>
-      <h2>38 libraries. Same shape every time.</h2>
+      <h2>39 libraries. Same shape every time.</h2>
       <p class="sec-lede">Each one is a factory with its own config keys and plugins. The version in the path is the upstream major it wraps.</p>
     </div>
     <div class="lib-grid">
@@ -977,7 +988,7 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
         <li><span><a class="ref" href="https://github.com/godror/godror">Oracle</a></span><span class="v">godror/v0</span></li>
         <li><span><a class="ref" href="https://github.com/gocql/gocql">Cassandra</a></span><span class="v">gocql/v1</span></li>
         <li><span><a class="ref" href="https://github.com/elastic/go-elasticsearch">Elasticsearch</a></span><span class="v">go-elasticsearch/v8</span></li>
-        <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/bigquery">BigQuery</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/firestore">Firestore</a></span><span class="v">cloud.google.com</span></li>
+        <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/bigquery">BigQuery</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/firestore">Firestore</a> · <a class="ref" href="https://pkg.go.dev/google.golang.org/api/option">API client</a></span><span class="v">cloud.google.com</span></li>
         <li><span><a class="ref" href="https://github.com/jlaffaye/ftp">FTP</a></span><span class="v">ftp/v0</span></li>
       </ul></div>
       <div class="lib-group"><h3>Cache</h3><ul>
@@ -1044,6 +1055,7 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
 <footer>
   <div class="wrap">
     <span class="mono">boost · xgodev · MIT</span>
+    <span class="credit">Gopher by <a class="ref" href="https://go.dev/blog/gopher">Renée French</a>, <a class="ref" href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></span>
     <nav aria-label="Footer">
       <a href="https://github.com/xgodev/boost">GitHub</a>
       <a href="https://github.com/xgodev/boost/tree/main/examples">Examples</a>
@@ -1053,6 +1065,6 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
   </div>
 </footer>
 
-<script src="mockup.js"></script>
+<script src="site.js"></script>
 </body>
 </html>

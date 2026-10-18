@@ -84,8 +84,8 @@ a.ref:hover { text-decoration-style: solid; text-decoration-color: var(--accent)
   border-bottom: 1px solid var(--line);
 }
 .nav .wrap { display: flex; align-items: center; gap: var(--s5); height: 60px; }
-.brand { display: flex; align-items: center; gap: var(--s2); font-family: var(--display); font-weight: 800; color: var(--fg); font-size: 1.125rem; letter-spacing: -.02em; }
-.brand svg { flex: none; }
+.brand { display: flex; align-items: center; gap: var(--s3); font-family: 'Bricolage Grotesque', var(--display); font-weight: 800; color: var(--fg); font-size: 1.5rem; letter-spacing: -.04em; line-height: 1; }
+.brand img { flex: none; }
 .nav-links { display: flex; gap: var(--s5); font-size: var(--t-sm); color: var(--fg-3); margin-left: var(--s4); }
 .nav-links a { transition: color .15s; }
 .nav-links a:hover { color: var(--fg); }

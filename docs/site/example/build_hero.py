@@ -1,6 +1,6 @@
-"""Writes the hero code window of docs/site/mockup.html from the shop app.
+"""Writes the hero code window of docs/site/index.html from the shop app.
 
-Usage, from docs/site: python3 example/build_hero.py example/shop mockup.html
+Usage, from docs/site: python3 example/build_hero.py example/shop index.html
 
 It replaces what sits between the hero:start and hero:end comments of the page.
 Run go generate in the shop first, so the generated tab shows the real output.
