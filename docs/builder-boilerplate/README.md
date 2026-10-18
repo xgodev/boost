@@ -1,6 +1,7 @@
 # builder: generate every piece of boilerplate
 
-Status: idea, being brainstormed (2026-10-18). Not designed yet.
+Status (2026-10-18): piece 1 (`@Middleware`) implemented in #72 (PR #73,
+stacked on #69), skill updated in claude-plugin 1.24.3. Next: piece 2.
 
 ## Intent
 
@@ -28,8 +29,13 @@ it teaches stops asking for hand-written wiring.
 5. **claude-plugin skill**: replace the hand-written pieces above with the
    annotations.
 
+## Decided
+
+- One piece at a time in the order above, the skill updated with each.
+- Middleware: the list lives in the annotation (`@Middleware(log, ...)`),
+  config only turns each plugin off. Design:
+  `docs/superpowers/specs/2026-10-18-builder-middleware-design.md`.
+
 ## Open
 
-- Order of the pieces; proposal: one at a time in the order above, the skill
-  updated with each.
-- Annotation syntax of each piece.
+- Annotation syntax of pieces 2-4.
