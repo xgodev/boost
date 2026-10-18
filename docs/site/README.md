@@ -80,7 +80,7 @@ path (`// github.com/xgodev/boost/factory`, …).
 |---|---|---|
 | hero | Enterprise Go services. Built fast. | `go get`, stats, and a code window on the [shop example](#hero-example) with 3 tabs: the 9 files you write, the 12 files `go generate` writes, the run |
 | `#boot` | One boot. Everything ready after it. | `boost.Start()` → config → log → factory → fx → serve; one config key set by file, env or flag |
-| `#packages` | Every piece has one job. | Bento: factories, plugins, wrappers, middleware onion, inject graph, annotation, builder doors (`@REST`, `@GRPC`, `@Function`, `@Middleware`, `@Default`), functions, MCP |
+| `#packages` | Every piece has one job. | Bento: factories, plugins, wrappers, middleware onion, inject graph, annotation, builder doors (`@REST`, `@GRPC`, `@Function`, `@MCP`, `@Middleware`, `@Default`), functions, MCP |
 | `#builder` | From annotation to binary in two commands. | Annotate → `go generate ./...` → `go run ./cmd/api`, generated file tree |
 | `#compat` | Upgrade boost. Keep your code. | Public API as a contract, SDK majors side by side (mongo-driver v1/v2), comparative quality gate, `go.mod` diff, release timeline |
 | `#integrations` | 39 libraries. Same shape every time. | Upstream libraries by group, each with its version path |
@@ -148,11 +148,13 @@ Counted from the repo on 2026-10-18 (#88). Recount when a factory or library is 
 
 The 48/58/39 include the MCP factory (server and client, #70).
 
-`annotation`, `inject` and the MCP factory are on `develop`. `builder`,
-`@Middleware`, `@Default`, `@Config` and the `internal_` fix are on feature
-branches (#67, #72, #75, #80, #84); none of them is in a tag yet. The page shows
-all of them as released. The builder has no `@MCP` door:
-#70 leaves it out of scope.
+`annotation`, `inject`, the MCP factory, `builder` and its doors (`@MCP`
+since #79), `@Middleware`, `@Default`, `@Config` and the `internal_` fix are on
+`develop`; none of them is in a tag yet (latest `v1.1.1`). The page shows all of
+them as released. `@MCP` puts a handler
+`func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, Out, error)`
+on the boost MCP server as a tool: the name is the handler in snake case and the
+description is its doc comment (`builder/examples/simple/stocktool`).
 
 ## Checks done
 
