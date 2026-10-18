@@ -37,6 +37,27 @@ Issue → Branch (de develop) → Commits → PR → Review/Merge
     mergeia rápido; feature aguarda review. **Nunca mergear feature→develop
     sem o usuário pedir.**
 
+## Release
+
+Trabalho mergeado em `develop` só chega a quem usa o boost com tag: o
+`go get` pega a última tag semver. Ciclo fechado = `develop` em `main` +
+tag + GitHub Release.
+
+1. PR `develop` → `main` (`release: merge develop into main`), merge com
+   `gh pr merge N --merge`.
+2. Tag anotada no merge commit de `main`: patch para fix/deps, minor para
+   feature. Mudança de API pequena vai como minor, com nota no release; major
+   (`/v2` no import) só por decisão do mantenedor.
+3. `gh release create vX.Y.Z --verify-tag --latest --generate-notes
+   --notes-start-tag <tag anterior>`, com uma seção `Behavior / API changes`
+   no topo (`--notes`) quando houver.
+4. Versão do site: a versão em `docs/site/index.html` é fixa (barra do topo,
+   hero, diff do `go.mod`, timeline). Atualizar para a tag nova por PR em
+   `develop`.
+
+O site (`docs/site/`) publica sozinho a cada push em `develop` que mexe em
+`docs/site/` (`.github/workflows/site.yml`).
+
 ## Rastreabilidade — comentários na issue
 
 A issue é o log de auditoria. Comentar em: plano antes de começar; cada push

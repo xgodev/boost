@@ -23,7 +23,7 @@ Live at <https://xgodev.github.io/boost/>, published from `develop`.
 
 Go gopher on a jetpack ([#81](https://github.com/xgodev/boost/issues/81)). The
 gopher was designed by Renée French and is licensed
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): the page footer
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): the logo's tooltip
 carries the credit, and so must every other place the logo ships.
 
 | File | Use |
