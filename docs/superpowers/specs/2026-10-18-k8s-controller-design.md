@@ -50,7 +50,7 @@ func (h *Handler) Deleted(ctx context.Context, d *appsv1.Deployment) error { ...
 |---|---|---|
 | `on` | yes | `created`, `updated`, `deleted` or `sync` |
 | `owns` | no | only with `on=sync`: types the object owns, written as the file writes them (`corev1.Service`); a change to one of them runs `sync` of the owner. Repeatable as a list (`owns=[corev1.Service, corev1.ConfigMap]`) |
-| `selector` | no | label selector (`app=web,tier!=db`); objects outside it are ignored |
+| `selector` | no | label selector, quoted when it has a comma (`selector="app=web,tier!=db"`); objects outside it are ignored by that function |
 | `app` | no | application, default `api` |
 
 - The handler is `func(context.Context, *T) error`, a function or a method;
@@ -141,7 +141,7 @@ Under the new factory root (`boost.factory.controllerruntime.*`):
 | `leaderElection.enabled` | `true` | |
 | `leaderElection.id` | the app name | lease name |
 | `health.addr` | `:8081` | probes |
-| `metrics.addr` | `:8080` | metrics |
+| `metrics.addr` | `:8082` | metrics (`:8080` is echo's default port) |
 
 ### Generated files
 
