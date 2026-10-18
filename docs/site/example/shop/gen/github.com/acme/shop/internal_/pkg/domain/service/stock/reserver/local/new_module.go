@@ -8,21 +8,21 @@ import (
 	"go.uber.org/fx"
 
 	impl_stock_3bb9e74c "github.com/acme/shop/gen/implementation/github.com/acme/shop/internal_/pkg/domain/repository/stock"
-	src_local_ae09494f "github.com/acme/shop/internal/pkg/domain/service/reservestock/local"
+	src_local_9afcd4bd "github.com/acme/shop/internal/pkg/domain/service/stock/reserver/local"
 )
 
 var NewOnce sync.Once
 
-// NewModule registers github.com/acme/shop/internal/pkg/domain/service/reservestock/local.New and the modules it depends on.
+// NewModule registers github.com/acme/shop/internal/pkg/domain/service/stock/reserver/local.New and the modules it depends on.
 // It returns an empty option after the first call, so a constructor shared by
 // several modules is registered only once.
 func NewModule() fx.Option {
 	options := fx.Options()
 
 	NewOnce.Do(func() {
-		options = fx.Module("github.com/acme/shop/internal/pkg/domain/service/reservestock/local.New",
+		options = fx.Module("github.com/acme/shop/internal/pkg/domain/service/stock/reserver/local.New",
 			impl_stock_3bb9e74c.RepositoryImplementationModule(),
-			fx.Provide(src_local_ae09494f.New),
+			fx.Provide(src_local_9afcd4bd.New),
 		)
 	})
 

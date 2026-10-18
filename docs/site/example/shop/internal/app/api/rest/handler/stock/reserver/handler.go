@@ -1,21 +1,21 @@
-// Package reservestock serves POST /stock/:sku/reserve.
-package reservestock
+// Package reserver serves POST /stock/:sku/reserve.
+package reserver
 
 import (
 	"net/http"
 
-	"github.com/acme/shop/internal/pkg/domain/service/reservestock"
+	"github.com/acme/shop/internal/pkg/domain/service/stock/reserver"
 	"github.com/labstack/echo/v4"
 )
 
 // Handler reserves one unit of an item.
 type Handler struct {
-	svc reservestock.Service
+	svc reserver.Service
 }
 
 // New provides the handler to the generated rest door.
 // @Provide(index=0)
-func New(svc reservestock.Service) *Handler {
+func New(svc reserver.Service) *Handler {
 	return &Handler{svc: svc}
 }
 

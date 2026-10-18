@@ -96,8 +96,8 @@ The hero window is a small but complete app, [`example/shop`](example/shop)
 
 | Layer | Path | Annotation |
 |---|---|---|
-| handler | `internal/app/api/rest/handler/reservestock/` | `@Provide`, `@REST` |
-| service | `internal/pkg/domain/service/reservestock/` (interface) and `local/` | `@Provide`, `@Middleware(log, prometheus)` |
+| handler | `internal/app/api/rest/handler/stock/reserver/` | `@Provide`, `@REST` |
+| service | `internal/pkg/domain/service/stock/reserver/` (interface) and `local/` | `@Provide`, `@Middleware(log, prometheus)` |
 | repository | `internal/pkg/domain/repository/stock/` (interface) | |
 | datastore | `internal/pkg/datastore/stock/memory/` and `mongodb/` | `@Default` on memory, `@Config` on the mongo options |
 

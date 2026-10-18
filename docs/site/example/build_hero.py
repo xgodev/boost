@@ -84,14 +84,14 @@ def highlight(src):
 # (indent, label, file path | None, hint, hint class)
 SRC = [
     (0, "internal/app/api/rest/", None, "", ""),
-    (1, "handler/reservestock/", None, "", ""),
-    (2, "handler.go", "internal/app/api/rest/handler/reservestock/handler.go", "@REST", "a"),
+    (1, "handler/stock/reserver/", None, "", ""),
+    (2, "handler.go", "internal/app/api/rest/handler/stock/reserver/handler.go", "@REST", "a"),
     (1, "plugins.go", "internal/app/api/rest/plugins.go", "@Provide", "a"),
     (0, "internal/pkg/domain/", None, "", ""),
-    (1, "service/reservestock/", None, "", ""),
-    (2, "service.go", "internal/pkg/domain/service/reservestock/service.go", "interface", ""),
+    (1, "service/stock/reserver/", None, "", ""),
+    (2, "service.go", "internal/pkg/domain/service/stock/reserver/service.go", "interface", ""),
     (2, "local/", None, "", ""),
-    (3, "service.go", "internal/pkg/domain/service/reservestock/local/service.go", "@Middleware", "a"),
+    (3, "service.go", "internal/pkg/domain/service/stock/reserver/local/service.go", "@Middleware", "a"),
     (1, "repository/stock/", None, "", ""),
     (2, "repository.go", "internal/pkg/domain/repository/stock/repository.go", "interface", ""),
     (0, "internal/pkg/datastore/stock/", None, "", ""),
@@ -102,7 +102,7 @@ SRC = [
     (2, "config.go", "internal/pkg/datastore/stock/mongodb/config.go", "@Config", "a"),
     (0, "doc.go", "doc.go", "go:generate", ""),
 ]
-MID = "gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/reservestock/local/new_middleware.go"
+MID = "gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local/new_middleware.go"
 IMPL = "gen/implementation/github.com/acme/shop/internal_/pkg/domain/repository/stock/repository_implementation.go"
 G = "gen/github.com/acme/shop/internal_/"
 GEN = [
@@ -120,10 +120,10 @@ GEN = [
     (1, "github.com/acme/shop/internal_/", None, "", ""),
     (2, "app/api/rest/", None, "", ""),
     (3, "plugins_module.go", G + "app/api/rest/plugins_module.go", "", ""),
-    (3, "handler/reservestock/", None, "", ""),
-    (4, "new_module.go", G + "app/api/rest/handler/reservestock/new_module.go", "", ""),
+    (3, "handler/stock/reserver/", None, "", ""),
+    (4, "new_module.go", G + "app/api/rest/handler/stock/reserver/new_module.go", "", ""),
     (2, "pkg/domain/service/…/local/", None, "", ""),
-    (3, "new_module.go", G + "pkg/domain/service/reservestock/local/new_module.go", "", ""),
+    (3, "new_module.go", G + "pkg/domain/service/stock/reserver/local/new_module.go", "", ""),
     (2, "pkg/datastore/stock/", None, "", ""),
     (3, "memory/new_module.go", G + "pkg/datastore/stock/memory/new_module.go", "", ""),
     (3, "mongodb/new_module.go", G + "pkg/datastore/stock/mongodb/new_module.go", "", ""),

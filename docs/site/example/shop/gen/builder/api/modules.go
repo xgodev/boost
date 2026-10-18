@@ -5,7 +5,7 @@ package api
 import (
 	"go.uber.org/fx"
 
-	mw_local_09b0c854 "github.com/acme/shop/gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/reservestock/local"
+	mw_local_84108acd "github.com/acme/shop/gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local"
 	multiserverfx "github.com/xgodev/boost/fx/modules/extra/multiserver"
 )
 
@@ -15,7 +15,7 @@ import (
 func Modules() []fx.Option {
 	return []fx.Option{
 		RestModule(),
-		mw_local_09b0c854.DecorateNew(),
+		mw_local_84108acd.DecorateNew(),
 		multiserverfx.Module(),
 	}
 }
