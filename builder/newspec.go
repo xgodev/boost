@@ -180,6 +180,9 @@ func (b *specBuilder) addService(entry annotation.Entry, ann annotation.Annotati
 		}
 		index = idx
 	}
+	if err := b.singleConstructor(vertex.Value, ann.Name, where, "its constructor"); err != nil {
+		return err
+	}
 
 	ref, ok := resolve(entry, args.Register)
 	if !ok || !token.IsExported(ref.Name) {
@@ -248,11 +251,26 @@ func (b *specBuilder) handler(entry annotation.Entry, ann string) (Handler, erro
 
 	for _, tp := range []string{"*" + entry.Struct, entry.Struct} {
 		if comp, _, ok := inject.Provider(b.graph, entry.Package, tp); ok {
+			if err := b.singleConstructor(comp, ann, declName(entry), "its receiver "+tp); err != nil {
+				return Handler{}, err
+			}
 			return Handler{Entry: entry, Receiver: &Receiver{Type: tp, Provider: comp}}, nil
 		}
 	}
 	return Handler{}, errors.NotFoundf("@%s on %s: no @Provide returns *%s or %s, so the generated door cannot get the receiver",
 		ann, declName(entry), entry.Struct, entry.Struct)
+}
+
+// singleConstructor fails when comp, the constructor a door is built from,
+// is a member of an implementation set: the door would include that member
+// whatever config chooses.
+func (b *specBuilder) singleConstructor(comp inject.Component, ann, where, what string) error {
+	set, ok := inject.ImplementationOf(b.graph, comp)
+	if !ok {
+		return nil
+	}
+	return errors.NotValidf("@%s on %s: %s comes from %s, one of the implementations of %s.%s (%s) chosen by config; a door is built from one constructor, so serve it from a type that receives the chosen %s",
+		ann, where, what, comp.Key(), set.Path, set.Type, strings.Join(set.Names(), ", "), set.Type)
 }
 
 // checkDecl fails for declarations the generated code cannot call.

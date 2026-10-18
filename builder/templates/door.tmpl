@@ -96,7 +96,15 @@ import (
 // Decorate{{.Func}} decorates the {{.Interface}} that {{.Constructor}} provides:
 // every consumer in the app receives a {{.Type}}, which runs the middlewares
 // {{.Plugins}} around each method; config can disable each one.
+{{- if .Gate}}
+// It applies only when {{.Member}} is the chosen implementation.
+{{- end}}
 func Decorate{{.Func}}() fx.Option {
+{{- if .Gate}}
+	if {{.Gate}} != "{{.Member}}" {
+		return fx.Options()
+	}
+{{end}}
 	return fx.Options(
 		contextfx.Module(),
 		fx.Decorate({{.Decorate}}),

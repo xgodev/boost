@@ -30,7 +30,12 @@ type decoratorData struct {
 	Next        string              // qualified interface type
 	Context     string              // alias of the context package
 	Fact        string              // alias of factory/local/extra/middleware
-	Wrappers    []wrapperData
+	// Gate is the call returning the chosen implementation when the
+	// constructor is a member of an implementation set, "" otherwise; the
+	// decorator applies only when it returns Member.
+	Gate     string
+	Member   string
+	Wrappers []wrapperData
 }
 
 // wrapperData is one method of the decorated interface and the wrapper that
@@ -65,8 +70,9 @@ func decoratorOf(base string, m Middleware) (inject.ImportData, string) {
 	return imp, imp.Alias + ".Decorate" + entry.Func.Name + "()"
 }
 
-// decorator returns the data of the decorator file of m.
-func decorator(m Middleware) decoratorData {
+// decorator returns the data of the decorator file of m, given the import
+// path of the output dir.
+func decorator(base string, m Middleware) decoratorData {
 	entry := m.Provider.Entry
 	imps := newImports()
 	ctxPkg := imps.add("context", contextPath)
@@ -97,6 +103,11 @@ func decorator(m Middleware) decoratorData {
 		d.Decorate = fmt.Sprintf("fx.Annotate(%s, fx.ParamTags(``, %s), fx.ResultTags(%s))", d.Decorate, tag, tag)
 	}
 	imps.add("contextfx", contextFxPath)
+	if m.Implementation != nil {
+		imp, call := m.Implementation.Chosen(base)
+		d.Gate = imps.add(imp.Alias, imp.Path) + strings.TrimPrefix(call, imp.Alias)
+		d.Member = entry.Package
+	}
 
 	mw := imps.add("middleware", middlewarePath)
 	plugins := make([]string, len(m.Plugins))

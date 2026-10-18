@@ -266,3 +266,38 @@ func TestNewSpec_ServerPlugins(t *testing.T) {
 	assert.Equal(t, []string{"Rest"}, pluginNames(rest.Plugins), "rest takes the default []boostecho.Plugin")
 	assert.Equal(t, []string{"Grpc"}, pluginNames(grpcSrv.Plugins), "grpc takes the default []grpcserver.Plugin")
 }
+
+func TestNewSpec_ImplementationSetErrors(t *testing.T) {
+	provide, deflt := ann("Provide", "index=0"), ann("Default", "")
+	// orders.Handler has two implementations, memory and unlimited
+	handlers := func(door annotation.Entry) []annotation.Entry {
+		return []annotation.Entry{
+			decl("orders/memory", "", "New", nil, []string{"*orders.Handler"}, provide, deflt),
+			decl("orders/unlimited", "", "New", nil, []string{"*orders.Handler"}, provide),
+			door,
+		}
+	}
+
+	testCases := []struct {
+		name    string
+		entries []annotation.Entry
+		msg     string
+	}{
+		{"rest receiver", handlers(decl("orders", "Handler", "Create", echoHandler, errResult, ann("REST", "method=POST, path=/orders"))), "@REST"},
+		{"function receiver", handlers(decl("orders", "Handler", "Handle", eventParams, eventResults, ann("Function", "adapter=nats"))), "@Function"},
+		{"grpc constructor", []annotation.Entry{
+			decl("health/memory", "", "NewServer", nil, []string{"healthpb.HealthServer"}, provide, deflt, ann("GRPC", "register=healthpb.RegisterHealthServer")),
+			decl("health/unlimited", "", "NewServer", nil, []string{"healthpb.HealthServer"}, provide),
+		}, "@GRPC"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := newTestSpec(t, tc.entries)
+			require.Error(t, err)
+			assert.True(t, errors.IsNotValid(err), "unexpected error kind: %v", err)
+			assert.Contains(t, err.Error(), tc.msg)
+			assert.Contains(t, err.Error(), "memory, unlimited", "the message names the implementations")
+		})
+	}
+}
