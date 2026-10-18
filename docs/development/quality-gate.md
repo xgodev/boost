@@ -8,6 +8,11 @@ bloqueia — cada PR pode reduzir, nunca aumentar.
 
 > Canônico de uso/contrato: `~/.quality-gate/docs/` após clonar.
 
+> **Desativado por enquanto (2026-10-18).** O gate não é pré-requisito de
+> push nem de PR. [`.qg-hook.json`](../../.qg-hook.json) (`"pr_gate": false`)
+> desliga o hook do `claude-plugin@xgodev` que roda o gate antes do
+> `gh pr create`. Para religar: apagar `.qg-hook.json` e este aviso.
+
 ## TL;DR
 
 ```bash

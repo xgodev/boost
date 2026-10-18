@@ -1,11 +1,20 @@
 # boost website — mockup
 
-Issue: [#74](https://github.com/xgodev/boost/issues/74). Mockup: [`mockup.html`](mockup.html),
+Issues: [#74](https://github.com/xgodev/boost/issues/74),
+[#82](https://github.com/xgodev/boost/issues/82) (hero example). Mockup: [`mockup.html`](mockup.html),
 with its styles in [`mockup.css`](mockup.css) and its script in [`mockup.js`](mockup.js).
 Open the HTML in a browser; only Google Fonts load from the network.
 
 Scope: the page's design and content. Hosting, domain and the production build
 come later.
+
+## Positioning
+
+boost is a set of things for building enterprise Go services fast: boot,
+config, logs, factories, middleware, health and code generation. The headline
+and the lede speak about the whole set. Never present boost as only a code
+generator or only a DI tool: "Write the handler. Boost writes the service." was
+dropped for that reason.
 
 ## Goal
 
@@ -44,7 +53,7 @@ path (`// github.com/xgodev/boost/factory`, …).
 
 | Anchor | Headline | Shows |
 |---|---|---|
-| hero | Write the handler. Boost writes the service. | `go get`, stats, code window with 3 tabs: annotated `service.go`, generated `new_module.go`, terminal |
+| hero | Enterprise Go services. Built fast. | `go get`, stats, and a code window on the [shop example](#hero-example) with 3 tabs: the 9 files you write, the 12 files `go generate` writes, the run |
 | `#boot` | One boot. Everything ready after it. | `boost.Start()` → config → log → factory → fx → serve; one config key set by file, env or flag |
 | `#packages` | Every piece has one job. | Bento: factories, plugins, wrappers, middleware onion, inject graph, annotation, builder doors (`@REST`, `@GRPC`, `@Function`, `@Middleware`, `@Default`), functions, MCP |
 | `#builder` | From annotation to binary in two commands. | Annotate → `go generate ./...` → `go run ./cmd/api`, generated file tree |
@@ -52,6 +61,37 @@ path (`// github.com/xgodev/boost/factory`, …).
 | `#integrations` | 38 libraries. Same shape every time. | Upstream libraries by group, each with its version path |
 | `#agents` | — | `claude-plugin@xgodev` install, the 5 Iron Laws |
 | final CTA | Start with one line. | `go get` |
+
+## Hero example
+
+The hero window is a small but complete app, [`example/shop`](example/shop)
+(`github.com/acme/shop`): `POST /stock/:sku/reserve` reserves one unit and answers
+409 when the item is sold out. It follows the xgodev layout from
+`claude-plugin@xgodev` (`skills/dev/golang`):
+
+| Layer | Path | Annotation |
+|---|---|---|
+| handler | `internal/app/api/rest/handler/reservestock/` | `@Provide`, `@REST` |
+| service | `internal/pkg/domain/service/reservestock/` (interface) and `local/` | `@Provide`, `@Middleware(log, prometheus)` |
+| repository | `internal/pkg/domain/repository/stock/` (interface) | |
+| datastore | `internal/pkg/datastore/stock/memory/` and `mongodb/` | `@Default` on memory, `@Config` on the mongo options |
+
+The service receives the repository; the mongo collection lives only in the
+mongodb datastore, built by boost's mongo factory. The site never shows a DB
+client inside a service.
+
+Everything in the window is real: the sources, the files `go generate` wrote
+(`gen/` and `cmd/api/main.go`) and the terminal output of a run. To change it:
+
+1. edit the app in `example/shop` and run `go generate ./...` there
+2. `go build ./...` and run it; paste new terminal output into `RUN` in
+   [`example/build_hero.py`](example/build_hero.py)
+3. from `docs/site`: `python3 example/build_hero.py example/shop mockup.html`,
+   which rewrites the page between the `hero:start` and `hero:end` comments
+
+`example/shop` is its own module with `replace github.com/xgodev/boost =>
+../../../..`, so the repo's `go build ./...` skips it. It builds against
+`develop`, but `go generate` needs the builder from the feature branches below.
 
 ## Framework links
 
@@ -83,14 +123,16 @@ Counted from the repo on 2026-10-18. Recount before publishing.
 
 The 48/58/38 include the MCP factory (server and client, #70).
 
-`annotation`, `inject` and the MCP factory are on `develop` and `builder` is on
-feature branches (#67, #72); none of them is in a tag yet. `@Default` (#75) is a design, not
-code. The page shows all of them as released. The builder has no `@MCP` door:
+`annotation`, `inject` and the MCP factory are on `develop`. `builder`,
+`@Middleware`, `@Default`, `@Config` and the `internal_` fix are on feature
+branches (#67, #72, #75, #80, #84); none of them is in a tag yet. The page shows
+all of them as released. The builder has no `@MCP` door:
 #70 leaves it out of scope.
 
 ## Checks done
 
-- rendered headless at 1440px and 390px
+- rendered headless at 1440px and 390px, every hero tab
+- `example/shop` builds; `build_hero.py` rewrites the page byte for byte
 - every framework link answers 200
 - no horizontal scroll at 390px
 - code-window tabs work with the arrow keys; copy buttons fall back to
