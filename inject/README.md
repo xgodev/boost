@@ -69,20 +69,30 @@ The command starts with `boost.Start()`, so its settings are boost config keys
 | `boost.inject.output` | `BOOST_INJECT_OUTPUT` | `gen/inject` | directory that receives the generated modules; must be inside the Go module |
 | `boost.inject.graphviz` | `BOOST_INJECT_GRAPHVIZ` | (empty) | optional file that receives the dependency graph in Graphviz DOT format |
 
-The output mirrors the import path of each annotated function:
+The output mirrors the project, the directory that holds it: each annotated
+function's module sits at the path of its package in the project. A package
+of another module mirrors its whole import path.
 
 ```
 gen/
   module.go                                   # package gen: func Module() fx.Option
-  github.com/acme/app/greeting/newgreeter_module.go
-  github.com/acme/app/greeting/options_module.go   # @Config struct Options
-  github.com/acme/app/app/announce_module.go
-  github.com/acme/app/internal_/stock/new_module.go  # source in github.com/acme/app/internal/stock
+  greeting/newgreeter_module.go               # source in github.com/acme/app/greeting
+  greeting/options_module.go                  # @Config struct Options
+  internal/stock/new_module.go                # source in github.com/acme/app/internal/stock
+  github.com/acme/lib/clock/new_module.go     # source in another module
 ```
 
-An `internal` element of the import path is written `internal_` (`GenPath`):
-the generated packages import each other across `gen/`, and Go lets only the
-tree above an `internal/` directory import what is in it.
+Two renames keep the generated packages importable and apart (`GenPath`):
+
+- an `internal` element below the first is written `internal_`. The
+  generated packages import each other across `gen/`, and Go lets only the
+  tree above an `internal/` directory import what is in it; a leading
+  `internal/` sits right under `gen/`, so it stays. Under `gen/implementation/`
+  and `gen/builder/middleware/` the leading one is written `internal_` too
+  (`GenPathUnder`).
+- the first element of a package of the project gets a trailing `_` when it
+  is a directory the generators own (`builder`, `client`, `implementation`) or
+  has a dot, as the first element of an import path has.
 
 Each `<func>_module.go` declares `<Func>Module()`, an `fx.Module` with the
 modules it depends on and `fx.Provide`/`fx.Invoke` of the function, wrapped in
@@ -334,7 +344,7 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | Function | Purpose |
 |---|---|
 | `GeneratorOptions.BaseImport()` | import path of the output dir |
-| `GenPath(importPath)` | directory under the output dir that mirrors a package (`internal` written `internal_`) |
+| `GenPath(base, importPath)` / `GenPathUnder(base, sub, importPath)` | directory under the output dir (or its `sub` dir) that mirrors a package: its path in the project, the whole import path for another module |
 | `ModuleOf(base, entry)` | import and module call (`gen_x_hash.NewXModule()`, `gen_x_hash.OptionsModule()` for a `@Config`) of a component |
 | `ConfigKey(modulePath, importPath)` / `ConfigEnv(root, segment)` | root config key of a package's `@Config` and the env var of one of its keys |
 | `Provider(g, pkg, tp)` | component and result index providing the default value of a type |

@@ -191,18 +191,20 @@ a function and a config path); an app is not a Go keyword, `main` or
 cmd/<app>/main.go                    # boost.Start() and fxfact.NewApp(<app>.Modules()...).Run()
 gen/
   module.go                          # inject root module
-  github.com/acme/app/.../*_module.go # inject modules, one per @Provide/@Invoke/@Config
+  internal/.../*_module.go           # inject modules, one per @Provide/@Invoke/@Config, at the package's path in the project
   client/<client type import path>/<name>_<type>.go # a factory client asked by @Inject (see inject)
   builder/<app>/modules.go           # func Modules() []fx.Option
   builder/<app>/<server>_module.go   # one REST, gRPC or MCP server and its routes/services/tools
   builder/<app>/function_module.go   # the @Function handler and its adapter
-  builder/middleware/<import path>/<func>_middleware.go # Decorate<Func>(): the @Middleware decorator
+  builder/middleware/<package path>/<func>_middleware.go # Decorate<Func>(): the @Middleware decorator
 ```
 
-An `internal` element of an import path is written `internal_` under `gen/`
-(see [inject](../inject#generating)), so apps whose packages live under
+`gen/` mirrors the project: a package in `internal/app/api/rest` gets its
+module in `gen/internal/app/api/rest`, so apps whose packages live under
 `internal/` ([project layout](https://github.com/golang-standards/project-layout))
-compile.
+compile and `gen/` reads like the project. Below `gen/builder/middleware/` and
+`gen/implementation/` the leading `internal` is written `internal_`, which Go
+needs there (see [inject](../inject#generating)).
 
 `Modules()` returns the doors sorted by name, then the `@Middleware`
 decorators the doors reach and, when the app has servers,

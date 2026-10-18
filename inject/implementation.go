@@ -269,15 +269,16 @@ func keySegments(s string) []string {
 	return segments
 }
 
-// File returns the path, relative to OutputDir, of the switch file.
-func (i Implementation) File() string {
-	return path.Join("implementation", GenPath(i.Path), strings.ToLower(i.Ident())+"_implementation.go")
+// File returns the path, relative to OutputDir, of the switch file, given
+// the import path of the output dir (BaseImport).
+func (i Implementation) File(base string) string {
+	return path.Join(GenPathUnder(base, "implementation", i.Path), strings.ToLower(i.Ident())+"_implementation.go")
 }
 
 // Import returns the import of the generated package holding the switch,
 // given the import path of the output dir (BaseImport).
 func (i Implementation) Import(base string) ImportData {
-	p := path.Join(base, "implementation", GenPath(i.Path))
+	p := path.Join(base, GenPathUnder(base, "implementation", i.Path))
 	return ImportData{Alias: Alias("impl", path.Base(i.Path), p), Path: p}
 }
 

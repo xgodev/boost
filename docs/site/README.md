@@ -33,6 +33,24 @@ carries the credit, and so must every other place the logo ships.
 | `favicon-32.png` | tab icon for browsers without SVG favicons |
 | `apple-touch-icon.png` | 180 px home-screen icon, full mark on navy |
 
+## Library logos
+
+`logos/` holds the 23 marks of the `#integrations` wall (#101). Each tile draws
+its SVG as a CSS mask in `--fg-2` (`--fg` on hover), so every mark reads as one
+monochrome set on the dark page whatever its original colours. A tile is a
+whole-card link to the library's page, the same URL as in the full list.
+
+| Source | Logos |
+|---|---|
+| [simple-icons](https://simpleicons.org/) 13.21.0 (CC0) | GraphQL, Kafka, NATS, Pub/Sub, AWS, MongoDB, PostgreSQL, Oracle, Cassandra, Elasticsearch, BigQuery, Firestore, Redis, OpenTelemetry, Prometheus, Datadog, Kubernetes, Vault, Google Cloud |
+| [cncf/artwork](https://github.com/cncf/artwork) | gRPC, CloudEvents |
+| [modelcontextprotocol](https://github.com/modelcontextprotocol/modelcontextprotocol) `docs/logo/light.svg` | MCP (the icon, without the wordmark) |
+| `echo.labstack.com/favicon.svg` | Echo (background square removed) |
+
+The marks are their owners' trademarks, shown only to name the library each
+factory wraps. gRPC, MCP, Cassandra and Echo carry a cropped `viewBox`; gRPC
+and Cassandra are wide, so their tiles set `--w`.
+
 ## Positioning
 
 boost is a set of things for building enterprise Go services fast: boot,
@@ -80,10 +98,10 @@ path (`// github.com/xgodev/boost/factory`, …).
 |---|---|---|
 | hero | Enterprise Go services. Built fast. | `go get`, stats, and a code window on the [shop example](#hero-example) with 3 tabs: the 9 files you write, the 12 files `go generate` writes, the run |
 | `#boot` | One boot. Everything ready after it. | `boost.Start()` → config → log → factory → fx → serve; one config key set by file, env or flag |
-| `#packages` | Every piece has one job. | Bento: factories, plugins, wrappers, middleware onion, inject graph, annotation, builder doors (`@REST`, `@GRPC`, `@Function`, `@Middleware`, `@Default`), functions, MCP |
+| `#packages` | Every piece has one job. | Bento: factories, plugins, wrappers, middleware onion, inject graph, annotation, builder doors (`@REST`, `@GRPC`, `@Function`, `@MCP`, `@Middleware`, `@Default`), functions, MCP |
 | `#builder` | From annotation to binary in two commands. | Annotate → `go generate ./...` → `go run ./cmd/api`, generated file tree |
 | `#compat` | Upgrade boost. Keep your code. | Public API as a contract, SDK majors side by side (mongo-driver v1/v2), comparative quality gate, `go.mod` diff, release timeline |
-| `#integrations` | 39 libraries. Same shape every time. | Upstream libraries by group, each with its version path |
+| `#integrations` | There's a factory for that. | Logo wall of 23 libraries plus a `+16` tile; the other 16 by name; the full 39 by group with version paths in `<details id="all-libs">` (the `+16` tile opens it); why a factory: config keys, built-in plumbing, plugins; MongoDB by hand vs `mongo.NewConn` with plugins and env keys (#101) |
 | `#agents` | — | `claude-plugin@xgodev` install, the 5 Iron Laws |
 | final CTA | Start with one line. | `go get` |
 
@@ -148,11 +166,13 @@ Counted from the repo on 2026-10-18 (#88). Recount when a factory or library is 
 
 The 48/58/39 include the MCP factory (server and client, #70).
 
-`annotation`, `inject` and the MCP factory are on `develop`. `builder`,
-`@Middleware`, `@Default`, `@Config` and the `internal_` fix are on feature
-branches (#67, #72, #75, #80, #84); none of them is in a tag yet. The page shows
-all of them as released. The builder has no `@MCP` door:
-#70 leaves it out of scope.
+`annotation`, `inject`, the MCP factory, `builder` and its doors (`@MCP`
+since #79), `@Middleware`, `@Default`, `@Config` and the `gen/` layout that mirrors the project are on
+`develop`; none of them is in a tag yet (latest `v1.1.1`). The page shows all of
+them as released. `@MCP` puts a handler
+`func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, Out, error)`
+on the boost MCP server as a tool: the name is the handler in snake case and the
+description is its doc comment (`builder/examples/simple/stocktool`).
 
 ## Checks done
 

@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/fx"
 
-	gen_healthcheck_d49c24ae "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/healthcheck"
+	gen_healthcheck_d49c24ae "github.com/xgodev/boost/builder/examples/simple/gen/healthcheck"
 	grpcserver "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
 	grpcfx "github.com/xgodev/boost/fx/modules/factory/contrib/google.golang.org/grpc/v1/server"
 	src_health_d0b4e395 "google.golang.org/grpc/health"

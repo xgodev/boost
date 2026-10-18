@@ -48,7 +48,7 @@ func TestImplementations(t *testing.T) {
 	assert.Equal(t, testModule+"/stock/memory.New", set.Members["memory"].Key())
 	assert.Equal(t, "Service", set.Ident())
 	assert.Equal(t, "stock.implementation", set.Key(testModule))
-	assert.Equal(t, "implementation/example.com/app/stock/service_implementation.go", set.File())
+	assert.Equal(t, "implementation/stock/service_implementation.go", set.File("example.com/app/gen"))
 
 	g := newTestGraph(t, stockEntries())
 	member, ok := ImplementationOf(g, g.Vertices[testModule+"/stock/unlimited.New"].Value)
@@ -68,7 +68,7 @@ func TestImplementations_Named(t *testing.T) {
 	assert.Equal(t, "formal", sets[0].Name)
 	assert.Equal(t, "ServiceFormal", sets[0].Ident())
 	assert.Equal(t, "stock.formal.implementation", sets[0].Key(testModule))
-	assert.Equal(t, "implementation/example.com/app/stock/serviceformal_implementation.go", sets[0].File())
+	assert.Equal(t, "implementation/stock/serviceformal_implementation.go", sets[0].File("example.com/app/gen"))
 }
 
 func TestImplementation_Key(t *testing.T) {

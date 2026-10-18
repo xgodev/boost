@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/fx"
 
-	gen_health_6c8ad5fb "example.com/app/gen/example.com/app/health"
+	gen_health_6c8ad5fb "example.com/app/gen/health"
 	src_health_6c8ad5fb "example.com/app/health"
 	grpcserver "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
 	grpcfx "github.com/xgodev/boost/fx/modules/factory/contrib/google.golang.org/grpc/v1/server"
