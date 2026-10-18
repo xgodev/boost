@@ -273,6 +273,11 @@ func serverDoor(base string, srv Server) (doorData, error) {
 		}
 	}
 
+	// the server is built with the plugins its constructors provide
+	for _, plugin := range srv.Plugins {
+		include(plugin)
+	}
+
 	invoke := "func(srv *" + serverPkg + ".Server" + joinPrefixed(params) + ") {\n" + strings.Join(body, "\n") + "\n}"
 
 	if isDefault(srv) {

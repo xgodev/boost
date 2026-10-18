@@ -57,6 +57,7 @@ func TestAPI(t *testing.T) {
 		created := serve(rest, http.MethodPost, "/orders", `{"item":"book"}`)
 		assert.Equal(t, http.StatusCreated, created.Code)
 		assert.JSONEq(t, `{"id":"1","item":"book"}`, created.Body.String())
+		assert.Empty(t, created.Header().Get("X-Served-By"), "the admin plugins are admin's only")
 
 		got := serve(rest, http.MethodGet, "/orders/1", "")
 		assert.Equal(t, http.StatusOK, got.Code)
@@ -70,6 +71,7 @@ func TestAPI(t *testing.T) {
 		live := serve(admin, http.MethodGet, "/live", "")
 		assert.Equal(t, http.StatusOK, live.Code)
 		assert.Equal(t, "ok", live.Body.String())
+		assert.Equal(t, "admin", live.Header().Get("X-Served-By"), "admin is built with the plugins provided under its name")
 
 		assert.Equal(t, http.StatusOK, serve(admin, http.MethodHead, "/live", "").Code)
 		assert.Equal(t, http.StatusNotFound, serve(admin, http.MethodGet, "/orders/1", "").Code)

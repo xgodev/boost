@@ -1,6 +1,8 @@
 package builder
 
 import (
+	"go/ast"
+	"go/parser"
 	"go/token"
 	"sort"
 	"strings"
@@ -276,6 +278,7 @@ func (b *specBuilder) spec() *Spec {
 			sort.SliceStable(srv.Services, func(i, j int) bool {
 				return srv.Services[i].Provider.Key()+srv.Services[i].Register < srv.Services[j].Provider.Key()+srv.Services[j].Register
 			})
+			srv.Plugins = serverPlugins(b.graph, srv)
 			app.Servers = append(app.Servers, srv)
 		}
 		spec.Apps = append(spec.Apps, app)
@@ -293,4 +296,49 @@ func declName(entry annotation.Entry) string {
 		name = entry.Struct
 	}
 	return entry.Path + "." + name
+}
+
+// pluginPaths are the packages whose Plugin type a server of each kind is
+// built with.
+var pluginPaths = map[Kind]string{KindREST: boostEchoPath, KindGRPC: grpcServerPath}
+
+// serverPlugins returns the inject constructors providing the []Plugin of
+// srv: a default value for the rest and grpc servers, the value named after
+// the server for the others.
+func serverPlugins(g *graph.Graph[inject.Component], srv Server) []inject.Component {
+	name := srv.Name
+	if isDefault(srv) {
+		name = ""
+	}
+
+	var plugins []inject.Component
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		for idx, ann := range comp.Provides {
+			if ann.Group == "" && ann.Name == name && isPluginSlice(comp.Entry, comp.Entry.Func.Results[idx].Type, pluginPaths[srv.Kind]) {
+				plugins = append(plugins, comp)
+				break
+			}
+		}
+	}
+	return plugins
+}
+
+// isPluginSlice reports whether tp, written in the file of entry, is
+// []pkg.Plugin with pkg imported from pkgPath.
+func isPluginSlice(entry annotation.Entry, tp, pkgPath string) bool {
+	expr, err := parser.ParseExpr(tp)
+	if err != nil {
+		return false
+	}
+	slice, ok := expr.(*ast.ArrayType)
+	if !ok || slice.Len != nil {
+		return false
+	}
+	sel, ok := slice.Elt.(*ast.SelectorExpr)
+	if !ok || sel.Sel.Name != "Plugin" {
+		return false
+	}
+	pkg, ok := sel.X.(*ast.Ident)
+	return ok && entry.Imports[pkg.Name] == pkgPath
 }

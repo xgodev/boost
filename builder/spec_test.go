@@ -223,3 +223,46 @@ func TestNewSpec_Errors(t *testing.T) {
 		})
 	}
 }
+
+// pluginEntries provide the []Plugin of the servers of validEntries: a
+// default value for rest and grpc, a value named after admin, and values
+// no server takes.
+func pluginEntries() []annotation.Entry {
+	imports := map[string]string{
+		"boostecho":  "github.com/xgodev/boost/factory/contrib/labstack/echo/v4",
+		"grpcserver": "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server",
+		"other":      "example.com/other",
+	}
+	entries := []annotation.Entry{
+		decl("plugins", "", "Admin", nil, []string{"[]boostecho.Plugin"}, ann("Provide", "name=admin, index=0")),
+		decl("plugins", "", "Rest", nil, []string{"[]boostecho.Plugin"}, ann("Provide", "index=0")),
+		decl("plugins", "", "Grpc", nil, []string{"[]grpcserver.Plugin"}, ann("Provide", "index=0")),
+		decl("plugins", "", "Other", nil, []string{"[]other.Plugin"}, ann("Provide", "name=admin, index=0")),
+		decl("plugins", "", "Single", nil, []string{"boostecho.Plugin"}, ann("Provide", "name=admin, index=0")),
+		decl("plugins", "", "Grouped", nil, []string{"[]boostecho.Plugin"}, ann("Provide", "group=admin, index=0")),
+	}
+	for i := range entries {
+		entries[i].Imports = imports
+	}
+	return entries
+}
+
+func pluginNames(plugins []inject.Component) (out []string) {
+	for _, p := range plugins {
+		out = append(out, p.Entry.Func.Name)
+	}
+	return out
+}
+
+func TestNewSpec_ServerPlugins(t *testing.T) {
+	spec, err := newTestSpec(t, append(validEntries(), pluginEntries()...))
+	require.NoError(t, err)
+
+	api := spec.Apps[0]
+	require.Len(t, api.Servers, 3)
+	admin, grpcSrv, rest := api.Servers[0], api.Servers[1], api.Servers[2]
+
+	assert.Equal(t, []string{"Admin"}, pluginNames(admin.Plugins), "a named server takes the []Plugin named after it")
+	assert.Equal(t, []string{"Rest"}, pluginNames(rest.Plugins), "rest takes the default []boostecho.Plugin")
+	assert.Equal(t, []string{"Grpc"}, pluginNames(grpcSrv.Plugins), "grpc takes the default []grpcserver.Plugin")
+}

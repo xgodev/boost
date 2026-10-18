@@ -289,3 +289,24 @@ func TestImports_Qualify(t *testing.T) {
 	assert.Equal(t, []inject.ImportData{{Alias: src, Path: path.Join(testModule, "orders")}}, imports.sorted(),
 		"a package is imported once whatever name the file gives it")
 }
+
+func TestGenerator_RenderIncludesPluginModules(t *testing.T) {
+	plugins := pluginEntries()
+	files, err := render(t, append(validEntries(), plugins...))
+	require.NoError(t, err)
+
+	base, err := testOptions("/src/app").BaseImport()
+	require.NoError(t, err)
+	imp, admin := inject.ModuleOf(base, plugins[0])
+	_, rest := inject.ModuleOf(base, plugins[1])
+	_, grpc := inject.ModuleOf(base, plugins[2])
+
+	for name, src := range files {
+		assertImportsUsed(t, name, src)
+	}
+	assert.Contains(t, string(files["builder/api/admin_module.go"]), admin, "the admin door builds its plugins")
+	assert.Contains(t, string(files["builder/api/admin_module.go"]), imp.Path)
+	assert.Contains(t, string(files["builder/api/rest_module.go"]), rest)
+	assert.NotContains(t, string(files["builder/api/rest_module.go"]), admin, "the admin plugins are admin's only")
+	assert.Contains(t, string(files["builder/api/grpc_module.go"]), grpc)
+}

@@ -139,9 +139,19 @@ fails the generation instead of being overwritten. Other files under `cmd/`
   `boost.factory.grpc.server`.
 - Any other name is a separate server configured under
   `<app>.server.<name>` (`api.server.admin.port`): give it its own port.
-  Its plugins come from a `[]Plugin` provided with `name:"<name>"`
-  (`@Provide(name=admin, index=0)`), and are optional.
 - A server name serves REST or gRPC, not both.
+- Plugins are optional and come from `@Provide`: a `[]boostecho.Plugin`
+  (REST) or `[]server.Plugin` (gRPC,
+  [`grpc/v1/server`](../factory/contrib/google.golang.org/grpc/v1/server))
+  provided without `name` reaches `rest` or `grpc`, and one provided with
+  `name=<server>` reaches that server. The door includes the provider's inject
+  module, so the generated main needs nothing else:
+
+```go
+// Plugins tags the admin responses.
+// @Provide(name=admin, index=0)
+func Plugins() []boostecho.Plugin { ... }
+```
 
 ## Validation
 
@@ -186,7 +196,8 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
 [`examples/simple`](./examples/simple) has two apps:
 
 - `api`: REST `POST /orders` and `GET /orders/:id` on `rest`, `GET`/`HEAD
-  /live` on `admin`, and the gRPC health service on `grpc`;
+  /live` on `admin` (built with the `X-Served-By: admin` plugin of
+  `probe.Plugins`), and the gRPC health service on `grpc`;
 - `worker`: the `ordercreated` function on the cloudevents adapter.
 
 `cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
