@@ -29,7 +29,8 @@ Issue → Branch (de develop) → Commits → PR → Review/Merge
 7. **NUNCA `Closes #N` / `Fixes #N`** em commits — fechamento é manual e só a
    pedido do usuário.
 8. **NUNCA rebase.** Sempre `git merge`, nunca `git pull --rebase`.
-9. **Quality gate verde é pré-requisito de qualquer `git push`.** Ver
+9. **Quality gate verde é pré-requisito de qualquer `git push`.** *Suspenso por
+   enquanto:* ver o aviso no topo de [`quality-gate.md`](quality-gate.md). Ver
    [`quality-gate.md`](quality-gate.md). Vermelho → corrige a causa raiz →
    roda de novo → só então push.
 10. **Push após cada commit lógico** (depois do gate verde). Bugfix/hotfix

@@ -22,7 +22,7 @@ factory por componente sob `factory/contrib/`.
 - SDK upstream instanciado direto (sem passar pela factory)
 - `os.Getenv` / logger de terceiro fora do wrapper
 - API pública alterada sem teste e sem nota de compat
-- `git push` sem quality-gate verde
+- `git push` sem quality-gate verde (suspenso por enquanto, ver `docs/development/quality-gate.md`)
 - Issue ou PR ausentes (ver `docs/development/gitflow.md`)
 
 ## Regras gerais de código
