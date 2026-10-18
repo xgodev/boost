@@ -9,8 +9,8 @@ import (
 	"github.com/xgodev/boost/wrapper/config"
 	"go.uber.org/fx"
 
-	gen_memory_20cde142 "example.com/app/gen/example.com/app/stock/memory"
-	gen_unlimited_0c086fb9 "example.com/app/gen/example.com/app/stock/unlimited"
+	gen_memory_20cde142 "example.com/app/gen/stock/memory"
+	gen_unlimited_0c086fb9 "example.com/app/gen/stock/unlimited"
 )
 
 // serviceImplementationKey chooses the implementation of example.com/app/stock.Service.

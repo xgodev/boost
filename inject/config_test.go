@@ -188,7 +188,7 @@ func TestGenerator_RenderConfig(t *testing.T) {
 	files, err := NewGenerator(newTestGraph(t, entries), testOptions("/mod")).Render(context.Background())
 	require.NoError(t, err)
 
-	src := string(files["example.com/app/quote/options_module.go"])
+	src := string(files["quote/options_module.go"])
 	require.NotEmpty(t, src, "the config module is generated next to the package's other modules")
 	assert.True(t, strings.HasPrefix(src, generatedHeader))
 	_, err = parser.ParseFile(token.NewFileSet(), "options_module.go", src, parser.AllErrors)
@@ -210,16 +210,16 @@ func TestGenerator_RenderConfig(t *testing.T) {
 		assert.Contains(t, src, want)
 	}
 
-	assert.Contains(t, string(files["example.com/app/quote/new_module.go"]), "\t\t\tOptionsModule(),\n",
+	assert.Contains(t, string(files["quote/new_module.go"]), "\t\t\tOptionsModule(),\n",
 		"a consumer in the package includes the config module")
-	assert.Contains(t, string(files["example.com/app/client/new_module.go"]), genAlias(options)+".OptionsModule(),",
+	assert.Contains(t, string(files["client_/new_module.go"]), genAlias(options)+".OptionsModule(),",
 		"a consumer in another package imports it")
 	assert.Contains(t, string(files["module.go"]), genAlias(options)+".OptionsModule(),")
 
 	t.Run("no duration, no time import", func(t *testing.T) {
 		files, err := NewGenerator(newTestGraph(t, []annotation.Entry{cfg("quote", "Options")}), testOptions("/mod")).Render(context.Background())
 		require.NoError(t, err)
-		assert.NotContains(t, string(files["example.com/app/quote/options_module.go"]), `"time"`)
+		assert.NotContains(t, string(files["quote/options_module.go"]), `"time"`)
 	})
 }
 

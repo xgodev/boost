@@ -233,7 +233,7 @@ pre.code {
 
 /* ---------- hero: the shop example as a small IDE ---------- */
 /* Group tabs on top (you write / generated / run); each group lists its files on the left and shows one on the right. */
-.ide { display: grid; grid-template-columns: 300px minmax(0, 1fr); height: 560px; }
+.ide { display: grid; grid-template-columns: 300px minmax(0, 1fr); height: 700px; }
 .ide[hidden], .ide-run[hidden], .pane[hidden] { display: none; }
 .files { overflow-y: auto; border-right: 1px solid var(--line); background: var(--bg-deep); padding-block: var(--s2); scrollbar-width: thin; scrollbar-color: var(--muted) transparent; }
 .dir, .file { display: flex; align-items: center; gap: var(--s2); width: 100%; padding: 0 var(--s3) 0 calc(var(--s4) + var(--d, 0) * 14px); font-family: var(--display); font-size: 12px; white-space: nowrap; min-height: 26px; }
@@ -250,7 +250,7 @@ pre.code {
 .pane-path { display: flex; align-items: center; gap: var(--s3); padding: var(--s2) var(--s5); border-bottom: 1px solid var(--line); font-family: var(--display); font-size: 11.5px; color: var(--fg-3); white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
 .tab .k, .pane-path .k { flex: none; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; }
 .ide pre.code, .ide-run pre.code { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--muted) transparent; }
-.ide-run { display: flex; flex-direction: column; height: 560px; }
+.ide-run { display: flex; flex-direction: column; height: 700px; }
 @media (max-width: 759px) {
   .ide { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: 640px; }
   .files { max-height: 208px; border-right: 0; border-bottom: 1px solid var(--line); }

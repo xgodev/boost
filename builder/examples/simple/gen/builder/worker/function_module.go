@@ -9,7 +9,7 @@ import (
 
 	src_cloudevents_c136a3fd "github.com/cloudevents/sdk-go/v2"
 	bsfunction "github.com/xgodev/boost/bootstrap/function"
-	gen_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/ordercreated"
+	gen_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/gen/ordercreated"
 	src_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/ordercreated"
 	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
 	cloudeventsfx "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http"

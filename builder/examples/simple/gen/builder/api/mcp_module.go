@@ -8,7 +8,7 @@ import (
 	"go.uber.org/fx"
 
 	mcp "github.com/modelcontextprotocol/go-sdk/mcp"
-	gen_stocktool_d9696083 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/stocktool"
+	gen_stocktool_d9696083 "github.com/xgodev/boost/builder/examples/simple/gen/stocktool"
 	src_stocktool_d9696083 "github.com/xgodev/boost/builder/examples/simple/stocktool"
 	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
 	mcpfx "github.com/xgodev/boost/fx/modules/factory/contrib/modelcontextprotocol/go-sdk/v1/server"

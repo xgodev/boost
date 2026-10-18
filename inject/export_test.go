@@ -33,12 +33,53 @@ func TestAlias(t *testing.T) {
 	assert.NotEqual(t, alias, Alias("pkg", "sdk-go", "github.com/cloudevents/sdk-go/v3"), "the path tells packages of the same name apart")
 }
 
+func TestGenPath(t *testing.T) {
+	const base = testModule + "/gen"
+
+	testCases := []struct {
+		name, base, path, want string
+	}{
+		{name: "package of the project", path: testModule + "/greet", want: "greet"},
+		{name: "leading internal stays", path: testModule + "/internal/app/api/rest", want: "internal/app/api/rest"},
+		{name: "deeper internal is renamed", path: testModule + "/internal/pkg/x/internal/y", want: "internal/pkg/x/internal_/y"},
+		{name: "project root", path: testModule, want: "app"},
+		{name: "dir of the builder", path: testModule + "/builder/api", want: "builder_/api"},
+		{name: "dir of the clients", path: testModule + "/client", want: "client_"},
+		{name: "dir of the switches", path: testModule + "/implementation/stock", want: "implementation_/stock"},
+		{name: "first element with a dot", path: testModule + "/github.com/x", want: "github.com_/x"},
+		{name: "package of another module", path: "github.com/xgodev/boost/greet", want: "github.com/xgodev/boost/greet"},
+		{name: "internal of another module", path: "github.com/xgodev/boost/internal/greet", want: "github.com/xgodev/boost/internal_/greet"},
+		{name: "path sharing the prefix", path: testModule + "x/greet", want: testModule + "x/greet"},
+		{name: "project below the module", base: testModule + "/internal/gen", path: testModule + "/internal/app/api", want: "app/api"},
+		{name: "module package outside the project", base: testModule + "/internal/gen", path: testModule + "/pkg/x", want: testModule + "/pkg/x"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			b := tc.base
+			if b == "" {
+				b = base
+			}
+			assert.Equal(t, tc.want, GenPath(b, tc.path))
+		})
+	}
+}
+
+func TestGenPathUnder(t *testing.T) {
+	const base = testModule + "/gen"
+
+	assert.Equal(t, "implementation/stock", GenPathUnder(base, "implementation", testModule+"/stock"))
+	assert.Equal(t, "implementation/internal_/pkg/x/internal_/y", GenPathUnder(base, "implementation", testModule+"/internal/pkg/x/internal/y"),
+		"below implementation/ no internal sits right under the output dir")
+	assert.Equal(t, "builder/middleware/github.com/xgodev/boost/internal_/greet", GenPathUnder(base, "builder/middleware", "github.com/xgodev/boost/internal/greet"))
+}
+
 func TestModuleOf(t *testing.T) {
 	entry := at("greet", "NewGreeter", nil, []string{"*Greeter"}, provide("index=0"))
 
 	imp, call := ModuleOf("example.com/app/gen", entry)
 
-	assert.Equal(t, ImportData{Alias: genAlias(entry), Path: "example.com/app/gen/example.com/app/greet"}, imp)
+	assert.Equal(t, ImportData{Alias: genAlias(entry), Path: "example.com/app/gen/greet"}, imp)
 	assert.Equal(t, genAlias(entry)+".NewGreeterModule()", call)
 }
 

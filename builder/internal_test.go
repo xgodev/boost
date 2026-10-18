@@ -18,10 +18,11 @@ func TestDecorator_InternalPackage(t *testing.T) {
 	}
 	m := Middleware{Provider: inject.Component{Entry: entry}}
 
-	dir := "builder/middleware/" + testModule + "/internal_/pkg/domain/service/stock/reserver/local"
-	assert.Equal(t, dir+"/new_middleware.go", decoratorFile(m))
+	base := testModule + "/gen"
+	dir := "builder/middleware/internal_/pkg/domain/service/stock/reserver/local"
+	assert.Equal(t, dir+"/new_middleware.go", decoratorFile(base, m))
 
-	imp, call := decoratorOf(testModule+"/gen", m)
+	imp, call := decoratorOf(base, m)
 	assert.Equal(t, testModule+"/gen/"+dir, imp.Path)
 	assert.Equal(t, imp.Alias+".DecorateNew()", call)
 }

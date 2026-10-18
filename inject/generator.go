@@ -168,7 +168,7 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 // fx module of a function otherwise.
 func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client) (string, []byte, error) {
 	comp := vertex.Value
-	name := path.Join(GenPath(comp.Entry.Path), strings.ToLower(declName(comp.Entry))+"_module.go")
+	name := path.Join(GenPath(base, comp.Entry.Path), strings.ToLower(declName(comp.Entry))+"_module.go")
 
 	tmplName, data := "config", any(nil)
 	if comp.IsConfig() {
@@ -194,14 +194,14 @@ func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *g
 func (p *Generator) renderImplementations(tmpl *template.Template, base string, sets []Implementation, files map[string][]byte) error {
 	for _, set := range sets {
 		key := set.Key(p.opts.ModulePath)
-		if _, exists := files[set.File()]; exists {
-			return errors.AlreadyExistsf("two implementation sets generate %s; rename one of the types", set.File())
+		if _, exists := files[set.File(base)]; exists {
+			return errors.AlreadyExistsf("two implementation sets generate %s; rename one of the types", set.File(base))
 		}
 		src, err := ExecuteTemplate(tmpl, "implementation", implementationData(base, key, set))
 		if err != nil {
 			return errors.Wrap(err, errors.Internalf("error generating the implementation switch of %s.%s", set.Path, set.Type))
 		}
-		files[set.File()] = src
+		files[set.File(base)] = src
 	}
 	return nil
 }
@@ -481,19 +481,57 @@ func Alias(prefix, name, importPath string) string {
 	return prefix + "_" + packageIdent(name) + "_" + shortHash(importPath)
 }
 
-// GenPath returns the directory, relative to the output dir, that mirrors
-// the package at importPath, with every "internal" element written
-// "internal_". Generated packages import each other across the output dir,
-// and Go lets only the tree above an internal/ directory import what is in
-// it, so a mirrored internal/ would hide them from each other.
-func GenPath(importPath string) string {
-	elems := strings.Split(importPath, "/")
-	for i, elem := range elems {
-		if elem == "internal" {
+// owned are the directories of the output dir the generators write into.
+var owned = map[string]bool{"builder": true, "client": true, "implementation": true}
+
+// GenPath returns the directory, relative to the output dir whose import path
+// is base, of the package generated for the package at importPath. A package
+// of the project, the directory that holds the output dir, mirrors its path
+// in the project (the project's base name for the project itself), so the
+// output dir reads like the project: internal/app/..., internal/pkg/.... Any
+// other package mirrors its whole import path. Two renames keep the packages
+// importable and apart:
+//
+//   - an internal element below the first is written internal_. Generated
+//     packages import each other across the output dir, and Go lets only the
+//     tree above an internal/ directory import what is in it; a leading
+//     internal/ sits right under the output dir, so it stays.
+//   - the first element of a package of the project is written with a
+//     trailing _ when it is a directory the generators own (builder, client,
+//     implementation) or has a dot, as the first element of an import path
+//     has.
+func GenPath(base, importPath string) string {
+	root := path.Dir(base)
+	var elems []string
+	own := true
+	switch {
+	case importPath == root:
+		elems = []string{path.Base(root)}
+	case strings.HasPrefix(importPath, root+"/"):
+		elems = strings.Split(strings.TrimPrefix(importPath, root+"/"), "/")
+	default:
+		elems, own = strings.Split(importPath, "/"), false
+	}
+	if own && (owned[elems[0]] || strings.Contains(elems[0], ".")) {
+		elems[0] += "_"
+	}
+	for i := 1; i < len(elems); i++ {
+		if elems[i] == "internal" {
 			elems[i] = "internal_"
 		}
 	}
 	return strings.Join(elems, "/")
+}
+
+// GenPathUnder is GenPath below the directory sub of the output dir, such as
+// implementation, with a leading internal written internal_ too: below sub
+// no internal/ sits right under the output dir.
+func GenPathUnder(base, sub, importPath string) string {
+	elems := strings.Split(GenPath(base, importPath), "/")
+	if elems[0] == "internal" {
+		elems[0] = "internal_"
+	}
+	return path.Join(sub, path.Join(elems...))
 }
 
 // ModuleOf returns the import of the package generated for the component
@@ -501,7 +539,7 @@ func GenPath(importPath string) string {
 // and the call of its module function, such as gen_greet_1a2b3c4d.NewGreeterModule()
 // (or OptionsModule() for a @Config struct Options).
 func ModuleOf(base string, entry annotation.Entry) (ImportData, string) {
-	imp := ImportData{Alias: genAlias(entry), Path: base + "/" + GenPath(entry.Path)}
+	imp := ImportData{Alias: genAlias(entry), Path: base + "/" + GenPath(base, entry.Path)}
 	return imp, imp.Alias + "." + declName(entry) + "Module()"
 }
 

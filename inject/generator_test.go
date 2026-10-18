@@ -56,12 +56,12 @@ func TestGenerator_Render(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, []string{
-		"example.com/app/app/newboard_module.go",
-		"example.com/app/app/run_module.go",
-		"example.com/app/greet/newformal_module.go",
-		"example.com/app/greet/newgreeter_module.go",
-		"example.com/app/names/alice_module.go",
+		"app/newboard_module.go",
+		"app/run_module.go",
+		"greet/newformal_module.go",
+		"greet/newgreeter_module.go",
 		"module.go",
+		"names/alice_module.go",
 	}, sortedFileNames(files))
 
 	for name, src := range files {
@@ -70,13 +70,13 @@ func TestGenerator_Render(t *testing.T) {
 		assert.NoError(t, err, "%s is not valid Go", name)
 	}
 
-	run := string(files["example.com/app/app/run_module.go"])
+	run := string(files["app/run_module.go"])
 	src, greet, names := srcAlias(entries[4]), genAlias(entries[0]), genAlias(entries[2])
 	assert.Contains(t, run, "package app\n")
 	assert.Contains(t, run, src+` "example.com/app/app"`)
-	assert.Contains(t, run, greet+` "example.com/app/gen/example.com/app/greet"`)
-	assert.Contains(t, run, names+` "example.com/app/gen/example.com/app/names"`)
-	assert.NotContains(t, run, `"example.com/app/gen/example.com/app/app"`, "same package modules are not imported")
+	assert.Contains(t, run, greet+` "example.com/app/gen/greet"`)
+	assert.Contains(t, run, names+` "example.com/app/gen/names"`)
+	assert.NotContains(t, run, `"example.com/app/gen/app"`, "same package modules are not imported")
 	assert.Contains(t, run, `fx.Module("example.com/app/app.Run",
 			NewBoardModule(),
 			`+greet+`.NewFormalModule(),
@@ -84,11 +84,11 @@ func TestGenerator_Render(t *testing.T) {
 			`+names+`.AliceModule(),
 			fx.Invoke(fx.Annotate(`+src+".Run, fx.ParamTags(`name:\"formal\"`, \"\", `group:\"names\"`))),\n")
 
-	assert.Contains(t, string(files["example.com/app/greet/newgreeter_module.go"]),
+	assert.Contains(t, string(files["greet/newgreeter_module.go"]),
 		"fx.Provide("+srcAlias(entries[0])+".NewGreeter)")
-	assert.Contains(t, string(files["example.com/app/greet/newformal_module.go"]),
+	assert.Contains(t, string(files["greet/newformal_module.go"]),
 		"fx.Provide(fx.Annotate("+srcAlias(entries[1])+".NewFormal, fx.ResultTags(`name:\"formal\"`)))")
-	assert.Contains(t, string(files["example.com/app/names/alice_module.go"]),
+	assert.Contains(t, string(files["names/alice_module.go"]),
 		"fx.Provide(fx.Annotate("+srcAlias(entries[2])+".Alice, fx.ResultTags(`group:\"names\"`)))")
 
 	root := string(files["module.go"])
@@ -181,7 +181,7 @@ func TestGenerator_Generate(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Dir(p), os.ModePerm))
 		require.NoError(t, os.WriteFile(p, []byte(content), 0o644))
 	}
-	write("example.com/app/old/gone_module.go", generatedHeader+"\n\npackage old\n")
+	write("old/gone_module.go", generatedHeader+"\n\npackage old\n")
 	write("handwritten.go", "package gen\n")
 	write("notes.txt", generatedHeader)
 
@@ -203,7 +203,7 @@ func TestGenerator_Generate(t *testing.T) {
 	// a component removed from the source disappears from the output
 	require.NoError(t, NewGenerator(newTestGraph(t, greetingEntries()[:3]), opts).Generate(context.Background()))
 	assert.NoDirExists(t, filepath.Join(opts.OutputDir, "example.com/app/app"))
-	assert.FileExists(t, filepath.Join(opts.OutputDir, "example.com/app/names/alice_module.go"))
+	assert.FileExists(t, filepath.Join(opts.OutputDir, "names/alice_module.go"))
 }
 
 func TestWriteGraphviz(t *testing.T) {
@@ -273,13 +273,13 @@ func TestGenerator_RenderImplementation(t *testing.T) {
 	files, err := NewGenerator(newTestGraph(t, entries), testOptions("/mod")).Render(context.Background())
 	require.NoError(t, err)
 
-	src := files["implementation/example.com/app/stock/service_implementation.go"]
+	src := files["implementation/stock/service_implementation.go"]
 	require.NotNil(t, src, "the switch file is rendered")
 	golden(t, "testdata/implementation/service_implementation.go.golden", src)
 
 	imp, call := Implementation{Type: "Service", Path: testModule + "/stock"}.Module("example.com/app/gen")
-	service := string(files["example.com/app/order/newservice_module.go"])
-	assert.Contains(t, service, imp.Alias+` "example.com/app/gen/implementation/example.com/app/stock"`)
+	service := string(files["order/newservice_module.go"])
+	assert.Contains(t, service, imp.Alias+` "example.com/app/gen/implementation/stock"`)
 	assert.Contains(t, service, `fx.Module("example.com/app/order.NewService",
 			`+call+`,
 			`+genAlias(clock)+`.NewClockModule(),
@@ -290,7 +290,7 @@ func TestGenerator_RenderImplementation(t *testing.T) {
 	assert.Equal(t, 1, strings.Count(root, call), "the root includes the switch once")
 	assert.NotContains(t, root, ".NewModule()", "the root never wires a member directly")
 	assert.Contains(t, root, genAlias(clock)+".NewClockModule(),")
-	assert.Contains(t, root, imp.Alias+` "example.com/app/gen/implementation/example.com/app/stock"`)
+	assert.Contains(t, root, imp.Alias+` "example.com/app/gen/implementation/stock"`)
 }
 
 func TestGenerator_RenderNamedImplementation(t *testing.T) {
@@ -303,10 +303,10 @@ func TestGenerator_RenderNamedImplementation(t *testing.T) {
 	files, err := NewGenerator(newTestGraph(t, entries), testOptions("/mod")).Render(context.Background())
 	require.NoError(t, err)
 
-	sw := string(files["implementation/example.com/app/stock/serviceformal_implementation.go"])
+	sw := string(files["implementation/stock/serviceformal_implementation.go"])
 	assert.Contains(t, sw, `serviceFormalImplementationKey = "stock.formal.implementation"`)
 	assert.Contains(t, sw, "func ServiceFormalImplementationModule() fx.Option {")
 
 	_, call := Implementation{Type: "Service", Path: testModule + "/stock", Name: "formal"}.Module("example.com/app/gen")
-	assert.Contains(t, string(files["example.com/app/order/newservice_module.go"]), call+",")
+	assert.Contains(t, string(files["order/newservice_module.go"]), call+",")
 }

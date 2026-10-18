@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/fx"
 
-	gen_orders_c30ecd34 "example.com/app/gen/example.com/app/orders"
+	gen_orders_c30ecd34 "example.com/app/gen/orders"
 	src_orders_c30ecd34 "example.com/app/orders"
 	mcp "github.com/modelcontextprotocol/go-sdk/mcp"
 	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"

@@ -8,7 +8,7 @@ import (
 	"go.uber.org/fx"
 
 	src_events_2fb115b0 "example.com/app/events"
-	gen_events_2fb115b0 "example.com/app/gen/example.com/app/events"
+	gen_events_2fb115b0 "example.com/app/gen/events"
 	src_cloudevents_c136a3fd "github.com/cloudevents/sdk-go/v2"
 	bsfunction "github.com/xgodev/boost/bootstrap/function"
 	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"

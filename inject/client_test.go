@@ -255,7 +255,7 @@ func TestGenerator_RenderClient(t *testing.T) {
 	clients, err := Clients(newTestGraph(t, []annotation.Entry{weather, quote}))
 	require.NoError(t, err)
 	imp, call := clients[1].Module("example.com/app/gen")
-	consumer := string(files["example.com/app/client/quote/new_module.go"])
+	consumer := string(files["client_/quote/new_module.go"])
 	assert.Contains(t, consumer, imp.Alias+` "example.com/app/gen/client/github.com/go-resty/resty/v2"`)
 	assert.Contains(t, consumer, call+",", "the consumer includes the client it injects")
 	assert.Contains(t, consumer, "fx.ParamTags(`name:\"quote\"`)")
