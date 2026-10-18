@@ -4,8 +4,10 @@ Status (2026-10-18): piece 1 (`@Middleware`) implemented in #72 (PR #73,
 stacked on #69), skill updated in claude-plugin 1.24.3. Piece 2 (`@Default`
 implementation switch) implemented in #75 (PR #78, stacked on #73), skill
 updated in claude-plugin 1.24.5. Piece 3 (`@Config` struct -> generated
-`config.Add` and `*Struct` provider) implemented in #80 (stacked on #78).
-Next: piece 4.
+`config.Add` and `*Struct` provider) implemented in #80 (PR #83, stacked on
+#78), skill updated in claude-plugin 1.24.6. Piece 4 (factory clients with
+plugins from `@Inject`) implemented in #85 (stacked on #83). Next: piece 5,
+the skill, for piece 4.
 
 ## Intent
 
@@ -46,7 +48,8 @@ it teaches stops asking for hand-written wiring.
   the generated file in `gen/` registers the keys and provides `*Struct`,
   so the package never imports `config`; only simple types. Design:
   `docs/superpowers/specs/2026-10-18-config-generation-design.md`.
-
-## Open
-
-- Annotation syntax of piece 4.
+- Factory clients: one client per service, each with its own config, named
+  by the `name` of `@Inject`; plugins in the annotation
+  (`@Inject(index=0, name=quote, plugins=[otel])`), config only turns each
+  one off. Design:
+  `docs/superpowers/specs/2026-10-18-factory-clients-design.md`.
