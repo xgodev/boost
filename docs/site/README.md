@@ -33,6 +33,24 @@ carries the credit, and so must every other place the logo ships.
 | `favicon-32.png` | tab icon for browsers without SVG favicons |
 | `apple-touch-icon.png` | 180 px home-screen icon, full mark on navy |
 
+## Library logos
+
+`logos/` holds the 23 marks of the `#integrations` wall (#101). Each tile draws
+its SVG as a CSS mask in `--fg-2` (`--fg` on hover), so every mark reads as one
+monochrome set on the dark page whatever its original colours. A tile is a
+whole-card link to the library's page, the same URL as in the full list.
+
+| Source | Logos |
+|---|---|
+| [simple-icons](https://simpleicons.org/) 13.21.0 (CC0) | GraphQL, Kafka, NATS, Pub/Sub, AWS, MongoDB, PostgreSQL, Oracle, Cassandra, Elasticsearch, BigQuery, Firestore, Redis, OpenTelemetry, Prometheus, Datadog, Kubernetes, Vault, Google Cloud |
+| [cncf/artwork](https://github.com/cncf/artwork) | gRPC, CloudEvents |
+| [modelcontextprotocol](https://github.com/modelcontextprotocol/modelcontextprotocol) `docs/logo/light.svg` | MCP (the icon, without the wordmark) |
+| `echo.labstack.com/favicon.svg` | Echo (background square removed) |
+
+The marks are their owners' trademarks, shown only to name the library each
+factory wraps. gRPC, MCP, Cassandra and Echo carry a cropped `viewBox`; gRPC
+and Cassandra are wide, so their tiles set `--w`.
+
 ## Positioning
 
 boost is a set of things for building enterprise Go services fast: boot,
@@ -83,7 +101,7 @@ path (`// github.com/xgodev/boost/factory`, …).
 | `#packages` | Every piece has one job. | Bento: factories, plugins, wrappers, middleware onion, inject graph, annotation, builder doors (`@REST`, `@GRPC`, `@Function`, `@MCP`, `@Middleware`, `@Default`), functions, MCP |
 | `#builder` | From annotation to binary in two commands. | Annotate → `go generate ./...` → `go run ./cmd/api`, generated file tree |
 | `#compat` | Upgrade boost. Keep your code. | Public API as a contract, SDK majors side by side (mongo-driver v1/v2), comparative quality gate, `go.mod` diff, release timeline |
-| `#integrations` | 39 libraries. Same shape every time. | Upstream libraries by group, each with its version path |
+| `#integrations` | There's a factory for that. | Logo wall of 23 libraries plus a `+16` tile; the other 16 by name; the full 39 by group with version paths in `<details id="all-libs">` (the `+16` tile opens it); why a factory: config keys, built-in plumbing, plugins; MongoDB by hand vs `mongo.NewConn` with plugins and env keys (#101) |
 | `#agents` | — | `claude-plugin@xgodev` install, the 5 Iron Laws |
 | final CTA | Start with one line. | `go get` |
 
