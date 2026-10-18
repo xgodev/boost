@@ -16,6 +16,23 @@ type Component struct {
 	// Default marks the default implementation (@Default) of the value it
 	// provides, among two or more providers of that value.
 	Default bool
+	// Config holds the keys of a @Config struct, which provides *Struct
+	// filled from config.
+	Config []ConfigField
+}
+
+// IsConfig reports whether the component is a @Config struct.
+func (c Component) IsConfig() bool {
+	return c.Entry.IsStruct()
+}
+
+// Result returns the type of the value provided at index idx: *Struct for a
+// @Config struct, the function result otherwise.
+func (c Component) Result(idx int) string {
+	if c.IsConfig() {
+		return "*" + c.Entry.Struct
+	}
+	return c.Entry.Func.Results[idx].Type
 }
 
 // Key uniquely identifies the component in the graph.

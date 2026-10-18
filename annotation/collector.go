@@ -118,7 +118,8 @@ func structDeclarations(genDecl *ast.GenDecl) (entries []Entry) {
 		if !ok {
 			continue
 		}
-		if _, ok := typeSpec.Type.(*ast.StructType); !ok {
+		structType, ok := typeSpec.Type.(*ast.StructType)
+		if !ok {
 			continue
 		}
 		doc := typeSpec.Doc
@@ -127,10 +128,31 @@ func structDeclarations(genDecl *ast.GenDecl) (entries []Entry) {
 		}
 		entries = append(entries, Entry{
 			Struct:   typeSpec.Name.Name,
+			Fields:   structFields(structType),
 			Comments: getComments(doc),
 		})
 	}
 	return entries
+}
+
+// structFields returns one field per name, in order. An embedded field has
+// no name.
+func structFields(structType *ast.StructType) (fields []EntryField) {
+	for _, field := range structType.Fields.List {
+		tp := types.ExprString(field.Type)
+		var tag string
+		if field.Tag != nil {
+			tag, _ = strconv.Unquote(field.Tag.Value)
+		}
+		if len(field.Names) == 0 {
+			fields = append(fields, EntryField{Type: tp, Tag: tag})
+			continue
+		}
+		for _, name := range field.Names {
+			fields = append(fields, EntryField{Name: name.Name, Type: tp, Tag: tag})
+		}
+	}
+	return fields
 }
 
 func funcDeclaration(funcDecl *ast.FuncDecl) Entry {

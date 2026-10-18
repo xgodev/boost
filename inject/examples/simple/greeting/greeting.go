@@ -11,10 +11,10 @@ func (g *Greeter) Greet(name string) string {
 	return g.Prefix + ", " + name + "!"
 }
 
-// NewGreeter provides the default greeter.
+// NewGreeter provides the default greeter, whose prefix comes from config.
 // @Provide(index=0)
-func NewGreeter() *Greeter {
-	return &Greeter{Prefix: "Hello"}
+func NewGreeter(o *Options) *Greeter {
+	return &Greeter{Prefix: o.Prefix}
 }
 
 // NewFormalGreeter provides the greeter named "formal".

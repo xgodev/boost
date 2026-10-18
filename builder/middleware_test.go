@@ -197,6 +197,8 @@ func TestNewSpec_MiddlewareErrors(t *testing.T) {
 		{"key instead of names", newQuote(provide, middleware("plugins=log")), get, errors.IsNotValid, "plugin names"},
 		{"repeated annotation", newQuote(provide, middleware("log"), middleware("hystrix")), get, errors.IsNotValid, "one @Middleware"},
 		{"without provide", newQuote(middleware("log")), get, errors.IsNotValid, "@Provide"},
+		{"config struct", append(newQuote(provide), decl("quote", "Options", "", nil, nil, ann("Config", ""), middleware("log"))), get,
+			errors.IsNotValid, "only a @Provide function"},
 		{"group provide", newQuote(ann("Provide", "group=quotes, index=0"), middleware("log")), get, errors.IsNotValid, "group"},
 		{"concrete result", []annotation.Entry{decl("quote", "", "New", nil, []string{"*Service"}, provide, middleware("log"))},
 			map[string]string{quotePath: "package quote\n\nimport \"context\"\n\ntype Service struct{}\n\nfunc (*Service) Get(ctx context.Context) error { return nil }\n\nfunc New() *Service { return nil }\n"},

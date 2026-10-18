@@ -20,6 +20,7 @@ func NewModule() fx.Option {
 
 	NewOnce.Do(func() {
 		options = fx.Module("github.com/xgodev/boost/builder/examples/simple/stock/memory.New",
+			OptionsModule(),
 			fx.Provide(src_memory_109e67b9.New),
 		)
 	})

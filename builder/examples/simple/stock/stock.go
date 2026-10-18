@@ -1,6 +1,6 @@
 // Package stock tells whether an item can be ordered. Its implementations,
-// memory (the default) and unlimited, are chosen by config:
-// builder.examples.simple.stock.implementation.
+// memory (the default), remote (asks a warehouse) and unlimited, are chosen
+// by config: builder.examples.simple.stock.implementation.
 package stock
 
 import "context"

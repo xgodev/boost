@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -113,15 +114,29 @@ const (
 	// (builder.examples.simple.stock.implementation).
 	implementationEnv = "BUILDER_EXAMPLES_SIMPLE_STOCK_IMPLEMENTATION"
 	childEnv          = "BUILDER_EXAMPLE_CHILD"
+	// warehouseHostEnv points the warehouse client builder generates for
+	// stock/remote at a server (boost.factory.resty.clients.warehouse.host).
+	warehouseHostEnv = "BOOST_FACTORY_RESTY_CLIENTS_WAREHOUSE_HOST"
 )
 
 // TestAPIImplementation boots app api in a new process per value of the
-// implementation key: config is read once per process.
+// implementation key: config is read once per process. The remote
+// implementation asks a warehouse this test serves.
 func TestAPIImplementation(t *testing.T) {
-	for _, value := range []string{"unlimited", "nope"} {
+	warehouse := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || !strings.HasPrefix(r.URL.Path, "/items/") {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, _ = w.Write([]byte(`{"available":` + strconv.FormatBool(r.URL.Path != "/items/sold-out") + `}`))
+	}))
+	t.Cleanup(warehouse.Close)
+
+	for _, value := range []string{"unlimited", "remote", "nope"} {
 		t.Run(value, func(t *testing.T) {
 			cmd := exec.Command(os.Args[0], "-test.run=^TestAPIImplementationChild$", "-test.v")
-			cmd.Env = append(os.Environ(), implementationEnv+"="+value, childEnv+"=1")
+			cmd.Env = append(os.Environ(), implementationEnv+"="+value, warehouseHostEnv+"="+warehouse.URL, childEnv+"=1")
 			out, err := cmd.CombinedOutput()
 			require.NoError(t, err, "%s", out)
 			assert.Contains(t, string(out), "--- PASS: TestAPIImplementationChild")
@@ -149,12 +164,53 @@ func TestAPIImplementationChild(t *testing.T) {
 			"config wires unlimited, undecorated: the @Middleware of memory is off with memory")
 		assert.Equal(t, http.StatusCreated, serve(rest, http.MethodPost, "/orders", `{"item":"sold-out"}`).Code,
 			"unlimited has every item")
+	case "remote":
+		require.NoError(t, app.Err())
+		assert.True(t, strings.HasSuffix(reflect.TypeOf(stockSvc).Elem().PkgPath(), "/stock/remote"),
+			"config wires remote, which asks the warehouse through the client builder generates")
+		assert.Equal(t, http.StatusCreated, serve(rest, http.MethodPost, "/orders", `{"item":"book"}`).Code,
+			"the warehouse has the book")
+		assert.Equal(t, http.StatusConflict, serve(rest, http.MethodPost, "/orders", `{"item":"sold-out"}`).Code,
+			"the warehouse is out of sold-out")
 	default:
 		require.Error(t, app.Err(), "an unknown implementation fails the boot")
 		assert.Contains(t, app.Err().Error(), "builder.examples.simple.stock.implementation")
 		assert.Contains(t, app.Err().Error(), `"`+value+`"`)
-		assert.Contains(t, app.Err().Error(), "memory, unlimited")
+		assert.Contains(t, app.Err().Error(), "memory, remote, unlimited")
 	}
+}
+
+// soldOutEnv sets the items the memory stock is out of
+// (builder.examples.simple.stock.memory.soldOut, from its @Config Options).
+const soldOutEnv = "BUILDER_EXAMPLES_SIMPLE_STOCK_MEMORY_SOLD__OUT"
+
+// TestAPIConfig boots app api in a new process with the sold-out list of
+// the memory stock set from the environment: config is read once per
+// process.
+func TestAPIConfig(t *testing.T) {
+	cmd := exec.Command(os.Args[0], "-test.run=^TestAPIConfigChild$", "-test.v")
+	cmd.Env = append(os.Environ(), soldOutEnv+"=book,pen", childEnv+"=1")
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, "%s", out)
+	assert.Contains(t, string(out), "--- PASS: TestAPIConfigChild")
+}
+
+// TestAPIConfigChild runs in the process TestAPIConfig starts.
+func TestAPIConfigChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestAPIConfig")
+	}
+
+	var rest *boostecho.Server
+	app := fx.New(append(api.Modules(), fx.NopLogger, fx.Populate(&rest))...)
+	require.NoError(t, app.Err())
+
+	for _, item := range []string{"book", "pen"} {
+		assert.Equal(t, http.StatusConflict, serve(rest, http.MethodPost, "/orders", `{"item":"`+item+`"}`).Code,
+			"%s is in the sold-out list set from %s", item, soldOutEnv)
+	}
+	assert.Equal(t, http.StatusCreated, serve(rest, http.MethodPost, "/orders", `{"item":"sold-out"}`).Code,
+		"the env replaces the default list")
 }
 
 // opsTotal returns the ops_total the prometheus middleware counted for the

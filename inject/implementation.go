@@ -36,7 +36,7 @@ func Implementations(g *graph.Graph[Component]) ([]Implementation, error) {
 			if ann.Group != "" {
 				continue
 			}
-			id := xid(comp.Entry.Package, comp.Entry.Func.Results[idx].Type, ann)
+			id := xid(comp.Entry.Package, comp.Result(idx), ann)
 			providers[id] = append(providers[id], comp)
 		}
 	}
@@ -123,7 +123,7 @@ func newImplementation(id string, comps []Component) (Implementation, bool, erro
 			idx, set.Name = i, ann.Name
 		}
 
-		tp := comp.Entry.Func.Results[idx].Type
+		tp := comp.Result(idx)
 		typePath, typeName, ok := namedType(comp, tp)
 		if !ok {
 			return Implementation{}, false, errors.NotValidf("%s implements %s with %s; an implementation set needs a named type (T, *T, pkg.T or *pkg.T) whose package can be resolved",
@@ -233,19 +233,25 @@ func upperFirst(s string) string {
 // segments and "a-b" becomes "aB", so the key is reachable from an
 // environment variable (FOO_BAR__BAZ -> foo.barBaz).
 func (i Implementation) Key(modulePath string) string {
-	rel := i.Path
-	switch {
-	case i.Path == modulePath:
-		rel = path.Base(modulePath)
-	case strings.HasPrefix(i.Path, modulePath+"/"):
-		rel = strings.TrimPrefix(i.Path, modulePath+"/")
-	}
-
-	segments := keySegments(rel)
+	segments := relKeySegments(modulePath, i.Path)
 	if i.Name != "" {
 		segments = append(segments, keySegments(i.Name)...)
 	}
 	return strings.Join(append(segments, "implementation"), ".")
+}
+
+// relKeySegments returns the config key segments of a package: its import
+// path relative to the module (the module's base name for the module root,
+// the full import path outside the module).
+func relKeySegments(modulePath, importPath string) []string {
+	rel := importPath
+	switch {
+	case importPath == modulePath:
+		rel = path.Base(modulePath)
+	case strings.HasPrefix(importPath, modulePath+"/"):
+		rel = strings.TrimPrefix(importPath, modulePath+"/")
+	}
+	return keySegments(rel)
 }
 
 // keySegments splits s into config key segments.
@@ -265,13 +271,13 @@ func keySegments(s string) []string {
 
 // File returns the path, relative to OutputDir, of the switch file.
 func (i Implementation) File() string {
-	return path.Join("implementation", i.Path, strings.ToLower(i.Ident())+"_implementation.go")
+	return path.Join("implementation", GenPath(i.Path), strings.ToLower(i.Ident())+"_implementation.go")
 }
 
 // Import returns the import of the generated package holding the switch,
 // given the import path of the output dir (BaseImport).
 func (i Implementation) Import(base string) ImportData {
-	p := path.Join(base, "implementation", i.Path)
+	p := path.Join(base, "implementation", GenPath(i.Path))
 	return ImportData{Alias: Alias("impl", path.Base(i.Path), p), Path: p}
 }
 

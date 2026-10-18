@@ -50,6 +50,9 @@ func LoadPackages(dir string) PackageLoader {
 // loadMiddlewares, once for every annotated package.
 func (b *specBuilder) addMiddleware(entry annotation.Entry, ann annotation.Annotation) error {
 	where := declName(entry)
+	if entry.IsStruct() {
+		return errors.NotValidf("@Middleware on %s: only a @Provide function can be decorated", where)
+	}
 	key := inject.Component{Entry: entry}.Key()
 	if _, repeated := b.middlewares[key]; repeated {
 		return errors.NotValidf("@Middleware on %s is repeated; list every plugin in one @Middleware", where)

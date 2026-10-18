@@ -10,6 +10,7 @@ import (
 	"go.uber.org/fx"
 
 	gen_memory_109e67b9 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/stock/memory"
+	gen_remote_3dca2a14 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/stock/remote"
 	gen_unlimited_eb1924fa "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/stock/unlimited"
 )
 
@@ -17,7 +18,7 @@ import (
 const serviceImplementationKey = "builder.examples.simple.stock.implementation"
 
 func init() {
-	config.Add(serviceImplementationKey, "memory", "implementation of github.com/xgodev/boost/builder/examples/simple/stock.Service: memory, unlimited")
+	config.Add(serviceImplementationKey, "memory", "implementation of github.com/xgodev/boost/builder/examples/simple/stock.Service: memory, remote, unlimited")
 }
 
 // ServiceImplementation returns the name of the implementation of
@@ -29,7 +30,7 @@ func ServiceImplementation() string {
 var serviceImplementationOnce sync.Once
 
 // ServiceImplementationModule wires the implementation of github.com/xgodev/boost/builder/examples/simple/stock.Service
-// named by builder.examples.simple.stock.implementation (memory, unlimited; default memory) and only that one.
+// named by builder.examples.simple.stock.implementation (memory, remote, unlimited; default memory) and only that one.
 // An unknown name fails the boot. It returns an empty option after the first
 // call, so every consumer can include it.
 func ServiceImplementationModule() fx.Option {
@@ -39,10 +40,12 @@ func ServiceImplementationModule() fx.Option {
 		switch name := ServiceImplementation(); name {
 		case "memory":
 			options = gen_memory_109e67b9.NewModule()
+		case "remote":
+			options = gen_remote_3dca2a14.NewModule()
 		case "unlimited":
 			options = gen_unlimited_eb1924fa.NewModule()
 		default:
-			options = fx.Error(errors.NotValidf("%s: unknown implementation %q; valid: %s", serviceImplementationKey, name, "memory, unlimited"))
+			options = fx.Error(errors.NotValidf("%s: unknown implementation %q; valid: %s", serviceImplementationKey, name, "memory, remote, unlimited"))
 		}
 	})
 

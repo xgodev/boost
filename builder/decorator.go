@@ -58,14 +58,14 @@ type wrapperData struct {
 // the constructor m decorates.
 func decoratorFile(m Middleware) string {
 	entry := m.Provider.Entry
-	return path.Join(outputDir, middlewareDir, entry.Path, strings.ToLower(entry.Func.Name)+"_middleware.go")
+	return path.Join(outputDir, middlewareDir, inject.GenPath(entry.Path), strings.ToLower(entry.Func.Name)+"_middleware.go")
 }
 
 // decoratorOf returns the import of the decorator package of m, given the
 // import path of the output dir, and the call that applies it in Modules().
 func decoratorOf(base string, m Middleware) (inject.ImportData, string) {
 	entry := m.Provider.Entry
-	p := path.Join(base, outputDir, middlewareDir, entry.Path)
+	p := path.Join(base, outputDir, middlewareDir, inject.GenPath(entry.Path))
 	imp := inject.ImportData{Alias: inject.Alias("mw", entry.Package, p), Path: p}
 	return imp, imp.Alias + ".Decorate" + entry.Func.Name + "()"
 }
