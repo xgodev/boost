@@ -1,7 +1,9 @@
 # builder: generate every piece of boilerplate
 
 Status (2026-10-18): piece 1 (`@Middleware`) implemented in #72 (PR #73,
-stacked on #69), skill updated in claude-plugin 1.24.3. Next: piece 2.
+stacked on #69), skill updated in claude-plugin 1.24.3. Piece 2 (`@Default`
+implementation switch) implemented in #75 (PR #78, stacked on #73), skill
+updated in claude-plugin 1.24.5. Next: piece 3.
 
 ## Intent
 
