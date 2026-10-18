@@ -1,0 +1,19 @@
+package log
+
+import "github.com/xgodev/boost/wrapper/config"
+
+// Options configures the log plugin.
+type Options struct {
+	Enabled bool
+	Level   string
+}
+
+// NewOptions returns options from the default config path.
+func NewOptions() (*Options, error) {
+	return config.NewOptionsWithPath[Options](root)
+}
+
+// NewOptionsWithPath returns options from path, falling back to the root defaults.
+func NewOptionsWithPath(path string) (*Options, error) {
+	return config.NewOptionsWithPath[Options](root, path)
+}

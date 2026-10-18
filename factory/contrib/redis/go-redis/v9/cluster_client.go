@@ -6,11 +6,12 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
+	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
 // ClusterPlugin represents a redis cluster plugin func signature.
-type ClusterPlugin func(context.Context, *redis.ClusterClient) error
+type ClusterPlugin = factory.Plugin[*redis.ClusterClient]
 
 // NewClusterClient returns a new ClusterClient.
 func NewClusterClient(ctx context.Context, plugins ...ClusterPlugin) (*redis.ClusterClient, error) {
@@ -59,10 +60,8 @@ func NewClusterClientWithOptions(ctx context.Context, o *Options, plugins ...Clu
 		return nil, ping.Err()
 	}
 
-	for _, plugin := range plugins {
-		if err := plugin(ctx, client); err != nil {
-			return nil, err
-		}
+	if err := factory.ApplyPlugins(ctx, client, plugins...); err != nil {
+		return nil, err
 	}
 
 	logger.Infof("Connected to Redis Cluster server: %s status: %s", strings.Join(client.Options().Addrs, ","), ping.String())
