@@ -7,6 +7,8 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -238,4 +240,56 @@ func TestLoadPackages(t *testing.T) {
 
 	_, err = LoadPackages(".")("github.com/xgodev/boost/builder/examples/simple/missing")
 	require.Error(t, err)
+}
+
+func renderMiddleware(t *testing.T, entries []annotation.Entry, sources map[string]string) map[string][]byte {
+	t.Helper()
+	spec, err := newMiddlewareSpec(t, entries, sources)
+	require.NoError(t, err)
+	files, err := NewGenerator(spec, testOptions("/src/app")).Render(context.Background())
+	require.NoError(t, err)
+	for name, src := range files {
+		assertImportsUsed(t, name, src)
+	}
+	return files
+}
+
+func TestGenerator_RenderMiddleware(t *testing.T) {
+	files := renderMiddleware(t, middlewareEntries(), middlewareSources)
+
+	const decorator = "builder/middleware/example.com/app/resty/new_middleware.go"
+	require.Contains(t, fileNames(files), decorator)
+
+	golden := filepath.Join("testdata", "golden", "middleware", "new_middleware.go.golden")
+	if *update {
+		require.NoError(t, os.MkdirAll(filepath.Dir(golden), 0o755))
+		require.NoError(t, os.WriteFile(golden, files[decorator], 0o644))
+	}
+	want, err := os.ReadFile(golden)
+	require.NoError(t, err, "run go test ./builder/ -run TestGenerator_RenderMiddleware -update")
+	assert.Equal(t, string(want), string(files[decorator]))
+
+	base, err := testOptions("/src/app").BaseImport()
+	require.NoError(t, err)
+	decoratorPath := base + "/builder/middleware/" + restyPath
+	call := inject.Alias("mw", "resty", decoratorPath) + ".DecorateNew()"
+
+	api := string(files["builder/api/modules.go"])
+	assert.Contains(t, api, `"`+decoratorPath+`"`)
+	assert.Contains(t, api, call+",\n\t\tmultiserverfx.Module()", "the decorators come after the doors, before the multiserver")
+	assert.NotContains(t, string(files["builder/worker/modules.go"]), call, "worker never builds resty.New")
+}
+
+func TestGenerator_RenderNamedMiddleware(t *testing.T) {
+	entries := middlewareEntries(ann("Provide", "name=x, index=0"), ann("Middleware", "log"))
+	for i := range entries {
+		if entries[i].Func.Name == "NewHandler" {
+			entries[i].Annotations = append(entries[i].Annotations, ann("Inject", "name=x, index=0"))
+		}
+	}
+	files := renderMiddleware(t, entries, middlewareSources)
+
+	src := string(files["builder/middleware/example.com/app/resty/new_middleware.go"])
+	assert.Contains(t, src, "fx.Decorate(fx.Annotate(decorateNew, fx.ParamTags(``, `name:\"x\"`), fx.ResultTags(`name:\"x\"`)))",
+		"the decorated value keeps its name")
 }

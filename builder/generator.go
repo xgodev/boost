@@ -48,8 +48,9 @@ type Options struct {
 
 // Generator writes, under OutputDir/builder/<app>, one fx module per door of
 // the app (a REST or gRPC server, or the function) and a modules.go whose
-// Modules() returns all of them, and under CmdDir/<app> the main that runs
-// them.
+// Modules() returns all of them and the decorators of the app's
+// @Middleware, written under OutputDir/builder/middleware/<import path>, and
+// under CmdDir/<app> the main that runs them.
 type Generator struct {
 	spec *Spec
 	opts Options
@@ -141,7 +142,8 @@ func (g *Generator) checkOwned(name string) error {
 }
 
 // Render returns the generated files keyed by their slash-separated path
-// relative to OutputDir (builder/<app>/...), without touching the disk.
+// relative to OutputDir (builder/<app>/... and builder/middleware/...),
+// without touching the disk.
 func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 	base, err := g.opts.BaseImport()
 	if err != nil {
@@ -181,8 +183,26 @@ func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 			mods.Modules = append(mods.Modules, door.Func+"Module()")
 		}
 
+		// the decorators apply at the root, so every module of the app
+		// receives the decorated values
+		for _, m := range app.Middlewares {
+			imp, call := decoratorOf(base, m)
+			mods.Imports = append(mods.Imports, imp)
+			mods.Modules = append(mods.Modules, call)
+
+			file := decoratorFile(m)
+			if _, done := files[file]; done {
+				continue
+			}
+			src, err := inject.ExecuteTemplate(tmpl, "decorator", decorator(m))
+			if err != nil {
+				return nil, errors.Wrap(err, errors.Internalf("error generating the decorator of %s", declName(m.Provider.Entry)))
+			}
+			files[file] = src
+		}
+
 		if mods.Servers {
-			mods.Imports = []inject.ImportData{{Alias: "multiserverfx", Path: multiserverFxPath}}
+			mods.Imports = append(mods.Imports, inject.ImportData{Alias: "multiserverfx", Path: multiserverFxPath})
 			mods.Modules = append(mods.Modules, "multiserverfx.Module()")
 		}
 		src, err := inject.ExecuteTemplate(tmpl, "modules", mods)
