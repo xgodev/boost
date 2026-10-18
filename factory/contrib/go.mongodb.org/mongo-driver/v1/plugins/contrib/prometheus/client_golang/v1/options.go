@@ -4,7 +4,7 @@ import (
 	"github.com/xgodev/boost/wrapper/config"
 )
 
-// Options represents opentracing for resty client options.
+// Options represents the prometheus plugin options of a mongo client.
 type Options struct {
 	Enabled bool
 }
