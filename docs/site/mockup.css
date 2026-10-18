@@ -156,8 +156,12 @@ a.ref:hover { text-decoration-style: solid; text-decoration-color: var(--accent)
   grid-template-columns: minmax(0, 1fr);
   padding-block: var(--s8) var(--s8);
 }
+/* Intro and facts on top, the shop example full width below: the code window needs the room. */
 @media (min-width: 1000px) {
-  .hero .wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; padding-block: var(--s9); }
+  .hero .wrap { grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: var(--s8); padding-block: var(--s9) var(--s8); }
+  .hero .hero-cap, .hero .win { grid-column: 1 / -1; }
+  .hero .proof { margin-top: 0; display: grid; grid-template-columns: repeat(2, auto); gap: var(--s5) var(--s7); }
+  .hero .proof b { font-size: var(--t-xl); }
 }
 .meta { font-family: var(--display); font-size: var(--t-xs); color: var(--fg-3); display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); align-items: center; }
 .meta .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); display: inline-block; margin-right: var(--s2); }
@@ -176,6 +180,8 @@ h1 .at { color: var(--ann); }
 .cta-row .install { flex: 1 1 320px; max-width: 440px; }
 .proof { margin-top: var(--s6); display: flex; flex-wrap: wrap; gap: var(--s5); font-family: var(--display); font-size: var(--t-xs); color: var(--fg-3); font-variant-numeric: tabular-nums; }
 .proof b { color: var(--fg); font-size: var(--t-md); font-weight: 700; display: block; }
+.hero-cap { font-family: var(--display); font-size: var(--t-xs); color: var(--fg-3); margin-bottom: calc(var(--s7) * -1 + var(--s3)); }
+.hero-cap::before { content: "// "; color: var(--c-com); }
 
 /* ---------- code window ---------- */
 .win {
@@ -199,7 +205,6 @@ h1 .at { color: var(--ann); }
 }
 .tab:hover { color: var(--fg); }
 .tab[aria-selected="true"] { color: var(--fg); background: var(--surface-2); border-bottom-color: var(--accent); }
-.tab .k { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; }
 .k-ann { color: var(--ann); background: var(--ann-soft); }
 .k-gen { color: var(--c-type); background: rgba(103, 232, 249, .1); }
 .k-run { color: var(--accent); background: var(--accent-soft); }
@@ -225,6 +230,37 @@ pre.code {
 .dim { color: var(--fg-3); }
 .ok { color: var(--accent); }
 .gen-banner { color: var(--c-com); font-style: italic; }
+
+/* ---------- hero: the shop example as a small IDE ---------- */
+/* Group tabs on top (you write / generated / run); each group lists its files on the left and shows one on the right. */
+.ide { display: grid; grid-template-columns: 300px minmax(0, 1fr); height: 560px; }
+.ide[hidden], .ide-run[hidden], .pane[hidden] { display: none; }
+.files { overflow-y: auto; border-right: 1px solid var(--line); background: var(--bg-deep); padding-block: var(--s2); scrollbar-width: thin; scrollbar-color: var(--muted) transparent; }
+.dir, .file { display: flex; align-items: center; gap: var(--s2); width: 100%; padding: 0 var(--s3) 0 calc(var(--s4) + var(--d, 0) * 14px); font-family: var(--display); font-size: 12px; white-space: nowrap; min-height: 26px; }
+.dir { color: var(--fg-3); }
+.dir::before { content: "▾"; font-size: 10px; width: 10px; margin-left: -14px; color: var(--border); }
+.file { color: var(--fg-2); background: transparent; border: 0; border-left: 2px solid transparent; cursor: pointer; text-align: left; transition: color .15s, background .15s; }
+.file:hover { color: var(--fg); background: var(--surface-2); }
+.file[aria-selected="true"] { color: var(--fg); background: var(--surface); border-left-color: var(--accent); }
+.file .fname { overflow: hidden; text-overflow: ellipsis; }
+.hint { margin-left: auto; padding-left: var(--s3); font-size: 10.5px; color: var(--fg-3); }
+.hint.a { color: var(--ann); }
+.panes, .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.pane { flex: 1; }
+.pane-path { display: flex; align-items: center; gap: var(--s3); padding: var(--s2) var(--s5); border-bottom: 1px solid var(--line); font-family: var(--display); font-size: 11.5px; color: var(--fg-3); white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
+.tab .k, .pane-path .k { flex: none; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; }
+.ide pre.code, .ide-run pre.code { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--muted) transparent; }
+.ide-run { display: flex; flex-direction: column; height: 560px; }
+@media (max-width: 759px) {
+  .ide { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: 640px; }
+  .files { max-height: 208px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .file { min-height: 40px; }
+  .ide pre.code, .ide-run pre.code { font-size: 12.5px; padding: var(--s4); }
+  .ide-run { height: 480px; }
+  .hero .proof { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .win-bar .tab { flex: 1; justify-content: center; padding-inline: var(--s2); }
+  .win-bar .tab-n, .win-bar .win-step { display: none; }
+}
 
 /* ---------- sections ---------- */
 section { padding-block: var(--s9); }

@@ -1,23 +1,30 @@
 (function () {
-  // hero tabs
-  var tabs = Array.prototype.slice.call(document.querySelectorAll('#hero-win [role="tab"]'));
-  function select(tab) {
-    tabs.forEach(function (t) {
-      var on = t === tab;
-      t.setAttribute('aria-selected', on ? 'true' : 'false');
-      t.tabIndex = on ? 0 : -1;
-      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+  // hero: the group tabs (you write / generated / run) and, inside each group, the file list
+  function tablist(list) {
+    var vertical = list.getAttribute('aria-orientation') === 'vertical';
+    var prev = vertical ? 'ArrowUp' : 'ArrowLeft';
+    var next = vertical ? 'ArrowDown' : 'ArrowRight';
+    var tabs = Array.prototype.filter.call(list.children, function (el) { return el.getAttribute('role') === 'tab'; });
+    function select(tab) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+      });
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(t); });
+      t.addEventListener('keydown', function (e) {
+        var n = e.key === next ? tabs[(i + 1) % tabs.length]
+          : e.key === prev ? tabs[(i + tabs.length - 1) % tabs.length]
+          : e.key === 'Home' ? tabs[0]
+          : e.key === 'End' ? tabs[tabs.length - 1] : null;
+        if (n) { select(n); n.focus(); e.preventDefault(); }
+      });
     });
   }
-  tabs.forEach(function (t, i) {
-    t.addEventListener('click', function () { select(t); });
-    t.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        var n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-        select(n); n.focus(); e.preventDefault();
-      }
-    });
-  });
+  document.querySelectorAll('#hero-win [role="tablist"]').forEach(tablist);
 
   // copy buttons
   document.querySelectorAll('.copy').forEach(function (b) {
