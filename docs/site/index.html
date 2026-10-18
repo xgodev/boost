@@ -847,6 +847,7 @@ ann.<span class="fn">Decode</span>(&amp;r)</pre>
           <div class="door"><span class="a">@REST</span><span><a class="ref" href="https://echo.labstack.com/">echo</a> route</span></div>
           <div class="door"><span class="a">@GRPC</span><span><a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a> service</span></div>
           <div class="door"><span class="a">@Function</span><span><a class="ref" href="https://github.com/cloudevents/sdk-go">cloudevents</a> · <a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">kafka</a> · <a class="ref" href="https://github.com/nats-io/nats.go">nats</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">pubsub</a></span></div>
+          <div class="door"><span class="a">@MCP</span><span><a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a> tool</span></div>
           <div class="door"><span class="a">@Middleware</span><span>generated decorator</span></div>
           <div class="door"><span class="a">@Default</span><span>implementation picked by config</span></div>
         </div>
@@ -866,7 +867,7 @@ ann.<span class="fn">Decode</span>(&amp;r)</pre>
         <div>
           <span class="path">factory/contrib/modelcontextprotocol/go-sdk/v1/{server,client}</span>
           <h3>MCP</h3>
-          <p>Your use cases become tools that agents call over <a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a>, and your service calls other MCP servers. Server and client are factories like the rest: config keys, plugins, and the server runs beside <a class="ref" href="https://echo.labstack.com/">echo</a> and <a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a>.</p>
+          <p>Your use cases become tools that agents call over <a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a>, and your service calls other MCP servers. Server and client are factories like the rest: config keys, plugins, and the server runs beside <a class="ref" href="https://echo.labstack.com/">echo</a> and <a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a>. Mark a handler with <span class="mono" style="color:var(--ann)">@MCP</span> and the builder registers it as a tool.</p>
           <div class="chips"><span class="chip on">server · HTTP</span><span class="chip on">server · STDIO</span><span class="chip">client · HTTP</span><span class="chip">client · COMMAND</span><span class="chip">log</span><span class="chip">otel</span></div>
         </div>
 <pre class="mini">srv, _ := server.<span class="fn">NewServer</span>(ctx, mcplog.Register, otel.Register)
