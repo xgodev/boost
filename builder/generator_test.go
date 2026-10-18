@@ -52,7 +52,9 @@ func TestGenerator_Render(t *testing.T) {
 	assert.Equal(t, []string{
 		"builder/api/admin_module.go",
 		"builder/api/grpc_module.go",
+		"builder/api/mcp_module.go",
 		"builder/api/modules.go",
+		"builder/api/ops_module.go",
 		"builder/api/rest_module.go",
 		"builder/worker/function_module.go",
 		"builder/worker/modules.go",
@@ -300,6 +302,8 @@ func TestGenerator_RenderIncludesPluginModules(t *testing.T) {
 	imp, admin := inject.ModuleOf(base, plugins[0])
 	_, rest := inject.ModuleOf(base, plugins[1])
 	_, grpc := inject.ModuleOf(base, plugins[2])
+	_, mcp := inject.ModuleOf(base, plugins[3])
+	_, ops := inject.ModuleOf(base, plugins[4])
 
 	for name, src := range files {
 		assertImportsUsed(t, name, src)
@@ -309,4 +313,7 @@ func TestGenerator_RenderIncludesPluginModules(t *testing.T) {
 	assert.Contains(t, string(files["builder/api/rest_module.go"]), rest)
 	assert.NotContains(t, string(files["builder/api/rest_module.go"]), admin, "the admin plugins are admin's only")
 	assert.Contains(t, string(files["builder/api/grpc_module.go"]), grpc)
+	assert.Contains(t, string(files["builder/api/mcp_module.go"]), mcp)
+	assert.Contains(t, string(files["builder/api/ops_module.go"]), ops)
+	assert.NotContains(t, string(files["builder/api/mcp_module.go"]), ops, "the ops plugins are ops' only")
 }

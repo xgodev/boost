@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/inject"
@@ -17,6 +19,7 @@ const (
 	defaultApp        = "api"
 	defaultRESTServer = "rest"
 	defaultGRPCServer = "grpc"
+	defaultMCPServer  = "mcp"
 	functionFile      = "function"   // the function door of an app is function_module.go
 	middlewareDir     = "middleware" // gen/builder/middleware holds the decorators, so no app takes the name
 )
@@ -34,6 +37,13 @@ type grpcArgs struct {
 	Register string `attr:"register"`
 	Server   string `attr:"server"`
 	App      string `attr:"app"`
+}
+
+// mcpArgs are the arguments of @MCP(name=check_stock, server=mcp, app=api).
+type mcpArgs struct {
+	Name   string `attr:"name"`
+	Server string `attr:"server"`
+	App    string `attr:"app"`
 }
 
 // functionArgs are the arguments of @Function(adapter=nats, app=api).
@@ -61,11 +71,14 @@ var (
 
 	restKeys     = []string{"method", "path", "server", "app"}
 	grpcKeys     = []string{"register", "server", "app"}
+	mcpKeys      = []string{"name", "server", "app"}
 	functionKeys = []string{"adapter", "app"}
 
 	// identName is the form of app and server names: they become a package,
 	// a file and a function name and a config path element.
 	identName = regexp.MustCompile(`^[a-z][a-z0-9]*$`)
+	// toolName is the form of an MCP tool name.
+	toolName = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,128}$`)
 )
 
 // decode checks that the annotation only uses the given keys and copies its
@@ -95,6 +108,41 @@ func validateNames(ann, where, app, server string) error {
 		return errors.NotValidf("@%s on %s: server name %q must match %s and not be %q", ann, where, server, identName, functionFile)
 	}
 	return nil
+}
+
+// snakeCase turns a Go name into a tool name: CheckStock is check_stock and
+// ListHTTPOrders is list_http_orders.
+func snakeCase(name string) string {
+	runes := []rune(name)
+	var b strings.Builder
+	for i, r := range runes {
+		if i > 0 && unicode.IsUpper(r) {
+			prev := runes[i-1]
+			nextLower := i+1 < len(runes) && unicode.IsLower(runes[i+1])
+			if unicode.IsLower(prev) || unicode.IsDigit(prev) || (unicode.IsUpper(prev) && nextLower) {
+				b.WriteByte('_')
+			}
+		}
+		b.WriteRune(unicode.ToLower(r))
+	}
+	return b.String()
+}
+
+// toolDescription is the doc comment of the handler: its title, capitalized
+// once the leading name is gone, and the lines after it.
+func toolDescription(header annotation.EntryHeader) string {
+	desc := header.Title
+	if desc != "" {
+		r, size := utf8.DecodeRuneInString(desc)
+		desc = string(unicode.ToUpper(r)) + desc[size:]
+	}
+	if header.Description != "" {
+		if desc != "" {
+			desc += "\n"
+		}
+		desc += header.Description
+	}
+	return desc
 }
 
 func orDefault(v, def string) string {

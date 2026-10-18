@@ -16,6 +16,7 @@ func Modules() []fx.Option {
 	return []fx.Option{
 		AdminModule(),
 		GrpcModule(),
+		McpModule(),
 		RestModule(),
 		mw_memory_90bff5bb.DecorateNew(),
 		multiserverfx.Module(),

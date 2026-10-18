@@ -12,6 +12,7 @@ import (
 	gen_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/ordercreated"
 	gen_probe_a7e6caf2 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/probe"
 	gen_memory_109e67b9 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/stock/memory"
+	gen_stocktool_d9696083 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/stocktool"
 	impl_stock_23b35631 "github.com/xgodev/boost/builder/examples/simple/gen/implementation/github.com/xgodev/boost/builder/examples/simple/stock"
 )
 
@@ -25,6 +26,7 @@ func Module() fx.Option {
 		gen_probe_a7e6caf2.PluginsModule(),
 		impl_stock_23b35631.ServiceImplementationModule(),
 		gen_memory_109e67b9.OptionsModule(),
+		gen_stocktool_d9696083.NewModule(),
 		client_resty_6382930f.WarehouseClientModule(),
 	)
 }

@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/types"
+	"strings"
 
 	"github.com/xgodev/boost/annotation"
 )
@@ -12,6 +13,7 @@ const (
 	echoPath        = "github.com/labstack/echo/v4"
 	cloudeventsPath = "github.com/cloudevents/sdk-go/v2"
 	eventPath       = "github.com/cloudevents/sdk-go/v2/event"
+	mcpPath         = "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
 // typeRef is a named type or function: its package import path and name.
@@ -46,6 +48,12 @@ func resolve(entry annotation.Entry, expr string) (ref typeRef, ok bool) {
 		return typeRef{Path: importPath, Name: e.Sel.Name}, true
 	}
 	return typeRef{}, false
+}
+
+// isPointer reports whether expr, written in the file of entry, is *ref.
+func isPointer(entry annotation.Entry, expr string, ref typeRef) bool {
+	elem, ok := strings.CutPrefix(strings.TrimSpace(expr), "*")
+	return ok && isType(entry, elem, ref)
 }
 
 // isType reports whether expr, written in the file of entry, is one of refs.
