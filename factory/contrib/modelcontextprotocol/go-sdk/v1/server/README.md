@@ -27,7 +27,7 @@ srv.Serve(ctx) // HTTP: blocks until Shutdown
 - `Handler()` is the streamable HTTP handler, to mount on your own mux (echo, net/http).
 - Plugins run once, inside the constructor; a plugin error fails the constructor.
 - `NewServerWithConfigPath(ctx, path)` reads a second server from another root
-  (e.g. `boost.factory.mcp.admin`), falling back to the defaults below.
+  (e.g. `boost.factory.mcp.server.admin`), falling back to the defaults below.
 
 Full example: [`examples/greet`](examples/greet/main.go).
 
