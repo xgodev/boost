@@ -962,57 +962,127 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
   <div class="wrap">
     <div class="sec-head">
       <div class="eyebrow">factory/contrib</div>
-      <h2>39 libraries. Same shape every time.</h2>
-      <p class="sec-lede">Each one is a factory with its own config keys and plugins. The version in the path is the upstream major it wraps.</p>
+      <h2>There's a factory for that.</h2>
+      <p class="sec-lede">48 factories over the 39 libraries your services already run on. Each one arrives configured, with plugins for traces, metrics and health checks, so your team writes the business logic, not the plumbing.</p>
     </div>
-    <div class="lib-grid">
-      <div class="lib-group"><h3>Web, RPC &amp; MCP</h3><ul>
-        <li><span><a class="ref" href="https://echo.labstack.com/">Echo</a></span><span class="v">echo/v4</span></li>
-        <li><span><a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a> server · client</span><span class="v">grpc/v1</span></li>
-        <li><span><a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a> server · client</span><span class="v">go-sdk/v1</span></li>
-        <li><span><a class="ref" href="https://pkg.go.dev/golang.org/x/net/http2">HTTP/2</a> server</span><span class="v">x/net/v0</span></li>
-        <li><span><a class="ref" href="https://github.com/graphql-go/graphql">GraphQL</a></span><span class="v">graphql-go/v0</span></li>
-        <li><span><a class="ref" href="https://github.com/go-resty/resty">Resty</a></span><span class="v">resty/v2</span></li>
-      </ul></div>
-      <div class="lib-group"><h3>Messaging</h3><ul>
-        <li><span><a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">Kafka (Confluent)</a></span><span class="v">confluent-kafka-go/v2</span></li>
-        <li><span><a class="ref" href="https://github.com/nats-io/nats.go">NATS</a></span><span class="v">nats.go/v1</span></li>
-        <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">Google Pub/Sub</a></span><span class="v">pubsub/v1 · v2</span></li>
-        <li><span><a class="ref" href="https://gocloud.dev/howto/pubsub/">Go CDK Pub/Sub</a></span><span class="v">gocloud.dev/v0</span></li>
-        <li><span><a class="ref" href="https://github.com/cloudevents/sdk-go">CloudEvents</a></span><span class="v">sdk-go/v2</span></li>
-        <li><span><a class="ref" href="https://github.com/lovoo/goka">Goka</a></span><span class="v">goka/v1</span></li>
-        <li><span><a class="ref" href="https://github.com/aws/aws-sdk-go-v2">SQS · SNS · Kinesis</a></span><span class="v">aws-sdk-go-v2</span></li>
-      </ul></div>
-      <div class="lib-group"><h3>Data</h3><ul>
-        <li><span><a class="ref" href="https://www.mongodb.com/docs/drivers/go/current/">MongoDB</a></span><span class="v">mongo-driver/v1 · v2</span></li>
-        <li><span><a class="ref" href="https://github.com/jackc/pgx">PostgreSQL</a></span><span class="v">pgx/v5</span></li>
-        <li><span><a class="ref" href="https://github.com/godror/godror">Oracle</a></span><span class="v">godror/v0</span></li>
-        <li><span><a class="ref" href="https://github.com/gocql/gocql">Cassandra</a></span><span class="v">gocql/v1</span></li>
-        <li><span><a class="ref" href="https://github.com/elastic/go-elasticsearch">Elasticsearch</a></span><span class="v">go-elasticsearch/v8</span></li>
-        <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/bigquery">BigQuery</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/firestore">Firestore</a> · <a class="ref" href="https://pkg.go.dev/google.golang.org/api/option">API client</a></span><span class="v">cloud.google.com</span></li>
-        <li><span><a class="ref" href="https://github.com/jlaffaye/ftp">FTP</a></span><span class="v">ftp/v0</span></li>
-      </ul></div>
-      <div class="lib-group"><h3>Cache</h3><ul>
-        <li><span><a class="ref" href="https://redis.uptrace.dev/">Redis</a></span><span class="v">go-redis/v9</span></li>
-        <li><span><a class="ref" href="https://github.com/allegro/bigcache">BigCache</a></span><span class="v">bigcache/v3</span></li>
-        <li><span><a class="ref" href="https://github.com/coocood/freecache">FreeCache</a></span><span class="v">freecache/v1</span></li>
-        <li><span><a class="ref" href="https://github.com/tidwall/buntdb">BuntDB</a></span><span class="v">buntdb/v1</span></li>
-        <li><span><a class="ref" href="https://github.com/hashicorp/go-memdb">memdb</a></span><span class="v">memdb/v1</span></li>
-      </ul></div>
-      <div class="lib-group"><h3>Observability</h3><ul>
-        <li><span><a class="ref" href="https://opentelemetry.io/docs/languages/go/">OpenTelemetry</a></span><span class="v">otel/v1</span></li>
-        <li><span><a class="ref" href="https://github.com/DataDog/dd-trace-go">Datadog</a></span><span class="v">dd-trace-go/v1</span></li>
-        <li><span><a class="ref" href="https://github.com/prometheus/client_golang">Prometheus</a></span><span class="v">client_golang/v1</span></li>
-        <li><span><a class="ref" href="https://github.com/afex/hystrix-go">Hystrix</a></span><span class="v">hystrix-go/v0</span></li>
-      </ul></div>
-      <div class="lib-group"><h3>Logging &amp; platform</h3><ul>
-        <li><span><a class="ref" href="https://github.com/uber-go/zap">zap</a> · <a class="ref" href="https://github.com/rs/zerolog">zerolog</a> · <a class="ref" href="https://github.com/sirupsen/logrus">logrus</a></span><span class="v">wrapper/log</span></li>
-        <li><span><a class="ref" href="https://uber-go.github.io/fx/">fx</a></span><span class="v">fx/v1</span></li>
-        <li><span><a class="ref" href="https://cobra.dev/">Cobra</a></span><span class="v">cobra/v1</span></li>
-        <li><span><a class="ref" href="https://github.com/kubernetes/client-go">Kubernetes</a></span><span class="v">client-go/v0</span></li>
-        <li><span><a class="ref" href="https://github.com/mittwald/vaultgo">Vault</a></span><span class="v">vaultgo/v0</span></li>
-        <li><span><a class="ref" href="https://github.com/panjf2000/ants">ants</a> worker pool</span><span class="v">ants/v2</span></li>
-      </ul></div>
+    <ul class="fx-wall" aria-label="Libraries boost has factories for">
+      <li><a class="fx-logo" href="https://echo.labstack.com/"><i style="--m:url(logos/echo.svg)" aria-hidden="true"></i><span class="nm">Echo</span><span class="v">echo/v4</span></a></li>
+      <li><a class="fx-logo" href="https://grpc.io/docs/languages/go/"><i style="--m:url(logos/grpc.svg);--w:84px" aria-hidden="true"></i><span class="nm">gRPC</span><span class="v">server · client</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/graphql-go/graphql"><i style="--m:url(logos/graphql.svg)" aria-hidden="true"></i><span class="nm">GraphQL</span><span class="v">graphql-go/v0</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/modelcontextprotocol/go-sdk"><i style="--m:url(logos/mcp.svg)" aria-hidden="true"></i><span class="nm">MCP</span><span class="v">server · client</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/confluentinc/confluent-kafka-go"><i style="--m:url(logos/kafka.svg)" aria-hidden="true"></i><span class="nm">Kafka</span><span class="v">confluent-kafka-go/v2</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/nats-io/nats.go"><i style="--m:url(logos/nats.svg)" aria-hidden="true"></i><span class="nm">NATS</span><span class="v">nats.go/v1</span></a></li>
+      <li><a class="fx-logo" href="https://pkg.go.dev/cloud.google.com/go/pubsub"><i style="--m:url(logos/pubsub.svg)" aria-hidden="true"></i><span class="nm">Pub/Sub</span><span class="v">pubsub/v1 · v2</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/aws/aws-sdk-go-v2"><i style="--m:url(logos/aws.svg)" aria-hidden="true"></i><span class="nm">AWS</span><span class="v">SQS · SNS · Kinesis</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/cloudevents/sdk-go"><i style="--m:url(logos/cloudevents.svg)" aria-hidden="true"></i><span class="nm">CloudEvents</span><span class="v">sdk-go/v2</span></a></li>
+      <li><a class="fx-logo" href="https://www.mongodb.com/docs/drivers/go/current/"><i style="--m:url(logos/mongodb.svg)" aria-hidden="true"></i><span class="nm">MongoDB</span><span class="v">mongo-driver/v1 · v2</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/jackc/pgx"><i style="--m:url(logos/postgresql.svg)" aria-hidden="true"></i><span class="nm">PostgreSQL</span><span class="v">pgx/v5</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/godror/godror"><i style="--m:url(logos/oracle.svg)" aria-hidden="true"></i><span class="nm">Oracle</span><span class="v">godror/v0</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/gocql/gocql"><i style="--m:url(logos/cassandra.svg);--w:64px" aria-hidden="true"></i><span class="nm">Cassandra</span><span class="v">gocql/v1</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/elastic/go-elasticsearch"><i style="--m:url(logos/elasticsearch.svg)" aria-hidden="true"></i><span class="nm">Elasticsearch</span><span class="v">go-elasticsearch/v8</span></a></li>
+      <li><a class="fx-logo" href="https://pkg.go.dev/cloud.google.com/go/bigquery"><i style="--m:url(logos/bigquery.svg)" aria-hidden="true"></i><span class="nm">BigQuery</span><span class="v">bigquery/v1</span></a></li>
+      <li><a class="fx-logo" href="https://pkg.go.dev/cloud.google.com/go/firestore"><i style="--m:url(logos/firestore.svg)" aria-hidden="true"></i><span class="nm">Firestore</span><span class="v">firestore/v1</span></a></li>
+      <li><a class="fx-logo" href="https://redis.uptrace.dev/"><i style="--m:url(logos/redis.svg)" aria-hidden="true"></i><span class="nm">Redis</span><span class="v">go-redis/v9</span></a></li>
+      <li><a class="fx-logo" href="https://opentelemetry.io/docs/languages/go/"><i style="--m:url(logos/opentelemetry.svg)" aria-hidden="true"></i><span class="nm">OpenTelemetry</span><span class="v">otel/v1</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/prometheus/client_golang"><i style="--m:url(logos/prometheus.svg)" aria-hidden="true"></i><span class="nm">Prometheus</span><span class="v">client_golang/v1</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/DataDog/dd-trace-go"><i style="--m:url(logos/datadog.svg)" aria-hidden="true"></i><span class="nm">Datadog</span><span class="v">dd-trace-go/v1</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/kubernetes/client-go"><i style="--m:url(logos/kubernetes.svg)" aria-hidden="true"></i><span class="nm">Kubernetes</span><span class="v">client-go/v0</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/mittwald/vaultgo"><i style="--m:url(logos/vault.svg)" aria-hidden="true"></i><span class="nm">Vault</span><span class="v">vaultgo/v0</span></a></li>
+      <li><a class="fx-logo" href="https://pkg.go.dev/google.golang.org/api/option"><i style="--m:url(logos/googlecloud.svg)" aria-hidden="true"></i><span class="nm">Google Cloud</span><span class="v">API client</span></a></li>
+      <li><a class="fx-logo fx-more" href="#all-libs"><b>+16</b><span class="nm">more</span><span class="v">see all 39</span></a></li>
+    </ul>
+    <p class="fx-more-list">Also: <span>Resty · HTTP/2 · Goka · Go CDK Pub/Sub · BigCache · FreeCache · BuntDB · memdb · FTP · Hystrix · zap · zerolog · logrus · fx · Cobra · ants</span>.</p>
+    <details class="fx-all" id="all-libs">
+      <summary>All 39 libraries, with the upstream major each factory wraps</summary>
+        <div class="lib-grid">
+          <div class="lib-group"><h3>Web, RPC &amp; MCP</h3><ul>
+            <li><span><a class="ref" href="https://echo.labstack.com/">Echo</a></span><span class="v">echo/v4</span></li>
+            <li><span><a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a> server · client</span><span class="v">grpc/v1</span></li>
+            <li><span><a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a> server · client</span><span class="v">go-sdk/v1</span></li>
+            <li><span><a class="ref" href="https://pkg.go.dev/golang.org/x/net/http2">HTTP/2</a> server</span><span class="v">x/net/v0</span></li>
+            <li><span><a class="ref" href="https://github.com/graphql-go/graphql">GraphQL</a></span><span class="v">graphql-go/v0</span></li>
+            <li><span><a class="ref" href="https://github.com/go-resty/resty">Resty</a></span><span class="v">resty/v2</span></li>
+          </ul></div>
+          <div class="lib-group"><h3>Messaging</h3><ul>
+            <li><span><a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">Kafka (Confluent)</a></span><span class="v">confluent-kafka-go/v2</span></li>
+            <li><span><a class="ref" href="https://github.com/nats-io/nats.go">NATS</a></span><span class="v">nats.go/v1</span></li>
+            <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">Google Pub/Sub</a></span><span class="v">pubsub/v1 · v2</span></li>
+            <li><span><a class="ref" href="https://gocloud.dev/howto/pubsub/">Go CDK Pub/Sub</a></span><span class="v">gocloud.dev/v0</span></li>
+            <li><span><a class="ref" href="https://github.com/cloudevents/sdk-go">CloudEvents</a></span><span class="v">sdk-go/v2</span></li>
+            <li><span><a class="ref" href="https://github.com/lovoo/goka">Goka</a></span><span class="v">goka/v1</span></li>
+            <li><span><a class="ref" href="https://github.com/aws/aws-sdk-go-v2">SQS · SNS · Kinesis</a></span><span class="v">aws-sdk-go-v2</span></li>
+          </ul></div>
+          <div class="lib-group"><h3>Data</h3><ul>
+            <li><span><a class="ref" href="https://www.mongodb.com/docs/drivers/go/current/">MongoDB</a></span><span class="v">mongo-driver/v1 · v2</span></li>
+            <li><span><a class="ref" href="https://github.com/jackc/pgx">PostgreSQL</a></span><span class="v">pgx/v5</span></li>
+            <li><span><a class="ref" href="https://github.com/godror/godror">Oracle</a></span><span class="v">godror/v0</span></li>
+            <li><span><a class="ref" href="https://github.com/gocql/gocql">Cassandra</a></span><span class="v">gocql/v1</span></li>
+            <li><span><a class="ref" href="https://github.com/elastic/go-elasticsearch">Elasticsearch</a></span><span class="v">go-elasticsearch/v8</span></li>
+            <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/bigquery">BigQuery</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/firestore">Firestore</a> · <a class="ref" href="https://pkg.go.dev/google.golang.org/api/option">API client</a></span><span class="v">cloud.google.com</span></li>
+            <li><span><a class="ref" href="https://github.com/jlaffaye/ftp">FTP</a></span><span class="v">ftp/v0</span></li>
+          </ul></div>
+          <div class="lib-group"><h3>Cache</h3><ul>
+            <li><span><a class="ref" href="https://redis.uptrace.dev/">Redis</a></span><span class="v">go-redis/v9</span></li>
+            <li><span><a class="ref" href="https://github.com/allegro/bigcache">BigCache</a></span><span class="v">bigcache/v3</span></li>
+            <li><span><a class="ref" href="https://github.com/coocood/freecache">FreeCache</a></span><span class="v">freecache/v1</span></li>
+            <li><span><a class="ref" href="https://github.com/tidwall/buntdb">BuntDB</a></span><span class="v">buntdb/v1</span></li>
+            <li><span><a class="ref" href="https://github.com/hashicorp/go-memdb">memdb</a></span><span class="v">memdb/v1</span></li>
+          </ul></div>
+          <div class="lib-group"><h3>Observability</h3><ul>
+            <li><span><a class="ref" href="https://opentelemetry.io/docs/languages/go/">OpenTelemetry</a></span><span class="v">otel/v1</span></li>
+            <li><span><a class="ref" href="https://github.com/DataDog/dd-trace-go">Datadog</a></span><span class="v">dd-trace-go/v1</span></li>
+            <li><span><a class="ref" href="https://github.com/prometheus/client_golang">Prometheus</a></span><span class="v">client_golang/v1</span></li>
+            <li><span><a class="ref" href="https://github.com/afex/hystrix-go">Hystrix</a></span><span class="v">hystrix-go/v0</span></li>
+          </ul></div>
+          <div class="lib-group"><h3>Logging &amp; platform</h3><ul>
+            <li><span><a class="ref" href="https://github.com/uber-go/zap">zap</a> · <a class="ref" href="https://github.com/rs/zerolog">zerolog</a> · <a class="ref" href="https://github.com/sirupsen/logrus">logrus</a></span><span class="v">wrapper/log</span></li>
+            <li><span><a class="ref" href="https://uber-go.github.io/fx/">fx</a></span><span class="v">fx/v1</span></li>
+            <li><span><a class="ref" href="https://cobra.dev/">Cobra</a></span><span class="v">cobra/v1</span></li>
+            <li><span><a class="ref" href="https://github.com/kubernetes/client-go">Kubernetes</a></span><span class="v">client-go/v0</span></li>
+            <li><span><a class="ref" href="https://github.com/mittwald/vaultgo">Vault</a></span><span class="v">vaultgo/v0</span></li>
+            <li><span><a class="ref" href="https://github.com/panjf2000/ants">ants</a> worker pool</span><span class="v">ants/v2</span></li>
+          </ul></div>
+        </div>
+    </details>
+
+    <div class="fx-why">
+      <h3>Why a factory, not just the SDK</h3>
+      <p>Any SDK connects in five lines. Running it in a company takes the rest: config per environment, auth, checks, logs, metrics, traces. That part is the same in every service, so boost writes it once.</p>
+      <div class="fx-pillars">
+        <div class="cell"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span class="path">boost.factory.&lt;name&gt;.*</span><h3>Configured, not coded</h3>
+          <p>Every option is a config key with a default, read from file or environment: <code>boost.factory.mongo.uri</code> is <code>BOOST_FACTORY_MONGO_URI</code>. One binary for every environment.</p></div>
+        <div class="cell"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span><span class="path">what you skip</span><h3>The plumbing comes built</h3>
+          <p>Defaults, auth, connect and ping, structured logs through <code>wrapper/log</code>. What a platform team rewrites for every SDK in every service is already there.</p></div>
+        <div class="cell"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg></span><span class="path">plugins/</span><h3>58 plugins to plug in</h3>
+          <p>OpenTelemetry, Prometheus, Datadog, health checks, retry, request id, CORS, gzip. Pass the plugin to the factory; switch it off with a key.</p></div>
+      </div>
+      <div class="fx-vs">
+        <div class="fx-card">
+          <header><span class="k k-hand">by hand</span>MongoDB, in every service</header>
+          <ul class="fx-hand">
+            <li>Read URI, user and password from the environment, with defaults</li>
+            <li>Build the client options and the authentication</li>
+            <li>Connect and ping before taking traffic</li>
+            <li>Trace every command with OpenTelemetry</li>
+            <li>Count commands and errors in Prometheus</li>
+            <li>Register a health check</li>
+            <li>Log commands when you need to debug</li>
+            <li>Then again for Kafka, Redis, gRPC, the HTTP client…</li>
+          </ul>
+        </div>
+        <div class="fx-card">
+          <header><span class="k k-run">with boost</span>factory/contrib/go.mongodb.org/mongo-driver/v2</header>
+<pre class="code">conn, err := mongo.<span class="fn">NewConn</span>(ctx,
+	mongootel.Register,   <span class="c">// traces</span>
+	mongoprom.Register,   <span class="c">// metrics</span>
+	mongohealth.Register, <span class="c">// health check</span>
+)</pre>
+<pre class="code env"><span class="pr">$</span> export BOOST_FACTORY_MONGO_URI=<span class="st">mongodb://db:27017/shop</span>
+<span class="pr">$</span> export BOOST_FACTORY_MONGO_AUTH_USERNAME=<span class="st">shop</span>
+<span class="pr">$</span> export BOOST_FACTORY_MONGO_PLUGINS_PROMETHEUS_ENABLED=<span class="nu">false</span></pre>
+          <div class="fx-foot">Same shape for every factory: <code>New…(ctx, plugins...)</code> and keys under <code>boost.factory.&lt;name&gt;</code>.</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

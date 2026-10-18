@@ -26,6 +26,11 @@
   }
   document.querySelectorAll('#hero-win [role="tablist"]').forEach(tablist);
 
+  // factories: the +N tile and #all-libs links open the full list
+  var all = document.getElementById('all-libs');
+  function openAll() { if (location.hash === '#all-libs') all.open = true; }
+  if (all) { window.addEventListener('hashchange', openAll); openAll(); document.querySelectorAll('a[href="#all-libs"]').forEach(function (a) { a.addEventListener('click', function () { all.open = true; }); }); }
+
   // copy buttons
   document.querySelectorAll('.copy').forEach(function (b) {
     b.addEventListener('click', function () {
