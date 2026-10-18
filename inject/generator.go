@@ -157,7 +157,7 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 // fx module of a function otherwise.
 func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation) (string, []byte, error) {
 	comp := vertex.Value
-	name := path.Join(comp.Entry.Path, strings.ToLower(declName(comp.Entry))+"_module.go")
+	name := path.Join(GenPath(comp.Entry.Path), strings.ToLower(declName(comp.Entry))+"_module.go")
 
 	tmplName, data := "config", any(nil)
 	if comp.IsConfig() {
@@ -448,12 +448,27 @@ func Alias(prefix, name, importPath string) string {
 	return prefix + "_" + packageIdent(name) + "_" + shortHash(importPath)
 }
 
+// GenPath returns the directory, relative to the output dir, that mirrors
+// the package at importPath, with every "internal" element written
+// "internal_". Generated packages import each other across the output dir,
+// and Go lets only the tree above an internal/ directory import what is in
+// it, so a mirrored internal/ would hide them from each other.
+func GenPath(importPath string) string {
+	elems := strings.Split(importPath, "/")
+	for i, elem := range elems {
+		if elem == "internal" {
+			elems[i] = "internal_"
+		}
+	}
+	return strings.Join(elems, "/")
+}
+
 // ModuleOf returns the import of the package generated for the component
 // declared by entry, given the import path of the output dir (BaseImport),
 // and the call of its module function, such as gen_greet_1a2b3c4d.NewGreeterModule()
 // (or OptionsModule() for a @Config struct Options).
 func ModuleOf(base string, entry annotation.Entry) (ImportData, string) {
-	imp := ImportData{Alias: genAlias(entry), Path: base + "/" + entry.Path}
+	imp := ImportData{Alias: genAlias(entry), Path: base + "/" + GenPath(entry.Path)}
 	return imp, imp.Alias + "." + declName(entry) + "Module()"
 }
 

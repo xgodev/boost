@@ -165,6 +165,11 @@ gen/
   builder/middleware/<import path>/<func>_middleware.go # Decorate<Func>(): the @Middleware decorator
 ```
 
+An `internal` element of an import path is written `internal_` under `gen/`
+(see [inject](../inject#generating)), so apps whose packages live under
+`internal/` ([project layout](https://github.com/golang-standards/project-layout))
+compile.
+
 `Modules()` returns the doors sorted by name, then the `@Middleware`
 decorators the doors reach and, when the app has servers,
 `multiserverfx.Module()`, which starts all of them. Each door includes the

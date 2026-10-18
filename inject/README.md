@@ -76,7 +76,12 @@ gen/
   github.com/acme/app/greeting/newgreeter_module.go
   github.com/acme/app/greeting/options_module.go   # @Config struct Options
   github.com/acme/app/app/announce_module.go
+  github.com/acme/app/internal_/stock/new_module.go  # source in github.com/acme/app/internal/stock
 ```
+
+An `internal` element of the import path is written `internal_` (`GenPath`):
+the generated packages import each other across `gen/`, and Go lets only the
+tree above an `internal/` directory import what is in it.
 
 Each `<func>_module.go` declares `<Func>Module()`, an `fx.Module` with the
 modules it depends on and `fx.Provide`/`fx.Invoke` of the function, wrapped in
@@ -260,6 +265,7 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | Function | Purpose |
 |---|---|
 | `GeneratorOptions.BaseImport()` | import path of the output dir |
+| `GenPath(importPath)` | directory under the output dir that mirrors a package (`internal` written `internal_`) |
 | `ModuleOf(base, entry)` | import and module call (`gen_x_hash.NewXModule()`, `gen_x_hash.OptionsModule()` for a `@Config`) of a component |
 | `ConfigKey(modulePath, importPath)` / `ConfigEnv(root, segment)` | root config key of a package's `@Config` and the env var of one of its keys |
 | `Provider(g, pkg, tp)` | component and result index providing the default value of a type |
