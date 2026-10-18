@@ -173,27 +173,35 @@ func decoratedInterface(where string, t types.Type) (*types.Named, error) {
 	}
 
 	for i := range iface.NumMethods() {
-		method := iface.Method(i)
-		what := types.TypeString(named, nil) + "." + method.Name()
-		if !method.Exported() {
-			return nil, errors.NotValidf("@Middleware on %s: method %s is unexported, so a decorator in another package cannot implement it", where, what)
-		}
-		sig := method.Signature()
-		if sig.Params().Len() == 0 || !isContext(sig.Params().At(0).Type()) {
-			return nil, errors.NotValidf("@Middleware on %s: method %s must take context.Context first", where, what)
-		}
-		if _, ok := wrapperOf(sig); !ok {
-			return nil, errors.NotValidf("@Middleware on %s: method %s must return error, (R, error) or R", where, what)
-		}
-		for _, tuple := range []*types.Tuple{sig.Params(), sig.Results()} {
-			for v := range tuple.Variables() {
-				if !exportedType(v.Type()) {
-					return nil, errors.NotValidf("@Middleware on %s: method %s uses unexported type %s", where, what, types.TypeString(v.Type(), nil))
-				}
-			}
+		if err := decoratedMethod(where, named, iface.Method(i)); err != nil {
+			return nil, err
 		}
 	}
 	return named, nil
+}
+
+// decoratedMethod checks that a decorator in another package can implement
+// method of iface and run it in a wrapper.
+func decoratedMethod(where string, iface *types.Named, method *types.Func) error {
+	what := types.TypeString(iface, nil) + "." + method.Name()
+	if !method.Exported() {
+		return errors.NotValidf("@Middleware on %s: method %s is unexported, so a decorator in another package cannot implement it", where, what)
+	}
+	sig := method.Signature()
+	if sig.Params().Len() == 0 || !isContext(sig.Params().At(0).Type()) {
+		return errors.NotValidf("@Middleware on %s: method %s must take context.Context first", where, what)
+	}
+	if _, ok := wrapperOf(sig); !ok {
+		return errors.NotValidf("@Middleware on %s: method %s must return error, (R, error) or R", where, what)
+	}
+	for _, tuple := range []*types.Tuple{sig.Params(), sig.Results()} {
+		for v := range tuple.Variables() {
+			if !exportedType(v.Type()) {
+				return errors.NotValidf("@Middleware on %s: method %s uses unexported type %s", where, what, types.TypeString(v.Type(), nil))
+			}
+		}
+	}
+	return nil
 }
 
 // wrapperKind is the extra/middleware wrapper that runs a method.
@@ -241,35 +249,39 @@ func exportedType(t types.Type) bool {
 		return exportedObj(t.Obj()) && exportedTypes(t.TypeArgs())
 	case *types.Named:
 		return exportedObj(t.Obj()) && exportedTypes(t.TypeArgs())
-	case *types.Pointer:
-		return exportedType(t.Elem())
-	case *types.Slice:
-		return exportedType(t.Elem())
-	case *types.Array:
-		return exportedType(t.Elem())
-	case *types.Chan:
-		return exportedType(t.Elem())
 	case *types.Map:
 		return exportedType(t.Key()) && exportedType(t.Elem())
+	case interface{ Elem() types.Type }: // pointer, slice, array, chan
+		return exportedType(t.Elem())
 	case *types.Signature:
 		return exportedTuple(t.Params()) && exportedTuple(t.Results())
 	case *types.Struct:
-		for field := range t.Fields() {
-			if !field.Exported() || !exportedType(field.Type()) {
-				return false
-			}
-		}
+		return exportedStruct(t)
 	case *types.Interface:
-		for i := range t.NumEmbeddeds() {
-			if !exportedType(t.EmbeddedType(i)) {
-				return false
-			}
+		return exportedInterface(t)
+	}
+	return true
+}
+
+func exportedStruct(t *types.Struct) bool {
+	for field := range t.Fields() {
+		if !field.Exported() || !exportedType(field.Type()) {
+			return false
 		}
-		for i := range t.NumExplicitMethods() {
-			method := t.ExplicitMethod(i)
-			if !method.Exported() || !exportedType(method.Type()) {
-				return false
-			}
+	}
+	return true
+}
+
+func exportedInterface(t *types.Interface) bool {
+	for i := range t.NumEmbeddeds() {
+		if !exportedType(t.EmbeddedType(i)) {
+			return false
+		}
+	}
+	for i := range t.NumExplicitMethods() {
+		method := t.ExplicitMethod(i)
+		if !method.Exported() || !exportedType(method.Type()) {
+			return false
 		}
 	}
 	return true

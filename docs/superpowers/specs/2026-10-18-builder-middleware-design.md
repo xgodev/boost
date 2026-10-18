@@ -33,8 +33,11 @@ func New(c *resty.Client) quote.Service { ... }
 - Positional plugin names, at least one, no duplicates. The first is the
   outermost (runs first, returns last).
 - Goes on a function with exactly one `@Provide`; the provided result
-  (`index`) is a named, non-generic interface type. `name`/`group` on that
-  `@Provide` are allowed: the decorated value keeps them.
+  (`index`) is a named, non-generic interface type. `name` on that `@Provide`
+  is allowed: the decorated value keeps it. `group` is rejected: a decorator
+  of a group receives the whole group.
+- The annotation parser accepted only `key=value` values; it now also accepts
+  bare names (`annotation`), kept in `Value` and left out of `Map`.
 
 ## Behaviour
 
@@ -60,7 +63,7 @@ func New(c *resty.Client) quote.Service { ... }
 
 | Annotation name | Package |
 |---|---|
-| `log` | `factory/local/extra/middleware/plugins/local/wrapper/log` (**new**: same shape as hystrix, `enabled` default `true`) |
+| `log` | `factory/local/extra/middleware/plugins/local/wrapper/log` (exists, `enabled` default `true`) |
 | `hystrix` | `factory/local/extra/middleware/plugins/contrib/afex/hystrix-go/v0` |
 | `datadog` | `factory/local/extra/middleware/plugins/contrib/datadog/dd-trace-go/v1` |
 | `prometheus` | `factory/local/extra/middleware/plugins/contrib/prometheus/client_golang/v1` |
@@ -72,7 +75,8 @@ func New(c *resty.Client) quote.Service { ... }
   named non-generic interface;
 - a method without `context.Context` as first parameter, with no result, or
   with results other than `error`, `(R, error)` or `R`;
-- two decorated methods with the same `name`.
+- two decorated methods with the same `name`;
+- an app named `middleware` (`gen/builder/middleware` holds the decorators).
 
 ## Non-goals
 
@@ -92,9 +96,11 @@ func New(c *resty.Client) quote.Service { ... }
 
 - My call: plugins are built once, when the decorator is built, with the
   `context.Context` of `fx/modules/core/context`; the `name` scheme above.
-- How the decorator reaches every consumer (`fx.Decorate` at the app root or
-  wrapping the constructor) and where its file lives under `gen/builder/`,
-  provided the behaviour above holds and is tested.
+- How the decorator reaches every consumer: a root `fx.Decorate` in
+  `gen/builder/middleware/<import path>/<func>_middleware.go`, exposed as
+  `Decorate<Func>()` and listed in `Modules()` of each app that reaches the
+  constructor. The interface comes from go/types through a `PackageLoader`
+  passed to `NewSpec`.
 - Test shape: goldens for the decorator, table tests for each validation
   error, and the example (`builder/examples/simple`) gets an interface whose
   constructor carries `@Middleware`, with an e2e test proving the consumer

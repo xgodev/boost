@@ -9,6 +9,7 @@ import (
 
 	src_createorder_c746c07a "github.com/xgodev/boost/builder/examples/simple/createorder"
 	gen_order_f1172a0b "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/order"
+	gen_stock_c652811e "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/stock"
 )
 
 var NewOnce sync.Once
@@ -22,6 +23,7 @@ func NewModule() fx.Option {
 	NewOnce.Do(func() {
 		options = fx.Module("github.com/xgodev/boost/builder/examples/simple/createorder.New",
 			gen_order_f1172a0b.NewServiceModule(),
+			gen_stock_c652811e.NewModule(),
 			fx.Provide(src_createorder_c746c07a.New),
 		)
 	})
