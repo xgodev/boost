@@ -13,6 +13,9 @@ type Component struct {
 	// Injects maps a parameter index to its @Inject annotation. Parameters
 	// without @Inject are resolved by type.
 	Injects map[int]Annotation
+	// Default marks the default implementation (@Default) of the value it
+	// provides, among two or more providers of that value.
+	Default bool
 }
 
 // Key uniquely identifies the component in the graph.

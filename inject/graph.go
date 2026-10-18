@@ -20,9 +20,13 @@ import (
 // linked when a default provider of the same type exists and are otherwise
 // left for the application to provide.
 //
-// It returns a NotValid error for malformed annotations or a dependency
-// cycle, AlreadyExists when two functions provide the same non-group value
-// and NotFound when an @Inject has no provider.
+// Two or more providers of the same non-group value form an implementation
+// set when one of them is marked @Default (see Implementations).
+//
+// It returns a NotValid error for malformed annotations, a dependency cycle
+// or an invalid implementation set, AlreadyExists when two functions provide
+// the same non-group value and none is @Default, and NotFound when an
+// @Inject has no provider.
 func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*graph.Graph[Component], error) {
 	g := graph.NewGraph[Component]()
 
@@ -37,6 +41,10 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 
 	if _, remaining, err := g.TopologicalSort(); err != nil {
 		return nil, errors.NotValidf("dependency cycle among %s", strings.Join(remaining, ", "))
+	}
+
+	if _, err := Implementations(g); err != nil {
+		return nil, err
 	}
 
 	log.FromContext(ctx).Debugf("inject graph built with %d components", len(g.Vertices))
@@ -72,12 +80,23 @@ func addComponents(g *graph.Graph[Component], entries []annotation.Entry) (map[s
 	}
 
 	for _, id := range sortedKeys(providers) {
-		if keys := providers[id]; len(keys) > 1 && !groups[id] {
-			return nil, errors.AlreadyExistsf("%s is provided by more than one function: %s", id, strings.Join(keys, ", "))
+		if keys := providers[id]; len(keys) > 1 && !groups[id] && !hasDefault(g, keys) {
+			return nil, errors.AlreadyExistsf("%s is provided by more than one function: %s; mark one @Default to choose the implementation by config",
+				id, strings.Join(keys, ", "))
 		}
 	}
 
 	return providers, nil
+}
+
+// hasDefault reports whether one of the components is marked @Default.
+func hasDefault(g *graph.Graph[Component], keys []string) bool {
+	for _, key := range keys {
+		if g.Vertices[key].Value.Default {
+			return true
+		}
+	}
+	return false
 }
 
 // linkComponents adds an edge from each provider to the components consuming
@@ -158,6 +177,8 @@ func newComponent(entry annotation.Entry) (Component, bool, error) {
 
 	for _, p := range parsed {
 		switch p.kind {
+		case AnnotationTypeDEFAULT:
+			comp.Default = true
 		case AnnotationTypePROVIDE:
 			err = addIndexed(comp.Provides, p.ann, len(entry.Func.Results), "@Provide", "result", entry)
 		case AnnotationTypeINJECT:
@@ -171,6 +192,9 @@ func newComponent(entry annotation.Entry) (Component, bool, error) {
 	if err := validateProvides(entry, comp.Provides); err != nil {
 		return Component{}, false, err
 	}
+	if err := validateDefault(comp); err != nil {
+		return Component{}, false, err
+	}
 	if err := validateInjects(entry, comp.Injects); err != nil {
 		return Component{}, false, err
 	}
@@ -178,8 +202,8 @@ func newComponent(entry annotation.Entry) (Component, bool, error) {
 	return comp, true, nil
 }
 
-// parseAnnotations decodes the @Provide, @Inject and @Invoke annotations of
-// an entry, ignoring the others.
+// parseAnnotations decodes the @Provide, @Inject, @Invoke and @Default
+// annotations of an entry, ignoring the others.
 func parseAnnotations(entry annotation.Entry) ([]parsedAnnotation, error) {
 	var parsed []parsedAnnotation
 	for _, ann := range entry.Annotations {
@@ -189,6 +213,13 @@ func parseAnnotations(entry annotation.Entry) ([]parsedAnnotation, error) {
 		}
 
 		var a Annotation
+		if annType == AnnotationTypeDEFAULT {
+			if strings.TrimSpace(ann.Value) != "" {
+				return nil, errors.NotValidf("@Default on %s takes no arguments; the implementation is named after its package", gid(entry))
+			}
+			parsed = append(parsed, parsedAnnotation{kind: annType})
+			continue
+		}
 		if err := ann.Decode(&a); err != nil {
 			return nil, errors.NotValidf("decode error on @%s in %s: %v", ann.Name, gid(entry), err)
 		}
@@ -208,6 +239,8 @@ func componentType(entry annotation.Entry, parsed []parsedAnnotation) (Annotatio
 	switch {
 	case kinds[AnnotationTypePROVIDE] && kinds[AnnotationTypeINVOKE]:
 		return 0, errors.NotValidf("%s cannot have both @Provide and @Invoke", gid(entry))
+	case kinds[AnnotationTypeDEFAULT] && !kinds[AnnotationTypePROVIDE]:
+		return 0, errors.NotValidf("@Default on %s needs a @Provide: it marks the default implementation of the provided value", gid(entry))
 	case kinds[AnnotationTypePROVIDE]:
 		return AnnotationTypePROVIDE, nil
 	case kinds[AnnotationTypeINVOKE]:
@@ -224,6 +257,22 @@ func validateProvides(entry annotation.Entry, provides map[int]Annotation) error
 		}
 		if ann.Name != "" && ann.Group != "" {
 			return errors.NotValidf("@Provide on %s result %d cannot have both name and group", gid(entry), idx)
+		}
+	}
+	return nil
+}
+
+// validateDefault checks that a @Default function provides one non-group value.
+func validateDefault(comp Component) error {
+	if !comp.Default {
+		return nil
+	}
+	if len(comp.Provides) != 1 {
+		return errors.NotValidf("@Default on %s needs exactly one @Provide", gid(comp.Entry))
+	}
+	for idx, ann := range comp.Provides {
+		if ann.Group != "" {
+			return errors.NotValidf("@Default on %s result %d: a group has no default implementation, every provider joins it", gid(comp.Entry), idx)
 		}
 	}
 	return nil

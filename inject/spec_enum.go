@@ -84,17 +84,20 @@ const (
 	AnnotationTypeINJECT
 	// AnnotationTypeINVOKE is a AnnotationType of type INVOKE.
 	AnnotationTypeINVOKE
+	// AnnotationTypeDEFAULT is a AnnotationType of type DEFAULT.
+	AnnotationTypeDEFAULT
 )
 
 var ErrInvalidAnnotationType = errors.New("not a valid AnnotationType")
 
-const _AnnotationTypeName = "MODULEPROVIDEINJECTINVOKE"
+const _AnnotationTypeName = "MODULEPROVIDEINJECTINVOKEDEFAULT"
 
 var _AnnotationTypeMap = map[AnnotationType]string{
 	AnnotationTypeMODULE:  _AnnotationTypeName[0:6],
 	AnnotationTypePROVIDE: _AnnotationTypeName[6:13],
 	AnnotationTypeINJECT:  _AnnotationTypeName[13:19],
 	AnnotationTypeINVOKE:  _AnnotationTypeName[19:25],
+	AnnotationTypeDEFAULT: _AnnotationTypeName[25:32],
 }
 
 // String implements the Stringer interface.
@@ -117,6 +120,7 @@ var _AnnotationTypeValue = map[string]AnnotationType{
 	_AnnotationTypeName[6:13]:  AnnotationTypePROVIDE,
 	_AnnotationTypeName[13:19]: AnnotationTypeINJECT,
 	_AnnotationTypeName[19:25]: AnnotationTypeINVOKE,
+	_AnnotationTypeName[25:32]: AnnotationTypeDEFAULT,
 }
 
 // ParseAnnotationType attempts to convert a string to a AnnotationType.
