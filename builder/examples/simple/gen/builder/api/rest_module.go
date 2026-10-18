@@ -8,7 +8,7 @@ import (
 	"go.uber.org/fx"
 
 	src_createorder_c746c07a "github.com/xgodev/boost/builder/examples/simple/createorder"
-	gen_createorder_c746c07a "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/createorder"
+	gen_createorder_c746c07a "github.com/xgodev/boost/builder/examples/simple/gen/createorder"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	echofx "github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4"
 )

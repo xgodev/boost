@@ -85,7 +85,7 @@ func Get(c echo.Context) error { return nil }
 	require.NoError(t, generate(context.Background(), root, out, cmd))
 
 	assert.FileExists(t, filepath.Join(out, "module.go"))
-	assert.FileExists(t, filepath.Join(out, "example.com", "fixture", "app", "new_module.go"))
+	assert.FileExists(t, filepath.Join(out, "app", "new_module.go"))
 	assert.FileExists(t, filepath.Join(out, "builder", "api", "modules.go"))
 	main, err := os.ReadFile(filepath.Join(cmd, "api", "main.go"))
 	require.NoError(t, err, "every app gets its main")

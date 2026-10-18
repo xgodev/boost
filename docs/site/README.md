@@ -167,7 +167,7 @@ Counted from the repo on 2026-10-18 (#88). Recount when a factory or library is 
 The 48/58/39 include the MCP factory (server and client, #70).
 
 `annotation`, `inject`, the MCP factory, `builder` and its doors (`@MCP`
-since #79), `@Middleware`, `@Default`, `@Config` and the `internal_` fix are on
+since #79), `@Middleware`, `@Default`, `@Config` and the `gen/` layout that mirrors the project are on
 `develop`; none of them is in a tag yet (latest `v1.1.1`). The page shows all of
 them as released. `@MCP` puts a handler
 `func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, Out, error)`

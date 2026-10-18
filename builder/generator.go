@@ -192,7 +192,7 @@ func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 			mods.Imports = append(mods.Imports, imp)
 			mods.Modules = append(mods.Modules, call)
 
-			file := decoratorFile(m)
+			file := decoratorFile(base, m)
 			if _, done := files[file]; done {
 				continue
 			}

@@ -8,7 +8,7 @@ import (
 	"go.uber.org/fx"
 
 	context "context"
-	gen_probe_a7e6caf2 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/probe"
+	gen_probe_a7e6caf2 "github.com/xgodev/boost/builder/examples/simple/gen/probe"
 	src_probe_a7e6caf2 "github.com/xgodev/boost/builder/examples/simple/probe"
 	multiserver "github.com/xgodev/boost/extra/multiserver"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"

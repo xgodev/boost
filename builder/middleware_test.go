@@ -260,7 +260,7 @@ func renderMiddleware(t *testing.T, entries []annotation.Entry, sources map[stri
 func TestGenerator_RenderMiddleware(t *testing.T) {
 	files := renderMiddleware(t, middlewareEntries(), middlewareSources)
 
-	const decorator = "builder/middleware/example.com/app/resty/new_middleware.go"
+	const decorator = "builder/middleware/resty/new_middleware.go"
 	require.Contains(t, fileNames(files), decorator)
 
 	golden := filepath.Join("testdata", "golden", "middleware", "new_middleware.go.golden")
@@ -274,7 +274,7 @@ func TestGenerator_RenderMiddleware(t *testing.T) {
 
 	base, err := testOptions("/src/app").BaseImport()
 	require.NoError(t, err)
-	decoratorPath := base + "/builder/middleware/" + restyPath
+	decoratorPath := base + "/" + inject.GenPathUnder(base, "builder/middleware", restyPath)
 	call := inject.Alias("mw", "resty", decoratorPath) + ".DecorateNew()"
 
 	api := string(files["builder/api/modules.go"])
@@ -292,7 +292,7 @@ func TestGenerator_RenderNamedMiddleware(t *testing.T) {
 	}
 	files := renderMiddleware(t, entries, middlewareSources)
 
-	src := string(files["builder/middleware/example.com/app/resty/new_middleware.go"])
+	src := string(files["builder/middleware/resty/new_middleware.go"])
 	assert.Contains(t, src, "fx.Decorate(fx.Annotate(decorateNew, fx.ParamTags(``, `name:\"x\"`), fx.ResultTags(`name:\"x\"`)))",
 		"the decorated value keeps its name")
 }
@@ -331,11 +331,11 @@ func TestGenerator_RenderMiddlewareOnImplementation(t *testing.T) {
 
 	base, err := testOptions("/src/app").BaseImport()
 	require.NoError(t, err)
-	switchPath := base + "/implementation/" + quotePath
+	switchPath := base + "/" + inject.GenPathUnder(base, "implementation", quotePath)
 	chosen := inject.Alias("impl", "quote", switchPath) + ".ServiceImplementation()"
 
 	for member, path := range map[string]string{"resty": restyPath, "local": localPath} {
-		src := string(files["builder/middleware/"+path+"/new_middleware.go"])
+		src := string(files[inject.GenPathUnder(base, "builder/middleware", path)+"/new_middleware.go"])
 		assert.Contains(t, src, `"`+switchPath+`"`)
 		assert.Contains(t, src, "if "+chosen+" != \""+member+"\" {\n\t\treturn fx.Options()\n\t}",
 			"the decorator of %s runs only when %s is the chosen implementation", member, member)
@@ -343,6 +343,6 @@ func TestGenerator_RenderMiddlewareOnImplementation(t *testing.T) {
 
 	modules := string(files["builder/api/modules.go"])
 	for _, path := range []string{restyPath, localPath} {
-		assert.Contains(t, modules, inject.Alias("mw", filepath.Base(path), base+"/builder/middleware/"+path)+".DecorateNew()")
+		assert.Contains(t, modules, inject.Alias("mw", filepath.Base(path), base+"/"+inject.GenPathUnder(base, "builder/middleware", path))+".DecorateNew()")
 	}
 }
