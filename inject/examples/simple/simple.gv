@@ -9,6 +9,8 @@ digraph InjectGraph {
 	"github.com/xgodev/boost/inject/examples/simple/greeting.NewFormalGreeter" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
 	"github.com/xgodev/boost/inject/examples/simple/greeting.NewGreeter" [label="greeting.NewGreeter", shape=ellipse, fillcolor="#90EE90"];
 	"github.com/xgodev/boost/inject/examples/simple/greeting.NewGreeter" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
+	"github.com/xgodev/boost/inject/examples/simple/greeting.Options" [label="greeting.Options", shape=ellipse, fillcolor="#90EE90"];
+	"github.com/xgodev/boost/inject/examples/simple/greeting.Options" -> "github.com/xgodev/boost/inject/examples/simple/greeting.NewGreeter";
 	"github.com/xgodev/boost/inject/examples/simple/names.Alice" [label="names.Alice", shape=ellipse, fillcolor="#90EE90"];
 	"github.com/xgodev/boost/inject/examples/simple/names.Alice" -> "github.com/xgodev/boost/inject/examples/simple/app.Announce";
 	"github.com/xgodev/boost/inject/examples/simple/names.Bob" [label="names.Bob", shape=ellipse, fillcolor="#90EE90"];

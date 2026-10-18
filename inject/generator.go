@@ -100,6 +100,9 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := checkConfigKeys(p.opts.ModulePath, p.graph, sets); err != nil {
+		return nil, err
+	}
 	switches := switchesByMember(sets)
 
 	files := map[string][]byte{}
@@ -116,19 +119,12 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 
 	for _, key := range p.graph.SortedKeys() {
 		vertex := p.graph.Vertices[key]
-		data, err := p.moduleData(base, vertex, switches)
+		name, src, err := p.renderVertex(tmpl, base, vertex, switches)
 		if err != nil {
 			return nil, err
 		}
-
-		name := path.Join(vertex.Value.Entry.Path, strings.ToLower(data.Func)+"_module.go")
 		if _, exists := files[name]; exists {
 			return nil, errors.AlreadyExistsf("two components generate %s; rename one of the functions", name)
-		}
-
-		src, err := ExecuteTemplate(tmpl, "module", data)
-		if err != nil {
-			return nil, errors.Wrap(err, errors.Internalf("error generating module of %s", key))
 		}
 		files[name] = src
 
@@ -156,17 +152,37 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	return files, nil
 }
 
+// renderVertex returns the path, relative to OutputDir, and the source of
+// the module of one component: the config module of a @Config struct, the
+// fx module of a function otherwise.
+func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation) (string, []byte, error) {
+	comp := vertex.Value
+	name := path.Join(comp.Entry.Path, strings.ToLower(declName(comp.Entry))+"_module.go")
+
+	tmplName, data := "config", any(nil)
+	if comp.IsConfig() {
+		data = configData(p.opts.ModulePath, comp)
+	} else {
+		module, err := p.moduleData(base, vertex, switches)
+		if err != nil {
+			return "", nil, err
+		}
+		tmplName, data = "module", module
+	}
+
+	src, err := ExecuteTemplate(tmpl, tmplName, data)
+	if err != nil {
+		return "", nil, errors.Wrap(err, errors.Internalf("error generating module of %s", vertex.Key))
+	}
+	return name, src, nil
+}
+
 // renderImplementations adds the switch file of each implementation set to
-// files. It is AlreadyExists when two sets share a config key or a file.
+// files. It is AlreadyExists when two sets share a file; checkConfigKeys has
+// already refused two sets sharing a config key.
 func (p *Generator) renderImplementations(tmpl *template.Template, base string, sets []Implementation, files map[string][]byte) error {
-	keys := map[string]string{}
 	for _, set := range sets {
 		key := set.Key(p.opts.ModulePath)
-		if other, dup := keys[key]; dup {
-			return errors.AlreadyExistsf("the implementations of %s.%s and of %s are chosen by the same config key %s; rename a package", set.Path, set.Type, other, key)
-		}
-		keys[key] = set.Path + "." + set.Type
-
 		if _, exists := files[set.File()]; exists {
 			return errors.AlreadyExistsf("two implementation sets generate %s; rename one of the types", set.File())
 		}
@@ -279,7 +295,7 @@ func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], swi
 			continue
 		}
 		if depEntry.Path == entry.Path {
-			data.Deps = append(data.Deps, depEntry.Func.Name+"Module()")
+			data.Deps = append(data.Deps, declName(depEntry)+"Module()")
 			continue
 		}
 
@@ -434,13 +450,14 @@ func Alias(prefix, name, importPath string) string {
 
 // ModuleOf returns the import of the package generated for the component
 // declared by entry, given the import path of the output dir (BaseImport),
-// and the call of its module function, such as gen_greet_1a2b3c4d.NewGreeterModule().
+// and the call of its module function, such as gen_greet_1a2b3c4d.NewGreeterModule()
+// (or OptionsModule() for a @Config struct Options).
 func ModuleOf(base string, entry annotation.Entry) (ImportData, string) {
 	imp := ImportData{Alias: genAlias(entry), Path: base + "/" + entry.Path}
-	return imp, imp.Alias + "." + entry.Func.Name + "Module()"
+	return imp, imp.Alias + "." + declName(entry) + "Module()"
 }
 
-// srcAlias is the import alias of the package that declares the function.
+// srcAlias is the import alias of the package that declares the component.
 func srcAlias(entry annotation.Entry) string {
 	return Alias("src", entry.Package, entry.Path)
 }

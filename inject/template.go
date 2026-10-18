@@ -42,6 +42,27 @@ type ImplementationData struct {
 	Imports []ImportData         // generated packages of the implementations
 }
 
+// ConfigData feeds the template of the module of a @Config struct.
+type ConfigData struct {
+	Package string          // package name of the generated file
+	Struct  string          // name of the @Config struct
+	Var     string          // unexported prefix of the root key constant and the once guard
+	Source  string          // import path of the struct's package
+	Alias   string          // import alias of the struct's package
+	Root    string          // root config key of the struct
+	Keys    []ConfigKeyData // in field order
+	Time    bool            // a default is a time.Duration
+}
+
+// ConfigKeyData is one config key of a @Config struct.
+type ConfigKeyData struct {
+	Segment string // key segment under the root
+	Value   string // Go literal of the default
+	Desc    string // Go literal of the description
+	Env     string // environment variable that sets the key
+	Hide    bool   // the value is a secret
+}
+
 // ImplementationCase is one implementation of a switch and its module call.
 type ImplementationCase struct {
 	Name   string
@@ -54,8 +75,8 @@ type ImportData struct {
 	Path  string
 }
 
-// NewTemplate parses the generator templates ("module", "root" and
-// "implementation").
+// NewTemplate parses the generator templates ("module", "root",
+// "implementation" and "config").
 func NewTemplate() (*template.Template, error) {
 	tmpl, err := template.New("inject").Parse(moduleTemplate)
 	if err != nil {

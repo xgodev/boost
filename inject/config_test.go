@@ -2,7 +2,10 @@ package inject
 
 import (
 	"context"
+	"go/parser"
+	"go/token"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -170,4 +173,103 @@ func TestNewGraph_Config(t *testing.T) {
 		require.NoError(t, err)
 		assert.Empty(t, g.Vertices)
 	})
+}
+
+func TestGenerator_RenderConfig(t *testing.T) {
+	options := cfg("quote", "Options",
+		field("BaseURL", "string", `default:"http://x" desc:"base URL"`),
+		field("Timeout", "time.Duration", `default:"2s" desc:"call timeout"`),
+		field("Token", "string", `hide:"true" desc:"API token"`),
+	)
+	service := at("quote", "New", []string{"*Options"}, []string{"*Service"}, provide("index=0"))
+	client := at("client", "New", []string{"*quote.Options"}, []string{"*Client"}, provide("index=0"))
+	entries := []annotation.Entry{options, service, client}
+
+	files, err := NewGenerator(newTestGraph(t, entries), testOptions("/mod")).Render(context.Background())
+	require.NoError(t, err)
+
+	src := string(files["example.com/app/quote/options_module.go"])
+	require.NotEmpty(t, src, "the config module is generated next to the package's other modules")
+	assert.True(t, strings.HasPrefix(src, generatedHeader))
+	_, err = parser.ParseFile(token.NewFileSet(), "options_module.go", src, parser.AllErrors)
+	require.NoError(t, err)
+
+	for _, want := range []string{
+		"package quote\n",
+		"\t\"time\"\n",
+		`const optionsRoot = "quote"`,
+		"// env QUOTE_BASE__URL\n",
+		`config.Add(optionsRoot+".baseUrl", "http://x", "base URL")`,
+		"// env QUOTE_TIMEOUT\n",
+		`config.Add(optionsRoot+".timeout", 2*time.Second, "call timeout")`,
+		`config.Add(optionsRoot+".token", "", "API token", config.WithHide())`,
+		"func OptionsModule() fx.Option {",
+		"fx.Provide(func() (*" + srcAlias(options) + ".Options, error) {",
+		"return config.NewOptionsWithPath[" + srcAlias(options) + ".Options](optionsRoot)",
+	} {
+		assert.Contains(t, src, want)
+	}
+
+	assert.Contains(t, string(files["example.com/app/quote/new_module.go"]), "\t\t\tOptionsModule(),\n",
+		"a consumer in the package includes the config module")
+	assert.Contains(t, string(files["example.com/app/client/new_module.go"]), genAlias(options)+".OptionsModule(),",
+		"a consumer in another package imports it")
+	assert.Contains(t, string(files["module.go"]), genAlias(options)+".OptionsModule(),")
+
+	t.Run("no duration, no time import", func(t *testing.T) {
+		files, err := NewGenerator(newTestGraph(t, []annotation.Entry{cfg("quote", "Options")}), testOptions("/mod")).Render(context.Background())
+		require.NoError(t, err)
+		assert.NotContains(t, string(files["example.com/app/quote/options_module.go"]), `"time"`)
+	})
+}
+
+func TestGenerator_RenderConfigKeyCollisions(t *testing.T) {
+	testCases := []struct {
+		name    string
+		entries []annotation.Entry
+		want    string
+	}{
+		{
+			name: "a config key is an implementation key",
+			entries: []annotation.Entry{
+				impl("memory", provide("index=0"), deflt()), impl("unlimited", provide("index=0")),
+				cfg("stock", "Options", field("Implementation", "string", `desc:"d"`)),
+			},
+			want: "stock.implementation",
+		},
+		{
+			name: "a config key is the parent of another",
+			entries: []annotation.Entry{
+				cfg("stock", "Options", field("Memory", "string", `desc:"d"`)),
+				cfg("stock/memory", "Options", field("Size", "int", `desc:"d"`)),
+			},
+			want: "stock.memory",
+		},
+		{
+			name: "two packages map to the same root",
+			entries: []annotation.Entry{
+				cfg("stock_memory", "Options", field("Size", "int", `desc:"d"`)),
+				cfg("stock/memory", "Options", field("Size", "int", `desc:"d"`)),
+			},
+			want: "stock.memory.size",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := NewGenerator(newTestGraph(t, tc.entries), testOptions("/mod")).Render(context.Background())
+			require.Error(t, err)
+			assert.True(t, errors.IsAlreadyExists(err), "unexpected error: %v", err)
+			assert.Contains(t, err.Error(), tc.want)
+		})
+	}
+}
+
+func TestConfigKeyAndEnv(t *testing.T) {
+	assert.Equal(t, "internal.pkg.client.quote.resty", ConfigKey("example.com/app", "example.com/app/internal/pkg/client/quote/resty"))
+	assert.Equal(t, "app", ConfigKey("example.com/app", "example.com/app"))
+	assert.Equal(t, "github.com.other.sdkGo.client", ConfigKey("example.com/app", "github.com/other/sdk-go/client"))
+
+	assert.Equal(t, "INTERNAL_PKG_CLIENT_QUOTE_RESTY_BASE__URL", ConfigEnv("internal.pkg.client.quote.resty", "baseUrl"))
+	assert.Equal(t, "STOCK_SDK__GO_TIMEOUT", ConfigEnv("stock.sdkGo", "timeout"))
 }

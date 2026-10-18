@@ -17,6 +17,7 @@ func Module() fx.Option {
 		gen_app_4fdb4d6c.NewBoardModule(),
 		gen_greeting_872ee6bf.NewFormalGreeterModule(),
 		gen_greeting_872ee6bf.NewGreeterModule(),
+		gen_greeting_872ee6bf.OptionsModule(),
 		gen_names_a137c4ae.AliceModule(),
 		gen_names_a137c4ae.BobModule(),
 	)

@@ -233,19 +233,25 @@ func upperFirst(s string) string {
 // segments and "a-b" becomes "aB", so the key is reachable from an
 // environment variable (FOO_BAR__BAZ -> foo.barBaz).
 func (i Implementation) Key(modulePath string) string {
-	rel := i.Path
-	switch {
-	case i.Path == modulePath:
-		rel = path.Base(modulePath)
-	case strings.HasPrefix(i.Path, modulePath+"/"):
-		rel = strings.TrimPrefix(i.Path, modulePath+"/")
-	}
-
-	segments := keySegments(rel)
+	segments := relKeySegments(modulePath, i.Path)
 	if i.Name != "" {
 		segments = append(segments, keySegments(i.Name)...)
 	}
 	return strings.Join(append(segments, "implementation"), ".")
+}
+
+// relKeySegments returns the config key segments of a package: its import
+// path relative to the module (the module's base name for the module root,
+// the full import path outside the module).
+func relKeySegments(modulePath, importPath string) []string {
+	rel := importPath
+	switch {
+	case importPath == modulePath:
+		rel = path.Base(modulePath)
+	case strings.HasPrefix(importPath, modulePath+"/"):
+		rel = strings.TrimPrefix(importPath, modulePath+"/")
+	}
+	return keySegments(rel)
 }
 
 // keySegments splits s into config key segments.

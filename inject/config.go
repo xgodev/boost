@@ -7,12 +7,14 @@ import (
 	"go/token"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 
 	"github.com/xgodev/boost/annotation"
+	"github.com/xgodev/boost/extra/graph"
 	"github.com/xgodev/boost/model/errors"
 )
 
@@ -307,4 +309,117 @@ func fieldSegment(name string) string {
 		b.WriteString(word)
 	}
 	return b.String()
+}
+
+// ConfigKey returns the root config key of the @Config struct of a package,
+// given the Go module path of the application: the package path relative to
+// the module, in dots, with the segment rules of Implementation.Key.
+func ConfigKey(modulePath, importPath string) string {
+	return strings.Join(relKeySegments(modulePath, importPath), ".")
+}
+
+// ConfigEnv returns the environment variable that sets the key segment under
+// root: dots become "_" and the words of a camelCase segment are joined by
+// "__", which the env loader turns back into the segment (BASE__URL ->
+// baseUrl).
+func ConfigEnv(root, segment string) string {
+	parts := strings.Split(root, ".")
+	parts = append(parts, segment)
+	for i, part := range parts {
+		parts[i] = strings.ToUpper(strings.Join(fieldWords(part), "__"))
+	}
+	return strings.Join(parts, "_")
+}
+
+// configData collects what the config template needs for one @Config
+// struct.
+func configData(modulePath string, comp Component) ConfigData {
+	entry := comp.Entry
+	root := ConfigKey(modulePath, entry.Path)
+	data := ConfigData{
+		Package: entry.Package,
+		Struct:  entry.Struct,
+		Var:     strings.ToLower(entry.Struct[:1]) + entry.Struct[1:],
+		Source:  entry.Path,
+		Root:    root,
+		Alias:   srcAlias(entry),
+	}
+	for _, f := range comp.Config {
+		data.Keys = append(data.Keys, ConfigKeyData{
+			Segment: f.Segment,
+			Value:   f.Default,
+			Desc:    strconv.Quote(f.Desc),
+			Env:     ConfigEnv(root, f.Segment),
+			Hide:    f.Hide,
+		})
+		data.Time = data.Time || f.Type == "time.Duration"
+	}
+	return data
+}
+
+// configKeys returns every config key the generated code registers, with
+// the declaration that owns it: the keys of the @Config structs and of the
+// implementation switches.
+func configKeys(modulePath string, g *graph.Graph[Component], sets []Implementation) (map[string]string, error) {
+	keys := map[string]string{}
+	add := func(key, owner string) error {
+		if other, dup := keys[key]; dup {
+			return errors.AlreadyExistsf("%s and %s use the same config key %s; rename a field or a package", other, owner, key)
+		}
+		keys[key] = owner
+		return nil
+	}
+
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		if !comp.IsConfig() {
+			continue
+		}
+		root := ConfigKey(modulePath, comp.Entry.Path)
+		for _, f := range comp.Config {
+			if err := add(root+"."+f.Segment, key+"."+f.Name); err != nil {
+				return nil, err
+			}
+		}
+	}
+	for _, set := range sets {
+		if err := add(set.Key(modulePath), "the implementation switch of "+set.Path+"."+set.Type); err != nil {
+			return nil, err
+		}
+	}
+	return keys, nil
+}
+
+// checkConfigKeys fails when two generated config keys are equal or one is
+// the parent of another (a.b and a.b.c): the config cannot hold a value and
+// keys under it.
+func checkConfigKeys(modulePath string, g *graph.Graph[Component], sets []Implementation) error {
+	keys, err := configKeys(modulePath, g, sets)
+	if err != nil {
+		return err
+	}
+
+	sorted := make([]string, 0, len(keys))
+	for key := range keys {
+		sorted = append(sorted, key)
+	}
+	sort.Strings(sorted)
+
+	for _, key := range sorted {
+		for i := strings.Index(key, "."); i >= 0; i = nextDot(key, i) {
+			if owner, ok := keys[key[:i]]; ok {
+				return errors.AlreadyExistsf("config key %s of %s is the parent of %s of %s; rename a field or a package", key[:i], owner, key, keys[key])
+			}
+		}
+	}
+	return nil
+}
+
+// nextDot returns the index of the next "." in s after i, or -1.
+func nextDot(s string, i int) int {
+	j := strings.Index(s[i+1:], ".")
+	if j < 0 {
+		return -1
+	}
+	return i + 1 + j
 }

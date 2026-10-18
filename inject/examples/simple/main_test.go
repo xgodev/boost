@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/inject"
 	"github.com/xgodev/boost/inject/examples/simple/app"
 	"github.com/xgodev/boost/inject/examples/simple/gen"
@@ -15,6 +16,8 @@ import (
 )
 
 func TestGeneratedModuleWiresTheApp(t *testing.T) {
+	boost.Start() // loads the config keys the generated modules registered
+
 	var board *app.Board
 	require.NoError(t, fx.New(gen.Module(), fx.Populate(&board), fx.NopLogger).Err())
 

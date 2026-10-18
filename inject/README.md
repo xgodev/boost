@@ -18,6 +18,7 @@ function plus a root `Module()` that wires the whole application.
 | `@Inject(group=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` (a slice `[]T`) receives every `T` of group `X` |
 | `@Invoke` | function | the function runs when the application starts (`fx.Invoke`) |
 | `@Default` | `@Provide` constructor | default implementation of a value with two or more providers; config picks one (see below) |
+| `@Config` | struct | the struct's fields are config keys; the generator registers them and provides `*Struct` (see below) |
 
 `index` is the zero-based position of the result or parameter and is always
 required. A parameter without `@Inject` is linked to a default provider of
@@ -73,6 +74,7 @@ The output mirrors the import path of each annotated function:
 gen/
   module.go                                   # package gen: func Module() fx.Option
   github.com/acme/app/greeting/newgreeter_module.go
+  github.com/acme/app/greeting/options_module.go   # @Config struct Options
   github.com/acme/app/app/announce_module.go
 ```
 
@@ -143,6 +145,63 @@ gen/implementation/example.com/app/stock/service_implementation.go
 `@Provide` without `name`): a set of named values has a default
 implementation too.
 
+## Config
+
+A package that needs settings declares a struct marked `@Config`; the
+generator writes the `config.Add` registration and provides `*Struct` to the
+constructors that receive it. The package never imports `wrapper/config`.
+
+```go
+package resty // example.com/app/internal/pkg/client/quote/resty
+
+// @Config
+type Options struct {
+	BaseURL string        `default:"http://localhost" desc:"quote API base URL"`
+	Timeout time.Duration `default:"2s" desc:"call timeout"`
+	Token   string        `hide:"true" desc:"API token"`
+}
+
+// @Provide(index=0)
+func New(o *Options) quote.Service { ... }
+```
+
+The generator writes `gen/<import path>/options_module.go`:
+
+```go
+const optionsRoot = "internal.pkg.client.quote.resty"
+
+func init() {
+	// env INTERNAL_PKG_CLIENT_QUOTE_RESTY_BASE__URL
+	config.Add(optionsRoot+".baseUrl", "http://localhost", "quote API base URL")
+	// env INTERNAL_PKG_CLIENT_QUOTE_RESTY_TIMEOUT
+	config.Add(optionsRoot+".timeout", 2*time.Second, "call timeout")
+	// env INTERNAL_PKG_CLIENT_QUOTE_RESTY_TOKEN
+	config.Add(optionsRoot+".token", "", "API token", config.WithHide())
+}
+
+func OptionsModule() fx.Option // provides *resty.Options from config.NewOptionsWithPath
+```
+
+- `@Config` takes no arguments and goes on an exported struct outside
+  package `main`; at most one per package.
+- Every exported field is a key, unless tagged `config:"-"`. Supported types:
+  `string`, `bool`, `int`, `int8`..`int64`, `uint`, `uint8`..`uint64`,
+  `float32`, `float64`, `time.Duration` and `[]string`.
+- `desc` is required. `default` is optional (the zero value without it) and
+  is parsed when generating: `strconv` rules for bool and numbers,
+  `time.ParseDuration` for durations, a comma list for `[]string`.
+  `hide:"true"` registers a secret (`config.WithHide()`). `config:"name"`
+  renames the key segment; it must be lowerCamel (`^[a-z][a-zA-Z0-9]*$`).
+- The root key is the package path relative to the Go module, with the
+  segment rules of the implementation key (its full import path outside
+  the module). The field segment is the field's words in lowerCamel
+  (`BaseURL` -> `baseUrl`, `HTTPTimeout` -> `httpTimeout`), which is what
+  the env loader builds from `BASE__URL`: the env var of each key is
+  written next to its `config.Add`.
+- Values are read when the module is built, after `boost.Start()` loaded
+  flags, env vars and config files; a `[]string` env value is split by
+  commas.
+
 ## Validation
 
 The generator fails, without touching the output directory, when:
@@ -161,14 +220,22 @@ The generator fails, without touching the output directory, when:
   `*pkg.T`);
 - a consumer of an implementation set lives in a member's package (the
   switch would import itself);
-- two implementation sets have the same config key;
+- two generated config keys (of `@Config` fields or implementation
+  switches) are equal, or one is the parent of another (`a.b` and `a.b.c`);
+- `@Config` takes arguments, is on a function, an unexported struct or in
+  package `main`, is combined with another inject annotation, or appears
+  twice in a package;
+- a `@Config` field is embedded, has an unsupported type, lacks `desc`, has
+  a `default` that does not parse for its type or a `config` name that is
+  not lowerCamel, or is unexported and tagged;
 - an `@Inject` parameter has no provider;
 - the dependencies have a cycle, or a function depends on what it provides;
 - an annotated function is unexported or in package `main` (the generated
   code must import it);
 - the output directory is not inside the Go module.
 
-Annotations on structs and methods are ignored with a warning.
+Annotations other than `@Config` on structs, and annotations on methods,
+are ignored with a warning.
 
 ## Library
 
@@ -193,7 +260,8 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | Function | Purpose |
 |---|---|
 | `GeneratorOptions.BaseImport()` | import path of the output dir |
-| `ModuleOf(base, entry)` | import and module call (`gen_x_hash.NewXModule()`) of a component |
+| `ModuleOf(base, entry)` | import and module call (`gen_x_hash.NewXModule()`, `gen_x_hash.OptionsModule()` for a `@Config`) of a component |
+| `ConfigKey(modulePath, importPath)` / `ConfigEnv(root, segment)` | root config key of a package's `@Config` and the env var of one of its keys |
 | `Provider(g, pkg, tp)` | component and result index providing the default value of a type |
 | `Alias(prefix, name, path)` | collision-free import alias (`prefix_name_hash`) |
 | `ExecuteTemplate(tmpl, name, data)` | executes a template and gofmt's the output |
