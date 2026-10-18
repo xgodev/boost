@@ -64,6 +64,20 @@ func loadConfig(t *testing.T) {
 	config.Load()
 }
 
+// loadWith loads config with the env key set to value and, on cleanup,
+// reloads it with def: boost's koanf keeps keys across Load calls, so the
+// value would otherwise leak into the next test.
+func loadWith(t *testing.T, key, value, def string) {
+	t.Helper()
+	t.Setenv(key, value)
+	loadConfig(t)
+	t.Cleanup(func() {
+		os.Setenv(key, def)
+		config.Load()
+		os.Unsetenv(key)
+	})
+}
+
 func callEcho(t *testing.T, cli *Client) {
 	t.Helper()
 	res, err := cli.Session().CallTool(context.Background(), &mcp.CallToolParams{
@@ -109,8 +123,7 @@ func TestNewOptionsWithPath_Overrides(t *testing.T) {
 }
 
 func TestNewClient_FromConfig(t *testing.T) {
-	t.Setenv("BOOST_FACTORY_MCP_CLIENT_ENDPOINT", httpUpstream(t))
-	loadConfig(t)
+	loadWith(t, "BOOST_FACTORY_MCP_CLIENT_ENDPOINT", httpUpstream(t), "http://localhost:8090/mcp")
 	ctx := context.Background()
 
 	cli, err := NewClient(ctx)
@@ -126,8 +139,7 @@ func TestNewClient_FromConfig(t *testing.T) {
 }
 
 func TestNewClient_ConfigErrorIsReturned(t *testing.T) {
-	t.Setenv("BOOST_FACTORY_MCP_CLIENT_MAX__RETRIES", "many")
-	loadConfig(t)
+	loadWith(t, "BOOST_FACTORY_MCP_CLIENT_MAX__RETRIES", "many", "5")
 	ctx := context.Background()
 
 	_, err := NewClient(ctx)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -21,6 +22,20 @@ func loadConfig(t *testing.T) {
 	t.Helper()
 	config.Set(koanf.New())
 	config.Load()
+}
+
+// loadWith loads config with the env key set to value and, on cleanup,
+// reloads it with def: boost's koanf keeps keys across Load calls, so the
+// value would otherwise leak into the next test.
+func loadWith(t *testing.T, key, value, def string) {
+	t.Helper()
+	t.Setenv(key, value)
+	loadConfig(t)
+	t.Cleanup(func() {
+		os.Setenv(key, def)
+		config.Load()
+		os.Unsetenv(key)
+	})
 }
 
 type echoIn struct {
@@ -230,8 +245,7 @@ func TestShutdown_BeforeServeIsNoop(t *testing.T) {
 }
 
 func TestNewServer_ConfigErrorIsReturned(t *testing.T) {
-	t.Setenv("BOOST_FACTORY_MCP_SERVER_PORT", "not-a-port")
-	loadConfig(t)
+	loadWith(t, "BOOST_FACTORY_MCP_SERVER_PORT", "not-a-port", "8090")
 	ctx := context.Background()
 
 	_, err := NewServer(ctx)
