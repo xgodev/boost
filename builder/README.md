@@ -2,7 +2,8 @@
 
 `builder` generates the doors of an application on top of
 [`inject`](../inject): a handler declares with an annotation which door serves
-it (a REST route on echo, a gRPC service or the event function), and the
+it (a REST route on echo, a gRPC service, an MCP tool or the event
+function), and the
 generator writes one fx module per door, a `Modules()` per app and the `main`
 of every app. `@Middleware` on a constructor wraps every method of the
 interface it provides in `extra/middleware` plugins. One command runs inject
@@ -72,6 +73,38 @@ func NewServer() *health.Server { ... }
 
 `@GRPC` goes on a constructor with exactly one `@Provide(index=N)` without
 `name` or `group`; the door calls `register(srv.ServiceRegistrar(), value)`.
+
+### `@MCP`: a tool on the MCP server
+
+```go
+package stocktool
+
+// New provides the handler.
+// @Provide(index=0)
+func New(stock stock.Service) *Handler { return &Handler{stock: stock} }
+
+// CheckStock tells whether an item can be ordered.
+// @MCP
+func (h *Handler) CheckStock(ctx context.Context, req *mcp.CallToolRequest, in Input) (*mcp.CallToolResult, Output, error) { ... }
+```
+
+| Key | Required | Meaning |
+|---|---|---|
+| `name` | no | tool name (letters, digits, `_`, `-`, `.`, up to 128), default the handler name in snake case (`check_stock`) |
+| `server` | no | server name, default `mcp` |
+| `app` | no | application, default `api` |
+
+- The handler is a go-sdk
+  [`mcp.ToolHandlerFor[In, Out]`](https://pkg.go.dev/github.com/modelcontextprotocol/go-sdk/mcp#ToolHandlerFor):
+  `func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, Out, error)`.
+  The door calls `mcp.AddTool`, which infers the input and output schemas
+  from `In` and `Out` and fills the result from `Out`, so the handler may
+  return a nil `*mcp.CallToolResult`. A method needs a provided receiver, as
+  in `@REST`.
+- The tool description is the doc comment of the handler, without its
+  leading name: `Tells whether an item can be ordered.`
+- The handler lives in the app layer and calls the service; the service
+  never imports `mcp`.
 
 ### `@Function`: the event handler
 
@@ -161,7 +194,7 @@ gen/
   github.com/acme/app/.../*_module.go # inject modules, one per @Provide/@Invoke/@Config
   client/<client type import path>/<name>_<type>.go # a factory client asked by @Inject (see inject)
   builder/<app>/modules.go           # func Modules() []fx.Option
-  builder/<app>/<server>_module.go   # one REST or gRPC server and its routes/services
+  builder/<app>/<server>_module.go   # one REST, gRPC or MCP server and its routes/services/tools
   builder/<app>/function_module.go   # the @Function handler and its adapter
   builder/middleware/<import path>/<func>_middleware.go # Decorate<Func>(): the @Middleware decorator
 ```
@@ -195,18 +228,20 @@ fails the generation instead of being overwritten. Other files under `cmd/`
 
 ### Servers
 
-- `rest` and `grpc` use the shipped
-  [echo](../fx/modules/factory/contrib/labstack/echo/v4) and
-  [gRPC](../fx/modules/factory/contrib/google.golang.org/grpc/v1/server) fx
-  modules, configured under `boost.factory.echo` and
-  `boost.factory.grpc.server`.
+- `rest`, `grpc` and `mcp` use the shipped
+  [echo](../fx/modules/factory/contrib/labstack/echo/v4),
+  [gRPC](../fx/modules/factory/contrib/google.golang.org/grpc/v1/server) and
+  [MCP](../fx/modules/factory/contrib/modelcontextprotocol/go-sdk/v1/server)
+  fx modules, configured under `boost.factory.echo`,
+  `boost.factory.grpc.server` and `boost.factory.mcp.server`.
 - Any other name is a separate server configured under
   `<app>.server.<name>` (`api.server.admin.port`): give it its own port.
-- A server name serves REST or gRPC, not both.
+- A server name serves one kind of door: REST, gRPC or MCP.
 - Plugins are optional and come from `@Provide`: a `[]boostecho.Plugin`
   (REST) or `[]server.Plugin` (gRPC,
-  [`grpc/v1/server`](../factory/contrib/google.golang.org/grpc/v1/server))
-  provided without `name` reaches `rest` or `grpc`, and one provided with
+  [`grpc/v1/server`](../factory/contrib/google.golang.org/grpc/v1/server);
+  MCP, [`go-sdk/v1/server`](../factory/contrib/modelcontextprotocol/go-sdk/v1/server))
+  provided without `name` reaches `rest`, `grpc` or `mcp`, and one provided with
   `name=<server>` reaches that server. The door includes the provider's inject
   module, so the generated main needs nothing else:
 
@@ -221,8 +256,10 @@ func Plugins() []boostecho.Plugin { ... }
 The command fails, without touching the output directory, when:
 
 - `method` is missing or unknown, or `path` is missing;
-- the same `method`+`path` is declared twice in one server, or a gRPC
-  `register` twice;
+- the same `method`+`path` is declared twice in one server, a gRPC
+  `register` twice, or an MCP tool name twice;
+- an MCP tool name has a character other than letters, digits, `_`, `-` and
+  `.`, or more than 128;
 - the handler signature does not match the door;
 - a method handler has no `@Provide` of its receiver;
 - the receiver of a handler method, or a `@GRPC` constructor, is one of the
@@ -231,7 +268,7 @@ The command fails, without touching the output directory, when:
 - `@GRPC` has no single default `@Provide`, or `register` does not resolve
   to an exported function;
 - an app has two `@Function`, or `adapter` is missing or unknown;
-- a server is used by REST and gRPC;
+- a server is used by two kinds of door;
 - an app or server name is invalid, or an annotation has an unknown key;
 - the handler is unexported or in package `main`;
 - `@Middleware` lists no plugin, an unknown one or one twice, is repeated,
@@ -268,8 +305,9 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
 
 - `api`: REST `POST /orders` and `GET /orders/:id` on `rest`, `GET`/`HEAD
   /live` on `admin` (built with the `X-Served-By: admin` plugin of
-  `probe.Plugins`), and the gRPC health service on `grpc`; `POST /orders`
-  checks `stock.Service`, implemented by `stock/memory` (`@Default`, with
+  `probe.Plugins`), the gRPC health service on `grpc` and the `check_stock`
+  MCP tool of `stocktool` on `mcp`; `POST /orders` and `check_stock`
+  check `stock.Service`, implemented by `stock/memory` (`@Default`, with
   `@Middleware(log, prometheus)`) and `stock/unlimited`, chosen by
   `builder.examples.simple.stock.implementation`
   (`BUILDER_EXAMPLES_SIMPLE_STOCK_IMPLEMENTATION`); `stock/memory` reads its
@@ -279,7 +317,7 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
 - `worker`: the `ordercreated` function on the cloudevents adapter.
 
 `cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
-routes and the gRPC service of the generated app, check that the handler
+routes, the gRPC service and the MCP tool of the generated app, check that the handler
 receives the stock decorator and that prometheus counted its call, boot the
 api with `unlimited` (wired without the decorator), with an unknown name
 (the boot fails) and with `SOLD__OUT=book,pen` (the env replaces the

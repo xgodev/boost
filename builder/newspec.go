@@ -13,7 +13,7 @@ import (
 	"github.com/xgodev/boost/model/errors"
 )
 
-// NewSpec builds the doors declared by the @REST, @GRPC and @Function
+// NewSpec builds the doors declared by the @REST, @GRPC, @MCP and @Function
 // annotations of entries, and the @Middleware of the constructors each app
 // builds. g is the inject graph of the same entries: it provides the
 // receivers of handler methods and the values of @GRPC constructors. load
@@ -23,7 +23,7 @@ import (
 // It returns NotValid for malformed annotations and for handlers that are
 // unexported, in package main or whose signature does not match their door,
 // NotFound when the receiver of a handler method has no provider, and
-// AlreadyExists for a duplicate route or service, for a second @Function in
+// AlreadyExists for a duplicate route, service or tool, for a second @Function in
 // an app and for two @Middleware that decorate the same interface.
 func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component], load PackageLoader) (*Spec, error) {
 	b := &specBuilder{graph: g, apps: map[string]*appState{}, middlewares: map[string]*Middleware{}}
@@ -44,6 +44,8 @@ func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component], load 
 				err = b.addRoute(entry, ann)
 			case "GRPC":
 				err = b.addService(entry, ann)
+			case "MCP":
+				err = b.addTool(entry, ann)
 			case "Function":
 				err = b.addFunction(entry, ann)
 			case "Middleware":
@@ -70,7 +72,7 @@ type specBuilder struct {
 type appState struct {
 	servers  map[string]*Server
 	function *Function
-	served   map[string]bool // routes and services already declared, per server
+	served   map[string]bool // routes, services and tools already declared, per server
 }
 
 func (b *specBuilder) app(name string) *appState {
@@ -97,7 +99,7 @@ func (b *specBuilder) server(app, name string, kind Kind, ann, where string) (*S
 	return srv, nil
 }
 
-// serve records a route or service of a server, failing when it is declared twice.
+// serve records a route, service or tool of a server, failing when it is declared twice.
 func (b *specBuilder) serve(app, server, key, ann, where string) error {
 	a := b.app(app)
 	full := server + " " + key
@@ -197,6 +199,45 @@ func (b *specBuilder) addService(entry annotation.Entry, ann annotation.Annotati
 		return err
 	}
 	srv.Services = append(srv.Services, Service{Register: args.Register, Provider: vertex.Value, Index: index})
+	return nil
+}
+
+func (b *specBuilder) addTool(entry annotation.Entry, ann annotation.Annotation) error {
+	where := declName(entry)
+	var args mcpArgs
+	if err := decode(ann, where, mcpKeys, &args); err != nil {
+		return err
+	}
+
+	name := orDefault(args.Name, snakeCase(entry.Func.Name))
+	if !toolName.MatchString(name) {
+		return errors.NotValidf("@MCP on %s: tool name %q must match %s", where, name, toolName)
+	}
+	app, server := orDefault(args.App, defaultApp), orDefault(args.Server, defaultMCPServer)
+	if err := validateNames(ann.Name, where, app, server); err != nil {
+		return err
+	}
+
+	handler, err := b.handler(entry, ann.Name)
+	if err != nil {
+		return err
+	}
+	params, results := entry.Func.Parameters, entry.Func.Results
+	if len(params) != 3 || !isType(entry, params[0].Type, typeRef{Path: "context", Name: "Context"}) ||
+		!isPointer(entry, params[1].Type, typeRef{Path: mcpPath, Name: "CallToolRequest"}) ||
+		len(results) != 3 || !isPointer(entry, results[0].Type, typeRef{Path: mcpPath, Name: "CallToolResult"}) ||
+		results[2].Type != "error" {
+		return errors.NotValidf("@MCP on %s: the handler must be func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, Out, error)", where)
+	}
+
+	srv, err := b.server(app, server, KindMCP, ann.Name, where)
+	if err != nil {
+		return err
+	}
+	if err := b.serve(app, server, "tool "+name, ann.Name, where); err != nil {
+		return err
+	}
+	srv.Tools = append(srv.Tools, Tool{Name: name, Description: toolDescription(entry.Header), Handler: handler})
 	return nil
 }
 
@@ -304,6 +345,7 @@ func (b *specBuilder) spec() *Spec {
 			sort.SliceStable(srv.Services, func(i, j int) bool {
 				return srv.Services[i].Provider.Key()+srv.Services[i].Register < srv.Services[j].Provider.Key()+srv.Services[j].Register
 			})
+			sort.SliceStable(srv.Tools, func(i, j int) bool { return srv.Tools[i].Name < srv.Tools[j].Name })
 			srv.Plugins = serverPlugins(b.graph, srv)
 			app.Servers = append(app.Servers, srv)
 		}
@@ -340,11 +382,11 @@ func declName(entry annotation.Entry) string {
 
 // pluginPaths are the packages whose Plugin type a server of each kind is
 // built with.
-var pluginPaths = map[Kind]string{KindREST: boostEchoPath, KindGRPC: grpcServerPath}
+var pluginPaths = map[Kind]string{KindREST: boostEchoPath, KindGRPC: grpcServerPath, KindMCP: mcpServerPath}
 
 // serverPlugins returns the inject constructors providing the []Plugin of
-// srv: a default value for the rest and grpc servers, the value named after
-// the server for the others.
+// srv: a default value for the rest, grpc and mcp servers, the value named
+// after the server for the others.
 func serverPlugins(g *graph.Graph[inject.Component], srv Server) []inject.Component {
 	name := srv.Name
 	if isDefault(srv) {

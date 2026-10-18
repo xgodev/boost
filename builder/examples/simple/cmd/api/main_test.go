@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v4"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,6 +22,7 @@ import (
 	"github.com/xgodev/boost/builder/examples/simple/stock"
 	grpcserver "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
+	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -49,11 +51,12 @@ func TestAPI(t *testing.T) {
 	var (
 		rest, admin *boostecho.Server
 		grpcSrv     *grpcserver.Server
+		mcpSrv      *mcpserver.Server
 		stockSvc    stock.Service
 	)
 	app := fx.New(append(api.Modules(),
 		fx.NopLogger,
-		fx.Populate(&rest, &grpcSrv, &stockSvc),
+		fx.Populate(&rest, &grpcSrv, &mcpSrv, &stockSvc),
 		fx.Invoke(fx.Annotate(func(srv *boostecho.Server) { admin = srv }, fx.ParamTags(`name:"admin"`))),
 	)...)
 	require.NoError(t, app.Err())
@@ -106,6 +109,31 @@ func TestAPI(t *testing.T) {
 		resp, err := healthpb.NewHealthClient(conn).Check(context.Background(), &healthpb.HealthCheckRequest{Service: "orders"})
 		require.NoError(t, err)
 		assert.Equal(t, healthpb.HealthCheckResponse_SERVING, resp.GetStatus())
+	})
+
+	t.Run("mcp serves the stock tool", func(t *testing.T) {
+		ctx := context.Background()
+		serverTransport, clientTransport := mcp.NewInMemoryTransports()
+		serverSession, err := mcpSrv.Instance().Connect(ctx, serverTransport, nil)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = serverSession.Close() })
+
+		session, err := mcp.NewClient(&mcp.Implementation{Name: "test", Version: "1.0.0"}, nil).Connect(ctx, clientTransport, nil)
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = session.Close() })
+
+		tools, err := session.ListTools(ctx, nil)
+		require.NoError(t, err)
+		require.Len(t, tools.Tools, 1)
+		assert.Equal(t, "check_stock", tools.Tools[0].Name)
+		assert.Equal(t, "Tells whether an item can be ordered.", tools.Tools[0].Description, "the description is the handler's doc comment")
+
+		for item, available := range map[string]bool{"book": true, "sold-out": false} {
+			res, err := session.CallTool(ctx, &mcp.CallToolParams{Name: "check_stock", Arguments: map[string]any{"item": item}})
+			require.NoError(t, err)
+			assert.False(t, res.IsError)
+			assert.Equal(t, map[string]any{"available": available}, res.StructuredContent, "the tool calls the stock service")
+		}
 	})
 }
 

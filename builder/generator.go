@@ -29,6 +29,8 @@ const (
 	echoFxPath        = "github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4"
 	grpcServerPath    = "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
 	grpcFxPath        = "github.com/xgodev/boost/fx/modules/factory/contrib/google.golang.org/grpc/v1/server"
+	mcpServerPath     = "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
+	mcpFxPath         = "github.com/xgodev/boost/fx/modules/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
 	multiserverPath   = "github.com/xgodev/boost/extra/multiserver"
 	multiserverFxPath = "github.com/xgodev/boost/fx/modules/extra/multiserver"
 	contextFxPath     = "github.com/xgodev/boost/fx/modules/core/context"
@@ -227,10 +229,21 @@ func door(app, name, doc string) doorData {
 	}
 }
 
-// isDefault reports whether the server is the one the shipped echo or gRPC
-// fx module builds from the factory's own config.
+// defaultServers are the server names of each kind that the shipped fx
+// module builds from the factory's own config, and that module.
+var defaultServers = map[Kind]struct {
+	name, alias, fxPath string
+}{
+	KindREST: {defaultRESTServer, "echofx", echoFxPath},
+	KindGRPC: {defaultGRPCServer, "grpcfx", grpcFxPath},
+	KindMCP:  {defaultMCPServer, "mcpfx", mcpFxPath},
+}
+
+// isDefault reports whether the server is the one the shipped echo, gRPC or
+// MCP fx module builds from the factory's own config.
 func isDefault(srv Server) bool {
-	return (srv.Kind == KindREST && srv.Name == defaultRESTServer) || (srv.Kind == KindGRPC && srv.Name == defaultGRPCServer)
+	def, ok := defaultServers[srv.Kind]
+	return ok && srv.Name == def.name
 }
 
 // configPath is the config path of a named server.
@@ -291,6 +304,23 @@ func serverDoor(base string, srv Server) (doorData, error) {
 			params = append(params, param+" "+tp)
 			body = append(body, fmt.Sprintf("%s(srv.ServiceRegistrar(), %s)", register, param))
 		}
+	case KindMCP:
+		d = door(srv.App, srv.Name, fmt.Sprintf("serves the MCP tools of server %s.", srv.Name))
+		serverPkg = imps.add("mcpserver", mcpServerPath)
+		mcpPkg := imps.add("mcp", mcpPath)
+
+		receivers := map[string]string{} // receiver type and path -> parameter
+		for _, tool := range srv.Tools {
+			fn, err := handlerFunc(imps, tool.Handler, receivers, &params, include)
+			if err != nil {
+				return doorData{}, err
+			}
+			fields := fmt.Sprintf("Name: %q", tool.Name)
+			if tool.Description != "" {
+				fields += fmt.Sprintf(", Description: %q", tool.Description)
+			}
+			body = append(body, fmt.Sprintf("%s.AddTool(srv.Instance(), &%s.Tool{%s}, %s)", mcpPkg, mcpPkg, fields, fn))
+		}
 	}
 
 	// the server is built with the plugins its constructors provide
@@ -301,11 +331,8 @@ func serverDoor(base string, srv Server) (doorData, error) {
 	invoke := "func(srv *" + serverPkg + ".Server" + joinPrefixed(params) + ") {\n" + strings.Join(body, "\n") + "\n}"
 
 	if isDefault(srv) {
-		alias, fxPath := "echofx", echoFxPath
-		if srv.Kind == KindGRPC {
-			alias, fxPath = "grpcfx", grpcFxPath
-		}
-		fxModule := imps.add(alias, fxPath)
+		def := defaultServers[srv.Kind]
+		fxModule := imps.add(def.alias, def.fxPath)
 		d.Options = append(d.Options, fxModule+".Module()")
 		d.Options = append(d.Options, modules...)
 		d.Options = append(d.Options, "fx.Invoke("+invoke+")")
@@ -320,7 +347,7 @@ func serverDoor(base string, srv Server) (doorData, error) {
 
 	ctxPkg := imps.add("context", contextPath)
 	constructor := fmt.Sprintf("func(ctx %s.Context, plugins []%s.Plugin) (*%s.Server, error) {\n", ctxPkg, serverPkg, serverPkg)
-	if srv.Kind == KindREST {
+	if srv.Kind != KindGRPC {
 		constructor += fmt.Sprintf("return %s.NewServerWithConfigPath(ctx, %q, plugins...)\n}", serverPkg, configPath(srv))
 	} else {
 		constructor += fmt.Sprintf("opts, err := %s.NewOptionsWithPath(%q)\nif err != nil {\nreturn nil, err\n}\n", serverPkg, configPath(srv)) +

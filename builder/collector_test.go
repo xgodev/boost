@@ -31,6 +31,10 @@ func (h *Handler) Get() error { return nil }
 // @GRPC(register=Register)
 func Health() {}
 
+// Check answers a tool call.
+// @MCP
+func (h *Handler) Check() {}
+
 // Consume handles events.
 // @Function(adapter=nats)
 func (h *Handler) Consume() {}
@@ -72,6 +76,7 @@ func Ignored() {}
 		"Default example.com/collect/app.NewDefault",
 		"Function example.com/collect/app.Handler.Consume",
 		"GRPC example.com/collect/app.Health",
+		"MCP example.com/collect/app.Handler.Check",
 		"Provide example.com/collect/app.New",
 		"Provide example.com/collect/app.NewDefault",
 		"REST example.com/collect/app.Handler.Get",
