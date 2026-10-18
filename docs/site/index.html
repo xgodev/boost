@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>boost: enterprise Go services, built fast</title>
+<meta name="description" content="Boot, config, logs, 48 factories, middleware, health and code generation in one Go framework. You write the business logic.">
+<link rel="canonical" href="https://xgodev.github.io/boost/">
+<meta name="theme-color" content="#0F172A">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://xgodev.github.io/boost/">
+<meta property="og:title" content="boost: enterprise Go services, built fast">
+<meta property="og:description" content="Boot, config, logs, 48 factories, middleware, health and code generation in one Go framework. You write the business logic.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&text=boost&display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="boost home">
+      <img src="logo.svg" width="34" height="38" alt="">
+      boost
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#boot">Bootstrap</a>
+      <a href="#packages">Packages</a>
+      <a href="#builder">Builder</a>
+      <a href="#compat">Compatibility</a>
+      <a href="#integrations">Integrations</a>
+    </nav>
+    <div class="nav-right">
+      <span class="ver">v1.1.1</span>
+      <a class="btn btn-ghost btn-sm" href="https://github.com/xgodev/boost">GitHub</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-intro">
+      <div class="meta"><span><span class="dot"></span>v1.1.1</span><span>MIT</span><span>go 1.18+</span><span>github.com/xgodev/boost</span></div>
+      <h1>Enterprise Go services.<br><span class="quiet">Built fast.</span></h1>
+      <p class="lede">Boot, config, logs, 48 factories, middleware, health and code generation in one framework. You write the business logic.</p>
+      <div class="cta-row">
+        <div class="install"><span class="prompt">$</span><code id="cmd-get">go get github.com/xgodev/boost</code><button class="copy" type="button" data-copy="cmd-get">copy</button></div>
+        <a class="btn btn-primary" href="#builder">Get started</a>
+      </div>
+    </div>
+    <div class="proof" aria-label="Project facts">
+      <span><b>48</b>factories</span>
+      <span><b>39</b>libraries</span>
+      <span><b>58</b>plugins</span>
+      <span><b>220</b>releases since 2024</span>
+    </div>
+
+    <p class="hero-cap">A complete service: one route, a service, a repository and two datastores. The generated files and the run are the real output.</p>
+<!-- hero:start: written by example/build_hero.py, do not edit by hand -->
+<div class="win" id="hero-win">
+  <div class="win-bar" role="tablist" aria-label="The shop example: what you write, what go generate writes, and the run">
+    <button class="tab" type="button" role="tab" id="t-src" aria-selected="true" aria-controls="p-src"><span class="k k-ann">you write</span><span class="tab-n">9 files</span></button>
+    <button class="tab" type="button" role="tab" id="t-gen" aria-selected="false" aria-controls="p-gen" tabindex="-1"><span class="k k-gen">generated</span><span class="tab-n">12 files</span></button>
+    <button class="tab" type="button" role="tab" id="t-run" aria-selected="false" aria-controls="p-run" tabindex="-1"><span class="k k-run">run</span><span class="tab-n">terminal</span></button>
+    <span class="win-step">github.com/acme/shop</span>
+  </div>
+<div class="ide" role="tabpanel" id="p-src" aria-labelledby="t-src">
+<div class="files" role="tablist" aria-orientation="vertical" aria-label="Files you write">
+<div class="dir" role="none" style="--d:0">internal/app/api/rest/</div>
+<div class="dir" role="none" style="--d:1">handler/stock/reserver/</div>
+<button class="file" type="button" role="tab" id="ft-internal-app-api-rest-handler-stock-reserver-handler-go" aria-selected="true" aria-controls="fp-internal-app-api-rest-handler-stock-reserver-handler-go" tabindex="0" style="--d:2"><span class="fname">handler.go</span><span class="hint a">@REST</span></button>
+<button class="file" type="button" role="tab" id="ft-internal-app-api-rest-plugins-go" aria-selected="false" aria-controls="fp-internal-app-api-rest-plugins-go" tabindex="-1" style="--d:1"><span class="fname">plugins.go</span><span class="hint a">@Provide</span></button>
+<div class="dir" role="none" style="--d:0">internal/pkg/domain/</div>
+<div class="dir" role="none" style="--d:1">service/stock/reserver/</div>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-domain-service-stock-reserver-service-go" aria-selected="false" aria-controls="fp-internal-pkg-domain-service-stock-reserver-service-go" tabindex="-1" style="--d:2"><span class="fname">service.go</span><span class="hint">interface</span></button>
+<div class="dir" role="none" style="--d:2">local/</div>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-domain-service-stock-reserver-local-service-go" aria-selected="false" aria-controls="fp-internal-pkg-domain-service-stock-reserver-local-service-go" tabindex="-1" style="--d:3"><span class="fname">service.go</span><span class="hint a">@Middleware</span></button>
+<div class="dir" role="none" style="--d:1">repository/stock/</div>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-domain-repository-stock-repository-go" aria-selected="false" aria-controls="fp-internal-pkg-domain-repository-stock-repository-go" tabindex="-1" style="--d:2"><span class="fname">repository.go</span><span class="hint">interface</span></button>
+<div class="dir" role="none" style="--d:0">internal/pkg/datastore/stock/</div>
+<div class="dir" role="none" style="--d:1">memory/</div>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-datastore-stock-memory-datastore-go" aria-selected="false" aria-controls="fp-internal-pkg-datastore-stock-memory-datastore-go" tabindex="-1" style="--d:2"><span class="fname">datastore.go</span><span class="hint a">@Default</span></button>
+<div class="dir" role="none" style="--d:1">mongodb/</div>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-datastore-stock-mongodb-datastore-go" aria-selected="false" aria-controls="fp-internal-pkg-datastore-stock-mongodb-datastore-go" tabindex="-1" style="--d:2"><span class="fname">datastore.go</span><span class="hint a">@Provide</span></button>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-datastore-stock-mongodb-config-go" aria-selected="false" aria-controls="fp-internal-pkg-datastore-stock-mongodb-config-go" tabindex="-1" style="--d:2"><span class="fname">config.go</span><span class="hint a">@Config</span></button>
+<button class="file" type="button" role="tab" id="ft-doc-go" aria-selected="false" aria-controls="fp-doc-go" tabindex="-1" style="--d:0"><span class="fname">doc.go</span><span class="hint">go:generate</span></button>
+</div>
+<div class="panes">
+<div class="pane" role="tabpanel" id="fp-internal-app-api-rest-handler-stock-reserver-handler-go" aria-labelledby="ft-internal-app-api-rest-handler-stock-reserver-handler-go"><div class="pane-path"><span class="k k-ann">you write</span>internal/app/api/rest/handler/stock/reserver/handler.go</div><pre class="code" tabindex="0"><span class="c">// Package reserver serves POST /stock/:sku/reserve.</span>
+<span class="kw">package</span> reserver
+
+<span class="kw">import</span> (
+	<span class="st">&quot;net/http&quot;</span>
+
+	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver&quot;</span>
+	<span class="st">&quot;github.com/labstack/echo/v4&quot;</span>
+)
+
+<span class="c">// Handler reserves one unit of an item.</span>
+<span class="kw">type</span> <span class="ty">Handler</span> <span class="kw">struct</span> {
+	svc <span class="ty">reserver.Service</span>
+}
+
+<span class="c">// New provides the handler to the generated rest door.</span>
+<span class="c">// </span><span class="a">@Provide</span><span class="c">(index=0)</span>
+<span class="kw">func</span> <span class="fn">New</span>(svc <span class="ty">reserver.Service</span>) *<span class="ty">Handler</span> {
+	<span class="kw">return</span> &amp;<span class="ty">Handler</span>{svc: svc}
+}
+
+<span class="c">// Handle reserves one unit of the sku in the path.</span>
+<span class="c">// </span><span class="a">@REST</span><span class="c">(method=POST, path=/stock/:sku/reserve)</span>
+<span class="kw">func</span> (h *<span class="ty">Handler</span>) <span class="fn">Handle</span>(c <span class="ty">echo.Context</span>) <span class="ty">error</span> {
+	<span class="kw">if</span> err := h.svc.Reserve(c.Request().Context(), c.Param(<span class="st">&quot;sku&quot;</span>)); err != <span class="kw">nil</span> {
+		<span class="kw">return</span> err
+	}
+	<span class="kw">return</span> c.NoContent(http.StatusNoContent)
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-internal-app-api-rest-plugins-go" aria-labelledby="ft-internal-app-api-rest-plugins-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/app/api/rest/plugins.go</div><pre class="code" tabindex="0"><span class="c">// Package rest holds what the rest server of app api needs besides its</span>
+<span class="c">// handlers.</span>
+<span class="kw">package</span> rest
+
+<span class="kw">import</span> (
+	boostecho <span class="st">&quot;github.com/xgodev/boost/factory/contrib/labstack/echo/v4&quot;</span>
+	<span class="st">&quot;github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler&quot;</span>
+)
+
+<span class="c">// Plugins turns boost errors into HTTP statuses: a Conflict answers 409.</span>
+<span class="c">// </span><span class="a">@Provide</span><span class="c">(index=0)</span>
+<span class="kw">func</span> <span class="fn">Plugins</span>() []<span class="ty">boostecho.Plugin</span> {
+	<span class="kw">return</span> []<span class="ty">boostecho.Plugin</span>{error_handler.Register}
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-internal-pkg-domain-service-stock-reserver-service-go" aria-labelledby="ft-internal-pkg-domain-service-stock-reserver-service-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/domain/service/stock/reserver/service.go</div><pre class="code" tabindex="0"><span class="c">// Package reserver reserves one unit of an item.</span>
+<span class="kw">package</span> reserver
+
+<span class="kw">import</span> <span class="st">&quot;context&quot;</span>
+
+<span class="c">// Service reserves stock.</span>
+<span class="kw">type</span> <span class="ty">Service</span> <span class="kw">interface</span> {
+	Reserve(ctx <span class="ty">context.Context</span>, sku <span class="ty">string</span>) <span class="ty">error</span>
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-internal-pkg-domain-service-stock-reserver-local-service-go" aria-labelledby="ft-internal-pkg-domain-service-stock-reserver-local-service-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/domain/service/stock/reserver/local/service.go</div><pre class="code" tabindex="0"><span class="c">// Package local reserves stock in process, on the stock repository.</span>
+<span class="kw">package</span> local
+
+<span class="kw">import</span> (
+	<span class="st">&quot;context&quot;</span>
+
+	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/repository/stock&quot;</span>
+	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver&quot;</span>
+)
+
+<span class="kw">type</span> <span class="ty">service</span> <span class="kw">struct</span> {
+	repo <span class="ty">stock.Repository</span>
+}
+
+<span class="c">// New provides the service, wrapped in the log and prometheus middlewares.</span>
+<span class="c">// </span><span class="a">@Provide</span><span class="c">(index=0)</span>
+<span class="c">// </span><span class="a">@Middleware</span><span class="c">(log, prometheus)</span>
+<span class="kw">func</span> <span class="fn">New</span>(repo <span class="ty">stock.Repository</span>) <span class="ty">reserver.Service</span> {
+	<span class="kw">return</span> &amp;<span class="ty">service</span>{repo: repo}
+}
+
+<span class="kw">func</span> (s *<span class="ty">service</span>) <span class="fn">Reserve</span>(ctx <span class="ty">context.Context</span>, sku <span class="ty">string</span>) <span class="ty">error</span> {
+	<span class="kw">return</span> s.repo.Take(ctx, sku)
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-internal-pkg-domain-repository-stock-repository-go" aria-labelledby="ft-internal-pkg-domain-repository-stock-repository-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/domain/repository/stock/repository.go</div><pre class="code" tabindex="0"><span class="c">// Package stock is the persistence of the units in stock.</span>
+<span class="kw">package</span> stock
+
+<span class="kw">import</span> <span class="st">&quot;context&quot;</span>
+
+<span class="c">// Repository keeps the units in stock of each item.</span>
+<span class="kw">type</span> <span class="ty">Repository</span> <span class="kw">interface</span> {
+	<span class="c">// Take removes one unit of sku; a sold-out sku is a Conflict.</span>
+	Take(ctx <span class="ty">context.Context</span>, sku <span class="ty">string</span>) <span class="ty">error</span>
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-internal-pkg-datastore-stock-memory-datastore-go" aria-labelledby="ft-internal-pkg-datastore-stock-memory-datastore-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/datastore/stock/memory/datastore.go</div><pre class="code" tabindex="0"><span class="c">// Package memory keeps the stock in memory: the default, no infra needed.</span>
+<span class="kw">package</span> memory
+
+<span class="kw">import</span> (
+	<span class="st">&quot;context&quot;</span>
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/repository/stock&quot;</span>
+	<span class="st">&quot;github.com/xgodev/boost/model/errors&quot;</span>
+)
+
+<span class="kw">type</span> <span class="ty">datastore</span> <span class="kw">struct</span> {
+	mu    <span class="ty">sync.Mutex</span>
+	units <span class="kw">map</span>[<span class="ty">string</span>]<span class="ty">int</span>
+}
+
+<span class="c">// New provides the stock wired when no other is configured.</span>
+<span class="c">// </span><span class="a">@Provide</span><span class="c">(index=0)</span>
+<span class="c">// </span><span class="a">@Default</span>
+<span class="kw">func</span> <span class="fn">New</span>() <span class="ty">stock.Repository</span> {
+	<span class="kw">return</span> &amp;<span class="ty">datastore</span>{units: <span class="kw">map</span>[<span class="ty">string</span>]<span class="ty">int</span>{<span class="st">&quot;tshirt&quot;</span>: <span class="nu">3</span>}}
+}
+
+<span class="kw">func</span> (d *<span class="ty">datastore</span>) <span class="fn">Take</span>(_ <span class="ty">context.Context</span>, sku <span class="ty">string</span>) <span class="ty">error</span> {
+	d.mu.Lock()
+	<span class="kw">defer</span> d.mu.Unlock()
+	<span class="kw">if</span> d.units[sku] == <span class="nu">0</span> {
+		<span class="kw">return</span> errors.Conflictf(<span class="st">&quot;%s is sold out&quot;</span>, sku)
+	}
+	d.units[sku]--
+	<span class="kw">return</span> <span class="kw">nil</span>
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-internal-pkg-datastore-stock-mongodb-datastore-go" aria-labelledby="ft-internal-pkg-datastore-stock-mongodb-datastore-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/datastore/stock/mongodb/datastore.go</div><pre class="code" tabindex="0"><span class="c">// Package mongodb keeps the stock in MongoDB, on boost&#x27;s mongo factory.</span>
+<span class="kw">package</span> mongodb
+
+<span class="kw">import</span> (
+	<span class="st">&quot;context&quot;</span>
+
+	<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/repository/stock&quot;</span>
+	mongofact <span class="st">&quot;github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2&quot;</span>
+	<span class="st">&quot;github.com/xgodev/boost/model/errors&quot;</span>
+	<span class="st">&quot;go.mongodb.org/mongo-driver/v2/bson&quot;</span>
+	<span class="st">&quot;go.mongodb.org/mongo-driver/v2/mongo&quot;</span>
+)
+
+<span class="kw">type</span> <span class="ty">datastore</span> <span class="kw">struct</span> {
+	coll *<span class="ty">mongo.Collection</span>
+}
+
+<span class="c">// New connects through boost&#x27;s mongo factory (boost.factory.mongo.*).</span>
+<span class="c">// </span><span class="a">@Provide</span><span class="c">(index=0)</span>
+<span class="kw">func</span> <span class="fn">New</span>(ctx <span class="ty">context.Context</span>, o *<span class="ty">Options</span>) (<span class="ty">stock.Repository</span>, <span class="ty">error</span>) {
+	conn, err := mongofact.NewConn(ctx)
+	<span class="kw">if</span> err != <span class="kw">nil</span> {
+		<span class="kw">return</span> <span class="kw">nil</span>, err
+	}
+	<span class="kw">return</span> &amp;<span class="ty">datastore</span>{coll: conn.Database.Collection(o.Collection)}, <span class="kw">nil</span>
+}
+
+<span class="kw">func</span> (d *<span class="ty">datastore</span>) <span class="fn">Take</span>(ctx <span class="ty">context.Context</span>, sku <span class="ty">string</span>) <span class="ty">error</span> {
+	res, err := d.coll.UpdateOne(ctx,
+		<span class="ty">bson.M</span>{<span class="st">&quot;_id&quot;</span>: sku, <span class="st">&quot;units&quot;</span>: <span class="ty">bson.M</span>{<span class="st">&quot;$gt&quot;</span>: <span class="nu">0</span>}},
+		<span class="ty">bson.M</span>{<span class="st">&quot;$inc&quot;</span>: <span class="ty">bson.M</span>{<span class="st">&quot;units&quot;</span>: -<span class="nu">1</span>}})
+	<span class="kw">if</span> err != <span class="kw">nil</span> {
+		<span class="kw">return</span> err
+	}
+	<span class="kw">if</span> res.MatchedCount == <span class="nu">0</span> {
+		<span class="kw">return</span> errors.Conflictf(<span class="st">&quot;%s is sold out&quot;</span>, sku)
+	}
+	<span class="kw">return</span> <span class="kw">nil</span>
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-internal-pkg-datastore-stock-mongodb-config-go" aria-labelledby="ft-internal-pkg-datastore-stock-mongodb-config-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/datastore/stock/mongodb/config.go</div><pre class="code" tabindex="0"><span class="kw">package</span> mongodb
+
+<span class="c">// Options configures the mongo stock; inject generates its config keys.</span>
+<span class="c">// </span><span class="a">@Config</span>
+<span class="kw">type</span> <span class="ty">Options</span> <span class="kw">struct</span> {
+	Collection <span class="ty">string</span> <span class="st">`default:&quot;stock&quot; desc:&quot;collection of the units in stock&quot;`</span>
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-doc-go" aria-labelledby="ft-doc-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>doc.go</div><pre class="code" tabindex="0"><span class="c">// Package shop is the example app of the boost site.</span>
+<span class="kw">package</span> shop
+
+<span class="c">//go:generate go run github.com/xgodev/boost/builder/cmd/builder</span></pre></div>
+</div>
+</div>
+<div class="ide" role="tabpanel" id="p-gen" aria-labelledby="t-gen" hidden>
+<div class="files" role="tablist" aria-orientation="vertical" aria-label="Files go generate writes">
+<div class="dir" role="none" style="--d:0">cmd/api/</div>
+<button class="file" type="button" role="tab" id="ft-cmd-api-main-go" aria-selected="true" aria-controls="fp-cmd-api-main-go" tabindex="0" style="--d:1"><span class="fname">main.go</span><span class="hint">main</span></button>
+<div class="dir" role="none" style="--d:0">gen/</div>
+<button class="file" type="button" role="tab" id="ft-gen-module-go" aria-selected="false" aria-controls="fp-gen-module-go" tabindex="-1" style="--d:1"><span class="fname">module.go</span><span class="hint">all modules</span></button>
+<div class="dir" role="none" style="--d:1">builder/api/</div>
+<button class="file" type="button" role="tab" id="ft-gen-builder-api-modules-go" aria-selected="false" aria-controls="fp-gen-builder-api-modules-go" tabindex="-1" style="--d:2"><span class="fname">modules.go</span><span class="hint">app api</span></button>
+<button class="file" type="button" role="tab" id="ft-gen-builder-api-rest-module-go" aria-selected="false" aria-controls="fp-gen-builder-api-rest-module-go" tabindex="-1" style="--d:2"><span class="fname">rest_module.go</span><span class="hint a">@REST</span></button>
+<div class="dir" role="none" style="--d:1">builder/middleware/…/local/</div>
+<button class="file" type="button" role="tab" id="ft-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" aria-selected="false" aria-controls="fp-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" tabindex="-1" style="--d:2"><span class="fname">new_middleware.go</span><span class="hint a">@Middleware</span></button>
+<div class="dir" role="none" style="--d:1">implementation/…/stock/</div>
+<button class="file" type="button" role="tab" id="ft-gen-implementation-github-com-acme-shop-internal-pkg-domain-repository-stock-repository-implementation-go" aria-selected="false" aria-controls="fp-gen-implementation-github-com-acme-shop-internal-pkg-domain-repository-stock-repository-implementation-go" tabindex="-1" style="--d:2"><span class="fname">repository_implementation.go</span><span class="hint a">@Default</span></button>
+<div class="dir" role="none" style="--d:1">github.com/acme/shop/internal_/</div>
+<div class="dir" role="none" style="--d:2">app/api/rest/</div>
+<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-app-api-rest-plugins-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-app-api-rest-plugins-module-go" tabindex="-1" style="--d:3"><span class="fname">plugins_module.go</span></button>
+<div class="dir" role="none" style="--d:3">handler/stock/reserver/</div>
+<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-app-api-rest-handler-stock-reserver-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-app-api-rest-handler-stock-reserver-new-module-go" tabindex="-1" style="--d:4"><span class="fname">new_module.go</span></button>
+<div class="dir" role="none" style="--d:2">pkg/domain/service/…/local/</div>
+<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-module-go" tabindex="-1" style="--d:3"><span class="fname">new_module.go</span></button>
+<div class="dir" role="none" style="--d:2">pkg/datastore/stock/</div>
+<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-pkg-datastore-stock-memory-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-pkg-datastore-stock-memory-new-module-go" tabindex="-1" style="--d:3"><span class="fname">memory/new_module.go</span></button>
+<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-new-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-new-module-go" tabindex="-1" style="--d:3"><span class="fname">mongodb/new_module.go</span></button>
+<button class="file" type="button" role="tab" id="ft-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-options-module-go" aria-selected="false" aria-controls="fp-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-options-module-go" tabindex="-1" style="--d:3"><span class="fname">mongodb/options_module.go</span><span class="hint a">@Config</span></button>
+</div>
+<div class="panes">
+<div class="pane" role="tabpanel" id="fp-cmd-api-main-go" aria-labelledby="ft-cmd-api-main-go"><div class="pane-path"><span class="k k-gen">generated</span>cmd/api/main.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by builder; DO NOT EDIT.</span>
+
+<span class="c">// Command api runs app api: the doors builder generates in</span>
+<span class="c">// github.com/acme/shop/gen/builder/api.</span>
+<span class="kw">package</span> main
+
+<span class="kw">import</span> (
+	app <span class="st">&quot;github.com/acme/shop/gen/builder/api&quot;</span>
+	<span class="st">&quot;github.com/xgodev/boost&quot;</span>
+	fxfact <span class="st">&quot;github.com/xgodev/boost/factory/contrib/go.uber.org/fx/v1&quot;</span>
+)
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+	boost.Start()
+
+	fxfact.NewApp(app.Modules()...).Run()
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-module-go" aria-labelledby="ft-gen-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+
+<span class="kw">package</span> gen
+
+<span class="kw">import</span> (
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	gen_rest_54b9e997 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest&quot;</span>
+	gen_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest/handler/stock/reserver&quot;</span>
+	gen_mongodb_1bacb721 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/datastore/stock/mongodb&quot;</span>
+	gen_local_9afcd4bd <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local&quot;</span>
+	impl_stock_3bb9e74c <span class="st">&quot;github.com/acme/shop/gen/implementation/github.com/acme/shop/internal_/pkg/domain/repository/stock&quot;</span>
+)
+
+<span class="c">// Module registers every module generated by inject.</span>
+<span class="kw">func</span> <span class="fn">Module</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	<span class="kw">return</span> <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options(
+		gen_rest_54b9e997.PluginsModule(),
+		gen_reserver_5a8b66f7.NewModule(),
+		impl_stock_3bb9e74c.RepositoryImplementationModule(),
+		gen_mongodb_1bacb721.OptionsModule(),
+		gen_local_9afcd4bd.NewModule(),
+	)
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-builder-api-modules-go" aria-labelledby="ft-gen-builder-api-modules-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/builder/api/modules.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by builder; DO NOT EDIT.</span>
+
+<span class="kw">package</span> api
+
+<span class="kw">import</span> (
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	mw_local_84108acd <span class="st">&quot;github.com/acme/shop/gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local&quot;</span>
+	multiserverfx <span class="st">&quot;github.com/xgodev/boost/fx/modules/extra/multiserver&quot;</span>
+)
+
+<span class="c">// Modules returns the doors of app api and the multiserver that runs its servers:</span>
+<span class="c">//</span>
+<span class="c">//	fxfact.NewApp(api.Modules()...).Run()</span>
+<span class="kw">func</span> <span class="fn">Modules</span>() []<span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	<span class="kw">return</span> []<span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span>{
+		RestModule(),
+		mw_local_84108acd.DecorateNew(),
+		multiserverfx.Module(),
+	}
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-builder-api-rest-module-go" aria-labelledby="ft-gen-builder-api-rest-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/builder/api/rest_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by builder; DO NOT EDIT.</span>
+
+<span class="kw">package</span> api
+
+<span class="kw">import</span> (
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	gen_rest_54b9e997 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest&quot;</span>
+	gen_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest/handler/stock/reserver&quot;</span>
+	src_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/stock/reserver&quot;</span>
+	boostecho <span class="st">&quot;github.com/xgodev/boost/factory/contrib/labstack/echo/v4&quot;</span>
+	echofx <span class="st">&quot;github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4&quot;</span>
+)
+
+<span class="kw">var</span> restOnce <span class="ty">sync.Once</span>
+
+<span class="c">// RestModule serves the REST routes of server rest on echo.</span>
+<span class="c">// It returns an empty option after the first call.</span>
+<span class="kw">func</span> <span class="fn">RestModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
+
+	restOnce.Do(<span class="kw">func</span>() {
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;api.rest&quot;</span>,
+			echofx.Module(),
+			gen_reserver_5a8b66f7.NewModule(),
+			gen_rest_54b9e997.PluginsModule(),
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Invoke(<span class="kw">func</span>(srv *<span class="ty">boostecho.Server</span>, h0 *<span class="ty">src_reserver_5a8b66f7.Handler</span>) {
+				srv.Add(<span class="st">&quot;POST&quot;</span>, <span class="st">&quot;/stock/:sku/reserve&quot;</span>, h0.Handle)
+			}),
+		)
+	})
+
+	<span class="kw">return</span> options
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" aria-labelledby="ft-gen-builder-middleware-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/builder/middleware/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local/new_middleware.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by builder; DO NOT EDIT.</span>
+
+<span class="kw">package</span> local
+
+<span class="kw">import</span> (
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	context <span class="st">&quot;context&quot;</span>
+	src_reserver_399f2048 <span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver&quot;</span>
+	middleware <span class="st">&quot;github.com/xgodev/boost/extra/middleware&quot;</span>
+	fmiddleware <span class="st">&quot;github.com/xgodev/boost/factory/local/extra/middleware&quot;</span>
+	prometheusmw <span class="st">&quot;github.com/xgodev/boost/factory/local/extra/middleware/plugins/contrib/prometheus/client_golang/v1&quot;</span>
+	logmw <span class="st">&quot;github.com/xgodev/boost/factory/local/extra/middleware/plugins/local/wrapper/log&quot;</span>
+	contextfx <span class="st">&quot;github.com/xgodev/boost/fx/modules/core/context&quot;</span>
+)
+
+<span class="c">// DecorateNew decorates the reserver.Service that local.New provides:</span>
+<span class="c">// every consumer in the app receives a newDecorator, which runs the middlewares</span>
+<span class="c">// log, prometheus around each method; config can disable each one.</span>
+<span class="kw">func</span> <span class="fn">DecorateNew</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	<span class="kw">return</span> <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options(
+		contextfx.Module(),
+		<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Decorate(decorateNew),
+	)
+}
+
+<span class="c">// decorateNew builds the wrappers of every method of reserver.Service once.</span>
+<span class="kw">func</span> <span class="fn">decorateNew</span>(ctx <span class="ty">context.Context</span>, next <span class="ty">src_reserver_399f2048.Service</span>) (<span class="ty">src_reserver_399f2048.Service</span>, <span class="ty">error</span>) {
+	d := &amp;<span class="ty">newDecorator</span>{next: next}
+	<span class="kw">var</span> err <span class="ty">error</span>
+
+	d.reserveWrapper, err = fmiddleware.NewErrorWrapperWithOptions(ctx, &amp;<span class="ty">fmiddleware.Options</span>{Name: <span class="st">&quot;reserver.service.reserve&quot;</span>},
+		logmw.NewError,
+		prometheusmw.NewError,
+	)
+	<span class="kw">if</span> err != <span class="kw">nil</span> {
+		<span class="kw">return</span> <span class="kw">nil</span>, err
+	}
+
+	<span class="kw">return</span> d, <span class="kw">nil</span>
+}
+
+<span class="c">// newDecorator implements reserver.Service: each method runs next&#x27;s in its wrapper.</span>
+<span class="kw">type</span> <span class="ty">newDecorator</span> <span class="kw">struct</span> {
+	next           <span class="ty">src_reserver_399f2048.Service</span>
+	reserveWrapper *<span class="ty">middleware.ErrorWrapper</span>
+}
+
+<span class="c">// Reserve runs next.Reserve in the middlewares of reserver.service.reserve.</span>
+<span class="kw">func</span> (d *<span class="ty">newDecorator</span>) <span class="fn">Reserve</span>(ctx <span class="ty">context.Context</span>, a1 <span class="ty">string</span>) <span class="ty">error</span> {
+	<span class="kw">return</span> d.reserveWrapper.Exec(ctx, <span class="st">&quot;reserver.service.reserve&quot;</span>,
+		<span class="kw">func</span>(ctx <span class="ty">context.Context</span>) <span class="ty">error</span> {
+			<span class="kw">return</span> d.next.Reserve(ctx, a1)
+		},
+		<span class="kw">func</span>(_ <span class="ty">context.Context</span>, err <span class="ty">error</span>) <span class="ty">error</span> {
+			<span class="kw">return</span> err
+		},
+	)
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-implementation-github-com-acme-shop-internal-pkg-domain-repository-stock-repository-implementation-go" aria-labelledby="ft-gen-implementation-github-com-acme-shop-internal-pkg-domain-repository-stock-repository-implementation-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/implementation/github.com/acme/shop/internal_/pkg/domain/repository/stock/repository_implementation.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+
+<span class="kw">package</span> stock
+
+<span class="kw">import</span> (
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;github.com/xgodev/boost/model/errors&quot;</span>
+	<span class="st">&quot;github.com/xgodev/boost/wrapper/config&quot;</span>
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	gen_memory_6a1a5ba1 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/datastore/stock/memory&quot;</span>
+	gen_mongodb_1bacb721 <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/datastore/stock/mongodb&quot;</span>
+)
+
+<span class="c">// repositoryImplementationKey chooses the implementation of github.com/acme/shop/internal/pkg/domain/repository/stock.Repository.</span>
+<span class="kw">const</span> repositoryImplementationKey = <span class="st">&quot;internal.pkg.domain.repository.stock.implementation&quot;</span>
+
+<span class="kw">func</span> <span class="fn">init</span>() {
+	config.Add(repositoryImplementationKey, <span class="st">&quot;memory&quot;</span>, <span class="st">&quot;implementation of github.com/acme/shop/internal/pkg/domain/repository/stock.Repository: memory, mongodb&quot;</span>)
+}
+
+<span class="c">// RepositoryImplementation returns the name of the implementation of</span>
+<span class="c">// github.com/acme/shop/internal/pkg/domain/repository/stock.Repository that RepositoryImplementationModule wires.</span>
+<span class="kw">func</span> <span class="fn">RepositoryImplementation</span>() <span class="ty">string</span> {
+	<span class="kw">return</span> config.String(repositoryImplementationKey)
+}
+
+<span class="kw">var</span> repositoryImplementationOnce <span class="ty">sync.Once</span>
+
+<span class="c">// RepositoryImplementationModule wires the implementation of github.com/acme/shop/internal/pkg/domain/repository/stock.Repository</span>
+<span class="c">// named by internal.pkg.domain.repository.stock.implementation (memory, mongodb; default memory) and only that one.</span>
+<span class="c">// An unknown name fails the boot. It returns an empty option after the first</span>
+<span class="c">// call, so every consumer can include it.</span>
+<span class="kw">func</span> <span class="fn">RepositoryImplementationModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
+
+	repositoryImplementationOnce.Do(<span class="kw">func</span>() {
+		<span class="kw">switch</span> name := RepositoryImplementation(); name {
+		<span class="kw">case</span> <span class="st">&quot;memory&quot;</span>:
+			options = gen_memory_6a1a5ba1.NewModule()
+		<span class="kw">case</span> <span class="st">&quot;mongodb&quot;</span>:
+			options = gen_mongodb_1bacb721.NewModule()
+		<span class="kw">default</span>:
+			options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Error(errors.NotValidf(<span class="st">&quot;%s: unknown implementation %q; valid: %s&quot;</span>, repositoryImplementationKey, name, <span class="st">&quot;memory, mongodb&quot;</span>))
+		}
+	})
+
+	<span class="kw">return</span> options
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-app-api-rest-plugins-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-app-api-rest-plugins-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/app/api/rest/plugins_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+
+<span class="kw">package</span> rest
+
+<span class="kw">import</span> (
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	src_rest_54b9e997 <span class="st">&quot;github.com/acme/shop/internal/app/api/rest&quot;</span>
+)
+
+<span class="kw">var</span> PluginsOnce <span class="ty">sync.Once</span>
+
+<span class="c">// PluginsModule registers github.com/acme/shop/internal/app/api/rest.Plugins and the modules it depends on.</span>
+<span class="c">// It returns an empty option after the first call, so a constructor shared by</span>
+<span class="c">// several modules is registered only once.</span>
+<span class="kw">func</span> <span class="fn">PluginsModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
+
+	PluginsOnce.Do(<span class="kw">func</span>() {
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/app/api/rest.Plugins&quot;</span>,
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_rest_54b9e997.Plugins),
+		)
+	})
+
+	<span class="kw">return</span> options
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-app-api-rest-handler-stock-reserver-new-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-app-api-rest-handler-stock-reserver-new-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/app/api/rest/handler/stock/reserver/new_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+
+<span class="kw">package</span> reserver
+
+<span class="kw">import</span> (
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	gen_local_9afcd4bd <span class="st">&quot;github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local&quot;</span>
+	src_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/stock/reserver&quot;</span>
+)
+
+<span class="kw">var</span> NewOnce <span class="ty">sync.Once</span>
+
+<span class="c">// NewModule registers github.com/acme/shop/internal/app/api/rest/handler/stock/reserver.New and the modules it depends on.</span>
+<span class="c">// It returns an empty option after the first call, so a constructor shared by</span>
+<span class="c">// several modules is registered only once.</span>
+<span class="kw">func</span> <span class="fn">NewModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
+
+	NewOnce.Do(<span class="kw">func</span>() {
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/stock/reserver.New&quot;</span>,
+			gen_local_9afcd4bd.NewModule(),
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_reserver_5a8b66f7.New),
+		)
+	})
+
+	<span class="kw">return</span> options
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-pkg-domain-service-stock-reserver-local-new-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local/new_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+
+<span class="kw">package</span> local
+
+<span class="kw">import</span> (
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	impl_stock_3bb9e74c <span class="st">&quot;github.com/acme/shop/gen/implementation/github.com/acme/shop/internal_/pkg/domain/repository/stock&quot;</span>
+	src_local_9afcd4bd <span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver/local&quot;</span>
+)
+
+<span class="kw">var</span> NewOnce <span class="ty">sync.Once</span>
+
+<span class="c">// NewModule registers github.com/acme/shop/internal/pkg/domain/service/stock/reserver/local.New and the modules it depends on.</span>
+<span class="c">// It returns an empty option after the first call, so a constructor shared by</span>
+<span class="c">// several modules is registered only once.</span>
+<span class="kw">func</span> <span class="fn">NewModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
+
+	NewOnce.Do(<span class="kw">func</span>() {
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/pkg/domain/service/stock/reserver/local.New&quot;</span>,
+			impl_stock_3bb9e74c.RepositoryImplementationModule(),
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_local_9afcd4bd.New),
+		)
+	})
+
+	<span class="kw">return</span> options
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-pkg-datastore-stock-memory-new-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-pkg-datastore-stock-memory-new-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/pkg/datastore/stock/memory/new_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+
+<span class="kw">package</span> memory
+
+<span class="kw">import</span> (
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	src_memory_6a1a5ba1 <span class="st">&quot;github.com/acme/shop/internal/pkg/datastore/stock/memory&quot;</span>
+)
+
+<span class="kw">var</span> NewOnce <span class="ty">sync.Once</span>
+
+<span class="c">// NewModule registers github.com/acme/shop/internal/pkg/datastore/stock/memory.New and the modules it depends on.</span>
+<span class="c">// It returns an empty option after the first call, so a constructor shared by</span>
+<span class="c">// several modules is registered only once.</span>
+<span class="kw">func</span> <span class="fn">NewModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
+
+	NewOnce.Do(<span class="kw">func</span>() {
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/pkg/datastore/stock/memory.New&quot;</span>,
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_memory_6a1a5ba1.New),
+		)
+	})
+
+	<span class="kw">return</span> options
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-new-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-new-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/pkg/datastore/stock/mongodb/new_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+
+<span class="kw">package</span> mongodb
+
+<span class="kw">import</span> (
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	src_mongodb_1bacb721 <span class="st">&quot;github.com/acme/shop/internal/pkg/datastore/stock/mongodb&quot;</span>
+)
+
+<span class="kw">var</span> NewOnce <span class="ty">sync.Once</span>
+
+<span class="c">// NewModule registers github.com/acme/shop/internal/pkg/datastore/stock/mongodb.New and the modules it depends on.</span>
+<span class="c">// It returns an empty option after the first call, so a constructor shared by</span>
+<span class="c">// several modules is registered only once.</span>
+<span class="kw">func</span> <span class="fn">NewModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
+
+	NewOnce.Do(<span class="kw">func</span>() {
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/pkg/datastore/stock/mongodb.New&quot;</span>,
+			OptionsModule(),
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_mongodb_1bacb721.New),
+		)
+	})
+
+	<span class="kw">return</span> options
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-options-module-go" aria-labelledby="ft-gen-github-com-acme-shop-internal-pkg-datastore-stock-mongodb-options-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/github.com/acme/shop/internal_/pkg/datastore/stock/mongodb/options_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+
+<span class="kw">package</span> mongodb
+
+<span class="kw">import</span> (
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;github.com/xgodev/boost/wrapper/config&quot;</span>
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	src_mongodb_1bacb721 <span class="st">&quot;github.com/acme/shop/internal/pkg/datastore/stock/mongodb&quot;</span>
+)
+
+<span class="c">// optionsRoot is the config key holding github.com/acme/shop/internal/pkg/datastore/stock/mongodb.Options.</span>
+<span class="kw">const</span> optionsRoot = <span class="st">&quot;internal.pkg.datastore.stock.mongodb&quot;</span>
+
+<span class="kw">func</span> <span class="fn">init</span>() {
+	<span class="c">// env INTERNAL_PKG_DATASTORE_STOCK_MONGODB_COLLECTION</span>
+	config.Add(optionsRoot+<span class="st">&quot;.collection&quot;</span>, <span class="st">&quot;stock&quot;</span>, <span class="st">&quot;collection of the units in stock&quot;</span>)
+}
+
+<span class="kw">var</span> optionsOnce <span class="ty">sync.Once</span>
+
+<span class="c">// OptionsModule provides the Options of github.com/acme/shop/internal/pkg/datastore/stock/mongodb,</span>
+<span class="c">// filled from the config keys under internal.pkg.datastore.stock.mongodb.</span>
+<span class="c">// It returns an empty option after the first call, so every consumer can</span>
+<span class="c">// include it.</span>
+<span class="kw">func</span> <span class="fn">OptionsModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
+
+	optionsOnce.Do(<span class="kw">func</span>() {
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/pkg/datastore/stock/mongodb.Options&quot;</span>,
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(<span class="kw">func</span>() (*<span class="ty">src_mongodb_1bacb721.Options</span>, <span class="ty">error</span>) {
+				<span class="kw">return</span> config.NewOptionsWithPath[<span class="ty">src_mongodb_1bacb721.Options</span>](optionsRoot)
+			}),
+		)
+	})
+
+	<span class="kw">return</span> options
+}</pre></div>
+</div>
+</div>
+<div class="ide-run" role="tabpanel" id="p-run" aria-labelledby="t-run" hidden><pre class="code" tabindex="0"><span class="pr">$</span> go generate ./...
+<span class="dim">5:35PM</span> <span class="ok">INF</span> scanning ~/shop (module github.com/acme/shop)
+<span class="dim">5:35PM</span> <span class="ok">INF</span> generated 6 inject modules and 1 apps in ~/shop/gen, mains in ~/shop/cmd
+
+<span class="pr">$</span> go run ./cmd/api &amp;
+<span class="dim">5:36PM</span> <span class="ok">INF</span> starting Echo Server. https://echo.labstack.com/
+
+<span class="c"># memory is the @Default datastore: 3 t-shirts in stock</span>
+<span class="pr">$</span> for i in 1 2 3 4; do curl -s -w <span class="st">' %{http_code}\n'</span> -X POST localhost:8080/stock/tshirt/reserve; done
+ <span class="ok">204</span>
+ <span class="ok">204</span>
+ <span class="ok">204</span>
+{"httpStatusCode":409,"errorCode":"409","message":"tshirt is sold out"}
+ <span class="nu">409</span>
+
+<span class="c"># same binary on MongoDB, through boost's mongo factory:</span>
+<span class="c"># INTERNAL_PKG_DOMAIN_REPOSITORY_STOCK_IMPLEMENTATION=mongodb</span></pre></div>
+</div>
+<!-- hero:end -->
+  </div>
+</div>
+
+<!-- ================= BOOT ================= -->
+<section id="boot">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">github.com/xgodev/boost · bootstrap</div>
+      <h2>One boot. Everything ready after it.</h2>
+      <p class="sec-lede"><code>boost.Start()</code> runs first. When it returns, config is loaded and the logger is set, so every factory reads its own keys and logs the same way.</p>
+    </div>
+    <div class="boot">
+      <ol class="pipe" aria-label="Boot sequence">
+        <li><span class="ord">01</span><span class="nm">boost.Start()</span><span class="cap">Reads flags, env vars and config files.</span></li>
+        <li><span class="ord">02</span><span class="nm">config</span><span class="cap">Every key declared once, with a default and a description.</span></li>
+        <li><span class="ord">03</span><span class="nm">log</span><span class="cap"><a class="ref" href="https://github.com/uber-go/zap">zap</a>, <a class="ref" href="https://github.com/rs/zerolog">zerolog</a> or <a class="ref" href="https://github.com/sirupsen/logrus">logrus</a> behind one wrapper.</span></li>
+        <li><span class="ord">04</span><span class="nm">factory</span><span class="cap">One constructor per component, plugins applied.</span></li>
+        <li><span class="ord">05</span><span class="nm"><a class="ref" href="https://uber-go.github.io/fx/">fx</a></span><span class="cap">Generated modules wire the dependency graph.</span></li>
+        <li><span class="ord">06</span><span class="nm">serve</span><span class="cap">REST, <a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a>, <a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a> or an event function.</span></li>
+      </ol>
+      <div class="keys">
+        <h3>One key, three ways to set it</h3>
+        <p>Keys live under <code class="mono" style="color:var(--fg-2)">boost.factory.&lt;component&gt;.*</code> and reach the app from wherever you deploy.</p>
+        <div class="keyrow"><span>key</span><code>boost.factory.zap.console.level</code></div>
+        <div class="keyrow"><span>env</span><code>BOOST_FACTORY_ZAP_CONSOLE_LEVEL=DEBUG</code></div>
+        <div class="keyrow"><span>flag</span><code>--boost.factory.zap.console.level=DEBUG</code></div>
+<pre class="mini" style="margin-top:var(--s4)"><span class="c">// cmd/api/main.go, written by go generate</span>
+<span class="kw">func</span> <span class="fn">main</span>() {
+	boost.Start()
+
+	fxfact.NewApp(app.Modules()...).Run()
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PACKAGES ================= -->
+<section id="packages" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">packages</div>
+      <h2>Every piece has one job.</h2>
+      <p class="sec-lede">Factories build, wrappers abstract, generators remove the wiring. Use one package or all of them.</p>
+    </div>
+
+    <div class="bento">
+      <!-- factories -->
+      <article class="cell span-4 row-2">
+        <span class="path">factory/contrib/labstack/echo/v4</span>
+        <h3>Factories</h3>
+        <p>One constructor per component. You never instantiate the SDK by hand: the factory reads its config keys, applies the plugins you list and returns the ready client.</p>
+<pre class="mini">srv, _ := echo.<span class="fn">NewServer</span>(ctx,
+	cors.Register,
+	requestid.Register,
+	gzip.Register,
+	log.Register,
+	health.Register,
+)
+srv.GET(<span class="st">"/stock/:sku"</span>, Get)
+srv.Serve(ctx)</pre>
+        <div class="stats">
+          <div class="stat"><b>48</b><span>factories</span></div>
+          <div class="stat"><b>39</b><span>upstream libraries</span></div>
+          <div class="stat"><b>58</b><span>plugins</span></div>
+        </div>
+      </article>
+
+      <!-- plugins -->
+      <article class="cell span-2">
+        <span class="path">…/echo/v4/plugins</span>
+        <h3>Plugins</h3>
+        <p>Behaviour you opt into per factory, applied in the order you list it.</p>
+        <div class="chips">
+          <span class="chip on">cors</span><span class="chip on">requestid</span><span class="chip on">gzip</span><span class="chip on">log</span><span class="chip on">health</span><span class="chip">recover</span><span class="chip">bodylimit</span><span class="chip">prometheus</span><span class="chip">otel</span><span class="chip">datadog</span><span class="chip">swaggo</span><span class="chip">semaphore</span>
+        </div>
+      </article>
+
+      <!-- wrappers -->
+      <article class="cell span-2">
+        <span class="path">wrapper/{log,config,cache,publisher}</span>
+        <h3>Wrappers</h3>
+        <p>Swap <a class="ref" href="https://github.com/uber-go/zap">zap</a> for <a class="ref" href="https://github.com/rs/zerolog">zerolog</a> by changing one line in <code>main</code>. App code only ever calls the wrapper.</p>
+<pre class="mini">log.<span class="fn">FromContext</span>(ctx).
+	Infof(<span class="st">"reserved %s"</span>, sku)</pre>
+      </article>
+
+      <!-- middleware -->
+      <article class="cell span-3">
+        <span class="path">extra/middleware</span>
+        <h3>Middleware</h3>
+        <p>Wraps any call in log, cache, <a class="ref" href="https://github.com/afex/hystrix-go">hystrix</a>, <a class="ref" href="https://github.com/DataDog/dd-trace-go">datadog</a>, <a class="ref" href="https://github.com/prometheus/client_golang">prometheus</a> or fallback. With <code>@Middleware</code> the decorator is generated and the method body stays clean.</p>
+        <div class="onion" aria-label="Middleware order: log, then prometheus, then hystrix, then the method">
+          <div class="layer"><span class="lbl">log</span>
+            <div class="layer"><span class="lbl">prometheus</span>
+              <div class="layer"><span class="lbl">hystrix</span>
+                <div class="core">Service.Reserve()</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="onion-note">@Middleware(log, prometheus, hystrix) · first is outermost</span>
+      </article>
+
+      <!-- inject -->
+      <article class="cell span-3">
+        <span class="path">inject</span>
+        <h3>Inject</h3>
+        <p><code>@Provide</code>, <code>@Inject</code> and <code>@Invoke</code> become one <a class="ref" href="https://uber-go.github.io/fx/">fx</a> module per function and a root <code>Module()</code>.</p>
+        <div class="graph" aria-label="Dependency graph">
+          <div class="gnode"><span class="a">@Default</span><span class="fnn">memory.New | mongodb.New</span><span class="ty">stock.Repository</span></div>
+          <div class="garrow">↓</div>
+          <div class="gnode"><span class="a">@Middleware</span><span class="fnn">local.New(repo)</span><span class="ty">reserver.Service</span></div>
+          <div class="garrow">↓</div>
+          <div class="gnode"><span class="a">@Provide</span><span class="fnn">reserver.New(svc)</span><span class="ty">*Handler</span></div>
+          <div class="garrow">↓</div>
+          <div class="gnode"><span class="a">@REST</span><span class="fnn">Handler.Handle</span><span class="ty">POST /stock/:sku/reserve</span></div>
+        </div>
+        <ul class="fails" aria-label="Errors caught at go generate">
+          <li>cycles and missing providers fail at <span class="mono">go generate</span>, not in production</li>
+          <li>two providers of the same value are rejected</li>
+        </ul>
+      </article>
+
+      <!-- annotation -->
+      <article class="cell span-2">
+        <span class="path">annotation</span>
+        <h3>Annotation</h3>
+        <p>Reads <code>// @Name(key=value)</code> from doc comments into typed structs. Every generator here is built on it.</p>
+<pre class="mini"><span class="kw">var</span> r <span class="kw">struct</span> {
+	Path <span class="ty">string</span> <span class="st">`attr:"path"`</span>
+}
+ann.<span class="fn">Decode</span>(&amp;r)</pre>
+      </article>
+
+      <!-- builder -->
+      <article class="cell span-2">
+        <span class="path">builder</span>
+        <h3>Builder</h3>
+        <p>An annotation says which door serves the handler. The builder writes the door, the app modules and <code>main</code>.</p>
+        <div class="doors">
+          <div class="door"><span class="a">@REST</span><span><a class="ref" href="https://echo.labstack.com/">echo</a> route</span></div>
+          <div class="door"><span class="a">@GRPC</span><span><a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a> service</span></div>
+          <div class="door"><span class="a">@Function</span><span><a class="ref" href="https://github.com/cloudevents/sdk-go">cloudevents</a> · <a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">kafka</a> · <a class="ref" href="https://github.com/nats-io/nats.go">nats</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">pubsub</a></span></div>
+          <div class="door"><span class="a">@Middleware</span><span>generated decorator</span></div>
+          <div class="door"><span class="a">@Default</span><span>implementation picked by config</span></div>
+        </div>
+      </article>
+
+      <!-- function -->
+      <article class="cell span-2">
+        <span class="path">bootstrap/function</span>
+        <h3>Functions</h3>
+        <p>One event handler, four transports. Change the adapter in config; the handler stays the same.</p>
+<pre class="mini"><span class="kw">func</span>(ctx, in <span class="ty">cloudevents.Event</span>)
+	(*<span class="ty">cloudevents.Event</span>, <span class="ty">error</span>)</pre>
+      </article>
+
+      <!-- mcp -->
+      <article class="cell span-full mcp">
+        <div>
+          <span class="path">factory/contrib/modelcontextprotocol/go-sdk/v1/{server,client}</span>
+          <h3>MCP</h3>
+          <p>Your use cases become tools that agents call over <a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a>, and your service calls other MCP servers. Server and client are factories like the rest: config keys, plugins, and the server runs beside <a class="ref" href="https://echo.labstack.com/">echo</a> and <a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a>.</p>
+          <div class="chips"><span class="chip on">server · HTTP</span><span class="chip on">server · STDIO</span><span class="chip">client · HTTP</span><span class="chip">client · COMMAND</span><span class="chip">log</span><span class="chip">otel</span></div>
+        </div>
+<pre class="mini">srv, _ := server.<span class="fn">NewServer</span>(ctx, mcplog.Register, otel.Register)
+mcp.<span class="fn">AddTool</span>(srv.Instance(), &amp;mcp.Tool{
+	Name:        <span class="st">"reserve"</span>,
+	Description: <span class="st">"holds items for an order"</span>,
+}, reserve)
+srv.<span class="fn">Serve</span>(ctx)</pre>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BUILDER WALK ================= -->
+<section id="builder" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">builder · inject · annotation</div>
+      <h2>From annotation to binary in two commands.</h2>
+      <p class="sec-lede">You write handlers, services and annotations. Everything that repeats between services is generated, checked and rewritten on every run.</p>
+    </div>
+    <div class="walk">
+      <ol class="steps">
+        <li><div><h3>Annotate</h3><p>Mark constructors with <span class="mono" style="color:var(--ann)">@Provide</span>, handlers with a door, services with <span class="mono" style="color:var(--ann)">@Middleware</span>, the default implementation with <span class="mono" style="color:var(--ann)">@Default</span>, options with <span class="mono" style="color:var(--ann)">@Config</span>.</p></div></li>
+        <li><div><h3>Generate</h3><p>Inject and builder run in one pass. A broken graph stops here and leaves your output untouched.</p><code class="cmd">go generate ./...</code></div></li>
+        <li><div><h3>Run</h3><p>Each app gets its own <code class="mono">main</code>, with the servers and plugins it declared.</p><code class="cmd">go run ./cmd/api</code></div></li>
+      </ol>
+      <div class="win">
+        <div class="win-bar"><span class="tab" aria-selected="true" style="cursor:default"><span class="k k-gen">generated</span>output</span><span class="win-step">rewritten on every run</span></div>
+<pre class="tree">cmd/api/main.go                       <span class="note">// boost.Start(), then app api</span>
+gen/
+├── module.go                         <span class="note">// every inject module</span>
+├── builder/api/modules.go            <span class="note">// the doors of app api</span>
+├── builder/api/rest_module.go        <span class="note">// @REST POST /stock/:sku/reserve</span>
+├── builder/middleware/…/new_middleware.go
+│                                     <span class="note">// @Middleware(log, prometheus)</span>
+├── implementation/…/repository_implementation.go
+│                                     <span class="note">// @Default: memory | mongodb</span>
+└── github.com/acme/shop/internal_/…  <span class="note">// @Provide, @Config: one module each</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= COMPAT ================= -->
+<section id="compat" class="compat">
+  <div class="wrap">
+    <div class="eyebrow">backward compatibility</div>
+    <h2>Upgrade boost.<br>Keep your code.</h2>
+    <p class="sec-lede">A minor release never asks you to rewrite a service. That is a rule of the project, enforced on every pull request.</p>
+
+    <div class="compat-grid">
+      <div class="pillars">
+        <div class="pillar"><div>
+          <h3>Public API is a contract</h3>
+          <p>A component's public API does not break without a major version bump and a written reason. Any observable change ships with a test first.</p>
+        </div></div>
+        <div class="pillar"><div>
+          <h3>SDK majors live side by side</h3>
+          <p>Factory paths carry the upstream major. Moving to a new SDK is an import you choose, not a forced migration.</p>
+<pre class="mini">factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v1</span>   <span class="c">// keeps working</span>
+factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span class="c">// new SDK major</span></pre>
+        </div></div>
+        <div class="pillar"><div>
+          <h3>A gate that only moves forward</h3>
+          <p>Every PR is compared to <code>develop</code>: format, lint, build and tests can stay the same or get better, never worse.</p>
+        </div></div>
+      </div>
+
+      <div>
+        <div class="win diff">
+          <div class="win-bar"><span class="tab" aria-selected="true" style="cursor:default">go.mod</span><span class="win-step">your service</span></div>
+<pre class="code" style="min-height:0"> <span class="kw">module</span> github.com/acme/shop
+
+ <span class="kw">require</span> (
+<span class="del">-	github.com/xgodev/boost v1.1.0</span><span class="add">+	github.com/xgodev/boost v1.1.1</span> )
+
+<span class="pr">$</span> go build ./... &amp;&amp; go test ./...
+<span class="ok">ok</span>  github.com/acme/shop/...</pre>
+          <div class="diff-foot"><span>1 line changed in go.mod</span><b>0 lines changed in your code</b></div>
+        </div>
+        <div class="timeline" aria-label="Release history">
+          <span>2024-07</span><span class="bar" aria-hidden="true"></span><span class="tag">v1.0.0-dev.219</span><span class="tag">v1.1.0</span><span class="tag now">v1.1.1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= INTEGRATIONS ================= -->
+<section id="integrations">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">factory/contrib</div>
+      <h2>39 libraries. Same shape every time.</h2>
+      <p class="sec-lede">Each one is a factory with its own config keys and plugins. The version in the path is the upstream major it wraps.</p>
+    </div>
+    <div class="lib-grid">
+      <div class="lib-group"><h3>Web, RPC &amp; MCP</h3><ul>
+        <li><span><a class="ref" href="https://echo.labstack.com/">Echo</a></span><span class="v">echo/v4</span></li>
+        <li><span><a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a> server · client</span><span class="v">grpc/v1</span></li>
+        <li><span><a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a> server · client</span><span class="v">go-sdk/v1</span></li>
+        <li><span><a class="ref" href="https://pkg.go.dev/golang.org/x/net/http2">HTTP/2</a> server</span><span class="v">x/net/v0</span></li>
+        <li><span><a class="ref" href="https://github.com/graphql-go/graphql">GraphQL</a></span><span class="v">graphql-go/v0</span></li>
+        <li><span><a class="ref" href="https://github.com/go-resty/resty">Resty</a></span><span class="v">resty/v2</span></li>
+      </ul></div>
+      <div class="lib-group"><h3>Messaging</h3><ul>
+        <li><span><a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">Kafka (Confluent)</a></span><span class="v">confluent-kafka-go/v2</span></li>
+        <li><span><a class="ref" href="https://github.com/nats-io/nats.go">NATS</a></span><span class="v">nats.go/v1</span></li>
+        <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">Google Pub/Sub</a></span><span class="v">pubsub/v1 · v2</span></li>
+        <li><span><a class="ref" href="https://gocloud.dev/howto/pubsub/">Go CDK Pub/Sub</a></span><span class="v">gocloud.dev/v0</span></li>
+        <li><span><a class="ref" href="https://github.com/cloudevents/sdk-go">CloudEvents</a></span><span class="v">sdk-go/v2</span></li>
+        <li><span><a class="ref" href="https://github.com/lovoo/goka">Goka</a></span><span class="v">goka/v1</span></li>
+        <li><span><a class="ref" href="https://github.com/aws/aws-sdk-go-v2">SQS · SNS · Kinesis</a></span><span class="v">aws-sdk-go-v2</span></li>
+      </ul></div>
+      <div class="lib-group"><h3>Data</h3><ul>
+        <li><span><a class="ref" href="https://www.mongodb.com/docs/drivers/go/current/">MongoDB</a></span><span class="v">mongo-driver/v1 · v2</span></li>
+        <li><span><a class="ref" href="https://github.com/jackc/pgx">PostgreSQL</a></span><span class="v">pgx/v5</span></li>
+        <li><span><a class="ref" href="https://github.com/godror/godror">Oracle</a></span><span class="v">godror/v0</span></li>
+        <li><span><a class="ref" href="https://github.com/gocql/gocql">Cassandra</a></span><span class="v">gocql/v1</span></li>
+        <li><span><a class="ref" href="https://github.com/elastic/go-elasticsearch">Elasticsearch</a></span><span class="v">go-elasticsearch/v8</span></li>
+        <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/bigquery">BigQuery</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/firestore">Firestore</a> · <a class="ref" href="https://pkg.go.dev/google.golang.org/api/option">API client</a></span><span class="v">cloud.google.com</span></li>
+        <li><span><a class="ref" href="https://github.com/jlaffaye/ftp">FTP</a></span><span class="v">ftp/v0</span></li>
+      </ul></div>
+      <div class="lib-group"><h3>Cache</h3><ul>
+        <li><span><a class="ref" href="https://redis.uptrace.dev/">Redis</a></span><span class="v">go-redis/v9</span></li>
+        <li><span><a class="ref" href="https://github.com/allegro/bigcache">BigCache</a></span><span class="v">bigcache/v3</span></li>
+        <li><span><a class="ref" href="https://github.com/coocood/freecache">FreeCache</a></span><span class="v">freecache/v1</span></li>
+        <li><span><a class="ref" href="https://github.com/tidwall/buntdb">BuntDB</a></span><span class="v">buntdb/v1</span></li>
+        <li><span><a class="ref" href="https://github.com/hashicorp/go-memdb">memdb</a></span><span class="v">memdb/v1</span></li>
+      </ul></div>
+      <div class="lib-group"><h3>Observability</h3><ul>
+        <li><span><a class="ref" href="https://opentelemetry.io/docs/languages/go/">OpenTelemetry</a></span><span class="v">otel/v1</span></li>
+        <li><span><a class="ref" href="https://github.com/DataDog/dd-trace-go">Datadog</a></span><span class="v">dd-trace-go/v1</span></li>
+        <li><span><a class="ref" href="https://github.com/prometheus/client_golang">Prometheus</a></span><span class="v">client_golang/v1</span></li>
+        <li><span><a class="ref" href="https://github.com/afex/hystrix-go">Hystrix</a></span><span class="v">hystrix-go/v0</span></li>
+      </ul></div>
+      <div class="lib-group"><h3>Logging &amp; platform</h3><ul>
+        <li><span><a class="ref" href="https://github.com/uber-go/zap">zap</a> · <a class="ref" href="https://github.com/rs/zerolog">zerolog</a> · <a class="ref" href="https://github.com/sirupsen/logrus">logrus</a></span><span class="v">wrapper/log</span></li>
+        <li><span><a class="ref" href="https://uber-go.github.io/fx/">fx</a></span><span class="v">fx/v1</span></li>
+        <li><span><a class="ref" href="https://cobra.dev/">Cobra</a></span><span class="v">cobra/v1</span></li>
+        <li><span><a class="ref" href="https://github.com/kubernetes/client-go">Kubernetes</a></span><span class="v">client-go/v0</span></li>
+        <li><span><a class="ref" href="https://github.com/mittwald/vaultgo">Vault</a></span><span class="v">vaultgo/v0</span></li>
+        <li><span><a class="ref" href="https://github.com/panjf2000/ants">ants</a> worker pool</span><span class="v">ants/v2</span></li>
+      </ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AGENTS ================= -->
+<section id="agents" style="padding-top:0">
+  <div class="wrap agents">
+    <div>
+      <div class="eyebrow">claude-plugin@xgodev</div>
+      <h2>Coding agents that follow the rules.</h2>
+      <p class="sec-lede">The plugin teaches Claude Code boost's Iron Laws and the project layout, and runs the comparative quality gate before every push.</p>
+      <div class="agent-cmds">
+        <div class="install"><span class="prompt">&gt;</span><code id="cmd-mk">/plugin marketplace add xgodev/claude-plugin</code><button class="copy" type="button" data-copy="cmd-mk">copy</button></div>
+        <div class="install"><span class="prompt">&gt;</span><code id="cmd-pl">/plugin install claude-plugin@xgodev</code><button class="copy" type="button" data-copy="cmd-pl">copy</button></div>
+      </div>
+    </div>
+    <ol class="laws" aria-label="Iron Laws">
+      <li><div><b>boost.Start() first</b><span>Config and log exist only after it.</span></div></li>
+      <li><div><b>Log only through wrapper/log</b><span><span class="mono">log.FromContext(ctx)</span>, never a third-party logger in app code.</span></div></li>
+      <li><div><b>Config only through wrapper/config</b><span>No <span class="mono">os.Getenv</span>; keys under <span class="mono">boost.factory.&lt;x&gt;.*</span>.</span></div></li>
+      <li><div><b>One factory per component</b><span>Never instantiate the upstream SDK directly.</span></div></li>
+      <li><div><b>Backward compatible</b><span>Public API breaks only with a major bump and a reason.</span></div></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= FINAL ================= -->
+<section class="final">
+  <div class="wrap">
+    <div class="eyebrow">go.mod</div>
+    <h2>Start with one line.</h2>
+    <div class="cta-row">
+      <div class="install"><span class="prompt">$</span><code id="cmd-get2">go get github.com/xgodev/boost</code><button class="copy" type="button" data-copy="cmd-get2">copy</button></div>
+      <a class="btn btn-primary" href="https://github.com/xgodev/boost/tree/main/examples">See the examples</a>
+      <a class="btn btn-ghost" href="https://github.com/xgodev/boost">Star on GitHub</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="mono">boost · xgodev · MIT</span>
+    <span class="credit">Gopher by <a class="ref" href="https://go.dev/blog/gopher">Renée French</a>, <a class="ref" href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></span>
+    <nav aria-label="Footer">
+      <a href="https://github.com/xgodev/boost">GitHub</a>
+      <a href="https://github.com/xgodev/boost/tree/main/examples">Examples</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>

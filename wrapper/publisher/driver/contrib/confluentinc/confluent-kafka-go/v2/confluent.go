@@ -14,7 +14,7 @@ import (
 
 // client represents a Kafka client that implements.
 type client struct {
-	producer *kafka.Producer
+	producer producer
 	options  *Options
 }
 
@@ -29,6 +29,10 @@ func NewWithConfigPath(ctx context.Context, producer *kafka.Producer, path strin
 
 // NewWithOptions returns connection with options.
 func NewWithOptions(ctx context.Context, producer *kafka.Producer, options *Options) publisher.Driver {
+	return newDriver(producer, options)
+}
+
+func newDriver(producer producer, options *Options) publisher.Driver {
 	return &client{producer: producer, options: options}
 }
 
@@ -43,40 +47,82 @@ func New(ctx context.Context, producer *kafka.Producer) (publisher.Driver, error
 	return NewWithOptions(ctx, producer, options), nil
 }
 
-// Publish publishes an event slice.
-func (p *client) Publish(ctx context.Context, outs []*v2.Event) (res []publisher.PublishOutput, err error) {
+// Publish produces every event and waits, bounded by ctx, for the delivery
+// report of each one. A conversion error, a Produce error, a failed delivery
+// report or the end of ctx before the report arrives becomes the Error of that
+// event's output; outputs keep the order of events.
+func (p *client) Publish(ctx context.Context, events []*v2.Event) ([]publisher.PublishOutput, error) {
 
 	logger := log.FromContext(ctx).WithTypeOf(*p)
 
-	logger.Tracef("publishing to kafka %d events", len(outs))
+	logger.Tracef("publishing to kafka %d events", len(events))
 
-	for _, out := range outs {
+	res := make([]publisher.PublishOutput, len(events))
+	// Buffered for every event so librdkafka never blocks writing a report
+	// after Publish stopped reading because ctx ended.
+	deliveryChan := make(chan kafka.Event, len(events))
+	pending := make(map[int]struct{}, len(events))
 
-		if out.ID() == "" {
-			out.SetID(uuid.NewString())
+	for i, event := range events {
+
+		res[i].Event = event
+
+		if event.ID() == "" {
+			event.SetID(uuid.NewString())
 		}
 
-		msg, err := p.convert(ctx, out)
+		msg, err := p.convert(ctx, event)
 		if err != nil {
-			res = append(res, publisher.PublishOutput{Event: out, Error: err})
+			res[i].Error = err
+			continue
+		}
+		msg.Opaque = i
+
+		if err := p.producer.Produce(msg, deliveryChan); err != nil {
+			res[i].Error = errors.Wrap(err, errors.Internalf("unable to produce message"))
 			continue
 		}
 
-		if err := p.producer.Produce(msg, nil); err != nil {
-			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("unable to produce message"))})
-			continue
-		}
-
-		res = append(res, publisher.PublishOutput{Event: out})
+		pending[i] = struct{}{}
 
 		p.log(ctx, "message produced, awaiting delivery confirmation")
 	}
 
-	for p.producer.Flush(10000) > 0 {
-		p.log(ctx, "Still waiting to flush outstanding messages")
-	}
+	p.awaitDeliveries(ctx, deliveryChan, pending, res)
 
-	return res, err
+	return res, nil
+}
+
+// awaitDeliveries reads delivery reports until every pending output has one or
+// ctx ends; then each output still pending gets the ctx error.
+func (p *client) awaitDeliveries(ctx context.Context, deliveryChan chan kafka.Event,
+	pending map[int]struct{}, res []publisher.PublishOutput) {
+
+	logger := log.FromContext(ctx).WithTypeOf(*p)
+
+	for len(pending) > 0 {
+		select {
+		case e := <-deliveryChan:
+			msg, ok := e.(*kafka.Message)
+			if !ok {
+				logger.Warnf("ignored event on delivery channel: %v", e)
+				continue
+			}
+			i := msg.Opaque.(int) // Publish sets Opaque to the output index
+			delete(pending, i)
+			if err := msg.TopicPartition.Error; err != nil {
+				res[i].Error = errors.Wrap(err, errors.Internalf("unable to deliver message"))
+				continue
+			}
+			p.log(ctx, "message delivered to %s [%d] at offset %v",
+				*msg.TopicPartition.Topic, msg.TopicPartition.Partition, msg.TopicPartition.Offset)
+		case <-ctx.Done():
+			for i := range pending {
+				res[i].Error = errors.Wrap(ctx.Err(), errors.Internalf("delivery report not received"))
+			}
+			return
+		}
+	}
 }
 
 func (p *client) log(ctx context.Context, format string, args ...interface{}) {

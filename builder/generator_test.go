@@ -1,0 +1,319 @@
+package builder
+
+import (
+	"context"
+	"flag"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"os"
+	"path"
+	"path/filepath"
+	"sort"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/xgodev/boost/annotation"
+	"github.com/xgodev/boost/inject"
+	"github.com/xgodev/boost/model/errors"
+)
+
+var update = flag.Bool("update", false, "rewrite the golden files of the generator tests")
+
+func testOptions(root string) Options {
+	return Options{
+		GeneratorOptions: inject.GeneratorOptions{ModulePath: testModule, ModuleDir: root, OutputDir: filepath.Join(root, "gen")},
+		CmdDir:           filepath.Join(root, "cmd"),
+	}
+}
+
+func render(t *testing.T, entries []annotation.Entry) (map[string][]byte, error) {
+	t.Helper()
+	spec, err := newTestSpec(t, entries)
+	require.NoError(t, err)
+	return NewGenerator(spec, testOptions("/src/app")).Render(context.Background())
+}
+
+func fileNames(files map[string][]byte) []string {
+	names := make([]string, 0, len(files))
+	for name := range files {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
+
+func TestGenerator_Render(t *testing.T) {
+	files, err := render(t, validEntries())
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{
+		"builder/api/admin_module.go",
+		"builder/api/grpc_module.go",
+		"builder/api/mcp_module.go",
+		"builder/api/modules.go",
+		"builder/api/ops_module.go",
+		"builder/api/rest_module.go",
+		"builder/worker/function_module.go",
+		"builder/worker/modules.go",
+	}, fileNames(files))
+
+	for name, src := range files {
+		assertImportsUsed(t, name, src)
+
+		golden := filepath.Join("testdata", "golden", filepath.FromSlash(strings.TrimPrefix(name, "builder/"))+".golden")
+		if *update {
+			require.NoError(t, os.MkdirAll(filepath.Dir(golden), 0o755))
+			require.NoError(t, os.WriteFile(golden, src, 0o644))
+			continue
+		}
+		want, err := os.ReadFile(golden)
+		require.NoError(t, err, "run go test ./builder/ -run TestGenerator_Render -update")
+		assert.Equal(t, string(want), string(src), name)
+	}
+}
+
+// assertImportsUsed fails when the file imports a package it never refers
+// to, which would not compile.
+func assertImportsUsed(t *testing.T, name string, src []byte) {
+	t.Helper()
+	file, err := parser.ParseFile(token.NewFileSet(), name, src, 0)
+	require.NoError(t, err, name)
+
+	used := map[string]bool{}
+	ast.Inspect(file, func(n ast.Node) bool {
+		if sel, ok := n.(*ast.SelectorExpr); ok {
+			if x, ok := sel.X.(*ast.Ident); ok {
+				used[x.Name] = true
+			}
+		}
+		return true
+	})
+	for _, imp := range file.Imports {
+		alias := path.Base(strings.Trim(imp.Path.Value, `"`))
+		if imp.Name != nil {
+			alias = imp.Name.Name
+		}
+		assert.True(t, used[alias], "%s imports %s without using it", name, imp.Path.Value)
+	}
+}
+
+func TestGenerator_RenderIsStable(t *testing.T) {
+	first, err := render(t, validEntries())
+	require.NoError(t, err)
+
+	reversed := validEntries()
+	for i, j := 0, len(reversed)-1; i < j; i, j = i+1, j-1 {
+		reversed[i], reversed[j] = reversed[j], reversed[i]
+	}
+	second, err := render(t, reversed)
+	require.NoError(t, err)
+
+	assert.Equal(t, first, second, "the order of the annotations does not change the output")
+}
+
+func TestGenerator_RenderErrors(t *testing.T) {
+	handle := func(results ...string) annotation.Entry {
+		return decl("events", "", "Handle", eventParams, results, ann("Function", "adapter=nats"))
+	}
+	grpcServer := func(result string) annotation.Entry {
+		return decl("health", "", "NewServer", nil, []string{result},
+			ann("Provide", "index=0"), ann("GRPC", "register=healthpb.RegisterHealthServer"))
+	}
+
+	tests := []struct {
+		name    string
+		entries []annotation.Entry
+		want    string
+	}{
+		{"function result from a package the file does not import", []annotation.Entry{handle("*missing.Event", "error")}, "missing.Event"},
+		{"function result of an unexported type", []annotation.Entry{handle("*result", "error")}, "result"},
+		{"gRPC value of an unexported type", []annotation.Entry{grpcServer("*server")}, "server"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := render(t, tt.entries)
+			require.Error(t, err)
+			assert.True(t, errors.IsNotValid(err), "got %v", err)
+			assert.Contains(t, err.Error(), tt.want)
+		})
+	}
+}
+
+func TestGenerator_RenderNeedsOutputInsideTheModule(t *testing.T) {
+	spec, err := newTestSpec(t, validEntries())
+	require.NoError(t, err)
+
+	opts := Options{GeneratorOptions: inject.GeneratorOptions{ModulePath: testModule, ModuleDir: "/src/app", OutputDir: "/elsewhere/gen"}}
+	_, err = NewGenerator(spec, opts).Render(context.Background())
+	assert.True(t, errors.IsNotValid(err), "got %v", err)
+}
+
+func TestGenerator_RenderCmd(t *testing.T) {
+	spec, err := newTestSpec(t, validEntries())
+	require.NoError(t, err)
+	files, err := NewGenerator(spec, testOptions("/src/app")).RenderCmd(context.Background())
+	require.NoError(t, err)
+
+	assert.Equal(t, []string{"api/main.go", "worker/main.go"}, fileNames(files))
+
+	for name, src := range files {
+		assertImportsUsed(t, name, src)
+
+		golden := filepath.Join("testdata", "golden", "cmd", filepath.FromSlash(name)+".golden")
+		if *update {
+			require.NoError(t, os.MkdirAll(filepath.Dir(golden), 0o755))
+			require.NoError(t, os.WriteFile(golden, src, 0o644))
+			continue
+		}
+		want, err := os.ReadFile(golden)
+		require.NoError(t, err, "run go test ./builder/ -run TestGenerator_RenderCmd -update")
+		assert.Equal(t, string(want), string(src), name)
+	}
+}
+
+func TestGenerator_RenderCmdWithoutCmdDir(t *testing.T) {
+	spec, err := newTestSpec(t, validEntries())
+	require.NoError(t, err)
+	opts := testOptions("/src/app")
+	opts.CmdDir = ""
+
+	files, err := NewGenerator(spec, opts).RenderCmd(context.Background())
+	require.NoError(t, err)
+	assert.Empty(t, files, "no cmd dir, no main")
+}
+
+func TestGenerator_RenderCmdNeedsCmdInsideTheModule(t *testing.T) {
+	spec, err := newTestSpec(t, validEntries())
+	require.NoError(t, err)
+	opts := testOptions("/src/app")
+	opts.CmdDir = "/elsewhere/cmd"
+
+	_, err = NewGenerator(spec, opts).RenderCmd(context.Background())
+	assert.True(t, errors.IsNotValid(err), "got %v", err)
+}
+
+func TestGenerator_Generate(t *testing.T) {
+	root := t.TempDir()
+	opts := testOptions(root)
+	write := func(dir, rel, body string) {
+		p := filepath.Join(dir, filepath.FromSlash(rel))
+		require.NoError(t, os.MkdirAll(filepath.Dir(p), 0o755))
+		require.NoError(t, os.WriteFile(p, []byte(body), 0o644))
+	}
+	write(opts.OutputDir, "builder/old/rest_module.go", generatedHeader+"\n\npackage old\n")
+	write(opts.OutputDir, "builder/api/handwritten.go", "package api\n")
+	write(opts.OutputDir, "module.go", "// Code generated by inject; DO NOT EDIT.\n\npackage gen\n")
+	write(opts.CmdDir, "old/main.go", generatedHeader+"\n\npackage main\n")
+	write(opts.CmdDir, "tool/main.go", "package main\n")
+
+	spec, err := newTestSpec(t, validEntries())
+	require.NoError(t, err)
+	gen := NewGenerator(spec, opts)
+	require.NoError(t, gen.Generate(context.Background()))
+
+	files, err := gen.Render(context.Background())
+	require.NoError(t, err)
+	for name, want := range files {
+		got, err := os.ReadFile(filepath.Join(opts.OutputDir, filepath.FromSlash(name)))
+		require.NoError(t, err)
+		assert.Equal(t, string(want), string(got), name)
+	}
+
+	assert.NoFileExists(t, filepath.Join(opts.OutputDir, "builder", "old", "rest_module.go"), "stale builder files are removed")
+	assert.NoDirExists(t, filepath.Join(opts.OutputDir, "builder", "old"))
+	assert.FileExists(t, filepath.Join(opts.OutputDir, "builder", "api", "handwritten.go"), "handwritten files are kept")
+	assert.FileExists(t, filepath.Join(opts.OutputDir, "module.go"), "inject files are not builder's")
+
+	mains, err := gen.RenderCmd(context.Background())
+	require.NoError(t, err)
+	require.NotEmpty(t, mains)
+	for name, want := range mains {
+		got, err := os.ReadFile(filepath.Join(opts.CmdDir, filepath.FromSlash(name)))
+		require.NoError(t, err)
+		assert.Equal(t, string(want), string(got), name)
+	}
+	assert.NoDirExists(t, filepath.Join(opts.CmdDir, "old"), "the main of a removed app is removed")
+	assert.FileExists(t, filepath.Join(opts.CmdDir, "tool", "main.go"), "handwritten commands are kept")
+}
+
+func TestGenerator_GenerateRefusesHandwrittenMain(t *testing.T) {
+	root := t.TempDir()
+	opts := testOptions(root)
+	mine := filepath.Join(opts.CmdDir, "api", "main.go")
+	require.NoError(t, os.MkdirAll(filepath.Dir(mine), 0o755))
+	require.NoError(t, os.WriteFile(mine, []byte("package main\n\n// mine\n"), 0o644))
+
+	spec, err := newTestSpec(t, validEntries())
+	require.NoError(t, err)
+	err = NewGenerator(spec, opts).Generate(context.Background())
+	require.Error(t, err)
+	assert.True(t, errors.IsAlreadyExists(err), "got %v", err)
+	assert.Contains(t, err.Error(), "main.go")
+
+	got, err := os.ReadFile(mine)
+	require.NoError(t, err)
+	assert.Equal(t, "package main\n\n// mine\n", string(got), "the handwritten main is not overwritten")
+	assert.NoDirExists(t, opts.OutputDir, "nothing is written")
+	assert.NoFileExists(t, filepath.Join(opts.CmdDir, "worker", "main.go"), "nothing is written")
+}
+
+func TestImports_Qualify(t *testing.T) {
+	entry := decl("orders", "", "New", nil, nil)
+	src := inject.Alias("src", "orders", testModule+"/orders")
+	ev := inject.Alias("src", "cloudevents", "github.com/cloudevents/sdk-go/v2")
+
+	tests := []struct{ expr, want string }{
+		{"error", "error"},
+		{"*Handler", "*" + src + ".Handler"},
+		{"[]map[string]*cloudevents.Event", "[]map[string]*" + ev + ".Event"},
+		{"func(ctx context.Context, h Handler) error", "func(ctx " + inject.Alias("src", "context", "context") + ".Context, h " + src + ".Handler) error"},
+		{"struct{ Name string }", "struct{Name string}"},
+		{"interface{ Do() error }", "interface{Do() error}"},
+		{"Box[int]", src + ".Box[int]"},
+		{"chan<- any", "chan<- any"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.expr, func(t *testing.T) {
+			got, err := newImports().qualify(entry, tt.expr)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+
+	imports := newImports()
+	_, err := imports.qualify(entry, "*Handler")
+	require.NoError(t, err)
+	_, err = imports.qualify(entry, "orders.Item") // same path through the file import
+	require.NoError(t, err)
+	assert.Equal(t, []inject.ImportData{{Alias: src, Path: path.Join(testModule, "orders")}}, imports.sorted(),
+		"a package is imported once whatever name the file gives it")
+}
+
+func TestGenerator_RenderIncludesPluginModules(t *testing.T) {
+	plugins := pluginEntries()
+	files, err := render(t, append(validEntries(), plugins...))
+	require.NoError(t, err)
+
+	base, err := testOptions("/src/app").BaseImport()
+	require.NoError(t, err)
+	imp, admin := inject.ModuleOf(base, plugins[0])
+	_, rest := inject.ModuleOf(base, plugins[1])
+	_, grpc := inject.ModuleOf(base, plugins[2])
+	_, mcp := inject.ModuleOf(base, plugins[3])
+	_, ops := inject.ModuleOf(base, plugins[4])
+
+	for name, src := range files {
+		assertImportsUsed(t, name, src)
+	}
+	assert.Contains(t, string(files["builder/api/admin_module.go"]), admin, "the admin door builds its plugins")
+	assert.Contains(t, string(files["builder/api/admin_module.go"]), imp.Path)
+	assert.Contains(t, string(files["builder/api/rest_module.go"]), rest)
+	assert.NotContains(t, string(files["builder/api/rest_module.go"]), admin, "the admin plugins are admin's only")
+	assert.Contains(t, string(files["builder/api/grpc_module.go"]), grpc)
+	assert.Contains(t, string(files["builder/api/mcp_module.go"]), mcp)
+	assert.Contains(t, string(files["builder/api/ops_module.go"]), ops)
+	assert.NotContains(t, string(files["builder/api/mcp_module.go"]), ops, "the ops plugins are ops' only")
+}

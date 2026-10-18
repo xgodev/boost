@@ -2,9 +2,10 @@ package otel
 
 import (
 	"context"
+	"sync"
+
 	"github.com/go-logr/logr"
 	"go.opentelemetry.io/otel/propagation"
-	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/xgodev/boost/wrapper/log"
@@ -15,11 +16,14 @@ import (
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 	"google.golang.org/grpc/credentials"
 )
 
-var TracerProvider trace.TracerProvider
+// TracerProvider is the provider components instrument with. Until
+// StartTracerProvider succeeds it holds OpenTelemetry's global delegate, which
+// forwards to the provider Start registers, so a component built before Start
+// (an fx-built *sql.DB, a redis client, ...) still reports to it.
+var TracerProvider = otel.GetTracerProvider()
 
 // StartTracerProvider starts the tracer provider like StartMetricProviderWithOptions but with default Options.
 func StartTracerProvider(ctx context.Context, startOptions ...sdktrace.TracerProviderOption) {
@@ -44,8 +48,6 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 	}
 
 	tracerOnce.Do(func() {
-
-		TracerProvider = noop.NewTracerProvider()
 
 		logger := log.FromContext(ctx)
 
@@ -75,7 +77,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 
 		startOptions = append(startOptions,
 			sdktrace.WithBatcher(exporter),
-			sdktrace.WithSampler(sdktrace.AlwaysSample()),
+			sdktrace.WithSampler(sdktrace.TraceIDRatioBased(options.Trace.Ratio)),
 			sdktrace.WithResource(rs),
 		)
 
@@ -93,7 +95,7 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 	var exporter *otlptrace.Exporter
 	var err error
 
-	switch options.Protocol {
+	switch options.Trace.Protocol {
 	case "grpc":
 		exporter, err = NewGRPCTracerExporter(ctx, options)
 	default:
@@ -105,9 +107,9 @@ func NewTracerExporter(ctx context.Context, options *Options) (*otlptrace.Export
 func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	var exporterOpts []otlptracehttp.Option
 
-	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Endpoint))
+	exporterOpts = append(exporterOpts, otlptracehttp.WithEndpoint(options.Trace.Endpoint))
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlptracehttp.WithInsecure())
 	}
 
@@ -121,10 +123,10 @@ func NewHTTPTracerExporter(ctx context.Context, options *Options) (*otlptrace.Ex
 
 func NewGRPCTracerExporter(ctx context.Context, options *Options) (*otlptrace.Exporter, error) {
 	exporterOpts := []otlptracegrpc.Option{
-		otlptracegrpc.WithEndpoint(options.Endpoint),
+		otlptracegrpc.WithEndpoint(options.Trace.Endpoint),
 	}
 
-	if IsInsecure() {
+	if options.Insecure {
 		exporterOpts = append(exporterOpts, otlptracegrpc.WithInsecure())
 	} else if options.TLS.Cert != "" {
 		creds, err := credentials.NewClientTLSFromFile(options.TLS.Cert, "")

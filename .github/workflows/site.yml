@@ -1,0 +1,44 @@
+# Publishes docs/site to GitHub Pages (https://xgodev.github.io/boost/).
+# See docs/site/README.md, "Publishing".
+
+name: Site
+
+on:
+  push:
+    branches: [ "develop" ]
+    paths: [ "docs/site/**", ".github/workflows/site.yml" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - uses: actions/checkout@v4
+
+    # Everything in docs/site ships except example/ and the README.
+    - name: Collect the page
+      run: |
+        cp -R docs/site _site
+        rm -rf _site/example _site/README.md
+
+    - uses: actions/configure-pages@v5
+
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: _site
+
+    - id: deployment
+      uses: actions/deploy-pages@v4

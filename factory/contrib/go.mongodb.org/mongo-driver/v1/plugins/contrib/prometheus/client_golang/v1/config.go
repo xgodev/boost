@@ -1,12 +1,12 @@
 package prometheus
 
 import (
-	"github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
+	"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1"
 	"github.com/xgodev/boost/wrapper/config"
 )
 
 const (
-	root    = resty.PluginsRoot + ".prometheus"
+	root    = mongo.PluginsRoot + ".prometheus"
 	enabled = ".enabled"
 )
 

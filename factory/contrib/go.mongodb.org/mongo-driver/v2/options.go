@@ -9,6 +9,7 @@ import (
 type Options struct {
 	Uri  string
 	Auth *options.Credential
+	Log  OptionsLog
 }
 
 // NewOptions returns options from config file or environment vars.
@@ -19,4 +20,8 @@ func NewOptions() (*Options, error) {
 // NewOptionsWithPath unmarshals a given key path into options and returns it.
 func NewOptionsWithPath(path string) (opts *Options, err error) {
 	return config.NewOptionsWithPath[Options](root, path)
+}
+
+type OptionsLog struct {
+	Enabled bool
 }

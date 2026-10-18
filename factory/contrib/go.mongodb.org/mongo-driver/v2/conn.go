@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 
@@ -23,10 +24,10 @@ type Conn struct {
 }
 
 // ClientOptionsPlugin defines a mongo client options plugin signature.
-type ClientOptionsPlugin func(context.Context, *options.ClientOptions) error
+type ClientOptionsPlugin = factory.Plugin[*options.ClientOptions]
 
 // ClientPlugin defines a mongo client plugin signature.
-type ClientPlugin func(context.Context, *mongo.Client) error
+type ClientPlugin = factory.Plugin[*mongo.Client]
 
 // Plugin defines a function to process plugin.
 type Plugin func(context.Context) (ClientOptionsPlugin, ClientPlugin)
@@ -78,11 +79,9 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 		return nil, errors.NewInternal(err, "failed to create client options")
 	}
 
-	for _, clientOptionsPlugin := range clientOptionsPlugins {
-		if err := clientOptionsPlugin(ctx, co); err != nil {
-			logger.Errorf("Failed to apply client options plugin: %v", err)
-			return nil, errors.NewInternal(err, "failed to apply client options plugin")
-		}
+	if err := factory.ApplyPlugins(ctx, co, clientOptionsPlugins...); err != nil {
+		logger.Errorf("Failed to apply client options plugin: %v", err)
+		return nil, errors.NewInternal(err, "failed to apply client options plugin")
 	}
 
 	var client *mongo.Client
@@ -93,11 +92,9 @@ func NewConnWithOptions(ctx context.Context, o *Options, plugins ...Plugin) (con
 		return nil, err
 	}
 
-	for _, clientPlugin := range clientPlugins {
-		if err := clientPlugin(ctx, client); err != nil {
-			logger.Errorf("Failed to apply client plugin: %v", err)
-			return nil, errors.NewInternal(err, "failed to apply client plugin")
-		}
+	if err := factory.ApplyPlugins(ctx, client, clientPlugins...); err != nil {
+		logger.Errorf("Failed to apply client plugin: %v", err)
+		return nil, errors.NewInternal(err, "failed to apply client plugin")
 	}
 
 	conn = &Conn{
@@ -144,34 +141,22 @@ func newClient(ctx context.Context, co *options.ClientOptions) (client *mongo.Cl
 
 func clientOptions(ctx context.Context, o *Options) (*options.ClientOptions, error) {
 
-	logger := log.FromContext(ctx)
+	opts := options.Client().ApplyURI(o.Uri)
 
-	clientOptions := options.Client().ApplyURI(o.Uri)
-	clientOptions.SetMonitor(&event.CommandMonitor{
-		Started: func(ctx context.Context, startedEvent *event.CommandStartedEvent) {
-			logger.Debugf("mongodb cmd - %v %s %s %v", startedEvent.ConnectionID, startedEvent.CommandName, startedEvent.DatabaseName, startedEvent.RequestID)
-		},
-		Succeeded: func(ctx context.Context, succeededEvent *event.CommandSucceededEvent) {
-			logger.Debugf("mongodb cmd - %v %s %vus %v", succeededEvent.ConnectionID, succeededEvent.CommandName, succeededEvent.Duration.Nanoseconds(), succeededEvent.RequestID)
-		},
-		Failed: func(ctx context.Context, failedEvent *event.CommandFailedEvent) {
-			logger.Errorf("mongodb cmd - %v %s %s %v", failedEvent.ConnectionID, failedEvent.CommandName, failedEvent.Failure, failedEvent.RequestID)
-		},
-	})
-	clientOptions.SetPoolMonitor(&event.PoolMonitor{
-		Event: func(poolEvent *event.PoolEvent) {
-			logger.Debugf("mongodb conn pool - %v %s %s %s", poolEvent.ConnectionID, poolEvent.Type, poolEvent.Reason, poolEvent.Address)
-		},
-	})
+	if o.Log.Enabled {
+		if err := setLogMonitor(o, opts); err != nil {
+			return nil, err
+		}
+	}
 
 	if o.Auth != nil {
-		if err := setAuthOptions(o, clientOptions); err != nil {
+		if err := setAuthOptions(o, opts); err != nil {
 			return nil, err
 		}
 
 	}
 
-	return clientOptions, nil
+	return opts, nil
 }
 
 func setAuthOptions(o *Options, clientOptions *options.ClientOptions) error {
@@ -200,6 +185,29 @@ func setAuthOptions(o *Options, clientOptions *options.ClientOptions) error {
 		}
 		clientOptions.Auth.AuthSource = connFields.Database
 	}
+
+	return nil
+}
+
+func setLogMonitor(o *Options, opts *options.ClientOptions) error {
+	logger := log.FromContext(context.Background())
+
+	opts.SetMonitor(&event.CommandMonitor{
+		Started: func(ctx context.Context, startedEvent *event.CommandStartedEvent) {
+			logger.Debugf("mongodb cmd - %v %s %s %v", startedEvent.ConnectionID, startedEvent.CommandName, startedEvent.DatabaseName, startedEvent.RequestID)
+		},
+		Succeeded: func(ctx context.Context, succeededEvent *event.CommandSucceededEvent) {
+			logger.Debugf("mongodb cmd - %v %s %vus %v", succeededEvent.ConnectionID, succeededEvent.CommandName, succeededEvent.Duration.Nanoseconds(), succeededEvent.RequestID)
+		},
+		Failed: func(ctx context.Context, failedEvent *event.CommandFailedEvent) {
+			logger.Errorf("mongodb cmd - %v %s %s %v", failedEvent.ConnectionID, failedEvent.CommandName, failedEvent.Failure, failedEvent.RequestID)
+		},
+	})
+	opts.SetPoolMonitor(&event.PoolMonitor{
+		Event: func(poolEvent *event.PoolEvent) {
+			logger.Debugf("mongodb conn pool - %v %s %s %s", poolEvent.ConnectionID, poolEvent.Type, poolEvent.Reason, poolEvent.Address)
+		},
+	})
 
 	return nil
 }
