@@ -7,6 +7,9 @@ Issues: [#74](https://github.com/xgodev/boost/issues/74),
 in [`site.js`](site.js). Open the HTML in a browser; only Google Fonts load
 from the network.
 
+The root [`README.md`](../../README.md) mirrors this page: same sections, copy,
+numbers, example and version. A change here changes it in the same PR.
+
 ## Publishing
 
 Live at <https://xgodev.github.io/boost/>, published from `develop`.
