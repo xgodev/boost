@@ -6,9 +6,9 @@ import (
 	"go.uber.org/fx"
 
 	gen_rest_54b9e997 "github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest"
-	gen_reservestock_59eaa3fd "github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest/handler/reservestock"
+	gen_reserver_5a8b66f7 "github.com/acme/shop/gen/github.com/acme/shop/internal_/app/api/rest/handler/stock/reserver"
 	gen_mongodb_1bacb721 "github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/datastore/stock/mongodb"
-	gen_local_ae09494f "github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/domain/service/reservestock/local"
+	gen_local_9afcd4bd "github.com/acme/shop/gen/github.com/acme/shop/internal_/pkg/domain/service/stock/reserver/local"
 	impl_stock_3bb9e74c "github.com/acme/shop/gen/implementation/github.com/acme/shop/internal_/pkg/domain/repository/stock"
 )
 
@@ -16,9 +16,9 @@ import (
 func Module() fx.Option {
 	return fx.Options(
 		gen_rest_54b9e997.PluginsModule(),
-		gen_reservestock_59eaa3fd.NewModule(),
+		gen_reserver_5a8b66f7.NewModule(),
 		impl_stock_3bb9e74c.RepositoryImplementationModule(),
 		gen_mongodb_1bacb721.OptionsModule(),
-		gen_local_ae09494f.NewModule(),
+		gen_local_9afcd4bd.NewModule(),
 	)
 }
