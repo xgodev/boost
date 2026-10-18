@@ -17,6 +17,7 @@ function plus a root `Module()` that wires the whole application.
 | `@Inject(name=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` receives the named value `X` |
 | `@Inject(group=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` (a slice `[]T`) receives every `T` of group `X` |
 | `@Invoke` | function | the function runs when the application starts (`fx.Invoke`) |
+| `@Default` | `@Provide` constructor | default implementation of a value with two or more providers; config picks one (see below) |
 
 `index` is the zero-based position of the result or parameter and is always
 required. A parameter without `@Inject` is linked to a default provider of
@@ -92,6 +93,56 @@ func main() {
 }
 ```
 
+## Default implementation
+
+Two or more constructors may provide the same value (same type and name, no
+group) when one of them is marked `@Default`: they form an implementation
+set and config chooses which one is wired. The implementation is named after
+its package.
+
+```go
+package memory // example.com/app/stock/memory
+
+// @Provide(index=0)
+// @Default
+func New() stock.Service { ... }
+```
+
+```go
+package unlimited // example.com/app/stock/unlimited
+
+// @Provide(index=0)
+func New(c *Client) stock.Service { ... }
+```
+
+The generator writes the switch in
+`gen/implementation/<type import path>/<type>_implementation.go`:
+
+```
+gen/implementation/example.com/app/stock/service_implementation.go
+  ServiceImplementationModule()  // includes only the chosen implementation's module
+  ServiceImplementation()        // name of the chosen implementation
+```
+
+- The key is the package path of the type, relative to the Go module, plus
+  the value name, plus `implementation`: `stock.implementation` (env
+  `STOCK_IMPLEMENTATION`), `stock.formal.implementation` for
+  `@Provide(name=formal)`. `_` splits segments and `a-b` becomes `aB`, so the
+  key is always reachable from an environment variable. A type outside the
+  module uses its full import path.
+- Unset, the key holds the `@Default` package name.
+- Only the chosen implementation's module is included: the others, and what
+  only they depend on, are never built.
+- An unknown name fails the boot with an error naming the key, the value and
+  the valid names; it never falls back to the default.
+- Every consumer and the root `Module()` include the switch instead of the
+  implementations. The graph still links consumers to every implementation,
+  so cycles are found whatever the config says.
+
+"Default implementation" (`@Default`) is not "default provider" (a
+`@Provide` without `name`): a set of named values has a default
+implementation too.
+
 ## Validation
 
 The generator fails, without touching the output directory, when:
@@ -101,7 +152,16 @@ The generator fails, without touching the output directory, when:
 - `@Provide` points to an `error` result, or uses both `name` and `group`;
 - `@Inject(group=...)` is on a parameter that is not a slice;
 - two functions provide the same value (same type and name; groups may have
-  many providers);
+  many providers) and none is `@Default`;
+- `@Default` takes arguments, is not on a function with exactly one
+  `@Provide`, is on a group, or its value has no other provider;
+- an implementation set has two `@Default`, a member with more than one
+  `@Provide`, two members in packages with the same name, members providing
+  different types, or a type that is not named (`T`, `*T`, `pkg.T`,
+  `*pkg.T`);
+- a consumer of an implementation set lives in a member's package (the
+  switch would import itself);
+- two implementation sets have the same config key;
 - an `@Inject` parameter has no provider;
 - the dependencies have a cycle, or a function depends on what it provides;
 - an annotated function is unexported or in package `main` (the generated

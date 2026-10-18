@@ -208,14 +208,22 @@ func (i Implementation) Names() []string {
 	return names
 }
 
-// Ident is the identifier of the set in generated code: the type name, plus
-// the value name when the value is named ("Service", "ServiceFormal").
+// Ident is the exported identifier of the set in generated code: the type
+// name, plus the value name when the value is named ("Service",
+// "ServiceFormal").
 func (i Implementation) Ident() string {
-	if i.Name == "" {
-		return i.Type
+	ident := upperFirst(i.Type)
+	if i.Name != "" {
+		ident += upperFirst(packageIdent(i.Name))
 	}
-	name := packageIdent(i.Name)
-	return i.Type + strings.ToUpper(name[:1]) + name[1:]
+	return ident
+}
+
+func upperFirst(s string) string {
+	if s == "" {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
 }
 
 // Key returns the config key that chooses the implementation, given the Go

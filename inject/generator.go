@@ -96,13 +96,27 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 		return nil, err
 	}
 
+	sets, err := Implementations(p.graph)
+	if err != nil {
+		return nil, err
+	}
+	switches := switchesByMember(sets)
+
 	files := map[string][]byte{}
 	root := RootData{Package: packageIdent(filepath.Base(p.opts.OutputDir))}
 	rootImports := map[string]struct{}{}
+	addRoot := func(imp ImportData, call string) {
+		if _, ok := rootImports[imp.Path]; !ok {
+			rootImports[imp.Path] = struct{}{}
+			root.Imports = append(root.Imports, imp)
+		}
+		root.Modules = append(root.Modules, call)
+	}
+	rootSwitches := map[string]bool{}
 
 	for _, key := range p.graph.SortedKeys() {
 		vertex := p.graph.Vertices[key]
-		data, err := p.moduleData(base, vertex)
+		data, err := p.moduleData(base, vertex, switches)
 		if err != nil {
 			return nil, err
 		}
@@ -118,12 +132,33 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 		}
 		files[name] = src
 
-		genImport, call := ModuleOf(base, vertex.Value.Entry)
-		if _, ok := rootImports[genImport.Path]; !ok {
-			rootImports[genImport.Path] = struct{}{}
-			root.Imports = append(root.Imports, genImport)
+		if set, ok := switches[key]; ok {
+			// the root wires the chosen implementation, never every member
+			if imp, call := set.Module(base); !rootSwitches[call] {
+				rootSwitches[call] = true
+				addRoot(imp, call)
+			}
+			continue
 		}
-		root.Modules = append(root.Modules, call)
+		addRoot(ModuleOf(base, vertex.Value.Entry))
+	}
+
+	keys := map[string]string{}
+	for _, set := range sets {
+		key := set.Key(p.opts.ModulePath)
+		if other, dup := keys[key]; dup {
+			return nil, errors.AlreadyExistsf("the implementations of %s.%s and of %s are chosen by the same config key %s; rename a package", set.Path, set.Type, other, key)
+		}
+		keys[key] = set.Path + "." + set.Type
+
+		if _, exists := files[set.File()]; exists {
+			return nil, errors.AlreadyExistsf("two implementation sets generate %s; rename one of the types", set.File())
+		}
+		src, err := ExecuteTemplate(tmpl, "implementation", implementationData(base, key, set))
+		if err != nil {
+			return nil, errors.Wrap(err, errors.Internalf("error generating the implementation switch of %s.%s", set.Path, set.Type))
+		}
+		files[set.File()] = src
 	}
 
 	src, err := ExecuteTemplate(tmpl, "root", root)
@@ -153,8 +188,43 @@ func (o GeneratorOptions) BaseImport() (string, error) {
 	return path.Join(o.ModulePath, filepath.ToSlash(rel)), nil
 }
 
-// moduleData collects what the module template needs for one component.
-func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component]) (ModuleData, error) {
+// switchesByMember maps the key of each member of an implementation set to
+// its set.
+func switchesByMember(sets []Implementation) map[string]Implementation {
+	switches := map[string]Implementation{}
+	for _, set := range sets {
+		for _, member := range set.Members {
+			switches[member.Key()] = set
+		}
+	}
+	return switches
+}
+
+// implementationData collects what the implementation template needs for
+// one set.
+func implementationData(base, key string, set Implementation) ImplementationData {
+	ident := set.Ident()
+	data := ImplementationData{
+		Package: packageIdent(path.Base(set.Path)),
+		Ident:   ident,
+		Var:     strings.ToLower(ident[:1]) + ident[1:],
+		Type:    set.Path + "." + set.Type,
+		Key:     key,
+		Default: set.Default,
+		Names:   strings.Join(set.Names(), ", "),
+	}
+	for _, name := range set.Names() {
+		imp, call := ModuleOf(base, set.Members[name].Entry)
+		data.Imports = append(data.Imports, imp)
+		data.Cases = append(data.Cases, ImplementationCase{Name: name, Module: call})
+	}
+	return data
+}
+
+// moduleData collects what the module template needs for one component. A
+// dependency that is a member of an implementation set is replaced by the
+// set's switch module.
+func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], switches map[string]Implementation) (ModuleData, error) {
 	comp := vertex.Value
 	entry := comp.Entry
 
@@ -182,8 +252,23 @@ func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component]) (Mo
 	sort.Slice(deps, func(i, j int) bool { return deps[i].Key < deps[j].Key })
 
 	imported := map[string]struct{}{}
+	importOnce := func(imp ImportData) {
+		if _, ok := imported[imp.Path]; !ok {
+			imported[imp.Path] = struct{}{}
+			data.Imports = append(data.Imports, imp)
+		}
+	}
+	switched := map[string]bool{}
 	for _, dep := range deps {
 		depEntry := dep.Value.Entry
+		if set, ok := switches[dep.Key]; ok {
+			if imp, call := set.Module(base); !switched[call] {
+				switched[call] = true
+				data.Deps = append(data.Deps, call)
+				importOnce(imp)
+			}
+			continue
+		}
 		if depEntry.Path == entry.Path {
 			data.Deps = append(data.Deps, depEntry.Func.Name+"Module()")
 			continue
@@ -191,10 +276,7 @@ func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component]) (Mo
 
 		depImport, call := ModuleOf(base, depEntry)
 		data.Deps = append(data.Deps, call)
-		if _, ok := imported[depEntry.Path]; !ok {
-			imported[depEntry.Path] = struct{}{}
-			data.Imports = append(data.Imports, depImport)
-		}
+		importOnce(depImport)
 	}
 
 	return data, nil
