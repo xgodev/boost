@@ -50,6 +50,9 @@ func LoadPackages(dir string) PackageLoader {
 // loadMiddlewares, once for every annotated package.
 func (b *specBuilder) addMiddleware(entry annotation.Entry, ann annotation.Annotation) error {
 	where := declName(entry)
+	if entry.IsStruct() {
+		return errors.NotValidf("@Middleware on %s: only a @Provide function can be decorated", where)
+	}
 	key := inject.Component{Entry: entry}.Key()
 	if _, repeated := b.middlewares[key]; repeated {
 		return errors.NotValidf("@Middleware on %s is repeated; list every plugin in one @Middleware", where)
@@ -72,7 +75,11 @@ func (b *specBuilder) addMiddleware(entry annotation.Entry, ann annotation.Annot
 		index = idx
 	}
 
-	b.middlewares[key] = &Middleware{Provider: vertex.Value, Index: index, Plugins: plugins}
+	m := &Middleware{Provider: vertex.Value, Index: index, Plugins: plugins}
+	if set, ok := inject.ImplementationOf(b.graph, vertex.Value); ok {
+		m.Implementation = &set
+	}
+	b.middlewares[key] = m
 	return nil
 }
 
@@ -122,7 +129,7 @@ func (b *specBuilder) loadMiddlewares(load PackageLoader) error {
 		return err
 	}
 
-	wrappers := map[string]string{} // wrapper name -> declaration that uses it
+	wrappers := map[string]*Middleware{} // wrapper name -> middleware that uses it
 	for _, key := range sortedNames(b.middlewares) {
 		m := b.middlewares[key]
 		entry := m.Provider.Entry
@@ -144,15 +151,25 @@ func (b *specBuilder) loadMiddlewares(load PackageLoader) error {
 		iface := named.Underlying().(*types.Interface)
 		for i := range iface.NumMethods() {
 			name := wrapperName(named, iface.Method(i))
-			if other, used := wrappers[name]; used {
+			if other, used := wrappers[name]; used && !sameImplementation(m, other) {
 				return errors.AlreadyExistsf("@Middleware on %s: wrapper %s is already used by %s; decorate %s once",
-					where, name, other, types.TypeString(named, nil))
+					where, name, declName(other.Provider.Entry), types.TypeString(named, nil))
 			}
-			wrappers[name] = where
+			wrappers[name] = m
 		}
 		m.Interface = named
 	}
 	return nil
+}
+
+// sameImplementation reports whether a and b decorate members of the same
+// implementation set: config wires one of them, so they may share wrappers.
+func sameImplementation(a, b *Middleware) bool {
+	if a.Implementation == nil || b.Implementation == nil {
+		return false
+	}
+	x, y := a.Implementation, b.Implementation
+	return x.Path == y.Path && x.Type == y.Type && x.Name == y.Name
 }
 
 // decoratedInterface checks that t is an interface a generated decorator, in

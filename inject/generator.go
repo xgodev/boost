@@ -96,34 +96,62 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 		return nil, err
 	}
 
+	sets, err := Implementations(p.graph)
+	if err != nil {
+		return nil, err
+	}
+	if err := checkConfigKeys(p.opts.ModulePath, p.graph, sets); err != nil {
+		return nil, err
+	}
+	switches := switchesByMember(sets)
+	clients, err := Clients(p.graph)
+	if err != nil {
+		return nil, err
+	}
+	consumers := clientsByConsumer(clients)
+
 	files := map[string][]byte{}
 	root := RootData{Package: packageIdent(filepath.Base(p.opts.OutputDir))}
 	rootImports := map[string]struct{}{}
+	addRoot := func(imp ImportData, call string) {
+		if _, ok := rootImports[imp.Path]; !ok {
+			rootImports[imp.Path] = struct{}{}
+			root.Imports = append(root.Imports, imp)
+		}
+		root.Modules = append(root.Modules, call)
+	}
+	rootSwitches := map[string]bool{}
 
 	for _, key := range p.graph.SortedKeys() {
 		vertex := p.graph.Vertices[key]
-		data, err := p.moduleData(base, vertex)
+		name, src, err := p.renderVertex(tmpl, base, vertex, switches, consumers[key])
 		if err != nil {
 			return nil, err
 		}
-
-		name := path.Join(vertex.Value.Entry.Path, strings.ToLower(data.Func)+"_module.go")
 		if _, exists := files[name]; exists {
 			return nil, errors.AlreadyExistsf("two components generate %s; rename one of the functions", name)
 		}
-
-		src, err := ExecuteTemplate(tmpl, "module", data)
-		if err != nil {
-			return nil, errors.Wrap(err, errors.Internalf("error generating module of %s", key))
-		}
 		files[name] = src
 
-		genImport, call := ModuleOf(base, vertex.Value.Entry)
-		if _, ok := rootImports[genImport.Path]; !ok {
-			rootImports[genImport.Path] = struct{}{}
-			root.Imports = append(root.Imports, genImport)
+		if set, ok := switches[key]; ok {
+			// the root wires the chosen implementation, never every member
+			if imp, call := set.Module(base); !rootSwitches[call] {
+				rootSwitches[call] = true
+				addRoot(imp, call)
+			}
+			continue
 		}
-		root.Modules = append(root.Modules, call)
+		addRoot(ModuleOf(base, vertex.Value.Entry))
+	}
+
+	if err := p.renderImplementations(tmpl, base, sets, files); err != nil {
+		return nil, err
+	}
+	if err := renderClients(tmpl, clients, files); err != nil {
+		return nil, err
+	}
+	for _, c := range clients {
+		addRoot(c.Module(base))
 	}
 
 	src, err := ExecuteTemplate(tmpl, "root", root)
@@ -133,6 +161,65 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	files["module.go"] = src
 
 	return files, nil
+}
+
+// renderVertex returns the path, relative to OutputDir, and the source of
+// the module of one component: the config module of a @Config struct, the
+// fx module of a function otherwise.
+func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client) (string, []byte, error) {
+	comp := vertex.Value
+	name := path.Join(GenPath(comp.Entry.Path), strings.ToLower(declName(comp.Entry))+"_module.go")
+
+	tmplName, data := "config", any(nil)
+	if comp.IsConfig() {
+		data = configData(p.opts.ModulePath, comp)
+	} else {
+		module, err := p.moduleData(base, vertex, switches, clients)
+		if err != nil {
+			return "", nil, err
+		}
+		tmplName, data = "module", module
+	}
+
+	src, err := ExecuteTemplate(tmpl, tmplName, data)
+	if err != nil {
+		return "", nil, errors.Wrap(err, errors.Internalf("error generating module of %s", vertex.Key))
+	}
+	return name, src, nil
+}
+
+// renderImplementations adds the switch file of each implementation set to
+// files. It is AlreadyExists when two sets share a file; checkConfigKeys has
+// already refused two sets sharing a config key.
+func (p *Generator) renderImplementations(tmpl *template.Template, base string, sets []Implementation, files map[string][]byte) error {
+	for _, set := range sets {
+		key := set.Key(p.opts.ModulePath)
+		if _, exists := files[set.File()]; exists {
+			return errors.AlreadyExistsf("two implementation sets generate %s; rename one of the types", set.File())
+		}
+		src, err := ExecuteTemplate(tmpl, "implementation", implementationData(base, key, set))
+		if err != nil {
+			return errors.Wrap(err, errors.Internalf("error generating the implementation switch of %s.%s", set.Path, set.Type))
+		}
+		files[set.File()] = src
+	}
+	return nil
+}
+
+// renderClients adds the file of each client inject builds to files. It is
+// AlreadyExists when a client's file is already taken.
+func renderClients(tmpl *template.Template, clients []Client, files map[string][]byte) error {
+	for _, c := range clients {
+		if _, exists := files[c.File()]; exists {
+			return errors.AlreadyExistsf("the %s and a component both generate %s", c, c.File())
+		}
+		src, err := ExecuteTemplate(tmpl, "client", clientData(c))
+		if err != nil {
+			return errors.Wrap(err, errors.Internalf("error generating the %s", c))
+		}
+		files[c.File()] = src
+	}
+	return nil
 }
 
 // BaseImport returns the import path of OutputDir. It is NotValid when a
@@ -153,8 +240,44 @@ func (o GeneratorOptions) BaseImport() (string, error) {
 	return path.Join(o.ModulePath, filepath.ToSlash(rel)), nil
 }
 
-// moduleData collects what the module template needs for one component.
-func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component]) (ModuleData, error) {
+// switchesByMember maps the key of each member of an implementation set to
+// its set.
+func switchesByMember(sets []Implementation) map[string]Implementation {
+	switches := map[string]Implementation{}
+	for _, set := range sets {
+		for _, member := range set.Members {
+			switches[member.Key()] = set
+		}
+	}
+	return switches
+}
+
+// implementationData collects what the implementation template needs for
+// one set.
+func implementationData(base, key string, set Implementation) ImplementationData {
+	ident := set.Ident()
+	data := ImplementationData{
+		Package: packageIdent(path.Base(set.Path)),
+		Ident:   ident,
+		Var:     strings.ToLower(ident[:1]) + ident[1:],
+		Type:    set.Path + "." + set.Type,
+		Key:     key,
+		Default: set.Default,
+		Names:   strings.Join(set.Names(), ", "),
+	}
+	for _, name := range set.Names() {
+		imp, call := ModuleOf(base, set.Members[name].Entry)
+		data.Imports = append(data.Imports, imp)
+		data.Cases = append(data.Cases, ImplementationCase{Name: name, Module: call})
+	}
+	return data
+}
+
+// moduleData collects what the module template needs for one component. A
+// dependency that is a member of an implementation set is replaced by the
+// set's switch module; the clients the component injects come after its
+// dependencies.
+func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client) (ModuleData, error) {
 	comp := vertex.Value
 	entry := comp.Entry
 
@@ -182,19 +305,36 @@ func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component]) (Mo
 	sort.Slice(deps, func(i, j int) bool { return deps[i].Key < deps[j].Key })
 
 	imported := map[string]struct{}{}
+	importOnce := func(imp ImportData) {
+		if _, ok := imported[imp.Path]; !ok {
+			imported[imp.Path] = struct{}{}
+			data.Imports = append(data.Imports, imp)
+		}
+	}
+	switched := map[string]bool{}
 	for _, dep := range deps {
 		depEntry := dep.Value.Entry
+		if set, ok := switches[dep.Key]; ok {
+			if imp, call := set.Module(base); !switched[call] {
+				switched[call] = true
+				data.Deps = append(data.Deps, call)
+				importOnce(imp)
+			}
+			continue
+		}
 		if depEntry.Path == entry.Path {
-			data.Deps = append(data.Deps, depEntry.Func.Name+"Module()")
+			data.Deps = append(data.Deps, declName(depEntry)+"Module()")
 			continue
 		}
 
 		depImport, call := ModuleOf(base, depEntry)
 		data.Deps = append(data.Deps, call)
-		if _, ok := imported[depEntry.Path]; !ok {
-			imported[depEntry.Path] = struct{}{}
-			data.Imports = append(data.Imports, depImport)
-		}
+		importOnce(depImport)
+	}
+	for _, c := range clients {
+		imp, call := c.Module(base)
+		data.Deps = append(data.Deps, call)
+		importOnce(imp)
 	}
 
 	return data, nil
@@ -341,15 +481,31 @@ func Alias(prefix, name, importPath string) string {
 	return prefix + "_" + packageIdent(name) + "_" + shortHash(importPath)
 }
 
-// ModuleOf returns the import of the package generated for the component
-// declared by entry, given the import path of the output dir (BaseImport),
-// and the call of its module function, such as gen_greet_1a2b3c4d.NewGreeterModule().
-func ModuleOf(base string, entry annotation.Entry) (ImportData, string) {
-	imp := ImportData{Alias: genAlias(entry), Path: base + "/" + entry.Path}
-	return imp, imp.Alias + "." + entry.Func.Name + "Module()"
+// GenPath returns the directory, relative to the output dir, that mirrors
+// the package at importPath, with every "internal" element written
+// "internal_". Generated packages import each other across the output dir,
+// and Go lets only the tree above an internal/ directory import what is in
+// it, so a mirrored internal/ would hide them from each other.
+func GenPath(importPath string) string {
+	elems := strings.Split(importPath, "/")
+	for i, elem := range elems {
+		if elem == "internal" {
+			elems[i] = "internal_"
+		}
+	}
+	return strings.Join(elems, "/")
 }
 
-// srcAlias is the import alias of the package that declares the function.
+// ModuleOf returns the import of the package generated for the component
+// declared by entry, given the import path of the output dir (BaseImport),
+// and the call of its module function, such as gen_greet_1a2b3c4d.NewGreeterModule()
+// (or OptionsModule() for a @Config struct Options).
+func ModuleOf(base string, entry annotation.Entry) (ImportData, string) {
+	imp := ImportData{Alias: genAlias(entry), Path: base + "/" + GenPath(entry.Path)}
+	return imp, imp.Alias + "." + declName(entry) + "Module()"
+}
+
+// srcAlias is the import alias of the package that declares the component.
 func srcAlias(entry annotation.Entry) string {
 	return Alias("src", entry.Package, entry.Path)
 }

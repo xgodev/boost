@@ -194,7 +194,7 @@ func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 			if _, done := files[file]; done {
 				continue
 			}
-			src, err := inject.ExecuteTemplate(tmpl, "decorator", decorator(m))
+			src, err := inject.ExecuteTemplate(tmpl, "decorator", decorator(base, m))
 			if err != nil {
 				return nil, errors.Wrap(err, errors.Internalf("error generating the decorator of %s", declName(m.Provider.Entry)))
 			}

@@ -5,7 +5,7 @@ package api
 import (
 	"go.uber.org/fx"
 
-	mw_stock_5554ce8b "github.com/xgodev/boost/builder/examples/simple/gen/builder/middleware/github.com/xgodev/boost/builder/examples/simple/stock"
+	mw_memory_90bff5bb "github.com/xgodev/boost/builder/examples/simple/gen/builder/middleware/github.com/xgodev/boost/builder/examples/simple/stock/memory"
 	multiserverfx "github.com/xgodev/boost/fx/modules/extra/multiserver"
 )
 
@@ -17,7 +17,7 @@ func Modules() []fx.Option {
 		AdminModule(),
 		GrpcModule(),
 		RestModule(),
-		mw_stock_5554ce8b.DecorateNew(),
+		mw_memory_90bff5bb.DecorateNew(),
 		multiserverfx.Module(),
 	}
 }

@@ -3,10 +3,12 @@ package inject
 import (
 	"bytes"
 	"context"
+	"flag"
 	"go/parser"
 	"go/token"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -136,6 +138,22 @@ func TestGenerator_RenderErrors(t *testing.T) {
 			opts:    GeneratorOptions{ModuleDir: "/mod", OutputDir: "/mod/gen"},
 		},
 		{
+			name: "two implementation sets with the same config key",
+			entries: append(stockEntries()[:2], func() []annotation.Entry {
+				var upper []annotation.Entry
+				for i, pkg := range []string{"a", "b"} {
+					e := at(pkg, "New", nil, []string{"Stock.Service"}, provide("index=0"))
+					e.Imports = map[string]string{"Stock": testModule + "/Stock"}
+					if i == 0 {
+						e.Annotations = append(e.Annotations, deflt())
+					}
+					upper = append(upper, e)
+				}
+				return upper
+			}()...),
+			opts: testOptions("/mod"),
+		},
+		{
 			name: "two functions generate the same file",
 			entries: []annotation.Entry{
 				at("p", "NewA", nil, []string{"*A"}, provide("index=0")),
@@ -229,4 +247,66 @@ func TestTagList(t *testing.T) {
 	assert.Equal(t, "", tagList(map[int]Annotation{0: {Index: &two}}))
 	assert.Equal(t, `"", "", `+"`group:\"x\"`", tagList(map[int]Annotation{2: {Group: "x"}}))
 	assert.Equal(t, "`name:\"a\"`", tagList(map[int]Annotation{0: {Name: "a"}}))
+}
+
+var update = flag.Bool("update", false, "rewrite the golden files of the generator tests")
+
+// golden compares got with the file at name, rewriting it with -update.
+func golden(t *testing.T, name string, got []byte) {
+	t.Helper()
+	if *update {
+		require.NoError(t, os.MkdirAll(filepath.Dir(name), os.ModePerm))
+		require.NoError(t, os.WriteFile(name, got, 0o644))
+	}
+	want, err := os.ReadFile(name)
+	require.NoError(t, err, "run go test ./inject/ -update")
+	assert.Equal(t, string(want), string(got), "%s differs; run go test ./inject/ -update and review the diff", name)
+}
+
+func TestGenerator_RenderImplementation(t *testing.T) {
+	clock := at("stock/memory", "NewClock", nil, []string{"*Clock"}, provide("index=0"))
+	order := consumer()
+	order.Func.Parameters = append(order.Func.Parameters, annotation.EntryFuncType{Type: "*memory.Clock"})
+	order.Imports["memory"] = testModule + "/stock/memory"
+	entries := []annotation.Entry{impl("memory", provide("index=0"), deflt()), impl("unlimited", provide("index=0")), order, clock}
+
+	files, err := NewGenerator(newTestGraph(t, entries), testOptions("/mod")).Render(context.Background())
+	require.NoError(t, err)
+
+	src := files["implementation/example.com/app/stock/service_implementation.go"]
+	require.NotNil(t, src, "the switch file is rendered")
+	golden(t, "testdata/implementation/service_implementation.go.golden", src)
+
+	imp, call := Implementation{Type: "Service", Path: testModule + "/stock"}.Module("example.com/app/gen")
+	service := string(files["example.com/app/order/newservice_module.go"])
+	assert.Contains(t, service, imp.Alias+` "example.com/app/gen/implementation/example.com/app/stock"`)
+	assert.Contains(t, service, `fx.Module("example.com/app/order.NewService",
+			`+call+`,
+			`+genAlias(clock)+`.NewClockModule(),
+`, "the set goes through the switch, another value of a member's package keeps its module")
+	assert.NotContains(t, service, ".NewModule()", "a consumer never wires a member directly")
+
+	root := string(files["module.go"])
+	assert.Equal(t, 1, strings.Count(root, call), "the root includes the switch once")
+	assert.NotContains(t, root, ".NewModule()", "the root never wires a member directly")
+	assert.Contains(t, root, genAlias(clock)+".NewClockModule(),")
+	assert.Contains(t, root, imp.Alias+` "example.com/app/gen/implementation/example.com/app/stock"`)
+}
+
+func TestGenerator_RenderNamedImplementation(t *testing.T) {
+	entries := []annotation.Entry{
+		impl("memory", provide("name=formal,index=0"), deflt()),
+		impl("unlimited", provide("name=formal,index=0")),
+		consumer(inject("name=formal,index=0")),
+	}
+
+	files, err := NewGenerator(newTestGraph(t, entries), testOptions("/mod")).Render(context.Background())
+	require.NoError(t, err)
+
+	sw := string(files["implementation/example.com/app/stock/serviceformal_implementation.go"])
+	assert.Contains(t, sw, `serviceFormalImplementationKey = "stock.formal.implementation"`)
+	assert.Contains(t, sw, "func ServiceFormalImplementationModule() fx.Option {")
+
+	_, call := Implementation{Type: "Service", Path: testModule + "/stock", Name: "formal"}.Module("example.com/app/gen")
+	assert.Contains(t, string(files["example.com/app/order/newservice_module.go"]), call+",")
 }

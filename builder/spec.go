@@ -90,4 +90,8 @@ type Middleware struct {
 	Index     int              // result index of the interface value
 	Plugins   []string         // plugin names, the outermost first
 	Interface *types.Named     // the provided interface
+	// Implementation is the implementation set the constructor is a member
+	// of (@Default): the decorator runs only when config chooses it. Nil
+	// for a constructor that is the only provider of its value.
+	Implementation *inject.Implementation
 }

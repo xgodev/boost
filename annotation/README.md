@@ -69,6 +69,9 @@ Standard library packages are never scanned.
 Each `Entry` is an annotated struct type, method or function:
 
 - `IsStruct()`: a struct type. Interfaces and other non-struct types are not reported.
+  `Fields` lists its fields in order, one per name (`A, B string` is two), with
+  the type as written and the tag without the backquotes; an embedded field has
+  an empty `Name`.
 - `IsMethod()`: a method, with `Struct` set to its receiver type (`T`, `*T` or a
   generic `T[K]`), wherever in the package the type is declared.
 - `IsFunc()`: a package-level function.

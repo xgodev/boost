@@ -74,6 +74,7 @@ const (
 	basePath  = testModule + "/base"
 	quotePath = testModule + "/quote"
 	restyPath = testModule + "/resty"
+	localPath = testModule + "/local"
 )
 
 // middlewareSources declare quote.Service, which embeds base.Pinger, and the
@@ -196,6 +197,8 @@ func TestNewSpec_MiddlewareErrors(t *testing.T) {
 		{"key instead of names", newQuote(provide, middleware("plugins=log")), get, errors.IsNotValid, "plugin names"},
 		{"repeated annotation", newQuote(provide, middleware("log"), middleware("hystrix")), get, errors.IsNotValid, "one @Middleware"},
 		{"without provide", newQuote(middleware("log")), get, errors.IsNotValid, "@Provide"},
+		{"config struct", append(newQuote(provide), decl("quote", "Options", "", nil, nil, ann("Config", ""), middleware("log"))), get,
+			errors.IsNotValid, "only a @Provide function"},
 		{"group provide", newQuote(ann("Provide", "group=quotes, index=0"), middleware("log")), get, errors.IsNotValid, "group"},
 		{"concrete result", []annotation.Entry{decl("quote", "", "New", nil, []string{"*Service"}, provide, middleware("log"))},
 			map[string]string{quotePath: "package quote\n\nimport \"context\"\n\ntype Service struct{}\n\nfunc (*Service) Get(ctx context.Context) error { return nil }\n\nfunc New() *Service { return nil }\n"},
@@ -292,4 +295,54 @@ func TestGenerator_RenderNamedMiddleware(t *testing.T) {
 	src := string(files["builder/middleware/example.com/app/resty/new_middleware.go"])
 	assert.Contains(t, src, "fx.Decorate(fx.Annotate(decorateNew, fx.ParamTags(``, `name:\"x\"`), fx.ResultTags(`name:\"x\"`)))",
 		"the decorated value keeps its name")
+}
+
+// implementationEntries make resty.New (@Default) and local.New the
+// implementations of quote.Service, each with its own @Middleware.
+func implementationEntries() ([]annotation.Entry, map[string]string) {
+	entries := middlewareEntries(ann("Provide", "index=0"), ann("Middleware", "log, hystrix"), ann("Default", ""))
+	local := decl("local", "", "New", nil, []string{"quote.Service"}, ann("Provide", "index=0"), ann("Middleware", "log"))
+	local.Imports = quoteImports
+
+	sources := map[string]string{localPath: "package local\n\nimport \"example.com/app/quote\"\n\nfunc New() quote.Service { return nil }\n"}
+	for path, src := range middlewareSources {
+		sources[path] = src
+	}
+	return append(entries, local), sources
+}
+
+func TestNewSpec_MiddlewareOnImplementation(t *testing.T) {
+	entries, sources := implementationEntries()
+	spec, err := newMiddlewareSpec(t, entries, sources)
+	require.NoError(t, err, "two implementations may decorate the same interface: only one is wired")
+
+	api := spec.Apps[0]
+	require.Len(t, api.Middlewares, 2, "the consumer reaches every implementation")
+	for _, m := range api.Middlewares {
+		require.NotNil(t, m.Implementation, m.Provider.Key())
+		assert.Equal(t, "resty", m.Implementation.Default)
+		assert.Equal(t, []string{"local", "resty"}, m.Implementation.Names())
+	}
+}
+
+func TestGenerator_RenderMiddlewareOnImplementation(t *testing.T) {
+	entries, sources := implementationEntries()
+	files := renderMiddleware(t, entries, sources)
+
+	base, err := testOptions("/src/app").BaseImport()
+	require.NoError(t, err)
+	switchPath := base + "/implementation/" + quotePath
+	chosen := inject.Alias("impl", "quote", switchPath) + ".ServiceImplementation()"
+
+	for member, path := range map[string]string{"resty": restyPath, "local": localPath} {
+		src := string(files["builder/middleware/"+path+"/new_middleware.go"])
+		assert.Contains(t, src, `"`+switchPath+`"`)
+		assert.Contains(t, src, "if "+chosen+" != \""+member+"\" {\n\t\treturn fx.Options()\n\t}",
+			"the decorator of %s runs only when %s is the chosen implementation", member, member)
+	}
+
+	modules := string(files["builder/api/modules.go"])
+	for _, path := range []string{restyPath, localPath} {
+		assert.Contains(t, modules, inject.Alias("mw", filepath.Base(path), base+"/builder/middleware/"+path)+".DecorateNew()")
+	}
 }
