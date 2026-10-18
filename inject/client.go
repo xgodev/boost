@@ -1,6 +1,7 @@
 package inject
 
 import (
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"path"
@@ -320,4 +321,51 @@ func (c Client) Import(base string) ImportData {
 func (c Client) Module(base string) (ImportData, string) {
 	imp := c.Import(base)
 	return imp, imp.Alias + "." + c.Ident() + "Module()"
+}
+
+// clientData collects what the client template needs for one client.
+func clientData(c Client) ClientData {
+	ident := c.Ident()
+	data := ClientData{
+		Package: packageIdent(c.Factory.Package),
+		Ident:   ident,
+		Var:     strings.ToLower(ident[:1]) + ident[1:],
+		Desc:    c.String(),
+		Root:    c.Root(),
+		Env:     ConfigEnv(c.Root(), "*"),
+		Module:  c.Factory.Path + "." + ident,
+		Target:  "new" + ident,
+		Type:    "*factory." + c.Factory.Type,
+		Build:   c.Factory.Constructor(),
+		Names:   strings.Join(c.Plugins, ", "),
+		Imports: []ImportData{
+			{Alias: "factory", Path: c.Factory.FactoryPath()},
+			{Alias: "contextfx", Path: "github.com/xgodev/boost/fx/modules/core/context"},
+		},
+	}
+	if c.Factory.Path != c.Factory.FactoryPath() {
+		data.Type = "*client." + c.Factory.Type
+		data.Imports = append(data.Imports, ImportData{Alias: "client", Path: c.Factory.Path})
+	}
+	if c.Name != "" {
+		data.Target = "fx.Annotate(" + data.Target + ", fx.ResultTags(" + goString(fmt.Sprintf("name:%q", c.Name)) + "))"
+	}
+	for _, name := range c.Plugins {
+		plugin := c.Factory.Plugins[name]
+		alias := name + "plugin"
+		data.Plugins = append(data.Plugins, ClientPluginData{Name: name, Alias: alias, New: plugin.New})
+		data.Imports = append(data.Imports, ImportData{Alias: alias, Path: plugin.Path})
+	}
+	return data
+}
+
+// clientsByConsumer maps the key of each consumer to the clients it injects.
+func clientsByConsumer(clients []Client) map[string][]Client {
+	byConsumer := map[string][]Client{}
+	for _, c := range clients {
+		for _, key := range c.Consumers {
+			byConsumer[key] = append(byConsumer[key], c)
+		}
+	}
+	return byConsumer
 }

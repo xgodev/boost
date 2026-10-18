@@ -104,6 +104,11 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 		return nil, err
 	}
 	switches := switchesByMember(sets)
+	clients, err := Clients(p.graph)
+	if err != nil {
+		return nil, err
+	}
+	consumers := clientsByConsumer(clients)
 
 	files := map[string][]byte{}
 	root := RootData{Package: packageIdent(filepath.Base(p.opts.OutputDir))}
@@ -119,7 +124,7 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 
 	for _, key := range p.graph.SortedKeys() {
 		vertex := p.graph.Vertices[key]
-		name, src, err := p.renderVertex(tmpl, base, vertex, switches)
+		name, src, err := p.renderVertex(tmpl, base, vertex, switches, consumers[key])
 		if err != nil {
 			return nil, err
 		}
@@ -142,6 +147,12 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	if err := p.renderImplementations(tmpl, base, sets, files); err != nil {
 		return nil, err
 	}
+	if err := renderClients(tmpl, clients, files); err != nil {
+		return nil, err
+	}
+	for _, c := range clients {
+		addRoot(c.Module(base))
+	}
 
 	src, err := ExecuteTemplate(tmpl, "root", root)
 	if err != nil {
@@ -155,7 +166,7 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 // renderVertex returns the path, relative to OutputDir, and the source of
 // the module of one component: the config module of a @Config struct, the
 // fx module of a function otherwise.
-func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation) (string, []byte, error) {
+func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client) (string, []byte, error) {
 	comp := vertex.Value
 	name := path.Join(comp.Entry.Path, strings.ToLower(declName(comp.Entry))+"_module.go")
 
@@ -163,7 +174,7 @@ func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *g
 	if comp.IsConfig() {
 		data = configData(p.opts.ModulePath, comp)
 	} else {
-		module, err := p.moduleData(base, vertex, switches)
+		module, err := p.moduleData(base, vertex, switches, clients)
 		if err != nil {
 			return "", nil, err
 		}
@@ -191,6 +202,22 @@ func (p *Generator) renderImplementations(tmpl *template.Template, base string, 
 			return errors.Wrap(err, errors.Internalf("error generating the implementation switch of %s.%s", set.Path, set.Type))
 		}
 		files[set.File()] = src
+	}
+	return nil
+}
+
+// renderClients adds the file of each client inject builds to files. It is
+// AlreadyExists when a client's file is already taken.
+func renderClients(tmpl *template.Template, clients []Client, files map[string][]byte) error {
+	for _, c := range clients {
+		if _, exists := files[c.File()]; exists {
+			return errors.AlreadyExistsf("the %s and a component both generate %s", c, c.File())
+		}
+		src, err := ExecuteTemplate(tmpl, "client", clientData(c))
+		if err != nil {
+			return errors.Wrap(err, errors.Internalf("error generating the %s", c))
+		}
+		files[c.File()] = src
 	}
 	return nil
 }
@@ -248,8 +275,9 @@ func implementationData(base, key string, set Implementation) ImplementationData
 
 // moduleData collects what the module template needs for one component. A
 // dependency that is a member of an implementation set is replaced by the
-// set's switch module.
-func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], switches map[string]Implementation) (ModuleData, error) {
+// set's switch module; the clients the component injects come after its
+// dependencies.
+func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client) (ModuleData, error) {
 	comp := vertex.Value
 	entry := comp.Entry
 
@@ -302,6 +330,11 @@ func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], swi
 		depImport, call := ModuleOf(base, depEntry)
 		data.Deps = append(data.Deps, call)
 		importOnce(depImport)
+	}
+	for _, c := range clients {
+		imp, call := c.Module(base)
+		data.Deps = append(data.Deps, call)
+		importOnce(imp)
 	}
 
 	return data, nil

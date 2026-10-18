@@ -2,6 +2,9 @@ package inject
 
 import (
 	"context"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -231,4 +234,68 @@ func TestClients_DefaultNameCollides(t *testing.T) {
 	})
 	assert.True(t, errors.IsAlreadyExists(err), "unexpected error: %v", err)
 	errorContains(t, err, "default_client.go", testModule+"/client/quote.New", testModule+"/client/weather.New")
+}
+
+func TestGenerator_RenderClient(t *testing.T) {
+	weather := restyConsumer("weather", inject("index=0"))
+	quote := restyConsumer("quote", inject("index=0, name=quote, plugins=[otel, prometheus]"))
+
+	files, err := NewGenerator(newTestGraph(t, []annotation.Entry{weather, quote}), testOptions("/mod")).Render(context.Background())
+	require.NoError(t, err)
+
+	named := files["client/github.com/go-resty/resty/v2/quote_client.go"]
+	require.NotNil(t, named, "the named client is rendered")
+	golden(t, "testdata/client/quote_client.go.golden", named)
+
+	def := string(files["client/github.com/go-resty/resty/v2/default_client.go"])
+	assert.Contains(t, def, `defaultClientRoot = "boost.factory.resty"`)
+	assert.Contains(t, def, "fx.Provide(newDefaultClient)", "the default client has no fx name")
+	assert.Contains(t, def, "factory.NewClientWithConfigPath(ctx, defaultClientRoot)", "no plugin is wired when none is listed")
+
+	clients, err := Clients(newTestGraph(t, []annotation.Entry{weather, quote}))
+	require.NoError(t, err)
+	imp, call := clients[1].Module("example.com/app/gen")
+	consumer := string(files["example.com/app/client/quote/new_module.go"])
+	assert.Contains(t, consumer, imp.Alias+` "example.com/app/gen/client/github.com/go-resty/resty/v2"`)
+	assert.Contains(t, consumer, call+",", "the consumer includes the client it injects")
+	assert.Contains(t, consumer, "fx.ParamTags(`name:\"quote\"`)")
+	_, defCall := clients[0].Module("example.com/app/gen")
+	assert.NotContains(t, consumer, defCall, "a consumer includes only its own clients")
+
+	root := string(files["module.go"])
+	assert.Equal(t, 1, strings.Count(root, call+","), "the root includes the client once")
+	assert.Equal(t, 1, strings.Count(root, defCall+","))
+}
+
+// TestClientRegistryCompiles renders every client of the registry with all
+// its plugins and builds it, so a wrong constructor name or plugin type in
+// the registry fails here instead of in an application.
+func TestClientRegistryCompiles(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds every factory and plugin")
+	}
+
+	tmpl, err := NewTemplate()
+	require.NoError(t, err)
+	dir, err := os.MkdirTemp(".", "zz_clientcheck_")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+
+	keys := make([]string, 0, len(clientFactories))
+	for key := range clientFactories {
+		keys = append(keys, key)
+	}
+	for i, key := range keys {
+		f := clientFactories[key]
+		for _, c := range []Client{{Factory: f}, {Factory: f, Name: "check", Plugins: f.PluginNames()}} {
+			src, err := ExecuteTemplate(tmpl, "client", clientData(c))
+			require.NoError(t, err, "%s", c)
+			file := filepath.Join(dir, strings.ReplaceAll(key, "/", "_"), filepath.Base(c.File()))
+			require.NoError(t, os.MkdirAll(filepath.Dir(file), os.ModePerm), "%d", i)
+			require.NoError(t, os.WriteFile(file, src, 0o644))
+		}
+	}
+
+	out, err := exec.Command("go", "build", "./"+filepath.Base(dir)+"/...").CombinedOutput()
+	require.NoError(t, err, "%s", out)
 }
