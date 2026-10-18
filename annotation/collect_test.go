@@ -69,6 +69,20 @@ import (
 // @Rest(method=PUT)
 func (s *Service) Put() { _ = strings.ToUpper(d2.Hello()); Sprint() }
 `,
+		"app/options.go": `package app
+
+import "time"
+
+// @Boost(kind=fields)
+type Options struct {
+	A, B    string ` + "`" + `default:"x" desc:"letters"` + "`" + `
+	Timeout time.Duration
+	Base
+	hidden int
+}
+
+type Base struct{}
+`,
 		"dep/v2/dep.go": `package depv2
 
 // Two says two.
@@ -185,6 +199,22 @@ func TestCollect_TypeDeclarations(t *testing.T) {
 	assert.Equal(t, "grouped", grouped[0].Annotations[0].Map["kind"])
 
 	assert.Empty(t, find(entries, "Repo", ""), "interfaces are not structs")
+}
+
+func TestCollect_StructFields(t *testing.T) {
+	entries := collectEntries(t, WithPath(fixtureModule(t)))
+
+	options := find(entries, "Options", "")
+	require.Len(t, options, 1)
+	assert.Equal(t, []EntryField{
+		{Name: "A", Type: "string", Tag: `default:"x" desc:"letters"`},
+		{Name: "B", Type: "string", Tag: `default:"x" desc:"letters"`},
+		{Name: "Timeout", Type: "time.Duration"},
+		{Type: "Base"},
+		{Name: "hidden", Type: "int"},
+	}, options[0].Fields, "one field per name, in order; an embedded field has no name")
+
+	assert.Empty(t, find(entries, "Service", "")[0].Fields, "an empty struct has no fields")
 }
 
 func TestCollect_FiltersMatchTheAnnotationName(t *testing.T) {
