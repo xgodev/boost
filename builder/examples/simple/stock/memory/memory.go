@@ -12,13 +12,17 @@ type service struct {
 	soldOut map[string]bool
 }
 
-// New provides the default stock service; every consumer receives it wrapped
-// in the log and prometheus middlewares.
+// New provides the default stock service, out of the items Options lists;
+// every consumer receives it wrapped in the log and prometheus middlewares.
 // @Provide(index=0)
 // @Default
 // @Middleware(log, prometheus)
-func New() stock.Service {
-	return &service{soldOut: map[string]bool{"sold-out": true}}
+func New(o *Options) stock.Service {
+	soldOut := map[string]bool{}
+	for _, item := range o.SoldOut {
+		soldOut[item] = true
+	}
+	return &service{soldOut: soldOut}
 }
 
 func (s *service) Available(_ context.Context, item string) (bool, error) {

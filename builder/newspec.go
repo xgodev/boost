@@ -355,7 +355,7 @@ func serverPlugins(g *graph.Graph[inject.Component], srv Server) []inject.Compon
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for idx, ann := range comp.Provides {
-			if ann.Group == "" && ann.Name == name && isPluginSlice(comp.Entry, comp.Entry.Func.Results[idx].Type, pluginPaths[srv.Kind]) {
+			if ann.Group == "" && ann.Name == name && isPluginSlice(comp.Entry, comp.Result(idx), pluginPaths[srv.Kind]) {
 				plugins = append(plugins, comp)
 				break
 			}

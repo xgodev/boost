@@ -157,6 +157,39 @@ func TestAPIImplementationChild(t *testing.T) {
 	}
 }
 
+// soldOutEnv sets the items the memory stock is out of
+// (builder.examples.simple.stock.memory.soldOut, from its @Config Options).
+const soldOutEnv = "BUILDER_EXAMPLES_SIMPLE_STOCK_MEMORY_SOLD__OUT"
+
+// TestAPIConfig boots app api in a new process with the sold-out list of
+// the memory stock set from the environment: config is read once per
+// process.
+func TestAPIConfig(t *testing.T) {
+	cmd := exec.Command(os.Args[0], "-test.run=^TestAPIConfigChild$", "-test.v")
+	cmd.Env = append(os.Environ(), soldOutEnv+"=book,pen", childEnv+"=1")
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, "%s", out)
+	assert.Contains(t, string(out), "--- PASS: TestAPIConfigChild")
+}
+
+// TestAPIConfigChild runs in the process TestAPIConfig starts.
+func TestAPIConfigChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestAPIConfig")
+	}
+
+	var rest *boostecho.Server
+	app := fx.New(append(api.Modules(), fx.NopLogger, fx.Populate(&rest))...)
+	require.NoError(t, app.Err())
+
+	for _, item := range []string{"book", "pen"} {
+		assert.Equal(t, http.StatusConflict, serve(rest, http.MethodPost, "/orders", `{"item":"`+item+`"}`).Code,
+			"%s is in the sold-out list set from %s", item, soldOutEnv)
+	}
+	assert.Equal(t, http.StatusCreated, serve(rest, http.MethodPost, "/orders", `{"item":"sold-out"}`).Code,
+		"the env replaces the default list")
+}
+
 // opsTotal returns the ops_total the prometheus middleware counted for the
 // wrapper name.
 func opsTotal(t *testing.T, name string) float64 {

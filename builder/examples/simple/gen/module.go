@@ -10,6 +10,7 @@ import (
 	gen_order_f1172a0b "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/order"
 	gen_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/ordercreated"
 	gen_probe_a7e6caf2 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/probe"
+	gen_memory_109e67b9 "github.com/xgodev/boost/builder/examples/simple/gen/github.com/xgodev/boost/builder/examples/simple/stock/memory"
 	impl_stock_23b35631 "github.com/xgodev/boost/builder/examples/simple/gen/implementation/github.com/xgodev/boost/builder/examples/simple/stock"
 )
 
@@ -22,5 +23,6 @@ func Module() fx.Option {
 		gen_ordercreated_37848569.NewModule(),
 		gen_probe_a7e6caf2.PluginsModule(),
 		impl_stock_23b35631.ServiceImplementationModule(),
+		gen_memory_109e67b9.OptionsModule(),
 	)
 }

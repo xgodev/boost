@@ -40,6 +40,12 @@ func (h *Handler) Consume() {}
 // @Default
 func NewDefault() *Handler { return &Handler{} }
 
+// Options configures the handler.
+// @Config
+type Options struct {
+	Size int
+}
+
 // Ignored carries no door.
 // @Other(key=value)
 func Ignored() {}
@@ -62,6 +68,7 @@ func Ignored() {}
 	}
 	sort.Strings(names)
 	assert.Equal(t, []string{
+		"Config example.com/collect/app.Options",
 		"Default example.com/collect/app.NewDefault",
 		"Function example.com/collect/app.Handler.Consume",
 		"GRPC example.com/collect/app.Health",
