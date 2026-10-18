@@ -18,7 +18,9 @@ import (
 // a provider to each function that consumes what it provides: parameters with
 // @Inject must have a provider in the graph, while parameters without it are
 // linked when a default provider of the same type exists and are otherwise
-// left for the application to provide.
+// left for the application to provide. An @Inject client parameter
+// (*resty.Client, ...) without a provider is a client inject builds (see
+// Clients).
 //
 // Two or more providers of the same non-group value form an implementation
 // set when one of them is marked @Default (see Implementations).
@@ -27,8 +29,9 @@ import (
 // from config.
 //
 // It returns a NotValid error for malformed annotations, a dependency cycle,
-// two @Config in a package or an invalid implementation set, AlreadyExists when two functions provide
-// the same non-group value and none is @Default, and NotFound when an
+// two @Config in a package, an invalid implementation set or invalid client
+// plugins, AlreadyExists when two functions provide the same non-group value
+// and none is @Default or two clients share a file, and NotFound when an
 // @Inject has no provider.
 func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*graph.Graph[Component], error) {
 	g := graph.NewGraph[Component]()
@@ -50,6 +53,9 @@ func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*grap
 	}
 
 	if _, err := Implementations(g); err != nil {
+		return nil, err
+	}
+	if _, err := Clients(g); err != nil {
 		return nil, err
 	}
 
@@ -133,6 +139,10 @@ func linkComponents(ctx context.Context, g *graph.Graph[Component], providers ma
 			id := injectID(comp.Entry.Package, param.Type, ann)
 
 			keys := providers[id]
+			if _, client := clientFactory(comp.Entry, param.Type); len(keys) == 0 && injected && client && ann.Group == "" {
+				log.FromContext(ctx).Debugf("parameter %d of %s (%s) is a client inject builds", i, key, param.Type)
+				continue
+			}
 			if len(keys) == 0 && injected {
 				return errors.NotFoundf("provider not found for %s, required by parameter %d of %s", id, i, key)
 			}
@@ -294,6 +304,9 @@ func validateProvides(entry annotation.Entry, provides map[int]Annotation) error
 		if ann.Name != "" && ann.Group != "" {
 			return errors.NotValidf("@Provide on %s result %d cannot have both name and group", gid(entry), idx)
 		}
+		if ann.Plugins != "" {
+			return errors.NotValidf("@Provide on %s result %d cannot have plugins: plugins go on the @Inject of a client parameter", gid(entry), idx)
+		}
 	}
 	return nil
 }
@@ -321,6 +334,39 @@ func validateInjects(entry annotation.Entry, injects map[int]Annotation) error {
 		}
 		if _, ok := sliceElem(entry.Func.Parameters[idx].Type); ann.Group != "" && !ok {
 			return errors.NotValidf("@Inject(group=%s) on %s parameter %d must be a slice", ann.Group, gid(entry), idx)
+		}
+		if err := validatePlugins(entry, idx, ann); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// validatePlugins checks the plugins of an @Inject: the parameter is a client
+// inject builds and every plugin is one of its factory.
+func validatePlugins(entry annotation.Entry, idx int, ann Annotation) error {
+	if ann.Plugins == "" {
+		return nil
+	}
+
+	tp := entry.Func.Parameters[idx].Type
+	f, ok := clientFactory(entry, tp)
+	switch {
+	case ann.Group != "":
+		return errors.NotValidf("@Inject on %s parameter %d cannot have both group and plugins: plugins configure one client", gid(entry), idx)
+	case !ok:
+		return errors.NotValidf("@Inject on %s parameter %d has plugins, but %s is not a client inject builds (%s)",
+			gid(entry), idx, tp, strings.Join(supportedClients(), ", "))
+	}
+
+	plugins, err := parsePlugins(ann.Plugins)
+	if err != nil {
+		return errors.NewNotValid(err, fmt.Sprintf("@Inject on %s parameter %d", gid(entry), idx))
+	}
+	for _, plugin := range plugins {
+		if _, ok := f.Plugins[plugin]; !ok {
+			return errors.NotValidf("@Inject on %s parameter %d: %s has no plugin %s; its plugins are %s",
+				gid(entry), idx, tp, plugin, strings.Join(f.PluginNames(), ", "))
 		}
 	}
 	return nil

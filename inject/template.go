@@ -63,6 +63,30 @@ type ConfigKeyData struct {
 	Hide    bool   // the value is a secret
 }
 
+// ClientData feeds the template of a client inject builds.
+type ClientData struct {
+	Package string             // package name of the generated file
+	Ident   string             // exported prefix: <Ident>Module
+	Var     string             // unexported prefix of the root constant, the once guard and the constructor
+	Desc    string             // the client, for the docs
+	Root    string             // config root of the client
+	Env     string             // environment variables that set its keys
+	Module  string             // name of the fx module
+	Target  string             // expression passed to fx.Provide
+	Type    string             // Go type of the client
+	Build   string             // ...WithConfigPath constructor of the factory
+	Plugins []ClientPluginData // in the declared order
+	Names   string             // plugin names, comma separated
+	Imports []ImportData       // client type, factory, context module and plugins
+}
+
+// ClientPluginData is one plugin of a client.
+type ClientPluginData struct {
+	Name  string // plugin name, the last segment of its config root
+	Alias string // import alias of the plugin
+	New   string // ...WithConfigPath constructor of the plugin
+}
+
 // ImplementationCase is one implementation of a switch and its module call.
 type ImplementationCase struct {
 	Name   string
@@ -76,7 +100,7 @@ type ImportData struct {
 }
 
 // NewTemplate parses the generator templates ("module", "root",
-// "implementation" and "config").
+// "implementation", "config" and "client").
 func NewTemplate() (*template.Template, error) {
 	tmpl, err := template.New("inject").Parse(moduleTemplate)
 	if err != nil {
