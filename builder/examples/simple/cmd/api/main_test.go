@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"reflect"
 	"strings"
 	"testing"
@@ -105,6 +106,55 @@ func TestAPI(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, healthpb.HealthCheckResponse_SERVING, resp.GetStatus())
 	})
+}
+
+const (
+	// implementationEnv chooses the implementation of stock.Service
+	// (builder.examples.simple.stock.implementation).
+	implementationEnv = "BUILDER_EXAMPLES_SIMPLE_STOCK_IMPLEMENTATION"
+	childEnv          = "BUILDER_EXAMPLE_CHILD"
+)
+
+// TestAPIImplementation boots app api in a new process per value of the
+// implementation key: config is read once per process.
+func TestAPIImplementation(t *testing.T) {
+	for _, value := range []string{"unlimited", "nope"} {
+		t.Run(value, func(t *testing.T) {
+			cmd := exec.Command(os.Args[0], "-test.run=^TestAPIImplementationChild$", "-test.v")
+			cmd.Env = append(os.Environ(), implementationEnv+"="+value, childEnv+"=1")
+			out, err := cmd.CombinedOutput()
+			require.NoError(t, err, "%s", out)
+			assert.Contains(t, string(out), "--- PASS: TestAPIImplementationChild")
+		})
+	}
+}
+
+// TestAPIImplementationChild runs in the process TestAPIImplementation
+// starts, with the implementation key set.
+func TestAPIImplementationChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestAPIImplementation")
+	}
+
+	var (
+		rest     *boostecho.Server
+		stockSvc stock.Service
+	)
+	app := fx.New(append(api.Modules(), fx.NopLogger, fx.Populate(&rest, &stockSvc))...)
+
+	switch value := os.Getenv(implementationEnv); value {
+	case "unlimited":
+		require.NoError(t, app.Err())
+		assert.True(t, strings.HasSuffix(reflect.TypeOf(stockSvc).Elem().PkgPath(), "/stock/unlimited"),
+			"config wires unlimited, undecorated: the @Middleware of memory is off with memory")
+		assert.Equal(t, http.StatusCreated, serve(rest, http.MethodPost, "/orders", `{"item":"sold-out"}`).Code,
+			"unlimited has every item")
+	default:
+		require.Error(t, app.Err(), "an unknown implementation fails the boot")
+		assert.Contains(t, app.Err().Error(), "builder.examples.simple.stock.implementation")
+		assert.Contains(t, app.Err().Error(), `"`+value+`"`)
+		assert.Contains(t, app.Err().Error(), "memory, unlimited")
+	}
 }
 
 // opsTotal returns the ops_total the prometheus middleware counted for the

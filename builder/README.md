@@ -252,14 +252,18 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
 - `api`: REST `POST /orders` and `GET /orders/:id` on `rest`, `GET`/`HEAD
   /live` on `admin` (built with the `X-Served-By: admin` plugin of
   `probe.Plugins`), and the gRPC health service on `grpc`; `POST /orders`
-  checks `stock.Service`, whose constructor carries `@Middleware(log,
-  prometheus)`;
+  checks `stock.Service`, implemented by `stock/memory` (`@Default`, with
+  `@Middleware(log, prometheus)`) and `stock/unlimited`, chosen by
+  `builder.examples.simple.stock.implementation`
+  (`BUILDER_EXAMPLES_SIMPLE_STOCK_IMPLEMENTATION`);
 - `worker`: the `ordercreated` function on the cloudevents adapter.
 
 `cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
 routes and the gRPC service of the generated app, check that the handler
-receives the stock decorator and that prometheus counted its call, run the
-function handler, and fail when `gen/` or a main is stale.
+receives the stock decorator and that prometheus counted its call, boot the
+api with `unlimited` (wired without the decorator) and with an unknown name
+(the boot fails), run the function handler, and fail when `gen/` or a main is
+stale.
 
 ## Non-goals
 

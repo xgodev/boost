@@ -102,8 +102,8 @@ func New(c *resty.Client) quote.Service { ... }
   the module path.
 - My call: every member has exactly one `@Provide`; members must resolve to
   the same type import path; a consumer of the set declared in a member's
-  package is rejected (it would import its own switch); builder also rejects
-  a member that provides server plugins.
+  package is rejected (it would import its own switch); a member cannot
+  provide server plugins, since `[]Plugin` is not a named type.
 - My call: the name `@Default` keeps the maintainer's choice even though the
   inject README already says "default provider" for a provider without
   `name`; the docs call it the "default implementation" to keep the two
