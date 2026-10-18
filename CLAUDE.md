@@ -34,6 +34,8 @@ factory por componente sob `factory/contrib/`.
 - **Separação de concerns** — factory constrói, wrapper abstrai, app consome.
 - Documentação é parte da tarefa: mudou componente/config key/comportamento →
   atualizar o README do pacote no mesmo commit.
+- **`README.md` da raiz espelha o site** (`docs/site/index.html`): mesmas
+  seções, texto, números, exemplo e versão. Mudou um, muda o outro no mesmo PR.
 - Teste valida comportamento, não só cobre linha. Bug fix → teste vermelho
   primeiro (TDD).
 
