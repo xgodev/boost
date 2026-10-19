@@ -66,6 +66,17 @@ arrives becomes that event's `Error`. Reports go to a delivery channel per
 `Publish` call, so they no longer reach the producer's `Events()` channel; the
 driver logs each delivery at its own `log.level`.
 
+The kafka-go driver (`driver/contrib/segmentio/kafka-go/v0`, on the writer of
+`factory/contrib/segmentio/kafka-go/v0`) writes all events in one
+`WriteMessages`, in CloudEvents binary mode: the data is the value, the
+attributes and extensions are `ce_*` headers (`ce_time` in RFC3339) plus
+`content-type`. The topic is the event subject; the key is the `key`
+extension, else `partitionkey`, else the event ID. An event without subject,
+or one kafka-go reports in `kafka.WriteErrors`, gets its own `Error`; any
+other write error fails every event of the call. fx:
+`fx/modules/wrapper/publisher/driver/contrib/segmentio/kafka-go/v0`, switched by
+`boost.wrapper.publisher.driver.kafkago.enabled`.
+
 The AWS drivers (`driver/contrib/aws/{sns,sqs,kinesis}/v1`, on the clients of
 `factory/contrib/aws/aws-sdk-go-v2/v1/client/...`) send the event subject as
 the destination: the SNS topic ARN, the SQS queue name (URL resolved and

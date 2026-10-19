@@ -7,7 +7,7 @@
 <p align="center"><b>Enterprise Go services. Built fast.</b></p>
 
 <p align="center">
-Boot, config, logs, 51 factories, middleware, health and code generation in one framework. You write the business logic.
+Boot, config, logs, 52 factories, middleware, health and code generation in one framework. You write the business logic.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Boot, config, logs, 51 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 51 | 39 | 78 | 220 |
+| 52 | 40 | 78 | 220 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -674,7 +674,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**51** factories · **39** upstream libraries · **78** plugins
+**52** factories · **40** upstream libraries · **78** plugins
 
 ### Plugins
 
@@ -885,7 +885,7 @@ Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → `v1.3.0` → **`v1.
 
 ## There's a factory for that.
 
-51 factories over the 39 libraries your services already run on. Each one
+52 factories over the 40 libraries your services already run on. Each one
 arrives configured, with plugins for traces, metrics and health checks, so your
 team writes the business logic, not the plumbing.
 
@@ -905,6 +905,7 @@ team writes the business logic, not the plumbing.
 | Library | Factory wraps |
 |---|---|
 | Kafka (Confluent) | `confluent-kafka-go/v2` |
+| Kafka (segmentio) | `kafka-go/v0` |
 | NATS | `nats.go/v1` |
 | Google Pub/Sub | `pubsub/v1 · v2` |
 | Go CDK Pub/Sub | `gocloud.dev/v0` |
