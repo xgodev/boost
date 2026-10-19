@@ -13,11 +13,13 @@ require (
 	github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/google.golang.org/grpc/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/labstack/echo.v4/v2 v2.11.2
+	github.com/DataDog/dd-trace-go/contrib/labstack/echo.v5/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/redis/go-redis.v9/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/v2 v2.11.2
 	github.com/XSAM/otelsql v0.44.0
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/allegro/bigcache/v3 v3.2.0
+	github.com/apache/cassandra-gocql-driver/v2 v2.1.2
 	github.com/aws/aws-lambda-go v1.55.1
 	github.com/aws/aws-sdk-go-v2 v1.47.3
 	github.com/aws/aws-sdk-go-v2/config v1.33.9
@@ -34,6 +36,7 @@ require (
 	github.com/coocood/freecache v1.2.7
 	github.com/dubonzi/otelresty v1.8.0
 	github.com/elastic/go-elasticsearch/v8 v8.19.7
+	github.com/elastic/go-elasticsearch/v9 v9.5.2
 	github.com/globocom/echo-prometheus v0.1.2
 	github.com/go-logr/logr v1.4.4
 	github.com/go-playground/validator/v10 v10.30.5
@@ -57,7 +60,10 @@ require (
 	github.com/knadh/koanf/parsers/toml/v2 v2.2.2
 	github.com/knadh/koanf/providers/env/v2 v2.0.2
 	github.com/knadh/koanf/v2 v2.4.1
+	github.com/labstack/echo-contrib/v5 v5.0.1
+	github.com/labstack/echo-otel/v5 v5.0.0
 	github.com/labstack/echo/v4 v4.16.0
+	github.com/labstack/echo/v5 v5.4.0
 	github.com/labstack/gommon v0.5.0
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
 	github.com/lovoo/goka v1.1.17
