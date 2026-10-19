@@ -23,6 +23,25 @@ type doorData struct {
 	Doc     string              // rest of the doc sentence of the module function
 	Name    string              // fx module name
 	Options []string            // options of the fx module, as Go expressions
+	// Adapter is the config switch of a @Function with a list of adapters;
+	// nil for every other door.
+	Adapter *adapterSwitch
+}
+
+// adapterSwitch is the config key that chooses the adapter of a @Function
+// among several, and the fx options of each one.
+type adapterSwitch struct {
+	Key    string // config key, <app>.function.adapter
+	Names  string // the adapters, comma separated, in annotation order
+	Config string // import alias of wrapper/config
+	Errors string // import alias of model/errors
+	Cases  []adapterCase
+}
+
+// adapterCase is one adapter of an adapterSwitch.
+type adapterCase struct {
+	Name    string
+	Options []string // fx options of the adapter, as Go expressions
 }
 
 // modulesData feeds the template of modules.go.
