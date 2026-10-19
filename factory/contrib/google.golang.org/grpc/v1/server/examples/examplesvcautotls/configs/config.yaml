@@ -1,0 +1,9 @@
+boost:
+  factory:
+    grpc:
+      server:
+        tls:
+          enabled: true
+          type: AUTO
+          auto:
+            host: localhost

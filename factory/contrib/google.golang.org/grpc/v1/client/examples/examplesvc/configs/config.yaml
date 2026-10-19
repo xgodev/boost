@@ -1,0 +1,8 @@
+boost:
+  factory:
+    grpc:
+      client:
+        host: localhost
+        port: 9090
+        tls:
+          enabled: true

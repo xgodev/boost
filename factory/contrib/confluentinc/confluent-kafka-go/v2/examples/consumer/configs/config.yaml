@@ -1,0 +1,12 @@
+boost:
+  bootstrap:
+    function:
+      default: kafka_confluent
+      adapter:
+        confluent:
+          topics:
+            - messages
+  factory:
+    confluent:
+      consumer:
+        groupId: consumer-example

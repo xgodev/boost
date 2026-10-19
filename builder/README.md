@@ -142,7 +142,9 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   name; the door hands them to `functionfx.Module` under
   `functionfx.MiddlewaresName`. One turned off in config
   (`boost.bootstrap.function.middleware.<name>.enabled`) is skipped.
-  `publisher` needs a `publisher.Driver` provided by the app.
+  `publisher` needs the app's unnamed `publisher.Driver`: the door builds the
+  `@Provide` constructor that returns it, and generation fails with NotFound
+  when there is none (fx would skip the middleware silently).
 
 ### `@Middleware`: plugins around every method of a service
 

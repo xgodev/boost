@@ -11,9 +11,10 @@ type Checker struct {
 	session *gocql.Session
 }
 
-// Check checks if cassandra cluster is up.
+// Check checks if cassandra cluster is up: it reads the node of the session
+// from system.local, which every cassandra and scylla node answers.
 func (c *Checker) Check(ctx context.Context) error {
-	return c.session.Query("void").Exec()
+	return c.session.Query("SELECT now() FROM system.local").WithContext(ctx).Exec()
 }
 
 // NewChecker returns a new health checker.

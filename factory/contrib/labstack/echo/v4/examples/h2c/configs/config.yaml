@@ -1,0 +1,4 @@
+boost:
+  factory:
+    echo:
+      protocol: H2C

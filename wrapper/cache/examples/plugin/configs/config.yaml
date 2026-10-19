@@ -1,0 +1,8 @@
+boost:
+  factory:
+    freecache:
+      # freecache raises it to 512KB at least
+      cacheSize: 1048576
+    zerolog:
+      # the log plugin of the cache logs at TRACE
+      level: TRACE

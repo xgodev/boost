@@ -1,0 +1,13 @@
+boost:
+  factory:
+    resty:
+      clients:
+        google:
+          host: http://google.com
+          plugins:
+            health:
+              name: Google Inc
+              host: http://google.com
+              endpoint: /status
+              description: Search Engine
+              required: true

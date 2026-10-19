@@ -78,6 +78,10 @@ Plugin packages sit under each factory's `plugins/` directory:
 library's own middleware, `extra/` is boost-authored and generic, and
 `local/` wires another boost package (health, log, cache).
 
+The gocql health checker (`contrib/gocql/gocql/v1/plugins/local/extra/health`)
+runs `SELECT now() FROM system.local` with the context of the check, a query
+every cassandra and scylla node answers.
+
 ## Integration with Other Packages
 
 The Factory integrates with other components of the Boost framework:
