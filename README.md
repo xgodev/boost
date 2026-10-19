@@ -7,7 +7,7 @@
 <p align="center"><b>Enterprise Go services. Built fast.</b></p>
 
 <p align="center">
-Boot, config, logs, 48 factories, middleware, health and code generation in one framework. You write the business logic.
+Boot, config, logs, 50 factories, middleware, health and code generation in one framework. You write the business logic.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Boot, config, logs, 48 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 48 | 39 | 58 | 220 |
+| 50 | 39 | 60 | 220 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -674,7 +674,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**48** factories · **39** upstream libraries · **58** plugins
+**50** factories · **39** upstream libraries · **60** plugins
 
 ### Plugins
 
@@ -758,7 +758,7 @@ the app modules and main.
 |---|---|
 | `@REST` | echo route |
 | `@GRPC` | gRPC service |
-| `@Function` | cloudevents · kafka · nats · pubsub |
+| `@Function` | cloudevents · kafka · lambda · nats · pubsub |
 | `@MCP` | MCP tool |
 | `@Middleware` | generated decorator |
 | `@Default` | implementation picked by config |
@@ -767,7 +767,7 @@ the app modules and main.
 
 `bootstrap/function` · [docs](bootstrap/README.md)
 
-One event handler, four transports. Change the adapter in config; the handler
+One event handler, six transports. Change the adapter in config; the handler
 stays the same.
 
 ```go
@@ -868,8 +868,8 @@ same or get better, never worse.
  module github.com/acme/shop
 
  require (
--	github.com/xgodev/boost v1.2.0
-+	github.com/xgodev/boost v1.3.0
+-	github.com/xgodev/boost v1.3.0
++	github.com/xgodev/boost v1.4.0
  )
 ```
 
@@ -880,12 +880,12 @@ ok  github.com/acme/shop/...
 
 1 line changed in go.mod, **0 lines changed in your code**.
 
-Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → **`v1.3.0`**
+Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → `v1.3.0` → **`v1.4.0`**
 ([all releases](https://github.com/xgodev/boost/releases)).
 
 ## There's a factory for that.
 
-48 factories over the 39 libraries your services already run on. Each one
+50 factories over the 39 libraries your services already run on. Each one
 arrives configured, with plugins for traces, metrics and health checks, so your
 team writes the business logic, not the plumbing.
 
@@ -919,8 +919,8 @@ team writes the business logic, not the plumbing.
 | [MongoDB](https://www.mongodb.com/docs/drivers/go/current/) | `mongo-driver/v1 · v2` |
 | PostgreSQL | `pgx/v5` |
 | Oracle | `godror/v0` |
-| Cassandra | `gocql/v1` |
-| Elasticsearch | `go-elasticsearch/v8` |
+| Cassandra | `gocql/v1 · v2` |
+| Elasticsearch | `go-elasticsearch/v8` · `v9` |
 | BigQuery · Firestore · API client | `cloud.google.com` |
 | FTP | `ftp/v0` |
 
@@ -966,7 +966,7 @@ every service, so boost writes it once.
 - **The plumbing comes built.** Defaults, auth, connect and ping, structured
   logs through `wrapper/log`. What a platform team rewrites for every SDK in
   every service is already there.
-- **58 plugins to plug in.** OpenTelemetry, Prometheus, Datadog, health checks,
+- **60 plugins to plug in.** OpenTelemetry, Prometheus, Datadog, health checks,
   retry, request id, CORS, gzip. Pass the plugin to the factory; switch it off
   with a key.
 

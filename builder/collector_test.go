@@ -82,3 +82,31 @@ func Ignored() {}
 		"REST example.com/collect/app.Handler.Get",
 	}, names)
 }
+
+func TestCollectEntries_KeepsTheAdapterListWhole(t *testing.T) {
+	root := t.TempDir()
+	files := map[string]string{
+		"go.mod": "module example.com/collect\n\ngo 1.21\n",
+		"app/app.go": `package app
+
+// Consume handles events.
+// @Function(adapter=[pubsub, nats], app=worker)
+func Consume() {}
+`,
+	}
+	for name, body := range files {
+		path := filepath.Join(root, name)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		require.NoError(t, os.WriteFile(path, []byte(body), 0o644))
+	}
+
+	entries, err := CollectEntries(root)
+	require.NoError(t, err)
+	require.Len(t, entries, 1)
+	require.Len(t, entries[0].Annotations, 1)
+
+	var args functionArgs
+	require.NoError(t, decode(entries[0].Annotations[0], declName(entries[0]), functionKeys, &args))
+	assert.Equal(t, "[pubsub, nats]", args.Adapter, "the comma of the list does not split the annotation")
+	assert.Equal(t, "worker", args.App)
+}

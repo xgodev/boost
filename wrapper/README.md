@@ -28,6 +28,9 @@ The `config` subpackage offers a unified interface for application configuration
 
 This facilitates configuration management across different environments and deployment scenarios.
 
+Drivers: [`contrib/knadh/koanf/v1`](config/contrib/knadh/koanf/v1) (wired by `boost.Start()`) and
+[`contrib/knadh/koanf/v2`](config/contrib/knadh/koanf/v2) (set with `config.Set(koanf.New())`).
+
 ### Log
 
 The `log` subpackage provides abstractions for logging systems, with support for:

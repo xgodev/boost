@@ -1,12 +1,13 @@
 package pubsub
 
 import (
+	"sync"
+
 	pubsubcfg "github.com/xgodev/boost/fx/modules/factory/contrib/cloud.google.com/pubsub"
 	fxpubsub "github.com/xgodev/boost/fx/modules/factory/contrib/cloud.google.com/pubsub/v1"
 	drivercfg "github.com/xgodev/boost/fx/modules/wrapper/publisher/driver/contrib/cloud.google.com/pubsub"
 	"github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v1"
 	"go.uber.org/fx"
-	"sync"
 )
 
 var once sync.Once
