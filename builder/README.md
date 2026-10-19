@@ -127,14 +127,15 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   result. A method needs a provided receiver, as in `@REST`.
 - An app runs at most one `@Function`. The door includes
   `functionfx.Module[T]` and the adapter module under
-  `fx/modules/bootstrap/function/adapter/contrib` (`pubsub` includes v1 and v2,
-  each enabled by its own config).
+  `fx/modules/bootstrap/function/adapter/contrib` (`pubsub` includes v1 and v2;
+  `boost.bootstrap.function.adapter.pubsub.version`, `v2` by default, turns
+  on one).
 - With a list, `adapter=[pubsub, nats]`, config chooses the adapter:
   `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`), default the first
   name. The door includes only the chosen adapter module, so the others and
   their clients are never built; an unknown name fails the boot with
   `NotValid` naming the key, the value and the valid names. The adapters'
-  own `.enabled` keys stay as they are.
+  own keys (`.enabled`, the pubsub `version`) stay as they are.
 - Each middleware is the fx module under
   `fx/modules/bootstrap/function/middleware` of the
   [`bootstrap/function/middleware`](../bootstrap/function/middleware) of that
