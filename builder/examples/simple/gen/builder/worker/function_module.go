@@ -11,10 +11,14 @@ import (
 	bsfunction "github.com/xgodev/boost/bootstrap/function"
 	loggermw "github.com/xgodev/boost/bootstrap/function/middleware/logger"
 	recoverymw "github.com/xgodev/boost/bootstrap/function/middleware/recovery"
+	client_pubsub_0cd2c75d "github.com/xgodev/boost/builder/examples/simple/gen/client/cloud.google.com/go/pubsub/v2"
+	client_nats_5da165e5 "github.com/xgodev/boost/builder/examples/simple/gen/client/github.com/nats-io/nats.go"
 	gen_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/gen/ordercreated"
 	src_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/ordercreated"
 	bsmiddleware "github.com/xgodev/boost/extra/middleware"
 	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
+	pubsubv1fx "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v1"
+	pubsubv2fx "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v2"
 	cloudeventsfx "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http"
 	natsfx "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/nats-io/nats.go/v1"
 	loggerfx "github.com/xgodev/boost/fx/modules/bootstrap/function/middleware/logger"
@@ -27,12 +31,12 @@ import (
 const functionAdapterKey = "worker.function.adapter"
 
 func init() {
-	config.Add(functionAdapterKey, "cloudevents", "adapter of the @Function of app worker: cloudevents, nats")
+	config.Add(functionAdapterKey, "cloudevents", "adapter of the @Function of app worker: cloudevents, nats, pubsub")
 }
 
 var functionOnce sync.Once
 
-// FunctionModule runs the @Function handler with the adapter named by worker.function.adapter (cloudevents, nats; default cloudevents).
+// FunctionModule runs the @Function handler with the adapter named by worker.function.adapter (cloudevents, nats, pubsub; default cloudevents).
 // It returns an empty option after the first call.
 func FunctionModule() fx.Option {
 	options := fx.Options()
@@ -76,8 +80,17 @@ func functionAdapterModule() fx.Option {
 	case "cloudevents":
 		return cloudeventsfx.Module[*src_cloudevents_c136a3fd.Event]()
 	case "nats":
-		return natsfx.Module[*src_cloudevents_c136a3fd.Event]()
+		return fx.Options(
+			natsfx.ModuleWithoutClient[*src_cloudevents_c136a3fd.Event](),
+			client_nats_5da165e5.DefaultConnModule(),
+		)
+	case "pubsub":
+		return fx.Options(
+			pubsubv1fx.Module[*src_cloudevents_c136a3fd.Event](),
+			pubsubv2fx.ModuleWithoutClient[*src_cloudevents_c136a3fd.Event](),
+			client_pubsub_0cd2c75d.DefaultClientModule(),
+		)
 	default:
-		return fx.Error(errors.NotValidf("%s: unknown adapter %q; valid: %s", functionAdapterKey, name, "cloudevents, nats"))
+		return fx.Error(errors.NotValidf("%s: unknown adapter %q; valid: %s", functionAdapterKey, name, "cloudevents, nats, pubsub"))
 	}
 }

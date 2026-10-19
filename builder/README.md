@@ -130,6 +130,13 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   `fx/modules/bootstrap/function/adapter/contrib` (`pubsub` includes v1 and v2;
   `boost.bootstrap.function.adapter.pubsub.version`, `v2` by default, turns
   on one).
+- The `nats`, `cenats` and `pubsub` (v2) adapters read with the app's
+  default client: the `*nats.Conn` or `*pubsub.Client` of the app's unnamed
+  `@Provide`, or else the one inject generates (`DefaultConnModule()`,
+  `DefaultClientModule()` under `gen/client/...`), the same one the publisher
+  and an `@Inject` without `name` get. The door wires the adapter's
+  `ModuleWithoutClient`, so a function that reads from a broker and
+  publishes to it boots with one client.
 - With a list, `adapter=[pubsub, nats]`, config chooses the adapter:
   `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`), default the first
   name. The door includes only the chosen adapter module, so the others and
@@ -260,9 +267,10 @@ fails the generation instead of being overwritten. Other files under `cmd/`
   (REST) or `[]server.Plugin` (gRPC,
   [`grpc/v1/server`](../factory/contrib/google.golang.org/grpc/v1/server);
   MCP, [`go-sdk/v1/server`](../factory/contrib/modelcontextprotocol/go-sdk/v1/server))
-  provided without `name` reaches `rest`, `grpc` or `mcp`, and one provided with
-  `name=<server>` reaches that server. The door includes the provider's inject
-  module, so the generated main needs nothing else:
+  provided with `name=<server>` reaches that server, `rest`, `grpc` and `mcp`
+  included; one provided without `name` reaches `rest`, `grpc` or `mcp` too.
+  The door includes the provider's inject module, so the generated main needs
+  nothing else:
 
 ```go
 // Plugins tags the admin responses.
@@ -291,6 +299,8 @@ The command fails, without touching the output directory, when:
 - `middlewares` is not written as `[a, b]`, or lists an empty, unknown or
   repeated name;
 - a server is used by two kinds of door;
+- `rest`, `grpc` or `mcp` gets both a `[]Plugin` with `name=<server>` and
+  one without `name`: provide one of them;
 - an app or server name is invalid, or an annotation has an unknown key;
 - the handler is unexported or in package `main`;
 - `@Middleware` lists no plugin, an unknown one or one twice, is repeated,

@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"github.com/xgodev/boost/fx/modules/extra/multiserver"
 	"github.com/xgodev/boost/inject"
 	"github.com/xgodev/boost/model/errors"
@@ -338,6 +337,13 @@ func serverDoor(base string, srv Server) (doorData, error) {
 		def := defaultServers[srv.Kind]
 		fxModule := imps.add(def.alias, def.fxPath)
 		d.Options = append(d.Options, fxModule+".Module()")
+		if srv.PluginsName != "" {
+			// the shipped module takes the default []Plugin: give it the
+			// value provided under the server's name
+			d.Options = append(d.Options, "fx.Provide(\nfx.Annotate(\n"+
+				"func(plugins []"+serverPkg+".Plugin) []"+serverPkg+".Plugin {\nreturn plugins\n},\n"+
+				"fx.ParamTags("+goTag(`name:"`+srv.PluginsName+`"`)+"),\n),\n)")
+		}
 		d.Options = append(d.Options, modules...)
 		d.Options = append(d.Options, "fx.Invoke("+invoke+")")
 		d.Imports = imps.sorted()
@@ -374,105 +380,6 @@ func serverDoor(base string, srv Server) (doorData, error) {
 	d.Options = append(d.Options, "fx.Invoke(fx.Annotate(\n"+invoke+",\nfx.ParamTags("+named+"),\n))")
 	d.Imports = imps.sorted()
 	return d, nil
-}
-
-func functionDoor(base, app string, fn Function) (doorData, error) {
-	d := door(app, functionFile, fmt.Sprintf("runs the @Function handler with the %s adapter.", fn.Adapter))
-	imps := newImports()
-	entry := fn.Handler.Entry
-
-	result, err := imps.qualify(entry, entry.Func.Results[0].Type)
-	if err != nil {
-		return doorData{}, err
-	}
-
-	var params []string
-	var modules []string
-	include := func(provider inject.Component) {
-		imp, mod := inject.ModuleOf(base, provider.Entry)
-		imps.add(imp.Alias, imp.Path)
-		modules = append(modules, mod)
-	}
-	call, err := handlerFunc(imps, fn.Handler, map[string]string{}, &params, include)
-	if err != nil {
-		return doorData{}, err
-	}
-	// the middlewares are built with the values their constructors provide
-	for _, provider := range fn.Providers {
-		include(provider)
-	}
-
-	handlerType := imps.add("bsfunction", functionPath) + ".Handler[" + result + "]"
-	d.Options = append(d.Options, modules...)
-	d.Options = append(d.Options,
-		"fx.Provide(func("+strings.Join(params, ", ")+") "+handlerType+" {\nreturn "+call+"\n})",
-	)
-	d.Options = append(d.Options, functionMiddlewareOptions(imps, result, fn.Middlewares)...)
-	d.Options = append(d.Options,
-		imps.add("functionfx", functionFxPath)+".Module["+result+"](nil)",
-	)
-	if len(fn.Alternatives) == 0 {
-		d.Options = append(d.Options, adapterOptions(imps, result, fn.Adapter)...)
-		d.Imports = imps.sorted()
-		return d, nil
-	}
-
-	// a list of adapters: config chooses one, and only its module is wired
-	names := append([]string{fn.Adapter}, fn.Alternatives...)
-	sw := &adapterSwitch{
-		Key:    app + "." + functionFile + ".adapter",
-		Names:  strings.Join(names, ", "),
-		Config: imps.add("config", wrapperConfigPath),
-		Errors: imps.add("errors", errorsPath),
-	}
-	for _, name := range names {
-		sw.Cases = append(sw.Cases, adapterCase{Name: name, Options: adapterOptions(imps, result, name)})
-	}
-	d.Adapter = sw
-	d.Doc = fmt.Sprintf("runs the @Function handler with the adapter named by %s (%s; default %s).", sw.Key, sw.Names, fn.Adapter)
-	d.Init = []string{fmt.Sprintf("%s.Add(%sAdapterKey, %q, %q)", sw.Config, d.Var, fn.Adapter,
-		"adapter of the @Function of app "+app+": "+sw.Names)}
-	d.Options = append(d.Options, d.Var+"AdapterModule()")
-	d.Imports = imps.sorted()
-	return d, nil
-}
-
-// adapterOptions returns the fx modules that run the named adapter.
-func adapterOptions(imps *imports, result, name string) []string {
-	var options []string
-	for _, adapter := range functionAdapters[name] {
-		options = append(options, imps.add(adapter.Alias, adapter.Path)+".Module["+result+"]()")
-	}
-	return options
-}
-
-// functionMiddlewareOptions returns, for the middlewares of a @Function, the
-// fx module of each one and the provider of the list the function module runs,
-// in the given order. A middleware disabled in config is left out.
-func functionMiddlewareOptions(imps *imports, result string, names []string) []string {
-	if len(names) == 0 {
-		return nil
-	}
-
-	list := "[]" + imps.add("bsmiddleware", middlewarePath) + ".AnyErrorMiddleware[" + result + "]"
-	var options, params, tags, appends []string
-	for i, name := range names {
-		mw := functionMiddlewares[name]
-		options = append(options, imps.add(mw.Module.Alias, mw.Module.Path)+".Module["+result+"]()")
-		param := fmt.Sprintf("m%d", i)
-		params = append(params, param+" *"+imps.add(mw.Pkg.Alias, mw.Pkg.Path)+"."+mw.Type+"["+result+"]")
-		tags = append(tags, goTag(`optional:"true"`))
-		appends = append(appends, "if "+param+" != nil {\nm = append(m, "+param+")\n}\n")
-	}
-
-	return append(options, "fx.Provide(fx.Annotate(\n"+
-		"func("+strings.Join(params, ", ")+") "+list+" {\n"+
-		"// a middleware disabled in config is not provided\n"+
-		"var m "+list+"\n"+
-		strings.Join(appends, "")+
-		"return m\n},\n"+
-		"fx.ParamTags("+strings.Join(tags, ", ")+"),\n"+
-		"fx.ResultTags("+goTag(`name:"`+functionfx.MiddlewaresName+`"`)+"),\n))")
 }
 
 // handlerFunc returns the expression of the handler: pkg.Func, or h<N>.Method

@@ -368,6 +368,63 @@ func TestNewSpec_ServerPlugins(t *testing.T) {
 	assert.Equal(t, []string{"Grpc"}, pluginNames(grpcSrv.Plugins), "grpc takes the default []grpcserver.Plugin")
 }
 
+// namedDefaultPluginEntries provide the []Plugin of rest, grpc and mcp under
+// the name of their server, as admin's is.
+func namedDefaultPluginEntries() []annotation.Entry {
+	imports := map[string]string{
+		"boostecho":  "github.com/xgodev/boost/factory/contrib/labstack/echo/v4",
+		"grpcserver": "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server",
+		"mcpserver":  "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server",
+	}
+	entries := []annotation.Entry{
+		decl("plugins", "", "NamedRest", nil, []string{"[]boostecho.Plugin"}, ann("Provide", "name=rest, index=0")),
+		decl("plugins", "", "NamedGrpc", nil, []string{"[]grpcserver.Plugin"}, ann("Provide", "name=grpc, index=0")),
+		decl("plugins", "", "NamedMcp", nil, []string{"[]mcpserver.Plugin"}, ann("Provide", "name=mcp, index=0")),
+	}
+	for i := range entries {
+		entries[i].Imports = imports
+	}
+	return entries
+}
+
+func TestNewSpec_DefaultServerNamedPlugins(t *testing.T) {
+	spec, err := newTestSpec(t, append(validEntries(), namedDefaultPluginEntries()...))
+	require.NoError(t, err)
+
+	api := spec.Apps[0]
+	require.Len(t, api.Servers, 5)
+	admin, grpcSrv, mcpSrv, ops, rest := api.Servers[0], api.Servers[1], api.Servers[2], api.Servers[3], api.Servers[4]
+
+	assert.Equal(t, []string{"NamedRest"}, pluginNames(rest.Plugins), "rest takes the []boostecho.Plugin named rest as it takes the unnamed one")
+	assert.Equal(t, []string{"NamedGrpc"}, pluginNames(grpcSrv.Plugins), "grpc takes the []grpcserver.Plugin named grpc as it takes the unnamed one")
+	assert.Equal(t, []string{"NamedMcp"}, pluginNames(mcpSrv.Plugins), "mcp takes the []mcpserver.Plugin named mcp as it takes the unnamed one")
+	assert.Empty(t, admin.Plugins, "the rest plugins are rest's only")
+	assert.Empty(t, ops.Plugins, "the mcp plugins are mcp's only")
+}
+
+func TestNewSpec_DefaultServerPluginsTwice(t *testing.T) {
+	for _, tc := range []struct{ server, named string }{
+		{"rest", "NamedRest"},
+		{"grpc", "NamedGrpc"},
+		{"mcp", "NamedMcp"},
+	} {
+		t.Run(tc.server, func(t *testing.T) {
+			entries := append(validEntries(), pluginEntries()...)
+			for _, e := range namedDefaultPluginEntries() {
+				if e.Func.Name == tc.named {
+					entries = append(entries, e)
+				}
+			}
+
+			_, err := newTestSpec(t, entries)
+			require.Error(t, err, "server %s would drop one of its two []Plugin", tc.server)
+			assert.True(t, errors.IsAlreadyExists(err), "unexpected error kind: %v", err)
+			assert.Contains(t, err.Error(), "server "+tc.server)
+			assert.Contains(t, err.Error(), tc.named)
+		})
+	}
+}
+
 // driverEntries provide the publisher.Driver the publisher middleware
 // publishes with, and values it does not take.
 func driverEntries() []annotation.Entry {

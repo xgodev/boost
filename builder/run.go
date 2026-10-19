@@ -58,8 +58,9 @@ func newRun(ctx context.Context, src, out, cmd string) (*run, error) {
 	}
 
 	opts := Options{
-		GeneratorOptions: inject.GeneratorOptions{ModulePath: modulePath, ModuleDir: moduleDir, OutputDir: r.out},
-		CmdDir:           r.cmd,
+		GeneratorOptions: inject.GeneratorOptions{ModulePath: modulePath, ModuleDir: moduleDir, OutputDir: r.out,
+			DefaultClients: spec.DefaultClients()},
+		CmdDir: r.cmd,
 	}
 	r.modules, r.apps = len(g.Vertices), len(spec.Apps)
 	r.inject = inject.NewGenerator(g, opts.GeneratorOptions)

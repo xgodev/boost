@@ -3,10 +3,12 @@ package nats
 import (
 	"os"
 	"strconv"
+	"sync"
 	"testing"
 
 	"github.com/cloudevents/sdk-go/v2/event"
 	natsserver "github.com/nats-io/nats-server/v2/test"
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xgodev/boost"
@@ -46,4 +48,26 @@ func TestModuleAddsTheCloudEventsNATSAdapter(t *testing.T) {
 
 	require.Len(t, adapters, 1)
 	assert.Equal(t, "cloudevents_nats", adapters[0](nil).Use)
+}
+
+func TestModuleWithoutClientTakesTheAppConn(t *testing.T) {
+	once = sync.Once{}
+	t.Cleanup(func() { once = sync.Once{} })
+
+	provided := false
+	var adapters []function.CmdFunc[*event.Event]
+	app := fx.New(
+		fx.NopLogger,
+		fx.Provide(func() *nats.Conn { provided = true; return &nats.Conn{} }),
+		ModuleWithoutClient[*event.Event](),
+		fx.Invoke(fx.Annotate(
+			func(a []function.CmdFunc[*event.Event]) { adapters = a },
+			fx.ParamTags(`group:"`+fxfunction.BSFunctionAdaptersGroupKey+`"`),
+		)),
+	)
+	require.NoError(t, app.Err(), "the app provides the *nats.Conn once")
+
+	require.Len(t, adapters, 1)
+	assert.Equal(t, "cloudevents_nats", adapters[0](nil).Use)
+	assert.True(t, provided, "the adapter reads with the app's *nats.Conn")
 }

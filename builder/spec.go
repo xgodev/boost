@@ -5,6 +5,7 @@ package builder
 
 import (
 	"go/types"
+	"sort"
 
 	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/inject"
@@ -46,9 +47,12 @@ type Server struct {
 	Services []Service // KindGRPC, sorted by register function
 	Tools    []Tool    // KindMCP, sorted by name
 	// Plugins are the inject constructors of the []Plugin the server is built
-	// with: the default value for rest, grpc and mcp, the value named after
-	// the server for the others. Sorted by key.
+	// with: the value named after the server, or the default (unnamed) value
+	// for rest, grpc and mcp. Sorted by key.
 	Plugins []inject.Component
+	// PluginsName is the name Plugins are provided under, empty for the
+	// default value and when there are no Plugins.
+	PluginsName string
 }
 
 // Route is a @REST annotation: an HTTP method and path served by a handler.
@@ -87,6 +91,40 @@ type Function struct {
 	// Providers are the inject constructors of the values the middlewares
 	// are built with, like the publisher.Driver of publisher. Sorted by key.
 	Providers []inject.Component
+	// ClientProviders are the inject constructors of the default clients the
+	// adapters read with, by client type ("<import path>.<Type>"). inject
+	// builds the default client of a type no constructor provides.
+	ClientProviders map[string]inject.Component
+}
+
+// Adapters returns the adapter and its alternatives, in order.
+func (f Function) Adapters() []string {
+	return append([]string{f.Adapter}, f.Alternatives...)
+}
+
+// DefaultClients returns the client types ("<import path>.<Type>") the
+// adapters of the functions read with that no inject constructor provides,
+// sorted: inject generates their default client for the function doors.
+func (s Spec) DefaultClients() []string {
+	seen := map[string]bool{}
+	var ids []string
+	for _, app := range s.Apps {
+		if app.Function == nil {
+			continue
+		}
+		for _, name := range app.Function.Adapters() {
+			for _, adapter := range functionAdapters[name] {
+				_, provided := app.Function.ClientProviders[adapter.Client]
+				if adapter.Client == "" || provided || seen[adapter.Client] {
+					continue
+				}
+				seen[adapter.Client] = true
+				ids = append(ids, adapter.Client)
+			}
+		}
+	}
+	sort.Strings(ids)
+	return ids
 }
 
 // Handler is the annotated function or method serving a door.

@@ -9,6 +9,7 @@ import (
 
 	src_createorder_c746c07a "github.com/xgodev/boost/builder/examples/simple/createorder"
 	gen_createorder_c746c07a "github.com/xgodev/boost/builder/examples/simple/gen/createorder"
+	gen_probe_a7e6caf2 "github.com/xgodev/boost/builder/examples/simple/gen/probe"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	echofx "github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4"
 )
@@ -23,7 +24,16 @@ func RestModule() fx.Option {
 	restOnce.Do(func() {
 		options = fx.Module("api.rest",
 			echofx.Module(),
+			fx.Provide(
+				fx.Annotate(
+					func(plugins []boostecho.Plugin) []boostecho.Plugin {
+						return plugins
+					},
+					fx.ParamTags(`name:"rest"`),
+				),
+			),
 			gen_createorder_c746c07a.NewModule(),
+			gen_probe_a7e6caf2.RestPluginsModule(),
 			fx.Invoke(func(srv *boostecho.Server, h0 *src_createorder_c746c07a.Handler) {
 				srv.Add("POST", "/orders", h0.Create)
 				srv.Add("GET", "/orders/:id", h0.Get)

@@ -1,8 +1,6 @@
 package builder
 
 import (
-	"go/ast"
-	"go/parser"
 	"go/token"
 	"path"
 	"sort"
@@ -26,7 +24,8 @@ import (
 // NotFound when the receiver of a handler method or a value a @Function
 // middleware needs has no provider, and
 // AlreadyExists for a duplicate route, service or tool, for a second @Function in
-// an app and for two @Middleware that decorate the same interface.
+// an app, for two @Middleware that decorate the same interface and for a rest,
+// grpc or mcp server given both a named and an unnamed []Plugin.
 func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component], load PackageLoader) (*Spec, error) {
 	b := &specBuilder{graph: g, apps: map[string]*appState{}, middlewares: map[string]*Middleware{}}
 
@@ -62,7 +61,7 @@ func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component], load 
 	if err := b.loadMiddlewares(load); err != nil {
 		return nil, err
 	}
-	return b.spec(), nil
+	return b.spec()
 }
 
 type specBuilder struct {
@@ -290,11 +289,29 @@ func (b *specBuilder) addFunction(entry annotation.Entry, ann annotation.Annotat
 		return errors.AlreadyExistsf("@Function on %s: app %s already runs %s and an app runs one @Function; set app= to another app",
 			where, app, declName(a.function.Handler.Entry))
 	}
-	a.function = &Function{Adapter: adapters[0], Handler: handler, Middlewares: middlewares, Providers: providers}
+	a.function = &Function{Adapter: adapters[0], Handler: handler, Middlewares: middlewares, Providers: providers,
+		ClientProviders: adapterClientProviders(b.graph, adapters)}
 	if len(adapters) > 1 {
 		a.function.Alternatives = adapters[1:]
 	}
 	return nil
+}
+
+// adapterClientProviders returns the inject constructors of the default
+// clients the adapters read with, by client type.
+func adapterClientProviders(g *graph.Graph[inject.Component], adapters []string) map[string]inject.Component {
+	providers := map[string]inject.Component{}
+	for _, name := range adapters {
+		for _, adapter := range functionAdapters[name] {
+			if adapter.Client == "" {
+				continue
+			}
+			if comp, ok := inject.DefaultClientProvider(g, adapter.Client); ok {
+				providers[adapter.Client] = comp
+			}
+		}
+	}
+	return providers
 }
 
 // functionAdapterNames reads the adapter of @Function, one name (nats) or a
@@ -369,7 +386,7 @@ func checkDecl(entry annotation.Entry, ann string) error {
 }
 
 // spec sorts what was collected into the Spec.
-func (b *specBuilder) spec() *Spec {
+func (b *specBuilder) spec() (*Spec, error) {
 	spec := &Spec{}
 	for _, name := range sortedNames(b.apps) {
 		a := b.apps[name]
@@ -386,13 +403,17 @@ func (b *specBuilder) spec() *Spec {
 				return srv.Services[i].Provider.Key()+srv.Services[i].Register < srv.Services[j].Provider.Key()+srv.Services[j].Register
 			})
 			sort.SliceStable(srv.Tools, func(i, j int) bool { return srv.Tools[i].Name < srv.Tools[j].Name })
-			srv.Plugins = serverPlugins(b.graph, srv)
+			plugins, pluginsName, err := serverPlugins(b.graph, srv)
+			if err != nil {
+				return nil, err
+			}
+			srv.Plugins, srv.PluginsName = plugins, pluginsName
 			app.Servers = append(app.Servers, srv)
 		}
 		app.Middlewares = appMiddlewares(b.middlewares, reached(appRoots(app), b.dependencies))
 		spec.Apps = append(spec.Apps, app)
 	}
-	return spec
+	return spec, nil
 }
 
 // dependencies returns the keys of the providers the component key depends on.
@@ -418,32 +439,6 @@ func declName(entry annotation.Entry) string {
 		name = entry.Struct
 	}
 	return entry.Path + "." + name
-}
-
-// pluginPaths are the packages whose Plugin type a server of each kind is
-// built with.
-var pluginPaths = map[Kind]string{KindREST: boostEchoPath, KindGRPC: grpcServerPath, KindMCP: mcpServerPath}
-
-// serverPlugins returns the inject constructors providing the []Plugin of
-// srv: a default value for the rest, grpc and mcp servers, the value named
-// after the server for the others.
-func serverPlugins(g *graph.Graph[inject.Component], srv Server) []inject.Component {
-	name := srv.Name
-	if isDefault(srv) {
-		name = ""
-	}
-
-	var plugins []inject.Component
-	for _, key := range g.SortedKeys() {
-		comp := g.Vertices[key].Value
-		for idx, ann := range comp.Provides {
-			if ann.Group == "" && ann.Name == name && isPluginSlice(comp.Entry, comp.Result(idx), pluginPaths[srv.Kind]) {
-				plugins = append(plugins, comp)
-				break
-			}
-		}
-	}
-	return plugins
 }
 
 // middlewareProviders returns the inject constructors providing the unnamed
@@ -476,23 +471,4 @@ func middlewareProviders(g *graph.Graph[inject.Component], names []string, where
 		}
 	}
 	return providers, nil
-}
-
-// isPluginSlice reports whether tp, written in the file of entry, is
-// []pkg.Plugin with pkg imported from pkgPath.
-func isPluginSlice(entry annotation.Entry, tp, pkgPath string) bool {
-	expr, err := parser.ParseExpr(tp)
-	if err != nil {
-		return false
-	}
-	slice, ok := expr.(*ast.ArrayType)
-	if !ok || slice.Len != nil {
-		return false
-	}
-	sel, ok := slice.Elt.(*ast.SelectorExpr)
-	if !ok || sel.Sel.Name != "Plugin" {
-		return false
-	}
-	pkg, ok := sel.X.(*ast.Ident)
-	return ok && entry.Imports[pkg.Name] == pkgPath
 }

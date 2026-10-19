@@ -83,12 +83,17 @@ func init() {
 		"log":    {Path: nats + "/plugins/local/log", New: "NewLogWithConfigPath"},
 	})
 
+	// the Google Cloud clients take the gRPC client plugins
 	grpc := boostFactories + "google.golang.org/grpc/v1/client/plugins"
-	addClosingClientFactory("cloud.google.com/go/pubsub/v2", "Client", "pubsub", boostFactories+"cloud.google.com/pubsub/v2", "NewClientWithConfigPath", "boost.factory.gcp.pubsub", map[string]ClientPlugin{
-		"log":        {Path: grpc + "/local/wrapper/log", New: "NewLogWithConfigPath"},
-		"datadog":    {Path: grpc + "/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath"},
-		"prometheus": {Path: grpc + "/contrib/prometheus/client_golang/v1", New: "NewPrometheusWithConfigPath"},
-	})
+	grpcPlugins := func() map[string]ClientPlugin {
+		return map[string]ClientPlugin{
+			"log":        {Path: grpc + "/local/wrapper/log", New: "NewLogWithConfigPath"},
+			"datadog":    {Path: grpc + "/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath"},
+			"prometheus": {Path: grpc + "/contrib/prometheus/client_golang/v1", New: "NewPrometheusWithConfigPath"},
+		}
+	}
+	addClosingClientFactory("cloud.google.com/go/pubsub/v2", "Client", "pubsub", boostFactories+"cloud.google.com/pubsub/v2", "NewClientWithConfigPath", "boost.factory.gcp.pubsub", grpcPlugins())
+	addClosingClientFactory("cloud.google.com/go/bigtable", "Client", "bigtable", boostFactories+"cloud.google.com/bigtable/v1", "NewClientWithConfigPath", "boost.factory.bigtable", grpcPlugins())
 
 	for path, factory := range map[string]string{
 		"github.com/gocql/gocql":                      boostFactories + "gocql/gocql/v1",
@@ -317,6 +322,38 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 		files[c.File()] = c
 	}
 	return list, nil
+}
+
+// DefaultClientProvider returns the annotated function that provides the
+// default client of type id ("<import path>.<Type>"), with an unnamed,
+// ungrouped @Provide. inject builds that client only when none does.
+func DefaultClientProvider(g *graph.Graph[Component], id string) (Component, bool) {
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		for _, idx := range sortedIndexes(comp.Provides) {
+			ann := comp.Provides[idx]
+			if ann.Name != "" || ann.Group != "" {
+				continue
+			}
+			if got, ok := pointerTo(comp.Entry, comp.Result(idx)); ok && got == id {
+				return comp, true
+			}
+		}
+	}
+	return Component{}, false
+}
+
+// ClientModule returns the import of the package inject generates for the
+// default client of type id ("<import path>.<Type>") and the call of the
+// module that provides it, given the import path of the output dir
+// (BaseImport). It is NotValid for a type inject does not build.
+func ClientModule(base, id string) (ImportData, string, error) {
+	f, ok := clientFactories[id]
+	if !ok {
+		return ImportData{}, "", errors.NotValidf("inject builds no client of type *%s; it builds %s", id, strings.Join(supportedClients(), ", "))
+	}
+	imp, call := Client{Factory: f}.Module(base)
+	return imp, call, nil
 }
 
 // providedValues maps the id of each value an annotated function provides

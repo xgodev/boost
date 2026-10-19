@@ -140,6 +140,56 @@ func TestGenerator_RenderFunctionAdapterList(t *testing.T) {
 	assert.Equal(t, string(want), string(src))
 }
 
+// TestGenerator_RenderFunctionAdapterClient checks that an adapter reading
+// with a client inject builds takes the app's default client of that type,
+// so the publisher and the @Inject consumers share it and fx gets it once:
+// the module inject generates for it (Spec.DefaultClients), or the module of
+// the inject constructor providing it.
+func TestGenerator_RenderFunctionAdapterClient(t *testing.T) {
+	newHandler := decl("events", "", "New", nil, []string{"Handler"}, ann("Provide", "index=0"))
+	handle := decl("events", "Handler", "Handle", eventParams, eventResults, ann("Function", "adapter=[nats, cenats, pubsub], app=worker"))
+	const name = "builder/worker/function_module.go"
+
+	t.Run("inject builds the client", func(t *testing.T) {
+		spec, err := newTestSpec(t, []annotation.Entry{newHandler, handle})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"cloud.google.com/go/pubsub/v2.Client", "github.com/nats-io/nats.go.Conn"}, spec.DefaultClients())
+
+		files, err := NewGenerator(spec, testOptions("/src/app")).Render(context.Background())
+		require.NoError(t, err)
+		src := files[name]
+		assertImportsUsed(t, name, src)
+
+		golden := filepath.Join("testdata", "golden", "adapters", "client_function_module.go.golden")
+		if *update {
+			require.NoError(t, os.WriteFile(golden, src, 0o644))
+			return
+		}
+		want, err := os.ReadFile(golden)
+		require.NoError(t, err, "run go test ./builder/ -run TestGenerator_RenderFunctionAdapterClient -update")
+		assert.Equal(t, string(want), string(src))
+	})
+
+	t.Run("the app provides the client", func(t *testing.T) {
+		conn := decl("broker", "", "NewConn", nil, []string{"*nats.Conn"}, ann("Provide", "index=0"))
+		conn.Imports = map[string]string{"nats": "github.com/nats-io/nats.go"}
+		spec, err := newTestSpec(t, []annotation.Entry{newHandler, handle, conn})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"cloud.google.com/go/pubsub/v2.Client"}, spec.DefaultClients(),
+			"inject builds no *nats.Conn the app provides")
+
+		files, err := NewGenerator(spec, testOptions("/src/app")).Render(context.Background())
+		require.NoError(t, err)
+		src := string(files[name])
+		assertImportsUsed(t, name, files[name])
+
+		_, call := inject.ModuleOf(testModule+"/gen", conn)
+		assert.Equal(t, 2, strings.Count(src, call+","), "nats and cenats take the app's *nats.Conn:\n%s", src)
+		assert.NotContains(t, src, "DefaultConnModule()")
+		assert.Contains(t, src, "DefaultClientModule()")
+	})
+}
+
 func TestGenerator_RenderErrors(t *testing.T) {
 	handle := func(results ...string) annotation.Entry {
 		return decl("events", "", "Handle", eventParams, results, ann("Function", "adapter=nats"))
@@ -342,6 +392,48 @@ func TestGenerator_RenderIncludesPluginModules(t *testing.T) {
 	assert.Contains(t, string(files["builder/api/mcp_module.go"]), mcp)
 	assert.Contains(t, string(files["builder/api/ops_module.go"]), ops)
 	assert.NotContains(t, string(files["builder/api/mcp_module.go"]), ops, "the ops plugins are ops' only")
+}
+
+// TestGenerator_RenderDefaultServerNamedPlugins checks the rest, grpc and
+// mcp doors of plugins provided under the name of their server: each door
+// builds the module providing them and takes the named value.
+func TestGenerator_RenderDefaultServerNamedPlugins(t *testing.T) {
+	plugins := namedDefaultPluginEntries()
+	files, err := render(t, append(validEntries(), plugins...))
+	require.NoError(t, err)
+
+	base, err := testOptions("/src/app").BaseImport()
+	require.NoError(t, err)
+	modules := map[string]string{}
+	for i, door := range []string{"rest", "grpc", "mcp"} {
+		_, modules[door] = inject.ModuleOf(base, plugins[i])
+	}
+
+	for _, door := range []string{"rest", "grpc", "mcp"} {
+		name := "builder/api/" + door + "_module.go"
+		src, ok := files[name]
+		require.True(t, ok, "files: %v", fileNames(files))
+		assertImportsUsed(t, name, src)
+		for other, module := range modules {
+			if other == door {
+				assert.Contains(t, string(src), module, "the %s door builds its plugins", door)
+			} else {
+				assert.NotContains(t, string(src), module, "the %s plugins are %s's only", other, other)
+			}
+		}
+		assert.NotContains(t, string(files["builder/api/admin_module.go"]), modules[door], "the %s plugins are %s's only", door, door)
+		assert.NotContains(t, string(files["builder/api/ops_module.go"]), modules[door], "the %s plugins are %s's only", door, door)
+
+		golden := filepath.Join("testdata", "golden", "plugins", door+"_module.go.golden")
+		if *update {
+			require.NoError(t, os.MkdirAll(filepath.Dir(golden), 0o755))
+			require.NoError(t, os.WriteFile(golden, src, 0o644))
+			continue
+		}
+		want, err := os.ReadFile(golden)
+		require.NoError(t, err, "run go test ./builder/ -run TestGenerator_RenderDefaultServerNamedPlugins -update")
+		assert.Equal(t, string(want), string(src), name)
+	}
 }
 
 func TestGenerator_RenderIncludesMiddlewareProviders(t *testing.T) {

@@ -27,7 +27,7 @@ Boot, config, logs, 58 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 58 | 46 | 107 | 220 |
+| 58 | 46 | 107 | 221 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -869,7 +869,7 @@ same or get better, never worse.
 
  require (
 -	github.com/xgodev/boost v1.1.1
-+	github.com/xgodev/boost v1.6.0
++	github.com/xgodev/boost v1.6.1
  )
 ```
 
@@ -880,7 +880,7 @@ ok  github.com/acme/shop/...
 
 1 line changed in go.mod, **0 lines changed in your code**.
 
-Releases: 2024-07 → `v1.1.0` → `v1.1.1` → **`v1.6.0`**
+Releases: 2024-07 → `v1.1.0` → `v1.1.1` → **`v1.6.1`**
 ([all releases](https://github.com/xgodev/boost/releases)).
 
 ## There's a factory for that.

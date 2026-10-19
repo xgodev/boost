@@ -260,12 +260,13 @@ func newQuoteClient(ctx context.Context) (*resty.Client, error) {
 | `*mongo.Conn` (`factory/contrib/go.mongodb.org/mongo-driver/v1`, `/v2`) | the same package | `health`, `otel`, `datadog`, `prometheus` |
 | `*nats.Conn` (`github.com/nats-io/nats.go`) | `factory/contrib/nats-io/nats.go/v1` | `health`, `log` |
 | `*pubsub.Client` (`cloud.google.com/go/pubsub/v2`) | `factory/contrib/cloud.google.com/pubsub/v2` | `log`, `datadog`, `prometheus` (gRPC client plugins) |
+| `*bigtable.Client` (`cloud.google.com/go/bigtable`) | `factory/contrib/cloud.google.com/bigtable/v1` (root `boost.factory.bigtable`) | `log`, `datadog`, `prometheus` (gRPC client plugins) |
 | `*gocql.Session` (`github.com/gocql/gocql`) | `factory/contrib/gocql/gocql/v1` | `health` |
 | `*gocql.Session` (`github.com/apache/cassandra-gocql-driver/v2`) | `factory/contrib/apache/cassandra-gocql-driver/v2` | `health` |
 | `*sns.Client`, `*sqs.Client`, `*kinesis.Client` (`github.com/aws/aws-sdk-go-v2/service/...`) | `factory/contrib/aws/aws-sdk-go-v2/v1/client/<service>` (root `boost.factory.aws`) | `datadog` |
 | `*kafka.Producer` (`github.com/confluentinc/confluent-kafka-go/v2/kafka`, needs cgo) | `factory/contrib/confluentinc/confluent-kafka-go/v2` | none |
 
-NATS, Pub/Sub, gocql and kafka clients hold connections, so their constructor also
+NATS, Pub/Sub, Bigtable, gocql and kafka clients hold connections, so their constructor also
 takes `fx.Lifecycle` and closes the client when the app stops:
 
 ```go
@@ -333,7 +334,9 @@ and its client:
   drivers' options.
 - **Clients.** Each driver takes the default client of its factory, the
   same one an `@Inject` without `name` gets (see [Factory clients](#factory-clients)):
-  the app and the publisher share it, with the plugins the app lists.
+  the app and the publisher share it, with the plugins the app lists. The
+  adapter of a builder `@Function` shares it too
+  (`GeneratorOptions.DefaultClients`).
 - **cgo.** The kafka client binds librdkafka through cgo, so its files build
   only with cgo (`//go:build cgo`). An app built with `CGO_ENABLED=0` still
   builds; choosing `kafka` there fails the boot with `NotSupported`.
@@ -413,6 +416,8 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | `Provider(g, pkg, tp)` | component and result index providing the default value of a type |
 | `Alias(prefix, name, path)` | collision-free import alias (`prefix_name_hash`) |
 | `Clients(g)` / `Client.Module(base)` | factory clients the generator builds, and the import and module call of one |
+| `GeneratorOptions.DefaultClients` / `ClientModule(base, id)` | client types (`github.com/nats-io/nats.go.Conn`) whose default client is generated for the caller to wire, and the import and module call of one (`client_nats_hash.DefaultConnModule()`) |
+| `DefaultClientProvider(g, id)` | component providing the default client of a type, with an unnamed, ungrouped `@Provide` |
 | `ExecuteTemplate(tmpl, name, data)` | executes a template and gofmt's the output |
 | `WriteGenerated(ctx, dir, files, header)` | writes files and removes stale ones starting with `header` |
 
@@ -420,9 +425,10 @@ See [`examples/simple`](./examples/simple) and
 [`examples/publisher`](./examples/publisher): their tests run the generated
 application and fail when `gen/` is stale.
 [`examples/clients`](./examples/clients) injects a NATS conn, a Pub/Sub
-client and gocql v1 and v2 sessions; its test starts the app against an
-embedded NATS server, the Pub/Sub emulator and a fake Cassandra node, and
-checks every client is closed when the app stops.
+client, gocql v1 and v2 sessions and a Bigtable client; its test starts the
+app against an embedded NATS server, the Pub/Sub emulator, a fake Cassandra
+node and the in-process Bigtable emulator (`bttest`), and checks every
+client is closed when the app stops.
 
 ## Limitations
 

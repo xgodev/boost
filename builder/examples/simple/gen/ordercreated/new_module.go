@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/fx"
 
+	client_publisher_ba7c909f "github.com/xgodev/boost/builder/examples/simple/gen/client/github.com/xgodev/boost/wrapper/publisher"
 	gen_order_f1172a0b "github.com/xgodev/boost/builder/examples/simple/gen/order"
 	src_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/ordercreated"
 )
@@ -22,6 +23,7 @@ func NewModule() fx.Option {
 	NewOnce.Do(func() {
 		options = fx.Module("github.com/xgodev/boost/builder/examples/simple/ordercreated.New",
 			gen_order_f1172a0b.NewServiceModule(),
+			client_publisher_ba7c909f.PublisherModule(),
 			fx.Provide(src_ordercreated_37848569.New),
 		)
 	})
