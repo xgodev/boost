@@ -6,7 +6,8 @@ import (
 	"github.com/xgodev/boost/bootstrap/function"
 )
 
-// New returns CmdFunc for cloudevents command.
+// New returns the CmdFunc of the gcp_pubsub command: it handles the messages
+// of the configured subscriptions until the run context is done.
 func New[T any](client *pubsub.Client) function.CmdFunc[T] {
 	return func(fn function.Handler[T]) *co.Command {
 		return &co.Command{
@@ -14,9 +15,7 @@ func New[T any](client *pubsub.Client) function.CmdFunc[T] {
 			Short: "gcp_pubsub",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				helper := NewHelper[T](client, fn)
-				helper.Start()
-				return nil
+				return NewHelper[T](client, fn).Run(cmd.Context())
 			},
 		}
 	}

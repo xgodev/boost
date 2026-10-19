@@ -72,8 +72,9 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message)
 	}
 
 	for {
-		// Timeout por tentativa
-		msgCtx, cancel := context.WithTimeout(ctx, l.options.ProcessTimeout)
+		// Timeout por tentativa. The stop of the app cancels ctx: the handler
+		// finishes the message it holds instead of failing on it.
+		msgCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), l.options.ProcessTimeout)
 
 		// Processes the event via handler
 		if _, err := l.handler(msgCtx, in); err != nil {
@@ -85,6 +86,11 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message)
 			// Check retry limit
 			if l.options.RetryLimit != -1 && retryCount >= l.options.RetryLimit {
 				return errors.Wrap(err, errors.Internalf("max retry limit reached"))
+			}
+
+			// The app is stopping: give the message back instead of retrying
+			if ctx.Err() != nil {
+				return errors.Wrap(err, errors.Internalf("stopped before a retry"))
 			}
 
 			// Apply backoff if enabled

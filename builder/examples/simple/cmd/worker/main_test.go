@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -151,6 +152,30 @@ func TestMain_BadConfigExitsWithTheReason(t *testing.T) {
 // boost.bootstrap.function.default. The worker subscribes and records the
 // order this test publishes.
 func TestMain_RunsTheChosenAdapter(t *testing.T) {
+	recordOrder(t)
+}
+
+// TestMain_StopsOnSIGTERM sends SIGTERM to the generated main of app worker
+// after it recorded an order (#204): the nats adapter drains and returns, so
+// the worker exits 0 within a second instead of waiting the fx stop timeout.
+func TestMain_StopsOnSIGTERM(t *testing.T) {
+	cmd, out, exited := recordOrder(t)
+
+	require.NoError(t, cmd.Process.Signal(syscall.SIGTERM))
+	select {
+	case err := <-exited:
+		require.NoError(t, err, "the worker did not exit 0: %s", out.String())
+	case <-time.After(time.Second):
+		t.Fatalf("the worker did not stop within a second of SIGTERM: %s", out.String())
+	}
+}
+
+// recordOrder runs the generated main of app worker with only
+// WORKER_FUNCTION_ADAPTER=nats on an embedded server, publishes an order until
+// the worker records it, and returns the running worker, its output and the
+// channel its exit goes to.
+func recordOrder(t *testing.T) (*exec.Cmd, *syncBuffer, <-chan error) {
+	t.Helper()
 	opts := natsserver.DefaultTestOptions
 	opts.Port = -1
 	srv := natsserver.RunServer(&opts)
@@ -160,10 +185,10 @@ func TestMain_RunsTheChosenAdapter(t *testing.T) {
 	require.NoError(t, err)
 	t.Cleanup(conn.Close)
 
-	var out syncBuffer
+	out := &syncBuffer{}
 	cmd := exec.Command(os.Args[0], "-test.run=^TestMainChild$")
 	cmd.Env = append(os.Environ(), adapterEnv+"=nats", natsURLEnv+"="+srv.ClientURL(), mainEnv+"=1")
-	cmd.Stdout, cmd.Stderr = &out, &out
+	cmd.Stdout, cmd.Stderr = out, out
 	require.NoError(t, cmd.Start())
 	exited := make(chan error, 1)
 	go func() { exited <- cmd.Wait() }()
@@ -189,6 +214,7 @@ func TestMain_RunsTheChosenAdapter(t *testing.T) {
 			t.Fatalf("the worker never handled the order: %s", out.String())
 		}
 	}
+	return cmd, out, exited
 }
 
 // syncBuffer is a bytes.Buffer the child process and the test share.
