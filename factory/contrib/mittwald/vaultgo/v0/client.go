@@ -2,12 +2,14 @@ package vault
 
 import (
 	"context"
+	"fmt"
 
 	vault "github.com/mittwald/vaultgo"
-	"github.com/xgodev/boost/wrapper/log"
 )
 
-// NewClientWithOptions returns a new vault client with options.
+// NewClientWithOptions returns a new vault client with options. Type TOKEN
+// authenticates with the token, K8S with the kubernetes role and the jwt
+// file or content; any other type is an error.
 func NewClientWithOptions(ctx context.Context, options *Options) (*vault.Client, error) {
 
 	var clientOpts vault.ClientOpts
@@ -20,7 +22,7 @@ func NewClientWithOptions(ctx context.Context, options *Options) (*vault.Client,
 		if options.K8s.Jwt.File != "" {
 			jwt = vault.WithJwtFromFile(options.K8s.Jwt.File)
 		} else if options.K8s.Jwt.Content != "" {
-			jwt = vault.WithJwtFromFile(options.K8s.Jwt.Content)
+			jwt = vault.WithJwt(options.K8s.Jwt.Content)
 		}
 		if jwt == nil {
 			clientOpts = vault.WithKubernetesAuth(
@@ -32,6 +34,8 @@ func NewClientWithOptions(ctx context.Context, options *Options) (*vault.Client,
 				jwt,
 			)
 		}
+	default:
+		return nil, fmt.Errorf("vault: unknown auth type %q, want TOKEN or K8S", options.Type)
 	}
 
 	client, err := vault.NewClient(
@@ -58,12 +62,9 @@ func NewClientWithConfigPath(ctx context.Context, path string) (*vault.Client, e
 
 // NewClient returns a new vault client with default options.
 func NewClient(ctx context.Context) (*vault.Client, error) {
-
-	logger := log.FromContext(ctx)
-
 	o, err := NewOptions()
 	if err != nil {
-		logger.Fatalf(err.Error())
+		return nil, err
 	}
 
 	return NewClientWithOptions(ctx, o)

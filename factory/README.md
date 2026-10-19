@@ -24,6 +24,7 @@ The `contrib` directory contains factory implementations for integration with th
 - go-chi/chi: `net/http` router (v5)
 - gofiber/fiber: fasthttp web framework (v2)
 - valyala/fasthttp: fasthttp client (v1)
+- mittwald/vaultgo: Vault client and credential managers for redis, elasticsearch and mongo (v0)
 - storj/drpc: lightweight drop-in replacement for gRPC, server and client (v1)
 - MCP (modelcontextprotocol/go-sdk): Model Context Protocol server and client
 - Google Cloud Platform (GCP): Integration with GCP services
