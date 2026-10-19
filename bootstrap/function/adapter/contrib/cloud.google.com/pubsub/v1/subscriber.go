@@ -32,7 +32,9 @@ func NewSubscriber[T any](client *pubsub.Client, handler function.Handler[T], su
 	}
 }
 
-// Subscribe subscribes and consumes messages from multiple Pub/Sub topics concurrently
+// Subscribe receives the messages of the subscription until ctx is done, and
+// returns once the handlers finished the ones they hold. It returns an error
+// naming the subscription when it cannot be received.
 func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 	logger := log.FromContext(ctx).WithTypeOf(*l)
 
@@ -53,7 +55,7 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 	})
 
 	if err != nil {
-		logger.Fatalf("Failed to start subscription %s: %v", l.subscription, err)
+		return errors.Wrap(err, errors.Internalf("pubsub: could not receive on %s", l.subscription))
 	}
 
 	return nil

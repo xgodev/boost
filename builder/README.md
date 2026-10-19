@@ -145,6 +145,9 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   own keys (`.enabled`, the pubsub `version`) stay as they are. The app runs
   the chosen adapter with no CLI argument and no
   `boost.bootstrap.function.default`.
+- The pubsub adapter on v1 (`boost.bootstrap.function.adapter.pubsub.version=v1`)
+  reads with its own v1 `*pubsub.Client`, built from the
+  `boost.factory.gcp.pubsub` keys; the app's default client is v2.
 - Each middleware is the fx module under
   `fx/modules/bootstrap/function/middleware` of the
   [`bootstrap/function/middleware`](../bootstrap/function/middleware) of that
@@ -379,7 +382,10 @@ default list), run the function handler, boot the worker with each adapter
 (nats on an embedded server) and with an unknown one (the boot fails), run
 the generated main with only `WORKER_FUNCTION_ADAPTER=nats` until it records
 an order published on NATS and then send it SIGTERM (it exits 0 within a
-second), and fail when `gen/` or a main is stale.
+second), run it with only `WORKER_FUNCTION_ADAPTER=pubsub`, v2 and v1, against
+a `pstest` fake until it records a CloudEvent and a raw message, stays up
+and exits 0 on SIGTERM, and with no subscription (the boot fails naming it),
+and fail when `gen/` or a main is stale.
 
 ## Non-goals
 

@@ -25,7 +25,7 @@ func Module[T any]() fx.Option {
 
 	once.Do(func() {
 		options = fx.Options(
-			fxpubsub.Module(),
+			fxpubsub.ClientModule(),
 			fx.Provide(
 				fx.Annotated{
 					Group:  function.BSFunctionAdaptersGroupKey,
