@@ -48,6 +48,10 @@ The `publisher` subpackage offers abstractions for message publishing/subscripti
 
 This facilitates asynchronous communication between components and services.
 
+With [inject](../inject/README.md#publisher), an `@Inject` of
+`*publisher.Publisher` gets a publisher whose driver (`noop`, `nats`,
+`pubsub`, `kafka`) is chosen by `boost.wrapper.publisher.driver.name`.
+
 `Publisher.Publish` returns an error when the driver fails or when any event
 fails. A per-event failure comes back as one `Internal` error that joins every
 failed event's error (tagged with its event ID), so `errors.Is`/`errors.As`
