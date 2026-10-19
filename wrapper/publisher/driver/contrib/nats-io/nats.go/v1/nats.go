@@ -69,8 +69,6 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (res []publisher
 			continue
 		}
 
-		logger.Info(string(rawMessage))
-
 		msg := &nats.Msg{
 			Subject: out.Subject(),
 			Data:    rawMessage,
@@ -81,6 +79,10 @@ func (p *client) Publish(ctx context.Context, outs []*v2.Event) (res []publisher
 			res = append(res, publisher.PublishOutput{Event: out, Error: errors.Wrap(err, errors.Internalf("unable to publish to nats"))})
 			continue
 		}
+
+		// The payload is never logged: it may carry data that must not reach
+		// the logs, and one line per message at INFO is volume nobody reads.
+		logger.Debug("message published")
 
 		res = append(res, publisher.PublishOutput{Event: out})
 	}
