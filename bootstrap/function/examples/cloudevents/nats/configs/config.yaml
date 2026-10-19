@@ -1,0 +1,10 @@
+boost:
+  bootstrap:
+    function:
+      default: cloudevents_nats
+      adapter:
+        cloudevents:
+          nats:
+            subjects:
+              - messages
+            queue: worker
