@@ -48,7 +48,8 @@ type mcpArgs struct {
 	App    string `attr:"app"`
 }
 
-// functionArgs are the arguments of @Function(adapter=nats, app=api, middlewares=[recovery, logger]).
+// functionArgs are the arguments of @Function(adapter=nats, app=api, middlewares=[recovery, logger]);
+// adapter may be a list, adapter=[pubsub, nats], chosen by config.
 type functionArgs struct {
 	Adapter     string `attr:"adapter"`
 	App         string `attr:"app"`

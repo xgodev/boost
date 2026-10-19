@@ -149,6 +149,7 @@ func TestNewSpec(t *testing.T) {
 	assert.Empty(t, worker.Servers)
 	require.NotNil(t, worker.Function)
 	assert.Equal(t, "nats", worker.Function.Adapter)
+	assert.Empty(t, worker.Function.Alternatives, "a single adapter has no alternative")
 	assert.Equal(t, []string{"recovery", "logger"}, worker.Function.Middlewares, "the middlewares keep their order, the outermost first")
 	assert.Equal(t, "Handle", worker.Function.Handler.Entry.Func.Name)
 	require.NotNil(t, worker.Function.Handler.Receiver)
@@ -165,7 +166,32 @@ func TestNewSpec_FunctionAdapters(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, spec.Apps[0].Function)
 			assert.Equal(t, adapter, spec.Apps[0].Function.Adapter)
+			assert.Empty(t, spec.Apps[0].Function.Alternatives)
 			assert.Empty(t, spec.Apps[0].Function.Middlewares)
+		})
+	}
+}
+
+func TestNewSpec_FunctionAdapterList(t *testing.T) {
+	tests := []struct {
+		name         string
+		value        string
+		adapter      string
+		alternatives []string
+	}{
+		{"list", "adapter=[pubsub, nats, cenats]", "pubsub", []string{"nats", "cenats"}},
+		{"list of one", "adapter=[nats]", "nats", nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			spec, err := newTestSpec(t, []annotation.Entry{
+				decl("events", "", "Handle", eventParams, eventResults, ann("Function", tt.value)),
+			})
+			require.NoError(t, err)
+			fn := spec.Apps[0].Function
+			require.NotNil(t, fn)
+			assert.Equal(t, tt.adapter, fn.Adapter, "the first name is the default")
+			assert.Equal(t, tt.alternatives, fn.Alternatives, "the others keep their order")
 		})
 	}
 }
@@ -271,6 +297,10 @@ func TestNewSpec_Errors(t *testing.T) {
 		{"two functions in an app", []annotation.Entry{function("adapter=nats"), decl("events", "", "Other", eventParams, eventResults, ann("Function", "adapter=kafka"))}, errors.IsAlreadyExists, "@Function"},
 		{"unknown adapter", []annotation.Entry{function("adapter=sqs")}, errors.IsNotValid, "adapter sqs"},
 		{"missing adapter", []annotation.Entry{function("app=worker")}, errors.IsNotValid, "adapter"},
+		{"empty adapter list", []annotation.Entry{function("adapter=[]")}, errors.IsNotValid, "adapter is required"},
+		{"unknown adapter in a list", []annotation.Entry{function("adapter=[pubsub, sqs]")}, errors.IsNotValid, "adapter sqs"},
+		{"adapter twice", []annotation.Entry{function("adapter=[nats, pubsub, nats]")}, errors.IsNotValid, "nats twice"},
+		{"empty adapter in a list", []annotation.Entry{function("adapter=[nats, ]")}, errors.IsNotValid, "empty"},
 		{"function params", []annotation.Entry{decl("events", "", "Handle", []string{"context.Context", "string"}, eventResults, ann("Function", "adapter=nats"))}, errors.IsNotValid, "func(context.Context, cloudevents.Event) (T, error)"},
 		{"function results", []annotation.Entry{decl("events", "", "Handle", eventParams, []string{"error"}, ann("Function", "adapter=nats"))}, errors.IsNotValid, "func(context.Context, cloudevents.Event) (T, error)"},
 		{"unknown function middleware", []annotation.Entry{function("adapter=nats, middlewares=[recovery, tracing]")}, errors.IsNotValid, "middleware tracing"},
