@@ -13,8 +13,8 @@ const (
 )
 
 func init() {
-	config.Add(port, 8080, "sets cloudvents port")
-	config.Add(path, "/", "sets cloudvents path")
+	config.Add(port, 8080, "sets cloudevents port")
+	config.Add(path, "/", "sets cloudevents path")
 }
 
 func Port() int {
