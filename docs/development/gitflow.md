@@ -18,6 +18,9 @@ Issue → Branch (de develop) → Commits → PR → Review/Merge
 1. **Issue sempre, primeiro.** Toda mudança (feature/bug/docs) tem issue no
    GitHub antes de qualquer código. `gh issue list --search` antes de criar
    (evita duplicata). Label apropriada (`documentation`, `bug`, `enhancement`).
+   Responsável `jpfaria` (`--assignee jpfaria`) e o milestone aberto da
+   próxima release (`--milestone vX.Y.Z`); sem milestone aberto, criar o do
+   próximo patch.
 2. **PR sempre.** Nada commitado direto em `develop` ou `main`. Toda mudança
    entra por Pull Request — sem exceção.
 3. **Nome de branch: `feature/{N}-slug` / `bugfix/{N}-slug`** (`{N}` = número
