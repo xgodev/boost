@@ -1,11 +1,11 @@
 package pubsub
 
 import (
-	pubsubcfg "github.com/xgodev/boost/fx/modules/factory/contrib/cloud.google.com/pubsub"
-	drivercfg "github.com/xgodev/boost/fx/modules/wrapper/publisher/driver/contrib/cloud.google.com/pubsub"
 	"sync"
 
+	pubsubcfg "github.com/xgodev/boost/fx/modules/factory/contrib/cloud.google.com/pubsub"
 	fxpubsub "github.com/xgodev/boost/fx/modules/factory/contrib/cloud.google.com/pubsub/v2"
+	drivercfg "github.com/xgodev/boost/fx/modules/wrapper/publisher/driver/contrib/cloud.google.com/pubsub"
 	pubsub "github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v2"
 	"go.uber.org/fx"
 )
