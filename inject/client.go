@@ -89,10 +89,14 @@ func init() {
 		"prometheus": {Path: grpc + "/contrib/prometheus/client_golang/v1", New: "NewPrometheusWithConfigPath"},
 	})
 
-	gocql := boostFactories + "gocql/gocql/v1"
-	addClosingClientFactory("github.com/gocql/gocql", "Session", "gocql", gocql, "NewSessionWithConfigPath", "boost.factory.gocql", map[string]ClientPlugin{
-		"health": {Path: gocql + "/plugins/local/extra/health", New: "NewHealthWithConfigPath"},
-	})
+	for path, factory := range map[string]string{
+		"github.com/gocql/gocql":                      boostFactories + "gocql/gocql/v1",
+		"github.com/apache/cassandra-gocql-driver/v2": boostFactories + "apache/cassandra-gocql-driver/v2",
+	} {
+		addClosingClientFactory(path, "Session", "gocql", factory, "NewSessionWithConfigPath", "boost.factory.gocql", map[string]ClientPlugin{
+			"health": {Path: factory + "/plugins/local/extra/health", New: "NewHealthWithConfigPath"},
+		})
+	}
 }
 
 func addClientFactory(path, tp, pkg, factory, build, root string, plugins map[string]ClientPlugin) {

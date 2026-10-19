@@ -21,6 +21,7 @@ const (
 	natsPath   = "github.com/nats-io/nats.go"
 	pubsubPath = "cloud.google.com/go/pubsub/v2"
 	gocqlPath  = "github.com/gocql/gocql"
+	gocql2Path = "github.com/apache/cassandra-gocql-driver/v2"
 )
 
 func TestClientFactory(t *testing.T) {
@@ -45,6 +46,8 @@ func TestClientFactory(t *testing.T) {
 			wantBuild: "github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v2.NewClientWithConfigPath"},
 		{name: "gocql", imports: map[string]string{"gocql": gocqlPath}, tp: "*gocql.Session", wantFound: true,
 			wantBuild: "github.com/xgodev/boost/factory/contrib/gocql/gocql/v1.NewSessionWithConfigPath"},
+		{name: "gocql v2", imports: map[string]string{"gocql": gocql2Path}, tp: "*gocql.Session", wantFound: true,
+			wantBuild: "github.com/xgodev/boost/factory/contrib/apache/cassandra-gocql-driver/v2.NewSessionWithConfigPath"},
 		{name: "not a pointer", imports: map[string]string{"resty": restyPath}, tp: "resty.Client"},
 		{name: "another type of the package", imports: map[string]string{"resty": restyPath}, tp: "*resty.Request"},
 		{name: "same name, another package", imports: map[string]string{"resty": "example.com/resty"}, tp: "*resty.Client"},
@@ -73,6 +76,7 @@ func TestClientFactories_PluginNames(t *testing.T) {
 	assert.Equal(t, []string{"health", "log"}, clientFactories[natsPath+".Conn"].PluginNames())
 	assert.Equal(t, []string{"datadog", "log", "prometheus"}, clientFactories[pubsubPath+".Client"].PluginNames())
 	assert.Equal(t, []string{"health"}, clientFactories[gocqlPath+".Session"].PluginNames())
+	assert.Equal(t, []string{"health"}, clientFactories[gocql2Path+".Session"].PluginNames())
 }
 
 func TestParsePlugins(t *testing.T) {
@@ -283,20 +287,22 @@ func TestGenerator_RenderClient(t *testing.T) {
 // whose client holds a connection: its module closes it when the app stops.
 func TestGenerator_RenderClosingClients(t *testing.T) {
 	testCases := []struct {
-		name, path, tp, inject, file string
+		name, pkg, path, tp, inject, file string
 	}{
-		{name: "nats", path: natsPath, tp: "*nats.Conn", inject: "index=0, name=events, plugins=[health, log]",
+		{name: "nats", pkg: "nats", path: natsPath, tp: "*nats.Conn", inject: "index=0, name=events, plugins=[health, log]",
 			file: "client/github.com/nats-io/nats.go/events_conn.go"},
-		{name: "pubsub", path: pubsubPath, tp: "*pubsub.Client", inject: "index=0, name=orders, plugins=[log, prometheus]",
+		{name: "pubsub", pkg: "pubsub", path: pubsubPath, tp: "*pubsub.Client", inject: "index=0, name=orders, plugins=[log, prometheus]",
 			file: "client/cloud.google.com/go/pubsub/v2/orders_client.go"},
-		{name: "gocql", path: gocqlPath, tp: "*gocql.Session", inject: "index=0, name=store, plugins=[health]",
+		{name: "gocql", pkg: "gocql", path: gocqlPath, tp: "*gocql.Session", inject: "index=0, name=store, plugins=[health]",
 			file: "client/github.com/gocql/gocql/store_session.go"},
+		{name: "gocql v2", pkg: "gocql", path: gocql2Path, tp: "*gocql.Session", inject: "index=0, name=ledger, plugins=[health]",
+			file: "client/github.com/apache/cassandra-gocql-driver/v2/ledger_session.go"},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			entry := at("client/"+tc.name, "New", []string{tc.tp}, []string{"*Repository"}, provide("index=0"), inject(tc.inject))
-			entry.Imports = map[string]string{tc.name: tc.path}
+			entry := at("client/"+tc.pkg, "New", []string{tc.tp}, []string{"*Repository"}, provide("index=0"), inject(tc.inject))
+			entry.Imports = map[string]string{tc.pkg: tc.path}
 
 			files, err := NewGenerator(newTestGraph(t, []annotation.Entry{entry}), testOptions("/mod")).Render(context.Background())
 			require.NoError(t, err)

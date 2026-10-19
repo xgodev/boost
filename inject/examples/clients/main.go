@@ -1,5 +1,6 @@
-// Command clients wires a NATS connection, a Pub/Sub client and a gocql
-// session that inject builds from @Inject, and stops them with the app.
+// Command clients wires a NATS connection, a Pub/Sub client and gocql
+// sessions of both drivers that inject builds from @Inject, and stops them
+// with the app.
 //
 // Regenerate the modules in gen/ with:
 //
@@ -14,6 +15,7 @@ import (
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/inject/examples/clients/events"
 	"github.com/xgodev/boost/inject/examples/clients/gen"
+	"github.com/xgodev/boost/inject/examples/clients/ledger"
 	"github.com/xgodev/boost/inject/examples/clients/orders"
 	"github.com/xgodev/boost/inject/examples/clients/store"
 	"github.com/xgodev/boost/wrapper/log"
@@ -27,7 +29,8 @@ func main() {
 	var publisher *events.Publisher
 	var topics *orders.Topics
 	var cluster *store.Cluster
-	app := fx.New(gen.Module(), fx.Populate(&publisher, &topics, &cluster), fx.NopLogger)
+	var ledgerCluster *ledger.Cluster
+	app := fx.New(gen.Module(), fx.Populate(&publisher, &topics, &cluster, &ledgerCluster), fx.NopLogger)
 	if err := app.Start(ctx); err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -38,13 +41,15 @@ func main() {
 	if err := topics.Create(ctx, "orders"); err != nil {
 		log.Errorf("%v", err)
 	}
-	if version, err := cluster.Version(); err != nil {
-		log.Errorf("%v", err)
-	} else {
-		log.Infof("cassandra %s", version)
+	for _, c := range []interface{ Version() (string, error) }{cluster, ledgerCluster} {
+		if version, err := c.Version(); err != nil {
+			log.Errorf("%v", err)
+		} else {
+			log.Infof("cassandra %s", version)
+		}
 	}
 
-	// Stop closes the connection, the client and the session.
+	// Stop closes the connection, the client and the sessions.
 	if err := app.Stop(ctx); err != nil {
 		log.Fatalf("%v", err)
 	}

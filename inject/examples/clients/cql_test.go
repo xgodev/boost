@@ -28,7 +28,8 @@ const (
 )
 
 // startCQLNode starts a fake Cassandra node on a free port and returns the
-// port. It answers what a gocql session sends while it connects (OPTIONS,
+// port. It speaks protocol v4 only, so a driver that tries v5 first falls
+// back, and answers what a gocql session sends while it connects (OPTIONS,
 // STARTUP, REGISTER, the system.local and schema queries) and selects on
 // system.local, plain or prepared; any other query gets an empty result.
 func startCQLNode(t *testing.T) int {
@@ -66,24 +67,24 @@ func serveCQL(conn net.Conn) {
 
 		var op byte
 		var resp []byte
-		switch header[4] {
-		case opOptions:
+		switch {
+		case header[0] != 0x04:
+			op, resp = opError, cqlProtocolError("only protocol v4 is supported")
+		case header[4] == opOptions:
 			op, resp = opSupported, cqlShort(nil, 0) // no options
-		case opStartup, opRegister:
+		case header[4] == opStartup, header[4] == opRegister:
 			op = opReady
-		case opQuery:
+		case header[4] == opQuery:
 			n := binary.BigEndian.Uint32(body)
 			op, resp = opResult, cqlQueryResult(string(body[4:4+n]))
-		case opPrepare:
+		case header[4] == opPrepare:
 			n := binary.BigEndian.Uint32(body)
 			op, resp = opResult, cqlPrepared(string(body[4:4+n]))
-		case opExecute: // the id of a prepared statement is its query
+		case header[4] == opExecute: // the id of a prepared statement is its query
 			n := binary.BigEndian.Uint16(body)
 			op, resp = opResult, cqlQueryResult(string(body[2:2+n]))
 		default:
-			op = opError
-			resp = binary.BigEndian.AppendUint32(nil, 0x000A) // protocol error
-			resp = cqlString(resp, "unsupported opcode")
+			op, resp = opError, cqlProtocolError("unsupported opcode")
 		}
 
 		out := []byte{header[0] | 0x80, 0, header[2], header[3], op}
@@ -162,6 +163,11 @@ const (
 	resultRows     = 0x0002
 	resultPrepared = 0x0004
 )
+
+func cqlProtocolError(msg string) []byte {
+	const protocolError = 0x000A
+	return cqlString(binary.BigEndian.AppendUint32(nil, protocolError), msg)
+}
 
 func cqlShort(b []byte, v uint16) []byte {
 	return binary.BigEndian.AppendUint16(b, v)
