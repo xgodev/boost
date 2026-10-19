@@ -80,6 +80,7 @@ require (
 	github.com/redis/go-redis/extra/redisotel/v9 v9.23.0
 	github.com/redis/go-redis/v9 v9.23.0
 	github.com/rs/zerolog v1.35.1
+	github.com/segmentio/kafka-go v0.4.51
 	github.com/shamaton/msgpack/v2 v2.4.3
 	github.com/shamaton/msgpack/v3 v3.2.4
 	github.com/sirupsen/logrus v1.10.2

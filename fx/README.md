@@ -51,6 +51,7 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | `panjf2000/ants/v2` | `Module` | `*ants.Wrapper` | — |
 | `prometheus/client_golang/v1` | `PusherModule` | starts push gateway pusher (if enabled) | — |
 | `redis/go-redis/v9` | `ClientModule`, `ClusterModule` | `*redis.Client`, `*redis.ClusterClient` | — |
+| `segmentio/kafka-go/v0` | `WriterModule`, `ReaderModule` | `*kafka.Writer`, `*kafka.Reader` (closed on stop) | — |
 | `tidwall/buntdb/v1` | `Module` | `*buntdb.DB` | — |
 
 `godror` and `pgx` both provide `*sql.DB`: compose only one per app.
