@@ -7,7 +7,7 @@
 <p align="center"><b>Enterprise Go services. Built fast.</b></p>
 
 <p align="center">
-Boot, config, logs, 57 factories, middleware, health and code generation in one framework. You write the business logic.
+Boot, config, logs, 58 factories, middleware, health and code generation in one framework. You write the business logic.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Boot, config, logs, 57 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 57 | 45 | 107 | 220 |
+| 58 | 46 | 107 | 220 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -674,7 +674,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**57** factories · **45** upstream libraries · **107** plugins
+**58** factories · **46** upstream libraries · **107** plugins
 
 ### Plugins
 
@@ -885,7 +885,7 @@ Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → `v1.3.0` → `v1.4.
 
 ## There's a factory for that.
 
-57 factories over the 45 libraries your services already run on. Each one
+58 factories over the 46 libraries your services already run on. Each one
 arrives configured, with plugins for traces, metrics and health checks, so your
 team writes the business logic, not the plumbing.
 
@@ -928,6 +928,7 @@ team writes the business logic, not the plumbing.
 | Elasticsearch | `go-elasticsearch/v8` · `v9` |
 | BigQuery · Bigtable · Firestore · API client | `cloud.google.com` |
 | FTP | `ftp/v0` |
+| [Azure Blob Storage](https://github.com/Azure/azure-sdk-for-go) | `azure-sdk-for-go/v1` |
 
 ### Cache
 
