@@ -28,6 +28,12 @@ The `config` subpackage offers a unified interface for application configuration
 
 This facilitates configuration management across different environments and deployment scenarios.
 
+`config.Add` keeps one entry per key: a key added again, like the keys the v1
+and v2 pubsub adapters share, replaces its entry, so the flag parsers never see
+a key twice. Environment variables map to keys by `_` → `.`, with `__` joining
+the words of a camelCase key: `BOOST_FACTORY_GCP_PUBSUB_API__OPTIONS_EMULATOR__HOST`
+sets `boost.factory.gcp.pubsub.apiOptions.emulatorHost`.
+
 ### Log
 
 The `log` subpackage provides abstractions for logging systems, with support for:
