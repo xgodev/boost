@@ -199,6 +199,13 @@ func pointerTo(entry annotation.Entry, tp string) (string, bool) {
 // parsePlugins reads the plugins attribute of @Inject: "[a, b]" or a single
 // name. It returns nil when raw is empty and a non-nil empty list for "[]".
 func parsePlugins(raw string) ([]string, error) {
+	return parseList("plugins", raw)
+}
+
+// parseList reads the list attribute attr of an annotation: "[a, b]" or a
+// single name. It returns nil when raw is empty and a non-nil empty list for
+// "[]".
+func parseList(attr, raw string) ([]string, error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
 		return nil, nil
@@ -206,7 +213,7 @@ func parsePlugins(raw string) ([]string, error) {
 
 	open, closed := strings.HasPrefix(raw, "["), strings.HasSuffix(raw, "]")
 	if open != closed {
-		return nil, errors.NotValidf("plugins=%s: write the list as [a, b]", raw)
+		return nil, errors.NotValidf("%s=%s: write the list as [a, b]", attr, raw)
 	}
 	if open {
 		raw = strings.TrimSpace(raw[1 : len(raw)-1])
@@ -221,9 +228,9 @@ func parsePlugins(raw string) ([]string, error) {
 		name = strings.TrimSpace(name)
 		switch {
 		case name == "":
-			return nil, errors.NotValidf("plugins=[%s] has an empty name", raw)
+			return nil, errors.NotValidf("%s=[%s] has an empty name", attr, raw)
 		case seen[name]:
-			return nil, errors.NotValidf("plugins=[%s] lists %s twice", raw, name)
+			return nil, errors.NotValidf("%s=[%s] lists %s twice", attr, raw, name)
 		}
 		seen[name] = true
 		names = append(names, name)

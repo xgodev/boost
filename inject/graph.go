@@ -331,6 +331,9 @@ func validateProvides(entry annotation.Entry, provides map[int]Annotation) error
 		if ann.Plugins != "" {
 			return errors.NotValidf("@Provide on %s result %d cannot have plugins: plugins go on the @Inject of a client parameter", gid(entry), idx)
 		}
+		if ann.Drivers != "" {
+			return errors.NotValidf("@Provide on %s result %d cannot have drivers: drivers go on the @Inject of a *publisher.Publisher parameter", gid(entry), idx)
+		}
 	}
 	return nil
 }
@@ -361,6 +364,34 @@ func validateInjects(entry annotation.Entry, injects map[int]Annotation) error {
 		}
 		if err := validatePlugins(entry, idx, ann); err != nil {
 			return err
+		}
+		if err := validateDrivers(entry, idx, ann); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// validateDrivers checks the drivers of an @Inject: the parameter is a
+// *publisher.Publisher and every driver is one inject generates.
+func validateDrivers(entry annotation.Entry, idx int, ann Annotation) error {
+	if ann.Drivers == "" {
+		return nil
+	}
+
+	tp := entry.Func.Parameters[idx].Type
+	if !isPublisher(entry, tp) {
+		return errors.NotValidf("@Inject on %s parameter %d has drivers, but %s is not *publisher.Publisher", gid(entry), idx, tp)
+	}
+
+	drivers, err := parseDrivers(ann.Drivers)
+	if err != nil {
+		return errors.NewNotValid(err, fmt.Sprintf("@Inject on %s parameter %d", gid(entry), idx))
+	}
+	for _, name := range drivers {
+		if _, ok := publisherDriver(name); !ok {
+			return errors.NotValidf("@Inject on %s parameter %d: the publisher has no driver %s; its drivers are %s",
+				gid(entry), idx, name, publisherDriverNames())
 		}
 	}
 	return nil
