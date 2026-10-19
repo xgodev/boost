@@ -190,6 +190,60 @@ func TestGenerator_RenderFunctionAdapterClient(t *testing.T) {
 	})
 }
 
+// TestGenerator_RenderFunctionNamedClient checks @Function(client=prices):
+// the adapters reading with a client inject builds take the client named
+// prices, the module inject generates for it (Spec.NamedClients) or the one
+// of the inject constructor providing it, and no default client (#208).
+func TestGenerator_RenderFunctionNamedClient(t *testing.T) {
+	newHandler := decl("events", "", "New", nil, []string{"Handler"}, ann("Provide", "index=0"))
+	handle := decl("events", "Handler", "Handle", eventParams, eventResults, ann("Function", "adapter=[nats, cenats, pubsub], app=worker, client=prices"))
+	const name = "builder/worker/function_module.go"
+
+	t.Run("inject builds the client", func(t *testing.T) {
+		spec, err := newTestSpec(t, []annotation.Entry{newHandler, handle})
+		require.NoError(t, err)
+		assert.Empty(t, spec.DefaultClients(), "the adapters read with the prices clients")
+		assert.Equal(t, []inject.ClientRef{
+			{ID: "cloud.google.com/go/pubsub/v2.Client", Name: "prices"},
+			{ID: "github.com/nats-io/nats.go.Conn", Name: "prices"},
+		}, spec.NamedClients())
+
+		files, err := NewGenerator(spec, testOptions("/src/app")).Render(context.Background())
+		require.NoError(t, err)
+		src := files[name]
+		assertImportsUsed(t, name, src)
+
+		golden := filepath.Join("testdata", "golden", "adapters", "named_client_function_module.go.golden")
+		if *update {
+			require.NoError(t, os.WriteFile(golden, src, 0o644))
+			return
+		}
+		want, err := os.ReadFile(golden)
+		require.NoError(t, err, "run go test ./builder/ -run TestGenerator_RenderFunctionNamedClient -update")
+		assert.Equal(t, string(want), string(src))
+	})
+
+	t.Run("the app provides the client", func(t *testing.T) {
+		conn := decl("broker", "", "NewConn", nil, []string{"*nats.Conn"}, ann("Provide", "index=0, name=prices"))
+		conn.Imports = map[string]string{"nats": "github.com/nats-io/nats.go"}
+		spec, err := newTestSpec(t, []annotation.Entry{newHandler, handle, conn})
+		require.NoError(t, err)
+		assert.Equal(t, []inject.ClientRef{{ID: "cloud.google.com/go/pubsub/v2.Client", Name: "prices"}}, spec.NamedClients(),
+			"inject builds no *nats.Conn the app provides")
+
+		files, err := NewGenerator(spec, testOptions("/src/app")).Render(context.Background())
+		require.NoError(t, err)
+		src := string(files[name])
+		assertImportsUsed(t, name, files[name])
+
+		_, call := inject.ModuleOf(testModule+"/gen", conn)
+		assert.Equal(t, 2, strings.Count(src, call+","), "nats and cenats take the app's prices *nats.Conn:\n%s", src)
+		assert.Equal(t, 3, strings.Count(src, `ModuleWithNamedClient[*src_cloudevents_c136a3fd.Event]("prices")`), "nats, cenats and pubsub:\n%s", src)
+		assert.NotContains(t, src, "PricesConnModule()")
+		assert.Contains(t, src, "PricesClientModule()")
+	})
+}
+
 func TestGenerator_RenderErrors(t *testing.T) {
 	handle := func(results ...string) annotation.Entry {
 		return decl("events", "", "Handle", eventParams, results, ann("Function", "adapter=nats"))

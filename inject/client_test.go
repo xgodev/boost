@@ -454,3 +454,77 @@ func TestClientModule(t *testing.T) {
 	_, _, err = ClientModule("example.com/app/gen", "example.com/broker.Conn")
 	assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
 }
+
+// TestGenerator_RenderNamedClients checks the named clients another
+// generator asks for (builder, for @Function(client=prices)): inject
+// generates them though no consumer injects them, leaves them out of the
+// root module, and the publisher of that name shares them (#208).
+func TestGenerator_RenderNamedClients(t *testing.T) {
+	natsConn := natsPath + ".Conn"
+	opts := testOptions("/mod")
+	opts.NamedClients = []ClientRef{{ID: natsConn, Name: "prices"}}
+
+	t.Run("without consumers", func(t *testing.T) {
+		entries := []annotation.Entry{at("app", "New", nil, []string{"*App"}, provide("index=0"))}
+		files, err := NewGenerator(newTestGraph(t, entries), opts).Render(context.Background())
+		require.NoError(t, err)
+
+		assert.NotNil(t, files["client/github.com/nats-io/nats.go/prices_conn.go"], "files: %v", sortedFileNames(files))
+		assert.Nil(t, files["client/github.com/nats-io/nats.go/default_conn.go"])
+		assert.NotContains(t, string(files["module.go"]), "PricesConnModule()", "the generator that asked for it wires it")
+	})
+
+	t.Run("with the publisher of that name", func(t *testing.T) {
+		entries := []annotation.Entry{publisherConsumer("order", inject("index=0, name=prices, drivers=[nats]"))}
+		files, err := NewGenerator(newTestGraph(t, entries), opts).Render(context.Background())
+		require.NoError(t, err, "a client asked twice is generated once")
+
+		_, conn, err := NamedClientModule("example.com/app/gen", natsConn, "prices")
+		require.NoError(t, err)
+		assert.Contains(t, string(files["client/github.com/xgodev/boost/wrapper/publisher/prices/publisher.go"]), conn,
+			"the nats driver shares the prices *nats.Conn")
+	})
+
+	t.Run("a client inject does not build", func(t *testing.T) {
+		opts := testOptions("/mod")
+		opts.NamedClients = []ClientRef{{ID: "example.com/broker.Conn", Name: "prices"}}
+		_, err := NewGenerator(newTestGraph(t, nil), opts).Render(context.Background())
+		assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
+		errorContains(t, err, "*example.com/broker.Conn")
+	})
+
+	t.Run("a name an environment variable does not reach", func(t *testing.T) {
+		opts := testOptions("/mod")
+		opts.NamedClients = []ClientRef{{ID: natsConn, Name: "order_prices"}}
+		_, err := NewGenerator(newTestGraph(t, nil), opts).Render(context.Background())
+		assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
+		errorContains(t, err, "order_prices")
+	})
+}
+
+func TestClientProvider(t *testing.T) {
+	conn := func(anns ...annotation.Annotation) annotation.Entry {
+		entry := at("broker", "NewConn", nil, []string{"*nats.Conn"}, anns...)
+		entry.Imports = map[string]string{"nats": natsPath}
+		return entry
+	}
+
+	g := newTestGraph(t, []annotation.Entry{conn(provide("index=0, name=prices"))})
+	comp, ok := ClientProvider(g, natsPath+".Conn", "prices")
+	require.True(t, ok)
+	assert.Equal(t, "NewConn", comp.Entry.Func.Name)
+	_, ok = ClientProvider(g, natsPath+".Conn", "")
+	assert.False(t, ok, "the prices client is not the default one")
+	_, ok = ClientProvider(g, natsPath+".Conn", "stock")
+	assert.False(t, ok)
+}
+
+func TestNamedClientModule(t *testing.T) {
+	imp, call, err := NamedClientModule("example.com/app/gen", natsPath+".Conn", "prices")
+	require.NoError(t, err)
+	assert.Equal(t, "example.com/app/gen/client/github.com/nats-io/nats.go", imp.Path)
+	assert.Equal(t, imp.Alias+".PricesConnModule()", call)
+
+	_, _, err = NamedClientModule("example.com/app/gen", "example.com/broker.Conn", "prices")
+	assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
+}

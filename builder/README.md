@@ -137,6 +137,14 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   and an `@Inject` without `name` get. The door wires the adapter's
   `ModuleWithoutClient`, so a function that reads from a broker and
   publishes to it boots with one client.
+- `client=orders` reads with the named client `orders` instead: the app's
+  `@Provide(name=orders)` of that type, or else the one inject generates
+  (`OrdersConnModule()`, keys `boost.factory.nats.clients.orders.*`), the
+  same one `@Inject(name=orders)` and the publisher `orders` get. The door
+  wires the adapter's `ModuleWithNamedClient("orders")`. The name follows
+  the client names (`[a-z][a-zA-Z0-9]*`), and the adapters must include one
+  that reads with a client (`nats`, `cenats`, `pubsub`), else `NotValid`.
+  The pubsub v1 adapter keeps its own client.
 - With a list, `adapter=[pubsub, nats]`, config chooses the adapter:
   `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`), default the first
   name. The door includes only the chosen adapter module, so the others and

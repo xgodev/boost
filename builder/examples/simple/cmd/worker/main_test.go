@@ -89,12 +89,16 @@ const (
 	// (worker.function.adapter, generated for adapter=[cloudevents, nats, pubsub]).
 	adapterEnv = "WORKER_FUNCTION_ADAPTER"
 	// driverEnv chooses the driver of the publisher the handler announces
-	// with (boost.wrapper.publisher.driver.name).
-	driverEnv   = "BOOST_WRAPPER_PUBLISHER_DRIVER_NAME"
-	natsURLEnv  = "BOOST_FACTORY_NATS_URL"
-	projectEnv  = "BOOST_FACTORY_GCP_PUBSUB_API__OPTIONS_PROJECT__ID"
-	emulatorEnv = "PUBSUB_EMULATOR_HOST"
-	childEnv    = "BUILDER_EXAMPLE_CHILD"
+	// with (boost.wrapper.publisher.clients.orders.driver.name): the
+	// publisher and the function share the orders clients.
+	driverEnv  = "BOOST_WRAPPER_PUBLISHER_CLIENTS_ORDERS_DRIVER_NAME"
+	natsURLEnv = "BOOST_FACTORY_NATS_CLIENTS_ORDERS_URL"
+	projectEnv = "BOOST_FACTORY_GCP_PUBSUB_CLIENTS_ORDERS_API__OPTIONS_PROJECT__ID"
+	// v1ProjectEnv is the project of the client the Pub/Sub v1 adapter
+	// builds itself: only v2 takes the orders client of the app.
+	v1ProjectEnv = "BOOST_FACTORY_GCP_PUBSUB_API__OPTIONS_PROJECT__ID"
+	emulatorEnv  = "PUBSUB_EMULATOR_HOST"
+	childEnv     = "BUILDER_EXAMPLE_CHILD"
 )
 
 // TestWorkerAdapter boots app worker in a new process per adapter and
@@ -288,7 +292,7 @@ func startPubsubWorker(t *testing.T, fake *pstest.Server, env ...string) (*exec.
 	out := &syncBuffer{}
 	cmd := exec.Command(os.Args[0], "-test.run=^TestMainChild$")
 	cmd.Env = append(append(os.Environ(), adapterEnv+"=pubsub", driverEnv+"=noop",
-		emulatorEnv+"="+fake.Addr, projectEnv+"=example", mainEnv+"=1"), env...)
+		emulatorEnv+"="+fake.Addr, projectEnv+"=example", v1ProjectEnv+"=example", mainEnv+"=1"), env...)
 	cmd.Stdout, cmd.Stderr = out, out
 	require.NoError(t, cmd.Start())
 	exited := make(chan error, 1)

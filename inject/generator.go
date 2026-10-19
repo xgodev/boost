@@ -43,6 +43,16 @@ type GeneratorOptions struct {
 	// wires it, as builder does for the adapter of a @Function. The root
 	// module leaves them out. Leave out a type the application provides.
 	DefaultClients []string
+	// NamedClients are the named clients generated even when no @Inject
+	// parameter asks for them, like DefaultClients: builder asks for the
+	// client of @Function(client=x). The root module leaves them out.
+	NamedClients []ClientRef
+}
+
+// ClientRef is a client by type ("<import path>.<Type>") and name.
+type ClientRef struct {
+	ID   string
+	Name string
 }
 
 // Generator writes one fx module per component of the graph, mirroring the
@@ -120,7 +130,7 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 		return nil, err
 	}
 	consumers := clientsByConsumer(clients)
-	publisher := PublisherOf(p.graph)
+	publishers := Publishers(p.graph)
 
 	files := map[string][]byte{}
 	root := RootData{Package: packageIdent(filepath.Base(p.opts.OutputDir))}
@@ -136,9 +146,11 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 
 	for _, key := range p.graph.SortedKeys() {
 		vertex := p.graph.Vertices[key]
-		var injects *Publisher
-		if slices.Contains(publisher.Consumers, key) {
-			injects = &publisher
+		var injects []Publisher
+		for _, pub := range publishers {
+			if slices.Contains(pub.Consumers, key) {
+				injects = append(injects, pub)
+			}
 		}
 		name, src, err := p.renderVertex(tmpl, base, vertex, switches, consumers[key], injects)
 		if err != nil {
@@ -173,16 +185,18 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	if err := renderClients(tmpl, extra, files); err != nil {
 		return nil, err
 	}
-	if len(publisher.Consumers) > 0 {
+	built := slices.Concat(clients, extra)
+	for _, pub := range publishers {
 		// the clients of the drivers are wired by the publisher, only the chosen one
-		missing, err := renderPublisher(tmpl, base, publisher, slices.Concat(clients, extra), files)
+		missing, err := renderPublisher(tmpl, base, pub, built, files)
 		if err != nil {
 			return nil, err
 		}
 		if err := renderClients(tmpl, missing, files); err != nil {
 			return nil, err
 		}
-		addRoot(publisher.Module(base))
+		built = append(built, missing...)
+		addRoot(pub.Module(base))
 	}
 
 	src, err := ExecuteTemplate(tmpl, "root", root)
@@ -197,7 +211,7 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 // renderVertex returns the path, relative to OutputDir, and the source of
 // the module of one component: the config module of a @Config struct, the
 // fx module of a function otherwise.
-func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client, publisher *Publisher) (string, []byte, error) {
+func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client, publishers []Publisher) (string, []byte, error) {
 	comp := vertex.Value
 	name := path.Join(GenPath(base, comp.Entry.Path), strings.ToLower(declName(comp.Entry))+"_module.go")
 
@@ -205,7 +219,7 @@ func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *g
 	if comp.IsConfig() {
 		data = configData(p.opts.ModulePath, comp)
 	} else {
-		module, err := p.moduleData(base, vertex, switches, clients, publisher)
+		module, err := p.moduleData(base, vertex, switches, clients, publishers)
 		if err != nil {
 			return "", nil, err
 		}
@@ -237,8 +251,8 @@ func (p *Generator) renderImplementations(tmpl *template.Template, base string, 
 	return nil
 }
 
-// defaultClients returns the default clients of DefaultClients that clients
-// lacks, in the order of DefaultClients. It is NotValid for a type inject
+// defaultClients returns the clients of DefaultClients and NamedClients that
+// clients lacks, in their order. It is NotValid for a type inject
 // does not build.
 func (p *Generator) defaultClients(clients []Client) ([]Client, error) {
 	var extra []Client
@@ -249,6 +263,18 @@ func (p *Generator) defaultClients(clients []Client) ([]Client, error) {
 		}
 		if _, ok := defaultClient(slices.Concat(clients, extra), id); !ok {
 			extra = append(extra, Client{Factory: f})
+		}
+	}
+	for _, ref := range p.opts.NamedClients {
+		f, ok := clientFactories[ref.ID]
+		if !ok {
+			return nil, errors.NotValidf("inject builds no client of type *%s; it builds %s", ref.ID, strings.Join(supportedClients(), ", "))
+		}
+		if !envSegment.MatchString(ref.Name) {
+			return nil, errors.NotValidf("client name %s of *%s must match %s so an environment variable reaches its keys", ref.Name, ref.ID, envSegment)
+		}
+		if _, ok := clientOf(slices.Concat(clients, extra), ref.ID, ref.Name); !ok {
+			extra = append(extra, Client{Factory: f, Name: ref.Name})
 		}
 	}
 	return extra, nil
@@ -325,7 +351,7 @@ func implementationData(base, key string, set Implementation) ImplementationData
 // dependency that is a member of an implementation set is replaced by the
 // set's switch module; the clients the component injects, then the publisher
 // when it injects the one inject builds, come after its dependencies.
-func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client, publisher *Publisher) (ModuleData, error) {
+func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client, publishers []Publisher) (ModuleData, error) {
 	comp := vertex.Value
 	entry := comp.Entry
 
@@ -384,8 +410,8 @@ func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], swi
 		data.Deps = append(data.Deps, call)
 		importOnce(imp)
 	}
-	if publisher != nil {
-		imp, call := publisher.Module(base)
+	for _, pub := range publishers {
+		imp, call := pub.Module(base)
 		data.Deps = append(data.Deps, call)
 		importOnce(imp)
 	}

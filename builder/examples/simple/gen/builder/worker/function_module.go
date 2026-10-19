@@ -81,14 +81,14 @@ func functionAdapterModule() fx.Option {
 		return cloudeventsfx.Module[*src_cloudevents_c136a3fd.Event]()
 	case "nats":
 		return fx.Options(
-			natsfx.ModuleWithoutClient[*src_cloudevents_c136a3fd.Event](),
-			client_nats_5da165e5.DefaultConnModule(),
+			natsfx.ModuleWithNamedClient[*src_cloudevents_c136a3fd.Event]("orders"),
+			client_nats_5da165e5.OrdersConnModule(),
 		)
 	case "pubsub":
 		return fx.Options(
 			pubsubv1fx.Module[*src_cloudevents_c136a3fd.Event](),
-			pubsubv2fx.ModuleWithoutClient[*src_cloudevents_c136a3fd.Event](),
-			client_pubsub_0cd2c75d.DefaultClientModule(),
+			pubsubv2fx.ModuleWithNamedClient[*src_cloudevents_c136a3fd.Event]("orders"),
+			client_pubsub_0cd2c75d.OrdersClientModule(),
 		)
 	default:
 		return fx.Error(errors.NotValidf("%s: unknown adapter %q; valid: %s", functionAdapterKey, name, "cloudevents, nats, pubsub"))

@@ -91,9 +91,10 @@ func TestPublisherOf_LeftToTheApp(t *testing.T) {
 }
 
 func TestPublisherOf_Rules(t *testing.T) {
-	t.Run("a named publisher is not built", func(t *testing.T) {
-		_, err := NewGraphFromEntries(context.Background(), []annotation.Entry{publisherConsumer("order", inject("index=0, name=orders"))})
-		assert.True(t, errors.IsNotFound(err), "unexpected error: %v", err)
+	t.Run("a named publisher's name reaches its keys from an environment variable", func(t *testing.T) {
+		_, err := NewGraphFromEntries(context.Background(), []annotation.Entry{publisherConsumer("order", inject("index=0, name=order_prices"))})
+		assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
+		errorContains(t, err, "order_prices", "*publisher.Publisher")
 	})
 
 	t.Run("plugins", func(t *testing.T) {
@@ -222,4 +223,70 @@ func TestGenerator_RenderPublisherDrivers(t *testing.T) {
 	}
 	assert.NotNil(t, files["client/github.com/nats-io/nats.go/default_conn.go"])
 	assert.NotNil(t, files["client/cloud.google.com/go/pubsub/v2/default_client.go"])
+}
+
+// TestPublishers_Named builds a named publisher like the unnamed one, with
+// the driver's client of that name (#208).
+func TestPublishers_Named(t *testing.T) {
+	g := newTestGraph(t, []annotation.Entry{
+		publisherConsumer("order", inject("index=0")),
+		publisherConsumer("price", inject("index=0, name=prices, drivers=[nats]")),
+		publisherConsumer("stock", inject("index=0, name=prices, drivers=[pubsub]")),
+	})
+
+	ps := Publishers(g)
+	require.Len(t, ps, 2)
+	assert.Equal(t, Publisher{Consumers: []string{testModule + "/order.New"}, Drivers: []string{"kafka", "nats", "noop", "pubsub"}}, ps[0])
+	assert.Equal(t, Publisher{Name: "prices", Consumers: []string{testModule + "/price.New", testModule + "/stock.New"},
+		Drivers: []string{"nats", "noop", "pubsub"}}, ps[1], "a named publisher has drivers of its own")
+	assert.Equal(t, ps[0], PublisherOf(g), "PublisherOf is the unnamed publisher")
+
+	prices := ps[1]
+	assert.Equal(t, "client/github.com/xgodev/boost/wrapper/publisher/prices/publisher.go", prices.File())
+	assert.Equal(t, "boost.wrapper.publisher.clients.prices.driver.name", prices.Key())
+	assert.Equal(t, PublisherDriverKey, ps[0].Key())
+	imp, call := prices.Module("example.com/app/gen")
+	assert.Equal(t, "example.com/app/gen/client/github.com/xgodev/boost/wrapper/publisher/prices", imp.Path)
+	assert.Equal(t, imp.Alias+".PublisherModule()", call)
+}
+
+func TestPublishers_None(t *testing.T) {
+	assert.Empty(t, Publishers(newTestGraph(t, []annotation.Entry{publisherConsumer("order")})))
+}
+
+// TestGenerator_RenderNamedPublisher renders a publisher named prices: its
+// drivers take the prices clients (boost.factory.nats.clients.prices,
+// boost.factory.gcp.pubsub.clients.prices) and it provides the publisher
+// named prices, the one its consumers inject.
+func TestGenerator_RenderNamedPublisher(t *testing.T) {
+	stream := at("stream", "New", []string{"*nats.Conn"}, []string{"*Stream"}, provide("index=0"), inject("index=0, name=prices"))
+	stream.Imports = map[string]string{"nats": natsPath}
+	entries := []annotation.Entry{publisherConsumer("order", inject("index=0, name=prices")), stream}
+	files, err := NewGenerator(newTestGraph(t, entries), testOptions("/mod")).Render(context.Background())
+	require.NoError(t, err)
+
+	dir := "client/github.com/xgodev/boost/wrapper/publisher/prices/"
+	for _, name := range []string{"publisher.go", "publisher_kafka.go", "publisher_kafka_nocgo.go"} {
+		require.NotNil(t, files[dir+name], "%s is rendered", name)
+		golden(t, "testdata/publisher/named/"+name+".golden", files[dir+name])
+	}
+	assert.Nil(t, files["client/github.com/xgodev/boost/wrapper/publisher/publisher.go"], "no consumer injects the unnamed publisher")
+	for _, client := range []string{
+		"client/github.com/nats-io/nats.go/prices_conn.go",
+		"client/cloud.google.com/go/pubsub/v2/prices_client.go",
+		"client/github.com/confluentinc/confluent-kafka-go/v2/kafka/prices_producer.go",
+	} {
+		assert.NotNil(t, files[client], "%s is the client of a driver of the prices publisher", client)
+	}
+	for name := range files {
+		assert.NotContains(t, name, "default_", "the prices publisher takes no default client")
+	}
+
+	order := string(files["order/new_module.go"])
+	assert.Contains(t, order, "fx.ParamTags(`name:\"prices\"`)", "the consumer injects the publisher named prices")
+	ps := Publishers(newTestGraph(t, entries))
+	require.Len(t, ps, 1)
+	_, call := ps[0].Module("example.com/app/gen")
+	assert.Contains(t, order, call+",", "the consumer includes the publisher it injects")
+	assert.Equal(t, 1, strings.Count(string(files["module.go"]), call+","), "the root includes the publisher once")
 }

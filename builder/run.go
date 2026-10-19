@@ -59,7 +59,7 @@ func newRun(ctx context.Context, src, out, cmd string) (*run, error) {
 
 	opts := Options{
 		GeneratorOptions: inject.GeneratorOptions{ModulePath: modulePath, ModuleDir: moduleDir, OutputDir: r.out,
-			DefaultClients: spec.DefaultClients()},
+			DefaultClients: spec.DefaultClients(), NamedClients: spec.NamedClients()},
 		CmdDir: r.cmd,
 	}
 	r.modules, r.apps = len(g.Vertices), len(spec.Apps)
