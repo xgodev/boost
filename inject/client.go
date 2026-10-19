@@ -83,12 +83,17 @@ func init() {
 		"log":    {Path: nats + "/plugins/local/log", New: "NewLogWithConfigPath"},
 	})
 
+	// the Google Cloud clients take the gRPC client plugins
 	grpc := boostFactories + "google.golang.org/grpc/v1/client/plugins"
-	addClosingClientFactory("cloud.google.com/go/pubsub/v2", "Client", "pubsub", boostFactories+"cloud.google.com/pubsub/v2", "NewClientWithConfigPath", "boost.factory.gcp.pubsub", map[string]ClientPlugin{
-		"log":        {Path: grpc + "/local/wrapper/log", New: "NewLogWithConfigPath"},
-		"datadog":    {Path: grpc + "/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath"},
-		"prometheus": {Path: grpc + "/contrib/prometheus/client_golang/v1", New: "NewPrometheusWithConfigPath"},
-	})
+	grpcPlugins := func() map[string]ClientPlugin {
+		return map[string]ClientPlugin{
+			"log":        {Path: grpc + "/local/wrapper/log", New: "NewLogWithConfigPath"},
+			"datadog":    {Path: grpc + "/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath"},
+			"prometheus": {Path: grpc + "/contrib/prometheus/client_golang/v1", New: "NewPrometheusWithConfigPath"},
+		}
+	}
+	addClosingClientFactory("cloud.google.com/go/pubsub/v2", "Client", "pubsub", boostFactories+"cloud.google.com/pubsub/v2", "NewClientWithConfigPath", "boost.factory.gcp.pubsub", grpcPlugins())
+	addClosingClientFactory("cloud.google.com/go/bigtable", "Client", "bigtable", boostFactories+"cloud.google.com/bigtable/v1", "NewClientWithConfigPath", "boost.factory.bigtable", grpcPlugins())
 
 	for path, factory := range map[string]string{
 		"github.com/gocql/gocql":                      boostFactories + "gocql/gocql/v1",

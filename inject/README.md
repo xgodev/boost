@@ -260,12 +260,13 @@ func newQuoteClient(ctx context.Context) (*resty.Client, error) {
 | `*mongo.Conn` (`factory/contrib/go.mongodb.org/mongo-driver/v1`, `/v2`) | the same package | `health`, `otel`, `datadog`, `prometheus` |
 | `*nats.Conn` (`github.com/nats-io/nats.go`) | `factory/contrib/nats-io/nats.go/v1` | `health`, `log` |
 | `*pubsub.Client` (`cloud.google.com/go/pubsub/v2`) | `factory/contrib/cloud.google.com/pubsub/v2` | `log`, `datadog`, `prometheus` (gRPC client plugins) |
+| `*bigtable.Client` (`cloud.google.com/go/bigtable`) | `factory/contrib/cloud.google.com/bigtable/v1` (root `boost.factory.bigtable`) | `log`, `datadog`, `prometheus` (gRPC client plugins) |
 | `*gocql.Session` (`github.com/gocql/gocql`) | `factory/contrib/gocql/gocql/v1` | `health` |
 | `*gocql.Session` (`github.com/apache/cassandra-gocql-driver/v2`) | `factory/contrib/apache/cassandra-gocql-driver/v2` | `health` |
 | `*sns.Client`, `*sqs.Client`, `*kinesis.Client` (`github.com/aws/aws-sdk-go-v2/service/...`) | `factory/contrib/aws/aws-sdk-go-v2/v1/client/<service>` (root `boost.factory.aws`) | `datadog` |
 | `*kafka.Producer` (`github.com/confluentinc/confluent-kafka-go/v2/kafka`, needs cgo) | `factory/contrib/confluentinc/confluent-kafka-go/v2` | none |
 
-NATS, Pub/Sub, gocql and kafka clients hold connections, so their constructor also
+NATS, Pub/Sub, Bigtable, gocql and kafka clients hold connections, so their constructor also
 takes `fx.Lifecycle` and closes the client when the app stops:
 
 ```go
@@ -424,9 +425,10 @@ See [`examples/simple`](./examples/simple) and
 [`examples/publisher`](./examples/publisher): their tests run the generated
 application and fail when `gen/` is stale.
 [`examples/clients`](./examples/clients) injects a NATS conn, a Pub/Sub
-client and gocql v1 and v2 sessions; its test starts the app against an
-embedded NATS server, the Pub/Sub emulator and a fake Cassandra node, and
-checks every client is closed when the app stops.
+client, gocql v1 and v2 sessions and a Bigtable client; its test starts the
+app against an embedded NATS server, the Pub/Sub emulator, a fake Cassandra
+node and the in-process Bigtable emulator (`bttest`), and checks every
+client is closed when the app stops.
 
 ## Limitations
 

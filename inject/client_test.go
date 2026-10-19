@@ -15,13 +15,14 @@ import (
 )
 
 const (
-	restyPath  = "github.com/go-resty/resty/v2"
-	redisPath  = "github.com/redis/go-redis/v9"
-	mongoPath  = "github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
-	natsPath   = "github.com/nats-io/nats.go"
-	pubsubPath = "cloud.google.com/go/pubsub/v2"
-	gocqlPath  = "github.com/gocql/gocql"
-	gocql2Path = "github.com/apache/cassandra-gocql-driver/v2"
+	restyPath    = "github.com/go-resty/resty/v2"
+	redisPath    = "github.com/redis/go-redis/v9"
+	mongoPath    = "github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
+	natsPath     = "github.com/nats-io/nats.go"
+	pubsubPath   = "cloud.google.com/go/pubsub/v2"
+	bigtablePath = "cloud.google.com/go/bigtable"
+	gocqlPath    = "github.com/gocql/gocql"
+	gocql2Path   = "github.com/apache/cassandra-gocql-driver/v2"
 )
 
 func TestClientFactory(t *testing.T) {
@@ -44,6 +45,9 @@ func TestClientFactory(t *testing.T) {
 			wantBuild: "github.com/xgodev/boost/factory/contrib/nats-io/nats.go/v1.NewConnWithConfigPath"},
 		{name: "pubsub v2", imports: map[string]string{"pubsub": pubsubPath}, tp: "*pubsub.Client", wantFound: true,
 			wantBuild: "github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v2.NewClientWithConfigPath"},
+		{name: "bigtable", imports: map[string]string{"bigtable": bigtablePath}, tp: "*bigtable.Client", wantFound: true,
+			wantBuild: "github.com/xgodev/boost/factory/contrib/cloud.google.com/bigtable/v1.NewClientWithConfigPath"},
+		{name: "bigtable admin client", imports: map[string]string{"bigtable": bigtablePath}, tp: "*bigtable.AdminClient"},
 		{name: "gocql", imports: map[string]string{"gocql": gocqlPath}, tp: "*gocql.Session", wantFound: true,
 			wantBuild: "github.com/xgodev/boost/factory/contrib/gocql/gocql/v1.NewSessionWithConfigPath"},
 		{name: "gocql v2", imports: map[string]string{"gocql": gocql2Path}, tp: "*gocql.Session", wantFound: true,
@@ -81,6 +85,9 @@ func TestClientFactories_PluginNames(t *testing.T) {
 		clientFactories[redisPath+".ClusterClient"].PluginNames())
 	assert.Equal(t, []string{"health", "log"}, clientFactories[natsPath+".Conn"].PluginNames())
 	assert.Equal(t, []string{"datadog", "log", "prometheus"}, clientFactories[pubsubPath+".Client"].PluginNames())
+	assert.Equal(t, []string{"datadog", "log", "prometheus"}, clientFactories[bigtablePath+".Client"].PluginNames())
+	assert.Equal(t, "boost.factory.bigtable", clientFactories[bigtablePath+".Client"].Root)
+	assert.True(t, clientFactories[bigtablePath+".Client"].Close, "the module closes the bigtable client when the app stops")
 	assert.Equal(t, []string{"health"}, clientFactories[gocqlPath+".Session"].PluginNames())
 	assert.Equal(t, []string{"health"}, clientFactories[gocql2Path+".Session"].PluginNames())
 	assert.Equal(t, []string{"datadog"},
@@ -296,11 +303,16 @@ func TestGenerator_RenderClient(t *testing.T) {
 func TestGenerator_RenderClosingClients(t *testing.T) {
 	testCases := []struct {
 		name, pkg, path, tp, inject, file string
+		golden                            string // the golden file, by default named after file
 	}{
 		{name: "nats", pkg: "nats", path: natsPath, tp: "*nats.Conn", inject: "index=0, name=events, plugins=[health, log]",
 			file: "client/github.com/nats-io/nats.go/events_conn.go"},
 		{name: "pubsub", pkg: "pubsub", path: pubsubPath, tp: "*pubsub.Client", inject: "index=0, name=orders, plugins=[log, prometheus]",
 			file: "client/cloud.google.com/go/pubsub/v2/orders_client.go"},
+		{name: "bigtable", pkg: "bigtable", path: bigtablePath, tp: "*bigtable.Client", inject: "index=0",
+			file: "client/cloud.google.com/go/bigtable/default_client.go", golden: "bigtable_default_client.go.golden"},
+		{name: "bigtable named", pkg: "bigtable", path: bigtablePath, tp: "*bigtable.Client", inject: "index=0, name=catalog, plugins=[log, datadog, prometheus]",
+			file: "client/cloud.google.com/go/bigtable/catalog_client.go"},
 		{name: "gocql", pkg: "gocql", path: gocqlPath, tp: "*gocql.Session", inject: "index=0, name=store, plugins=[health]",
 			file: "client/github.com/gocql/gocql/store_session.go"},
 		{name: "gocql v2", pkg: "gocql", path: gocql2Path, tp: "*gocql.Session", inject: "index=0, name=ledger, plugins=[health]",
@@ -317,7 +329,11 @@ func TestGenerator_RenderClosingClients(t *testing.T) {
 
 			src := files[tc.file]
 			require.NotNil(t, src, "the client is rendered at %s", tc.file)
-			golden(t, "testdata/client/"+filepath.Base(tc.file)+".golden", src)
+			name := tc.golden
+			if name == "" {
+				name = filepath.Base(tc.file) + ".golden"
+			}
+			golden(t, "testdata/client/"+name, src)
 		})
 	}
 }

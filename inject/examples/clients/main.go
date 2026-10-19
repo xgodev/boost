@@ -1,6 +1,6 @@
-// Command clients wires a NATS connection, a Pub/Sub client and gocql
-// sessions of both drivers that inject builds from @Inject, and stops them
-// with the app.
+// Command clients wires a NATS connection, a Pub/Sub client, gocql sessions
+// of both drivers and a Bigtable client that inject builds from @Inject, and
+// stops them with the app.
 //
 // Regenerate the modules in gen/ with:
 //
@@ -13,6 +13,7 @@ import (
 	"context"
 
 	"github.com/xgodev/boost"
+	"github.com/xgodev/boost/inject/examples/clients/catalog"
 	"github.com/xgodev/boost/inject/examples/clients/events"
 	"github.com/xgodev/boost/inject/examples/clients/gen"
 	"github.com/xgodev/boost/inject/examples/clients/ledger"
@@ -30,7 +31,8 @@ func main() {
 	var topics *orders.Topics
 	var cluster *store.Cluster
 	var ledgerCluster *ledger.Cluster
-	app := fx.New(gen.Module(), fx.Populate(&publisher, &topics, &cluster, &ledgerCluster), fx.NopLogger)
+	var prices *catalog.Prices
+	app := fx.New(gen.Module(), fx.Populate(&publisher, &topics, &cluster, &ledgerCluster, &prices), fx.NopLogger)
 	if err := app.Start(ctx); err != nil {
 		log.Fatalf("%v", err)
 	}
@@ -49,7 +51,11 @@ func main() {
 		}
 	}
 
-	// Stop closes the connection, the client and the sessions.
+	if err := prices.Set(ctx, "sku-1", "9.90"); err != nil {
+		log.Errorf("%v", err)
+	}
+
+	// Stop closes the connection, the clients and the sessions.
 	if err := app.Stop(ctx); err != nil {
 		log.Fatalf("%v", err)
 	}
