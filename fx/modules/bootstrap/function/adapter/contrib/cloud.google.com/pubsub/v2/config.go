@@ -1,22 +1,14 @@
 package pubsub
 
 import (
-	"github.com/xgodev/boost/fx/modules/bootstrap/function/adapter"
-	"github.com/xgodev/boost/wrapper/config"
+	adaptercfg "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/cloud.google.com/pubsub"
+	pubsubcfg "github.com/xgodev/boost/fx/modules/factory/contrib/cloud.google.com/pubsub"
 )
 
-const (
-	Root    = adapter.Root + ".pubsub"
-	enabled = Root + ".enabled"
-	version = Root + ".version"
-)
+// Root is the config root of the Pub/Sub function adapter fx modules.
+const Root = adaptercfg.Root
 
-func init() {
-	config.Add(enabled, true, "enables/disables the gcp pubsub adapter")
-	config.Add(version, "v1", "defines the pubsub version: v1 or v2")
-}
-
-// IsEnabled returns true when the adapter is enabled and the configured version is v2.
+// IsEnabled returns true when the adapter is enabled and its version is v2 (the default).
 func IsEnabled() bool {
-	return config.Bool(enabled) && config.String(version) == "v2"
+	return adaptercfg.IsEnabled() && pubsubcfg.Enabled(adaptercfg.VersionKey, pubsubcfg.V2)
 }
