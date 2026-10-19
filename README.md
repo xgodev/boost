@@ -7,7 +7,7 @@
 <p align="center"><b>Enterprise Go services. Built fast.</b></p>
 
 <p align="center">
-Boot, config, logs, 56 factories, middleware, health and code generation in one framework. You write the business logic.
+Boot, config, logs, 57 factories, middleware, health and code generation in one framework. You write the business logic.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Boot, config, logs, 56 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 56 | 44 | 107 | 220 |
+| 57 | 45 | 107 | 220 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -674,7 +674,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**56** factories · **44** upstream libraries · **107** plugins
+**57** factories · **45** upstream libraries · **107** plugins
 
 ### Plugins
 
@@ -885,7 +885,7 @@ Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → `v1.3.0` → `v1.4.
 
 ## There's a factory for that.
 
-56 factories over the 44 libraries your services already run on. Each one
+57 factories over the 45 libraries your services already run on. Each one
 arrives configured, with plugins for traces, metrics and health checks, so your
 team writes the business logic, not the plumbing.
 
@@ -902,6 +902,7 @@ team writes the business logic, not the plumbing.
 | GraphQL | `graphql-go/v0` |
 | Resty | `resty/v2` |
 | [fasthttp](https://github.com/valyala/fasthttp) client | `fasthttp/v1` |
+| [drpc](https://github.com/storj/drpc) server · client | `drpc/v1` |
 
 ### Messaging
 
