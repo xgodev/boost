@@ -234,10 +234,10 @@ key per field and provides `*Struct` to the constructors that receive it (see
 [`inject`](../inject#config)). A door that reaches such a constructor
 includes the config module, so the package never imports `wrapper/config`.
 Factory clients too: `@Inject(index=0, name=quote, plugins=[otel])` on a
-`*resty.Client` (redis, mongo) parameter makes inject build that client with
-those plugins and its own config under `boost.factory.resty.clients.quote`
-(see [`inject`](../inject#factory-clients)), so the app writes no factory
-module.
+`*resty.Client` (redis, mongo, NATS, Pub/Sub, gocql) parameter makes inject
+build that client with those plugins and its own config under
+`boost.factory.resty.clients.quote` (see
+[`inject`](../inject#factory-clients)), so the app writes no factory module.
 
 builder owns the main of every app: a `cmd/<app>/main.go` without that header
 fails the generation instead of being overwritten. Other files under `cmd/`
