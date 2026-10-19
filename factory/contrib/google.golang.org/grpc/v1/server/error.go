@@ -31,7 +31,9 @@ func grpcCodeFor(kind errors.Kind) codes.Code {
 		return codes.InvalidArgument
 	case errors.KindServiceUnavailable:
 		return codes.Unavailable
-	case errors.KindConflict, errors.KindAlreadyExists:
+	case errors.KindConflict:
+		return codes.Aborted
+	case errors.KindAlreadyExists:
 		return codes.AlreadyExists
 	case errors.KindNotImplemented, errors.KindNotProvisioned:
 		return codes.Unimplemented
