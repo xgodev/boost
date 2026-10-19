@@ -21,6 +21,7 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | Module | Entry points | Provides | Requires from the app |
 |---|---|---|---|
 | `allegro/bigcache/v3` | `Module` | `*bigcache.BigCache` | — |
+| `apache/cassandra-gocql-driver/v2` | `Module` | `*gocql.Session` | — |
 | `aws/aws-sdk-go-v2/v1` | `Module` | `aws.Config` | — |
 | `cloud.google.com/bigquery/v1` | `Module` | `*bigquery.Client` | — |
 | `cloud.google.com/firestore/v1` | `Module` | `*firestore.Client` | — |
