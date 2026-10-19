@@ -88,6 +88,14 @@ func TestClientFactories_PluginNames(t *testing.T) {
 	assert.Equal(t, []string{"datadog", "log", "prometheus"}, clientFactories[bigtablePath+".Client"].PluginNames())
 	assert.Equal(t, "boost.factory.bigtable", clientFactories[bigtablePath+".Client"].Root)
 	assert.True(t, clientFactories[bigtablePath+".Client"].Close, "the module closes the bigtable client when the app stops")
+	for _, key := range []string{
+		mongoPath + ".Conn",
+		"github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v1.Conn",
+		redisPath + ".Client",
+		redisPath + ".ClusterClient",
+	} {
+		assert.True(t, clientFactories[key].Close, "the module closes %s when the app stops: it holds a pool", key)
+	}
 	assert.Equal(t, []string{"health"}, clientFactories[gocqlPath+".Session"].PluginNames())
 	assert.Equal(t, []string{"health"}, clientFactories[gocql2Path+".Session"].PluginNames())
 	assert.Equal(t, []string{"datadog"},
@@ -317,6 +325,12 @@ func TestGenerator_RenderClosingClients(t *testing.T) {
 			file: "client/github.com/gocql/gocql/store_session.go"},
 		{name: "gocql v2", pkg: "gocql", path: gocql2Path, tp: "*gocql.Session", inject: "index=0, name=ledger, plugins=[health]",
 			file: "client/github.com/apache/cassandra-gocql-driver/v2/ledger_session.go"},
+		{name: "mongo", pkg: "mongo", path: mongoPath, tp: "*mongo.Conn", inject: "index=0, name=stock, plugins=[health, prometheus]",
+			file: "client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2/stock_conn.go"},
+		{name: "redis", pkg: "redis", path: redisPath, tp: "*redis.Client", inject: "index=0, name=cache, plugins=[health]",
+			file: "client/github.com/redis/go-redis/v9/cache_client.go"},
+		{name: "redis cluster", pkg: "redis", path: redisPath, tp: "*redis.ClusterClient", inject: "index=0, name=cache",
+			file: "client/github.com/redis/go-redis/v9/cache_clusterclient.go"},
 	}
 
 	for _, tc := range testCases {

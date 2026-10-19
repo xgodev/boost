@@ -23,10 +23,13 @@ import (
 	"github.com/xgodev/boost"
 	stockv1 "github.com/xgodev/boost/examples/stock/api/proto/stock/v1"
 	"github.com/xgodev/boost/examples/stock/gen/builder/api"
+	mongoclient "github.com/xgodev/boost/examples/stock/gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
 	"github.com/xgodev/boost/examples/stock/internal/pkg/domain/service/stock/reserver"
+	mongofact "github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
 	grpcserver "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -267,6 +270,25 @@ func TestAPIMongo(t *testing.T) {
 	}
 	child(t, "TestAPIMongoChild", repositoryEnv+"=mongodb",
 		"INTERNAL_PKG_DATASTORE_STOCK_MONGODB_COLLECTION=stock_"+time.Now().Format("20060102150405.000000000"))
+	child(t, "TestAPIMongoStopChild")
+}
+
+// TestAPIMongoStopChild runs in the process TestAPIMongo starts: the
+// generated mongo client disconnects when the app stops.
+func TestAPIMongoStopChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestAPIMongo")
+	}
+
+	var conn *mongofact.Conn
+	app := fx.New(mongoclient.DefaultConnModule(), fx.NopLogger, fx.Populate(&conn))
+	require.NoError(t, app.Err())
+	ctx := context.Background()
+	require.NoError(t, app.Start(ctx))
+	require.NoError(t, conn.Client.Ping(ctx, nil), "the client is connected while the app runs")
+	require.NoError(t, app.Stop(ctx))
+
+	assert.ErrorIs(t, conn.Client.Ping(ctx, nil), mongo.ErrClientDisconnected, "the app disconnects the client when it stops")
 }
 
 // TestAPIMongoChild runs in the process TestAPIMongo starts, on a collection

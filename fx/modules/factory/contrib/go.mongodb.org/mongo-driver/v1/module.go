@@ -21,6 +21,7 @@ type params struct {
 
 var once sync.Once
 
+// Module fx module for the mongo *Conn. The client disconnects on app stop.
 func Module() fx.Option {
 	options := fx.Options()
 
@@ -28,8 +29,13 @@ func Module() fx.Option {
 		options = fx.Module("mongo",
 			fxcontext.Module(),
 			fx.Provide(
-				func(ctx context.Context, p params) (*mongo.Conn, error) {
-					return mongo.NewConn(ctx, p.Plugins...) //nolint:wrapcheck  // This must be resolved in another task
+				func(ctx context.Context, lc fx.Lifecycle, p params) (*mongo.Conn, error) {
+					conn, err := mongo.NewConn(ctx, p.Plugins...)
+					if err != nil {
+						return nil, err //nolint:wrapcheck  // This must be resolved in another task
+					}
+					lc.Append(fx.StopHook(conn.Close))
+					return conn, nil
 				},
 				func(conn *mongo.Conn) *m.Database {
 					return conn.Database
