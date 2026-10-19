@@ -31,6 +31,12 @@ This facilitates configuration management across different environments and depl
 Drivers: [`contrib/knadh/koanf/v1`](config/contrib/knadh/koanf/v1) (wired by `boost.Start()`) and
 [`contrib/knadh/koanf/v2`](config/contrib/knadh/koanf/v2) (set with `config.Set(koanf.New())`).
 
+`config.Add` keeps one entry per key: a key added again, like the keys the v1
+and v2 pubsub adapters share, replaces its entry, so the flag parsers never see
+a key twice. Environment variables map to keys by `_` → `.`, with `__` joining
+the words of a camelCase key: `BOOST_FACTORY_GCP_PUBSUB_API__OPTIONS_EMULATOR__HOST`
+sets `boost.factory.gcp.pubsub.apiOptions.emulatorHost`.
+
 ### Log
 
 The `log` subpackage provides abstractions for logging systems, with support for:

@@ -1,0 +1,7 @@
+boost:
+  factory:
+    local:
+      extra:
+        middleware:
+          # the wrapper, and the hystrix command, are named greeter
+          name: greeter

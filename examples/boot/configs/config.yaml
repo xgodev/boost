@@ -1,0 +1,5 @@
+boost:
+  factory:
+    zerolog:
+      formatter: JSON
+      level: DEBUG

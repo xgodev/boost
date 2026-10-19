@@ -1,0 +1,15 @@
+boost:
+  bootstrap:
+    function:
+      default: gcp_pubsub
+      adapter:
+        pubsub:
+          subscriptions:
+            - messages-worker
+  factory:
+    gcp:
+      pubsub:
+        apiOptions:
+          projectId: example
+          useEmulator: true
+          emulatorHost: localhost:8085

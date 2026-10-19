@@ -1,0 +1,9 @@
+boost:
+  bootstrap:
+    function:
+      default: nats
+      adapter:
+        nats:
+          subjects:
+            - messages
+          queue: worker
