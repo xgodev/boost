@@ -47,9 +47,12 @@ type Server struct {
 	Services []Service // KindGRPC, sorted by register function
 	Tools    []Tool    // KindMCP, sorted by name
 	// Plugins are the inject constructors of the []Plugin the server is built
-	// with: the default value for rest, grpc and mcp, the value named after
-	// the server for the others. Sorted by key.
+	// with: the value named after the server, or the default (unnamed) value
+	// for rest, grpc and mcp. Sorted by key.
 	Plugins []inject.Component
+	// PluginsName is the name Plugins are provided under, empty for the
+	// default value and when there are no Plugins.
+	PluginsName string
 }
 
 // Route is a @REST annotation: an HTTP method and path served by a handler.

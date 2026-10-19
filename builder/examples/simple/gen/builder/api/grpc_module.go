@@ -8,6 +8,7 @@ import (
 	"go.uber.org/fx"
 
 	gen_healthcheck_d49c24ae "github.com/xgodev/boost/builder/examples/simple/gen/healthcheck"
+	gen_probe_a7e6caf2 "github.com/xgodev/boost/builder/examples/simple/gen/probe"
 	grpcserver "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
 	grpcfx "github.com/xgodev/boost/fx/modules/factory/contrib/google.golang.org/grpc/v1/server"
 	src_health_d0b4e395 "google.golang.org/grpc/health"
@@ -24,7 +25,16 @@ func GrpcModule() fx.Option {
 	grpcOnce.Do(func() {
 		options = fx.Module("api.grpc",
 			grpcfx.Module(),
+			fx.Provide(
+				fx.Annotate(
+					func(plugins []grpcserver.Plugin) []grpcserver.Plugin {
+						return plugins
+					},
+					fx.ParamTags(`name:"grpc"`),
+				),
+			),
 			gen_healthcheck_d49c24ae.NewServerModule(),
+			gen_probe_a7e6caf2.GrpcPluginsModule(),
 			fx.Invoke(func(srv *grpcserver.Server, s0 *src_health_d0b4e395.Server) {
 				src_healthpb_33efe7c5.RegisterHealthServer(srv.ServiceRegistrar(), s0)
 			}),
