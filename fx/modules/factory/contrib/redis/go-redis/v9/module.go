@@ -10,18 +10,18 @@ import (
 	"go.uber.org/fx"
 )
 
-var once sync.Once
-
 type clusterParams struct {
 	fx.In
 	Plugins []redis.ClusterPlugin `optional:"true"`
 }
 
+var clusterOnce sync.Once
+
 // ClusterModule fx module for redis cluster client. The client closes on app stop.
 func ClusterModule() fx.Option {
 	options := fx.Options()
 
-	once.Do(func() {
+	clusterOnce.Do(func() {
 
 		options = fx.Options(
 			contextfx.Module(),
@@ -46,11 +46,13 @@ type clientParams struct {
 	Plugins []redis.Plugin `optional:"true"`
 }
 
+var clientOnce sync.Once
+
 // ClientModule fx module for redis client. The client closes on app stop.
 func ClientModule() fx.Option {
 	options := fx.Options()
 
-	once.Do(func() {
+	clientOnce.Do(func() {
 
 		options = fx.Options(
 			contextfx.Module(),
