@@ -13,6 +13,7 @@ require (
 	github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/google.golang.org/grpc/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/labstack/echo.v4/v2 v2.11.2
+	github.com/DataDog/dd-trace-go/contrib/labstack/echo.v5/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/redis/go-redis.v9/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/v2 v2.11.2
 	github.com/XSAM/otelsql v0.44.0
@@ -57,7 +58,10 @@ require (
 	github.com/knadh/koanf/parsers/toml/v2 v2.2.2
 	github.com/knadh/koanf/providers/env/v2 v2.0.2
 	github.com/knadh/koanf/v2 v2.4.1
+	github.com/labstack/echo-contrib/v5 v5.0.1
+	github.com/labstack/echo-otel/v5 v5.0.0
 	github.com/labstack/echo/v4 v4.16.0
+	github.com/labstack/echo/v5 v5.4.0
 	github.com/labstack/gommon v0.5.0
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
 	github.com/lovoo/goka v1.1.17

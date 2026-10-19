@@ -58,7 +58,7 @@ either name is interchangeable:
 | Factory | Alias |
 |---|---|
 | `contrib/redis/go-redis/v9` | `Plugin = factory.Plugin[*redis.Client]`, `ClusterPlugin = factory.Plugin[*redis.ClusterClient]` |
-| `contrib/labstack/echo/v4` | `Plugin = factory.Plugin[*Server]` |
+| `contrib/labstack/echo/v4`, `v5` | `Plugin = factory.Plugin[*Server]` |
 | `contrib/go-resty/resty/v2` | `Plugin = factory.Plugin[*resty.Client]` |
 | `contrib/elastic/go-elasticsearch/v8` | `Plugin = factory.Plugin[*elasticsearch.Client]` |
 | `contrib/gocql/gocql/v1` | `Plugin = factory.Plugin[*gocql.Session]` |
