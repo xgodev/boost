@@ -131,7 +131,7 @@ func TestAPI(t *testing.T) {
 		assert.Equal(t, int64(0), left.GetUnits())
 
 		_, err = stockv1.NewStockReserverClient(conn).Reserve(ctx, &stockv1.ReserveRequest{Sku: "pen"})
-		assert.Equal(t, codes.AlreadyExists, status.Code(err), "boost's grpc server answers a conflict with AlreadyExists")
+		assert.Equal(t, codes.Aborted, status.Code(err), "a sold out item is a conflict: Aborted")
 
 		_, err = stockv1.NewStockFinderClient(conn).Find(ctx, &stockv1.FindRequest{Sku: "nope"})
 		assert.Equal(t, codes.NotFound, status.Code(err))
