@@ -96,6 +96,7 @@ under `boost.factory.echo.plugins.<name>`, and the constructor trio
 | Datadog | `plugins/contrib/datadog/dd-trace-go/v2` | `datadog.enabled` (no-op while the tracer is off) |
 | goccy/go-json | `plugins/contrib/goccy/go-json/v0` | `goccyGoJson.enabled` |
 | bytedance/sonic | `plugins/contrib/bytedance/sonic/v1` | `bytedanceSonic.enabled` |
+| Swagger UI | [`plugins/contrib/swaggo/echo-swagger/v2`](plugins/contrib/swaggo/echo-swagger/v2/README.md) | `swagger.enabled`, `swagger.route` (`/swagger/*`) |
 
 The Prometheus collectors register once per process in the default registry,
 so every echo server of the app reports into the same `echo_*` metrics.
@@ -115,6 +116,6 @@ The OpenTelemetry plugin uses the providers of
 - `bodyLimit.*` and `bodydump.*` keys are registered under their plugin path
   (v4 missed them) and H2C reads `hc2.*` under the server path.
 - Prometheus, pprof and OpenTelemetry use the v5 `echo-contrib`/`echo-otel`
-  packages; v4's swaggo plugin has no v5 counterpart yet.
+  packages; Swagger UI uses `swaggo/echo-swagger/v2` (v4 has its v1 plugin).
 - The [builder](../../../../../builder/README.md) REST door still generates
   echo v4 code.
