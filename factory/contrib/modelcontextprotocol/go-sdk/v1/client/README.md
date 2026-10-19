@@ -32,8 +32,8 @@ res, err := cli.Session().CallTool(ctx, &mcp.CallToolParams{
 - `NewClientWithConfigPath(ctx, path)` reads another upstream from its own root
   (e.g. `boost.factory.mcp.client.github`), falling back to the defaults below.
 
-Full example: [`examples/greet`](examples/greet/main.go), against
-[`server/examples/greet`](../server/examples/greet/main.go).
+Full example: [`examples/greet`](examples/greet), against
+[`server/examples/greet`](../server/examples/greet).
 
 ## Configuration
 

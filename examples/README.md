@@ -1,49 +1,65 @@
 # Examples
 
-The Examples package provides reference implementations and practical demonstrations of how to use the various components of the Boost framework. This package serves as executable documentation and a starting point for developers who want to learn how to use the framework.
+Every example of boost is a builder app: annotated handlers and constructors,
+`go generate`, the generated code committed under `gen/`, the main builder
+writes under `cmd/<app>/main.go`, and a test that runs the app in process.
+Each example is its own Go module next to the package it shows, so the root
+`go test ./...` does not reach it; `scripts/examples.sh` vets and tests them
+all.
 
-## Overview
+[`boot`](boot) is the smallest one: one handler, one service and the
+generated main, whose `boost.Start` loads the config and sets the logger.
 
-Examples contains complete applications and code snippets that illustrate usage patterns, best practices, and common use cases for the Boost framework. These examples are designed to be clear, concise, and educational, easing the learning curve for new users.
+## Where they are
 
-## Main Components
+| Package | Examples |
+|---|---|
+| [`bootstrap/function`](../bootstrap/function/examples) | cloudevents http and nats, nats, pubsub, middlewares, recovery |
+| [`extra/health`](../extra/health/examples) | simple |
+| [`extra/middleware`](../extra/middleware/examples) | simple, service, custom |
+| [`extra/middleware/plugins/local/wrapper/cache`](../extra/middleware/plugins/local/wrapper/cache/examples) | service |
+| [`factory/local/extra/middleware`](../factory/local/extra/middleware/examples) | simple, error |
+| [`factory/contrib/...`](../factory/contrib) | one or more per factory: aws, kafka, elasticsearch, resty, mongo, gocloud pubsub, gocql, grpc, echo, mcp, redis |
+| [`wrapper/cache`](../wrapper/cache/examples) | freecache, freecache-binary, multi, plugin |
+| [`wrapper/config`](../wrapper/config/examples) | env, env_file |
+| [`builder`](../builder/examples) | simple: two apps with rest, grpc, mcp and function doors |
+| [`docs/site/example/shop`](../docs/site/example/shop) | the app of the site |
 
-### Boot
+## Shape of an example
 
-The `boot` subpackage demonstrates how to initialize applications using the Boost framework. It includes examples of:
+The layout is the one of an xgodev service: the handler calls a service, the
+service a repository or client, and the domain imports neither transport nor
+persistence.
 
-- Basic application configuration
-- Component initialization
-- Integration of different modules
-- Application lifecycle management
+```
+doc.go                       # the package doc, how to run it, //go:generate
+configs/config.yaml          # when the example needs settings
+cmd/<app>/main.go            # generated
+cmd/<app>/main_test.go       # runs the app in process
+gen/                         # generated, committed
+gen_test.go                  # fails when gen/ is stale
+internal/app/<app>/<transport>/handler/<entity>/<agent>/handler.go
+internal/pkg/domain/model/entity/
+internal/pkg/domain/service/<entity>/<agent>/          # interface
+internal/pkg/domain/service/<entity>/<agent>/local/    # implementation
+internal/pkg/domain/repository/<entity>/               # interface
+internal/pkg/datastore/<entity>/<store>/datastore.go   # implementation
+```
 
-These examples serve as a starting point for developers who want to create new applications with the Boost framework, illustrating the recommended patterns for project structuring and initialization.
+## Running
 
-## How to Use
+```shell
+cd wrapper/cache/examples/freecache
+go generate ./...
+CONF=configs/config.yaml go run ./cmd/api
+```
 
-The examples are designed to be executed directly, allowing developers to experience the framework's behavior firsthand. To use the examples:
+`doc.go` of each example says how to run it and what it needs up (a broker,
+a database). The tests run against in-memory fakes or a server the test
+starts; the mongo and gocql ones skip unless their env var points at a
+database.
 
-1. Navigate to the directory of the specific example you want to explore
-2. Read the source code and comments to understand the purpose and structure of the example
-3. Execute the example following the provided instructions
-4. Try modifying the example to explore different configurations and behaviors
-
-## Integration with Other Packages
-
-The examples demonstrate the integration between various components of the Boost framework:
-
-- Bootstrap: For application initialization
-- Factory: For creating component instances
-- Wrapper: For using adapters to external libraries
-- Extra: For additional functionalities like middleware and health checks
-
-## Contribution
-
-Contributions to the Examples package are especially welcome, as quality examples are essential for the adoption and effective use of the framework. When contributing:
-
-1. Make sure the example is clear and focuses on a specific aspect of the framework
-2. Include detailed comments explaining the purpose and functioning of the code
-3. Provide clear instructions on how to run and experiment with the example
-4. Consider adding variations that demonstrate different configurations or use cases
-
-Well-documented and educational examples are a valuable way to contribute to the Boost ecosystem, helping new users understand and effectively use the framework.
+```shell
+scripts/examples.sh            # every example
+scripts/examples.sh wrapper    # the examples under wrapper/
+```

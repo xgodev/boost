@@ -29,7 +29,7 @@ srv.Serve(ctx) // HTTP: blocks until Shutdown
 - `NewServerWithConfigPath(ctx, path)` reads a second server from another root
   (e.g. `boost.factory.mcp.server.admin`), falling back to the defaults below.
 
-Full example: [`examples/greet`](examples/greet/main.go).
+Full example: [`examples/greet`](examples/greet).
 
 ## Configuration
 
