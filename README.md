@@ -7,7 +7,7 @@
 <p align="center"><b>Enterprise Go services. Built fast.</b></p>
 
 <p align="center">
-Boot, config, logs, 49 factories, middleware, health and code generation in one framework. You write the business logic.
+Boot, config, logs, 50 factories, middleware, health and code generation in one framework. You write the business logic.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Boot, config, logs, 49 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 49 | 39 | 59 | 220 |
+| 50 | 39 | 60 | 220 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -674,7 +674,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**49** factories · **39** upstream libraries · **59** plugins
+**50** factories · **39** upstream libraries · **60** plugins
 
 ### Plugins
 
@@ -885,7 +885,7 @@ Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → `v1.3.0` → **`v1.
 
 ## There's a factory for that.
 
-49 factories over the 39 libraries your services already run on. Each one
+50 factories over the 39 libraries your services already run on. Each one
 arrives configured, with plugins for traces, metrics and health checks, so your
 team writes the business logic, not the plumbing.
 
@@ -920,7 +920,7 @@ team writes the business logic, not the plumbing.
 | PostgreSQL | `pgx/v5` |
 | Oracle | `godror/v0` |
 | Cassandra | `gocql/v1 · v2` |
-| Elasticsearch | `go-elasticsearch/v8` |
+| Elasticsearch | `go-elasticsearch/v8` · `v9` |
 | BigQuery · Firestore · API client | `cloud.google.com` |
 | FTP | `ftp/v0` |
 
@@ -966,7 +966,7 @@ every service, so boost writes it once.
 - **The plumbing comes built.** Defaults, auth, connect and ping, structured
   logs through `wrapper/log`. What a platform team rewrites for every SDK in
   every service is already there.
-- **59 plugins to plug in.** OpenTelemetry, Prometheus, Datadog, health checks,
+- **60 plugins to plug in.** OpenTelemetry, Prometheus, Datadog, health checks,
   retry, request id, CORS, gzip. Pass the plugin to the factory; switch it off
   with a key.
 

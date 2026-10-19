@@ -29,7 +29,7 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | `confluentinc/confluent-kafka-go/v2` | `ProducerModule`, `ConsumerModule` | kafka producer / consumer | — |
 | `coocood/freecache/v1` | `Module` | `*freecache.Cache` | — |
 | `datadog/dd-trace-go/v1` | `TracerModule`, `ProfilerModule` | starts tracer/profiler | — |
-| `elastic/go-elasticsearch/v8` | `Module`, `BulkModule` | `*elasticsearch.Client` | — |
+| `elastic/go-elasticsearch/v8`, `v9` | `Module`, `BulkModule` | `*elasticsearch.Client`, `esutil.BulkIndexer` | — |
 | `go-resty/resty/v2` | `Module` | `*resty.Client` | — |
 | `go.mongodb.org/mongo-driver/v1`, `v2` | `Module` | `*mongo.Conn`, `*mongo.Database` | — |
 | `go.opentelemetry.io/otel/v1` | `Module` | starts tracer and meter providers | — |
