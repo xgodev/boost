@@ -40,6 +40,10 @@ The `multiserver` subpackage provides support for running multiple servers in a 
 
 This component is useful for applications that need to expose multiple interfaces, such as REST APIs, gRPC, and administration interfaces, in a single instance.
 
+### Mockhttp
+
+The `mockhttp` subpackage provides an HTTP mock server for end-to-end tests: endpoints with request matchers, canned responses and call expectations. See [mockhttp/README.md](mockhttp/README.md).
+
 ## How to Use
 
 To use the Extra package in your application:

@@ -21,6 +21,12 @@ The `core` subpackage contains factory implementations for fundamental system co
 The `contrib` directory contains factory implementations for integration with third-party libraries and frameworks, including:
 
 - gRPC: For communication between services
+- go-chi/chi: `net/http` router (v5)
+- gofiber/fiber: fasthttp web framework (v2)
+- valyala/fasthttp: fasthttp client (v1)
+- mittwald/vaultgo: Vault client and credential managers for redis, elasticsearch and mongo (v0)
+- Azure (azure-sdk-for-go): token credential and Blob Storage client (v1)
+- storj/drpc: lightweight drop-in replacement for gRPC, server and client (v1)
 - MCP (modelcontextprotocol/go-sdk): Model Context Protocol server and client
 - Google Cloud Platform (GCP): Integration with GCP services
 - Confluent: For working with Apache Kafka
@@ -60,10 +66,16 @@ either name is interchangeable:
 |---|---|
 | `contrib/redis/go-redis/v9` | `Plugin = factory.Plugin[*redis.Client]`, `ClusterPlugin = factory.Plugin[*redis.ClusterClient]` |
 | `contrib/labstack/echo/v4`, `v5` | `Plugin = factory.Plugin[*Server]` |
+| `contrib/go-chi/chi/v5` | `Plugin = factory.Plugin[*Server]` |
+| `contrib/gofiber/fiber/v2` | `Plugin = factory.Plugin[*Server]` |
 | `contrib/go-resty/resty/v2` | `Plugin = factory.Plugin[*resty.Client]` |
+| `contrib/valyala/fasthttp/v1/client` | `Plugin = factory.Plugin[*fasthttp.Client]` |
+| `contrib/storj.io/drpc/v1/server` | `Plugin = factory.Plugin[*Server]` |
+| `contrib/storj.io/drpc/v1/client` | `Plugin = factory.Plugin[*drpcconn.Conn]` |
 | `contrib/elastic/go-elasticsearch/v8`, `v9` | `Plugin = factory.Plugin[*elasticsearch.Client]` |
 | `contrib/gocql/gocql/v1`, `contrib/apache/cassandra-gocql-driver/v2` | `Plugin = factory.Plugin[*gocql.Session]` |
 | `contrib/aws/aws-sdk-go-v2/v1` | `Plugin = factory.Plugin[*aws.Config]` |
+| `contrib/azure/azure-sdk-for-go/v1/client/azblob` | `Plugin = factory.Plugin[*azblob.ClientOptions]` |
 | `contrib/go.mongodb.org/mongo-driver/v1`, `v2` | `ClientOptionsPlugin = factory.Plugin[*options.ClientOptions]`, `ClientPlugin = factory.Plugin[*mongo.Client]` |
 
 Factories whose plugins have a different shape (gRPC, NATS, Hystrix, the
@@ -73,6 +85,10 @@ Plugin packages sit under each factory's `plugins/` directory:
 `contrib/` integrates a third-party library, `native/` wraps the upstream
 library's own middleware, `extra/` is boost-authored and generic, and
 `local/` wires another boost package (health, log, cache).
+
+The gocql health checker (`contrib/gocql/gocql/v1/plugins/local/extra/health`)
+runs `SELECT now() FROM system.local` with the context of the check, a query
+every cassandra and scylla node answers.
 
 ## Integration with Other Packages
 

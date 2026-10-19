@@ -5,16 +5,17 @@ import (
 )
 
 const (
-	root         = "boost.factory.vault"
-	addr         = ".addr"
-	caPath       = ".caPath"
-	tp           = ".type"
-	k8sRoot      = ".k8s"
-	k8sRole      = k8sRoot + ".role"
-	jwtRoot      = k8sRoot + ".jwt"
-	jwtFile      = jwtRoot + ".file"
-	jwtContent   = jwtRoot + ".content"
-	tk           = ".token"
+	root       = "boost.factory.vault"
+	addr       = ".addr"
+	caPath     = ".caPath"
+	tp         = ".type"
+	k8sRoot    = ".k8s"
+	k8sRole    = k8sRoot + ".role"
+	jwtRoot    = k8sRoot + ".jwt"
+	jwtFile    = jwtRoot + ".file"
+	jwtContent = jwtRoot + ".content"
+	tk         = ".token"
+	// ManagersRoot is the config root every vault manager key lives under.
 	ManagersRoot = root + ".managers"
 
 	secretPath       = ".secretPath"
@@ -28,6 +29,7 @@ func init() {
 	ConfigAdd(root)
 }
 
+// ConfigAdd registers the vault client config keys under path.
 func ConfigAdd(path string) {
 	config.Add(path+addr, "", "defines vault address")
 	config.Add(path+caPath, "", "defines ca path")
@@ -38,6 +40,7 @@ func ConfigAdd(path string) {
 	config.Add(path+tk, "XPTOTOKEN", "defines vault token")
 }
 
+// ManagerConfigAdd registers the vault manager config keys under path.
 func ManagerConfigAdd(path string) {
 	config.Add(path+secretPath, "", "sets manager vault secret path")
 	config.Add(path+watcherEnabled, true, "enable/disable manager vault watcher")

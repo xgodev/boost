@@ -17,13 +17,14 @@ import (
 // ClientFactory is a client type inject builds through its boost factory
 // when an @Inject parameter asks for it.
 type ClientFactory struct {
-	Path    string                  // import path of the client type's package
-	Type    string                  // name of the client type, always used as a pointer
-	Package string                  // name of the client type's package ("resty", "redis", "mongo")
-	Build   string                  // factory import path + "." + the ...WithConfigPath constructor
-	Root    string                  // config root of the factory
-	Plugins map[string]ClientPlugin // by name: the last segment of the plugin's config root
-	Close   bool                    // the generated module closes the client when the app stops
+	Path       string                  // import path of the client type's package
+	Type       string                  // name of the client type, always used as a pointer
+	Package    string                  // name of the client type's package ("resty", "redis", "mongo")
+	Build      string                  // factory import path + "." + the ...WithConfigPath constructor
+	Root       string                  // config root of the factory
+	Plugins    map[string]ClientPlugin // by name: the last segment of the plugin's config root
+	Constraint string                  // build constraint the client needs ("cgo"), "" when it builds anywhere
+	Close      bool                    // the generated module closes the client when the app stops
 }
 
 // ClientPlugin is a plugin of a client factory. The value of its constructor
@@ -105,6 +106,12 @@ func init() {
 			"datadog": {Path: aws + "/plugins/contrib/datadog/dd-trace-go.v1", New: "NewDatadogWithConfigPath"},
 		})
 	}
+
+	// the client of the kafka publisher driver (see publisherDrivers);
+	// confluent-kafka-go binds librdkafka through cgo
+	kafka := ClientFactory{Path: "github.com/confluentinc/confluent-kafka-go/v2/kafka", Type: "Producer", Package: "kafka",
+		Build: boostFactories + "confluentinc/confluent-kafka-go/v2.NewProducerWithConfigPath", Root: "boost.factory.confluent", Constraint: "cgo", Close: true}
+	clientFactories[kafka.Path+"."+kafka.Type] = kafka
 }
 
 func addClientFactory(path, tp, pkg, factory, build, root string, plugins map[string]ClientPlugin) {
@@ -153,24 +160,35 @@ func (f ClientFactory) Constructor() string {
 // clientFactory returns the factory of the client type tp (*pkg.Type),
 // written in the file of entry, when inject builds it.
 func clientFactory(entry annotation.Entry, tp string) (ClientFactory, bool) {
+	id, ok := pointerTo(entry, tp)
+	if !ok {
+		return ClientFactory{}, false
+	}
+	f, ok := clientFactories[id]
+	return f, ok
+}
+
+// pointerTo returns "<import path>.<Type>" of the type tp (*pkg.Type),
+// written in the file of entry. It is false for any other kind of type.
+func pointerTo(entry annotation.Entry, tp string) (string, bool) {
 	expr, err := parser.ParseExpr(tp)
 	if err != nil {
-		return ClientFactory{}, false
+		return "", false
 	}
 	star, ok := expr.(*ast.StarExpr)
 	if !ok {
-		return ClientFactory{}, false
+		return "", false
 	}
 	sel, ok := star.X.(*ast.SelectorExpr)
 	if !ok {
-		return ClientFactory{}, false
+		return "", false
 	}
 	pkg, ok := sel.X.(*ast.Ident)
 	if !ok {
-		return ClientFactory{}, false
+		return "", false
 	}
-	f, ok := clientFactories[entry.Imports[pkg.Name]+"."+sel.Sel.Name]
-	return f, ok
+	path, ok := entry.Imports[pkg.Name]
+	return path + "." + sel.Sel.Name, ok
 }
 
 // parsePlugins reads the plugins attribute of @Inject: "[a, b]" or a single
@@ -224,16 +242,7 @@ type Client struct {
 // consumers of a client list different plugins, and AlreadyExists when two
 // clients share a file (a client named "default" and the unnamed one).
 func Clients(g *graph.Graph[Component]) ([]Client, error) {
-	provided := map[string]string{} // value id -> key of its first provider
-	for _, key := range g.SortedKeys() {
-		comp := g.Vertices[key].Value
-		for _, idx := range sortedIndexes(comp.Provides) {
-			id := xid(comp.Entry.Package, comp.Result(idx), comp.Provides[idx])
-			if _, ok := provided[id]; !ok {
-				provided[id] = key
-			}
-		}
-	}
+	provided := providedValues(g)
 
 	clients := map[string]*Client{}
 	declaredBy := map[string]string{} // client id -> key of the consumer listing its plugins
@@ -310,6 +319,22 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 	return list, nil
 }
 
+// providedValues maps the id of each value an annotated function provides
+// to the key of its first provider.
+func providedValues(g *graph.Graph[Component]) map[string]string {
+	provided := map[string]string{}
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		for _, idx := range sortedIndexes(comp.Provides) {
+			id := xid(comp.Entry.Package, comp.Result(idx), comp.Provides[idx])
+			if _, ok := provided[id]; !ok {
+				provided[id] = key
+			}
+		}
+	}
+	return provided
+}
+
 func pluginList(plugins []string) string {
 	return "[" + strings.Join(plugins, ", ") + "]"
 }
@@ -369,18 +394,19 @@ func (c Client) Module(base string) (ImportData, string) {
 func clientData(c Client) ClientData {
 	ident := c.Ident()
 	data := ClientData{
-		Package: packageIdent(c.Factory.Package),
-		Ident:   ident,
-		Var:     strings.ToLower(ident[:1]) + ident[1:],
-		Desc:    c.String(),
-		Root:    c.Root(),
-		Env:     ConfigEnv(c.Root(), "*"),
-		Module:  c.Factory.Path + "." + ident,
-		Target:  "new" + ident,
-		Type:    "*factory." + c.Factory.Type,
-		Build:   c.Factory.Constructor(),
-		Names:   strings.Join(c.Plugins, ", "),
-		Close:   c.Factory.Close,
+		Package:    packageIdent(c.Factory.Package),
+		Ident:      ident,
+		Var:        strings.ToLower(ident[:1]) + ident[1:],
+		Desc:       c.String(),
+		Root:       c.Root(),
+		Env:        ConfigEnv(c.Root(), "*"),
+		Module:     c.Factory.Path + "." + ident,
+		Target:     "new" + ident,
+		Type:       "*factory." + c.Factory.Type,
+		Build:      c.Factory.Constructor(),
+		Constraint: c.Factory.Constraint,
+		Names:      strings.Join(c.Plugins, ", "),
+		Close:      c.Factory.Close,
 		Imports: []ImportData{
 			{Alias: "factory", Path: c.Factory.FactoryPath()},
 			{Alias: "contextfx", Path: "github.com/xgodev/boost/fx/modules/core/context"},

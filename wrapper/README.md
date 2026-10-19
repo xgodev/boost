@@ -31,6 +31,12 @@ This facilitates configuration management across different environments and depl
 Drivers: [`contrib/knadh/koanf/v1`](config/contrib/knadh/koanf/v1) (wired by `boost.Start()`) and
 [`contrib/knadh/koanf/v2`](config/contrib/knadh/koanf/v2) (set with `config.Set(koanf.New())`).
 
+`config.Add` keeps one entry per key: a key added again, like the keys the v1
+and v2 pubsub adapters share, replaces its entry, so the flag parsers never see
+a key twice. Environment variables map to keys by `_` → `.`, with `__` joining
+the words of a camelCase key: `BOOST_FACTORY_GCP_PUBSUB_API__OPTIONS_EMULATOR__HOST`
+sets `boost.factory.gcp.pubsub.apiOptions.emulatorHost`.
+
 ### Log
 
 The `log` subpackage provides abstractions for logging systems, with support for:
@@ -50,6 +56,10 @@ The `publisher` subpackage offers abstractions for message publishing/subscripti
 - Utilities for monitoring and metrics
 
 This facilitates asynchronous communication between components and services.
+
+With [inject](../inject/README.md#publisher), an `@Inject` of
+`*publisher.Publisher` gets a publisher whose driver (`noop`, `nats`,
+`pubsub`, `kafka`) is chosen by `boost.wrapper.publisher.driver.name`.
 
 `Publisher.Publish` returns an error when the driver fails or when any event
 fails. A per-event failure comes back as one `Internal` error that joins every

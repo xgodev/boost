@@ -1,0 +1,4 @@
+boost:
+  bootstrap:
+    function:
+      default: cloudevents_http

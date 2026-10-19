@@ -67,8 +67,15 @@ func (h *Helper[T]) subscribe(ctx context.Context, subject string) {
 		return
 	}
 
-	if err := c.StartReceiver(ctx, h.handler); err != nil {
-		logger.Printf("failed to start nats receiver, %s", err.Error())
+	// the nats consumer has no responder, so the client refuses a receiver
+	// that returns an event: what the function returns is for its
+	// middlewares, like publisher, not for the protocol
+	receive := func(ctx context.Context, in cloudevents.Event) error {
+		_, err := h.handler(ctx, in)
+		return err
+	}
+	if err := c.StartReceiver(ctx, receive); err != nil {
+		logger.Errorf("failed to start nats receiver, %s", err.Error())
 	}
 
 }

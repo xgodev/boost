@@ -263,8 +263,9 @@ func newQuoteClient(ctx context.Context) (*resty.Client, error) {
 | `*gocql.Session` (`github.com/gocql/gocql`) | `factory/contrib/gocql/gocql/v1` | `health` |
 | `*gocql.Session` (`github.com/apache/cassandra-gocql-driver/v2`) | `factory/contrib/apache/cassandra-gocql-driver/v2` | `health` |
 | `*sns.Client`, `*sqs.Client`, `*kinesis.Client` (`github.com/aws/aws-sdk-go-v2/service/...`) | `factory/contrib/aws/aws-sdk-go-v2/v1/client/<service>` (root `boost.factory.aws`) | `datadog` |
+| `*kafka.Producer` (`github.com/confluentinc/confluent-kafka-go/v2/kafka`, needs cgo) | `factory/contrib/confluentinc/confluent-kafka-go/v2` | none |
 
-NATS, Pub/Sub and gocql clients hold connections, so their constructor also
+NATS, Pub/Sub, gocql and kafka clients hold connections, so their constructor also
 takes `fx.Lifecycle` and closes the client when the app stops:
 
 ```go
@@ -300,6 +301,48 @@ func newEventsConn(ctx context.Context, lc fx.Lifecycle) (*nats.Conn, error) {
   `<Name>ClientModule()`. fx builds the client only when a consumer is
   built, so a client of an implementation that config did not choose is
   never built.
+
+## Publisher
+
+A `*publisher.Publisher` (`github.com/xgodev/boost/wrapper/publisher`)
+parameter with `@Inject` is built by the generator, with the driver one config
+key names. The app writes no driver module.
+
+```go
+package boost // example.com/app/publisher/ordercreated/boost
+
+// @Provide(index=0)
+// @Inject(index=0)
+func New(p *publisher.Publisher) ordercreated.Publisher { ... }
+```
+
+The generator writes `gen/client/github.com/xgodev/boost/wrapper/publisher/publisher.go`
+with `PublisherModule()`, which wires the publisher and only the chosen driver
+and its client:
+
+| `boost.wrapper.publisher.driver.name` | Driver | Client |
+|---|---|---|
+| `noop` (default) | `wrapper/publisher/driver/extra/noop` | none |
+| `nats` | `wrapper/publisher/driver/contrib/nats-io/nats.go/v1` | default `*nats.Conn` (`boost.factory.nats.*`) |
+| `pubsub` | `wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v2` | default `*pubsub.Client` (`boost.factory.gcp.pubsub.*`) |
+| `kafka` | `wrapper/publisher/driver/contrib/confluentinc/confluent-kafka-go/v2` | default `*kafka.Producer` (`boost.factory.confluent.*`) |
+
+- **Choice.** Env `BOOST_WRAPPER_PUBLISHER_DRIVER_NAME=nats`. An unknown
+  value fails the boot with `NotValid`, naming the key, the value and the
+  valid names. The key is `.driver.name`, not `.driver`: `.driver` holds the
+  drivers' options.
+- **Clients.** Each driver takes the default client of its factory, the
+  same one an `@Inject` without `name` gets (see [Factory clients](#factory-clients)):
+  the app and the publisher share it, with the plugins the app lists.
+- **cgo.** The kafka client binds librdkafka through cgo, so its files build
+  only with cgo (`//go:build cgo`). An app built with `CGO_ENABLED=0` still
+  builds; choosing `kafka` there fails the boot with `NotSupported`.
+- **The app wins.** When a `@Provide` of the app provides
+  `*publisher.Publisher`, it is used and nothing is generated. A named
+  publisher (`name=x`) is not built: provide it. `plugins` do not apply.
+- The hand-written driver fx modules (`fx/modules/wrapper/publisher/...`) and
+  their `.enabled` keys are unchanged; use them or `PublisherModule()`, not
+  both.
 
 ## Validation
 
@@ -373,7 +416,8 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | `ExecuteTemplate(tmpl, name, data)` | executes a template and gofmt's the output |
 | `WriteGenerated(ctx, dir, files, header)` | writes files and removes stale ones starting with `header` |
 
-See [`examples/simple`](./examples/simple): its tests run the generated
+See [`examples/simple`](./examples/simple) and
+[`examples/publisher`](./examples/publisher): their tests run the generated
 application and fail when `gen/` is stale.
 [`examples/clients`](./examples/clients) injects a NATS conn, a Pub/Sub
 client and gocql v1 and v2 sessions; its test starts the app against an

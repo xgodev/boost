@@ -1,0 +1,9 @@
+boost:
+  factory:
+    echo:
+      port: 8443
+      tls:
+        enabled: true
+        type: AUTO
+        auto:
+          host: localhost

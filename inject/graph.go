@@ -143,6 +143,10 @@ func linkComponents(ctx context.Context, g *graph.Graph[Component], providers ma
 				log.FromContext(ctx).Debugf("parameter %d of %s (%s) is a client inject builds", i, key, param.Type)
 				continue
 			}
+			if len(keys) == 0 && injected && ann.Name == "" && ann.Group == "" && isPublisher(comp.Entry, param.Type) {
+				log.FromContext(ctx).Debugf("parameter %d of %s (%s) is the publisher inject builds", i, key, param.Type)
+				continue
+			}
 			if len(keys) == 0 && injected {
 				return errors.NotFoundf("provider not found for %s, required by parameter %d of %s", id, i, key)
 			}

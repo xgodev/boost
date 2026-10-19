@@ -84,6 +84,9 @@ type Function struct {
 	Alternatives []string
 	Handler      Handler
 	Middlewares  []string // middleware names, the outermost first
+	// Providers are the inject constructors of the values the middlewares
+	// are built with, like the publisher.Driver of publisher. Sorted by key.
+	Providers []inject.Component
 }
 
 // Handler is the annotated function or method serving a door.

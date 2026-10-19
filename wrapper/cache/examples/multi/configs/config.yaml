@@ -1,0 +1,5 @@
+boost:
+  factory:
+    freecache:
+      # freecache raises it to 512KB at least
+      cacheSize: 1048576

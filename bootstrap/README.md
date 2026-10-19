@@ -17,13 +17,15 @@ The `function` subpackage provides structures and utilities for working with fun
 - Adapters for different protocols and formats
 - Wrappers for functions that facilitate integration with the Boost ecosystem
 
+The cloudevents nats adapter has no responder: the event a function returns
+goes to its middlewares, like `publisher`, and never back on the subject.
+
 ### Examples
 
-The `examples` directory contains reference implementations that demonstrate how to use the Bootstrap package in different scenarios, including:
-
-- Integration with CloudEvents
-- Usage with NATS
-- Application initialization patterns
+`function/examples` holds one builder app per adapter and middleware
+(cloudevents http and nats, nats, pubsub, middlewares, recovery): an annotated
+`@Function` handler, the committed `gen/`, the generated `cmd/worker/main.go`
+and a test that runs the worker in process.
 
 ## How to Use
 

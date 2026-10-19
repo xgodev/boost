@@ -7,7 +7,7 @@
 <p align="center"><b>Enterprise Go services. Built fast.</b></p>
 
 <p align="center">
-Boot, config, logs, 52 factories, middleware, health and code generation in one framework. You write the business logic.
+Boot, config, logs, 58 factories, middleware, health and code generation in one framework. You write the business logic.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Boot, config, logs, 52 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 52 | 40 | 78 | 220 |
+| 58 | 46 | 107 | 220 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -674,7 +674,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**52** factories · **40** upstream libraries · **78** plugins
+**58** factories · **46** upstream libraries · **107** plugins
 
 ### Plugins
 
@@ -758,7 +758,7 @@ the app modules and main.
 |---|---|
 | `@REST` | echo route |
 | `@GRPC` | gRPC service |
-| `@Function` | cloudevents · kafka · kafka-go · lambda · nats · pubsub |
+| `@Function` | azure functions · cloudevents · kafka · kafka-go · lambda · nats · pubsub |
 | `@MCP` | MCP tool |
 | `@Middleware` | generated decorator |
 | `@Default` | implementation picked by config |
@@ -868,8 +868,8 @@ same or get better, never worse.
  module github.com/acme/shop
 
  require (
--	github.com/xgodev/boost v1.4.0
-+	github.com/xgodev/boost v1.5.0
+-	github.com/xgodev/boost v1.1.1
++	github.com/xgodev/boost v1.2.0
  )
 ```
 
@@ -880,12 +880,12 @@ ok  github.com/acme/shop/...
 
 1 line changed in go.mod, **0 lines changed in your code**.
 
-Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → `v1.3.0` → `v1.4.0` → **`v1.5.0`**
+Releases: 2024-07 → `v1.1.0` → `v1.1.1` → **`v1.2.0`**
 ([all releases](https://github.com/xgodev/boost/releases)).
 
 ## There's a factory for that.
 
-52 factories over the 40 libraries your services already run on. Each one
+58 factories over the 46 libraries your services already run on. Each one
 arrives configured, with plugins for traces, metrics and health checks, so your
 team writes the business logic, not the plumbing.
 
@@ -894,11 +894,15 @@ team writes the business logic, not the plumbing.
 | Library | Factory wraps |
 |---|---|
 | [Echo](https://echo.labstack.com/) | `echo/v4 · v5` |
+| [chi](https://go-chi.io/) | `chi/v5` |
+| [Fiber](https://gofiber.io/) | `fiber/v2` |
 | [gRPC](https://grpc.io/docs/languages/go/) server · client | `grpc/v1` |
 | [MCP](https://github.com/modelcontextprotocol/go-sdk) server · client | `go-sdk/v1` |
 | HTTP/2 server | `x/net/v0` |
 | GraphQL | `graphql-go/v0` |
 | Resty | `resty/v2` |
+| [fasthttp](https://github.com/valyala/fasthttp) client | `fasthttp/v1` |
+| [drpc](https://github.com/storj/drpc) server · client | `drpc/v1` |
 
 ### Messaging
 
@@ -922,8 +926,9 @@ team writes the business logic, not the plumbing.
 | Oracle | `godror/v0` |
 | Cassandra | `gocql/v1 · v2` |
 | Elasticsearch | `go-elasticsearch/v8` · `v9` |
-| BigQuery · Firestore · API client | `cloud.google.com` |
+| BigQuery · Bigtable · Firestore · API client | `cloud.google.com` |
 | FTP | `ftp/v0` |
+| [Azure Blob Storage](https://github.com/Azure/azure-sdk-for-go) | `azure-sdk-for-go/v1` |
 
 ### Cache
 

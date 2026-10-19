@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"path"
 	"sort"
 	"strings"
 
@@ -22,7 +23,8 @@ import (
 //
 // It returns NotValid for malformed annotations and for handlers that are
 // unexported, in package main or whose signature does not match their door,
-// NotFound when the receiver of a handler method has no provider, and
+// NotFound when the receiver of a handler method or a value a @Function
+// middleware needs has no provider, and
 // AlreadyExists for a duplicate route, service or tool, for a second @Function in
 // an app and for two @Middleware that decorate the same interface.
 func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component], load PackageLoader) (*Spec, error) {
@@ -278,12 +280,17 @@ func (b *specBuilder) addFunction(entry annotation.Entry, ann annotation.Annotat
 		return errors.NotValidf("@Function on %s: the handler must be func(context.Context, cloudevents.Event) (T, error)", where)
 	}
 
+	providers, err := middlewareProviders(b.graph, middlewares, where)
+	if err != nil {
+		return err
+	}
+
 	a := b.app(app)
 	if a.function != nil {
 		return errors.AlreadyExistsf("@Function on %s: app %s already runs %s and an app runs one @Function; set app= to another app",
 			where, app, declName(a.function.Handler.Entry))
 	}
-	a.function = &Function{Adapter: adapters[0], Handler: handler, Middlewares: middlewares}
+	a.function = &Function{Adapter: adapters[0], Handler: handler, Middlewares: middlewares, Providers: providers}
 	if len(adapters) > 1 {
 		a.function.Alternatives = adapters[1:]
 	}
@@ -437,6 +444,38 @@ func serverPlugins(g *graph.Graph[inject.Component], srv Server) []inject.Compon
 		}
 	}
 	return plugins
+}
+
+// middlewareProviders returns the inject constructors providing the unnamed
+// values the @Function middlewares need. A value no constructor provides is
+// NotFound: fx would skip the optional middleware without a word.
+func middlewareProviders(g *graph.Graph[inject.Component], names []string, where string) ([]inject.Component, error) {
+	var providers []inject.Component
+	seen := map[string]bool{}
+	for _, name := range names {
+		for _, need := range functionMiddlewares[name].Needs {
+			found := false
+			for _, key := range g.SortedKeys() {
+				comp := g.Vertices[key].Value
+				for idx, ann := range comp.Provides {
+					if ann.Group != "" || ann.Name != "" || !isType(comp.Entry, comp.Result(idx), need) {
+						continue
+					}
+					found = true
+					if !seen[key] {
+						seen[key] = true
+						providers = append(providers, comp)
+					}
+					break
+				}
+			}
+			if !found {
+				return nil, errors.NotFoundf("@Function on %s: middleware %s needs a %s.%s; annotate the constructor that returns it with @Provide",
+					where, name, path.Base(need.Path), need.Name)
+			}
+		}
+	}
+	return providers, nil
 }
 
 // isPluginSlice reports whether tp, written in the file of entry, is

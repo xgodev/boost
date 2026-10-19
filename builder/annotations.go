@@ -62,6 +62,9 @@ type functionMiddleware struct {
 	Module inject.ImportData
 	Pkg    inject.ImportData
 	Type   string
+	// Needs are the unnamed values the middleware is built with, provided
+	// by the app.
+	Needs []typeRef
 }
 
 var (
@@ -71,6 +74,7 @@ var (
 	// functionAdapters maps the adapter of @Function to the fx modules that
 	// run it, imported under fixed aliases by the generated function door.
 	functionAdapters = map[string][]inject.ImportData{
+		"azure":       {{Alias: "azurefx", Path: fxAdapterRoot + "/azure/functions/v1"}},
 		"cenats":      {{Alias: "cenatsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1"}},
 		"cloudevents": {{Alias: "cloudeventsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/core/http"}},
 		"kafka":       {{Alias: "kafkafx", Path: fxAdapterRoot + "/confluentinc/confluent-kafka-go/v2"}},
@@ -111,6 +115,7 @@ var (
 			Module: inject.ImportData{Alias: "publisherfx", Path: fxMiddlewareRoot + "/publisher"},
 			Pkg:    inject.ImportData{Alias: "publishermw", Path: middlewareRoot + "/publisher"},
 			Type:   "Publisher",
+			Needs:  []typeRef{{Path: publisherPath, Name: "Driver"}},
 		},
 		"recovery": {
 			Module: inject.ImportData{Alias: "recoveryfx", Path: fxMiddlewareRoot + "/recovery"},
