@@ -158,16 +158,16 @@ reader can check what boost builds on.
 
 ## Numbers used on the page
 
-Counted from the repo on 2026-10-18 (#88). Recount when a factory or library is added.
+Counted from the repo on 2026-10-18 (#88, #131, #129). Recount when a factory or library is added.
 
 | Number | What |
 |---|---|
-| 48 | factories: directories under `factory/contrib/` with a `New…`/`Register…` constructor in non-test, non-example Go files, outside `/plugins/` and `/internal/` |
-| 58 | plugins: the same count, only `/plugins/` directories |
-| 39 | upstream libraries: the 40 `org/repo` directories under `factory/contrib/`, minus `cloud.google.com/grpc`, which wraps `google.golang.org/grpc` (already counted). `cloud.google.com/api` is `google.golang.org/api` |
+| 51 | factories: directories under `factory/contrib/` with a `New…`/`Register…` constructor in non-test, non-example Go files, outside `/plugins/` and `/internal/` |
+| 78 | plugins: the same count, only `/plugins/` directories |
+| 39 | upstream libraries: the 41 `org/repo` directories under `factory/contrib/`, minus `cloud.google.com/grpc`, which wraps `google.golang.org/grpc` (already counted), and `apache/cassandra-gocql-driver`, the Apache home of `gocql/gocql` (#131). `cloud.google.com/api` is `google.golang.org/api` |
 | 220 | tags since 2024-07 (latest `v1.1.1`) |
 
-The 48/58/39 include the MCP factory (server and client, #70).
+The 51/78/39 include the MCP factory (server and client, #70) and echo v5 (#129).
 
 `annotation`, `inject`, the MCP factory, `builder` and its doors (`@MCP`
 since #79), `@Middleware`, `@Default`, `@Config` and the `gen/` layout that mirrors the project are on

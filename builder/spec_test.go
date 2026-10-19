@@ -158,7 +158,7 @@ func TestNewSpec(t *testing.T) {
 }
 
 func TestNewSpec_FunctionAdapters(t *testing.T) {
-	for _, adapter := range []string{"cenats", "cloudevents", "kafka", "nats", "pubsub"} {
+	for _, adapter := range []string{"cenats", "cloudevents", "kafka", "lambda", "nats", "pubsub"} {
 		t.Run(adapter, func(t *testing.T) {
 			spec, err := newTestSpec(t, []annotation.Entry{
 				decl("events", "", "Handle", eventParams, eventResults, ann("Function", "adapter="+adapter)),

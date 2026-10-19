@@ -24,6 +24,9 @@ factory por componente sob `factory/contrib/`.
 - API pública alterada sem teste e sem nota de compat
 - `git push` sem quality-gate verde (suspenso por enquanto, ver `docs/development/quality-gate.md`)
 - Issue ou PR ausentes (ver `docs/development/gitflow.md`)
+- Tag, GitHub Release, PR `develop` → `main` ou bump de versão do site/README
+  sem o mantenedor mandar lançar. Issue para no merge em `develop`; release
+  só por `release/vX.Y.Z` (ver `docs/development/gitflow.md`, seção Release)
 
 ## Regras gerais de código
 
