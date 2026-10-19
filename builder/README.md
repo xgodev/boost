@@ -130,6 +130,13 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   `fx/modules/bootstrap/function/adapter/contrib` (`pubsub` includes v1 and v2;
   `boost.bootstrap.function.adapter.pubsub.version`, `v2` by default, turns
   on one).
+- The `nats`, `cenats` and `pubsub` (v2) adapters read with the app's
+  default client: the `*nats.Conn` or `*pubsub.Client` of the app's unnamed
+  `@Provide`, or else the one inject generates (`DefaultConnModule()`,
+  `DefaultClientModule()` under `gen/client/...`), the same one the publisher
+  and an `@Inject` without `name` get. The door wires the adapter's
+  `ModuleWithoutClient`, so a function that reads from a broker and
+  publishes to it boots with one client.
 - With a list, `adapter=[pubsub, nats]`, config chooses the adapter:
   `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`), default the first
   name. The door includes only the chosen adapter module, so the others and

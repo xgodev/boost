@@ -73,18 +73,19 @@ var (
 	}
 	// functionAdapters maps the adapter of @Function to the fx modules that
 	// run it, imported under fixed aliases by the generated function door.
-	functionAdapters = map[string][]inject.ImportData{
-		"azure":       {{Alias: "azurefx", Path: fxAdapterRoot + "/azure/functions/v1"}},
-		"cenats":      {{Alias: "cenatsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1"}},
-		"cloudevents": {{Alias: "cloudeventsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/core/http"}},
-		"kafka":       {{Alias: "kafkafx", Path: fxAdapterRoot + "/confluentinc/confluent-kafka-go/v2"}},
-		"kafkago":     {{Alias: "kafkagofx", Path: fxAdapterRoot + "/segmentio/kafka-go/v0"}},
-		"lambda":      {{Alias: "lambdafx", Path: fxAdapterRoot + "/aws/aws-lambda-go/v1"}},
-		"nats":        {{Alias: "natsfx", Path: fxAdapterRoot + "/nats-io/nats.go/v1"}},
-		// each version is enabled by its own config, so both are included
+	functionAdapters = map[string][]functionAdapter{
+		"azure":       {{ImportData: inject.ImportData{Alias: "azurefx", Path: fxAdapterRoot + "/azure/functions/v1"}}},
+		"cenats":      {{ImportData: inject.ImportData{Alias: "cenatsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1"}, Client: natsConn}},
+		"cloudevents": {{ImportData: inject.ImportData{Alias: "cloudeventsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/core/http"}}},
+		"kafka":       {{ImportData: inject.ImportData{Alias: "kafkafx", Path: fxAdapterRoot + "/confluentinc/confluent-kafka-go/v2"}}},
+		"kafkago":     {{ImportData: inject.ImportData{Alias: "kafkagofx", Path: fxAdapterRoot + "/segmentio/kafka-go/v0"}}},
+		"lambda":      {{ImportData: inject.ImportData{Alias: "lambdafx", Path: fxAdapterRoot + "/aws/aws-lambda-go/v1"}}},
+		"nats":        {{ImportData: inject.ImportData{Alias: "natsfx", Path: fxAdapterRoot + "/nats-io/nats.go/v1"}, Client: natsConn}},
+		// each version is enabled by its own config, so both are included;
+		// v1 reads with a client inject does not build
 		"pubsub": {
-			{Alias: "pubsubv1fx", Path: fxAdapterRoot + "/cloud.google.com/pubsub/v1"},
-			{Alias: "pubsubv2fx", Path: fxAdapterRoot + "/cloud.google.com/pubsub/v2"},
+			{ImportData: inject.ImportData{Alias: "pubsubv1fx", Path: fxAdapterRoot + "/cloud.google.com/pubsub/v1"}},
+			{ImportData: inject.ImportData{Alias: "pubsubv2fx", Path: fxAdapterRoot + "/cloud.google.com/pubsub/v2"}, Client: pubsubClient},
 		},
 	}
 
@@ -245,4 +246,20 @@ func sortedNames[V any](m map[string]V) []string {
 	}
 	sort.Strings(names)
 	return names
+}
+
+// the clients the function adapters read with, as inject names them
+const (
+	natsConn     = "github.com/nats-io/nats.go.Conn"
+	pubsubClient = "cloud.google.com/go/pubsub/v2.Client"
+)
+
+// functionAdapter is an fx module that runs an adapter of @Function.
+type functionAdapter struct {
+	inject.ImportData
+	// Client is the client type the adapter reads with ("<import path>.<Type>")
+	// when inject builds it, "" otherwise. The door wires the module without
+	// its client plus the app's default client of that type, the one the
+	// publisher and the @Inject consumers share, so the app provides it once.
+	Client string
 }

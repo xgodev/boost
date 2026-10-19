@@ -14,6 +14,24 @@ fxfact.NewApp(
 
 `T` must be `*event.Event` or `[]*event.Event`.
 
+## Adapter clients
+
+The `nats`, `cloudevents_nats` and Pub/Sub v2 adapter modules
+(`adapter/contrib/nats-io/nats.go/v1`,
+`adapter/contrib/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1`,
+`adapter/contrib/cloud.google.com/pubsub/v2`) come in two forms:
+
+| Function | Client |
+|---|---|
+| `Module[T]()` | brings its own: the factory fx module of `*nats.Conn` or `*pubsub.Client` |
+| `ModuleWithoutClient[T]()` | takes the one the app provides |
+
+Use `ModuleWithoutClient` when the app already provides that client, such as
+the default client a publisher driver or an `@Inject` gets: fx accepts one
+provider per type, so `Module` there fails the boot with "already provided".
+builder generates it that way. Both share one `sync.Once`: the first call
+wins.
+
 The function runs the middlewares given to `Module`, then the
 `[]middleware.AnyErrorMiddleware[T]` provided under the name
 `MiddlewaresName` (`bootstrap.function.middlewares`), when there is one. That

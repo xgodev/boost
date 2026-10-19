@@ -333,7 +333,9 @@ and its client:
   drivers' options.
 - **Clients.** Each driver takes the default client of its factory, the
   same one an `@Inject` without `name` gets (see [Factory clients](#factory-clients)):
-  the app and the publisher share it, with the plugins the app lists.
+  the app and the publisher share it, with the plugins the app lists. The
+  adapter of a builder `@Function` shares it too
+  (`GeneratorOptions.DefaultClients`).
 - **cgo.** The kafka client binds librdkafka through cgo, so its files build
   only with cgo (`//go:build cgo`). An app built with `CGO_ENABLED=0` still
   builds; choosing `kafka` there fails the boot with `NotSupported`.
@@ -413,6 +415,8 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | `Provider(g, pkg, tp)` | component and result index providing the default value of a type |
 | `Alias(prefix, name, path)` | collision-free import alias (`prefix_name_hash`) |
 | `Clients(g)` / `Client.Module(base)` | factory clients the generator builds, and the import and module call of one |
+| `GeneratorOptions.DefaultClients` / `ClientModule(base, id)` | client types (`github.com/nats-io/nats.go.Conn`) whose default client is generated for the caller to wire, and the import and module call of one (`client_nats_hash.DefaultConnModule()`) |
+| `DefaultClientProvider(g, id)` | component providing the default client of a type, with an unnamed, ungrouped `@Provide` |
 | `ExecuteTemplate(tmpl, name, data)` | executes a template and gofmt's the output |
 | `WriteGenerated(ctx, dir, files, header)` | writes files and removes stale ones starting with `header` |
 

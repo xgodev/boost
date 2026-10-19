@@ -6,6 +6,7 @@ import (
 	"go.uber.org/fx"
 
 	client_resty_6382930f "github.com/xgodev/boost/builder/examples/simple/gen/client/github.com/go-resty/resty/v2"
+	client_publisher_ba7c909f "github.com/xgodev/boost/builder/examples/simple/gen/client/github.com/xgodev/boost/wrapper/publisher"
 	gen_createorder_c746c07a "github.com/xgodev/boost/builder/examples/simple/gen/createorder"
 	gen_healthcheck_d49c24ae "github.com/xgodev/boost/builder/examples/simple/gen/healthcheck"
 	impl_stock_9c4bcef0 "github.com/xgodev/boost/builder/examples/simple/gen/implementation/stock"
@@ -28,5 +29,6 @@ func Module() fx.Option {
 		gen_memory_109e67b9.OptionsModule(),
 		gen_stocktool_d9696083.NewModule(),
 		client_resty_6382930f.WarehouseClientModule(),
+		client_publisher_ba7c909f.PublisherModule(),
 	)
 }

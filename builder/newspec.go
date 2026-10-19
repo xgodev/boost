@@ -290,11 +290,29 @@ func (b *specBuilder) addFunction(entry annotation.Entry, ann annotation.Annotat
 		return errors.AlreadyExistsf("@Function on %s: app %s already runs %s and an app runs one @Function; set app= to another app",
 			where, app, declName(a.function.Handler.Entry))
 	}
-	a.function = &Function{Adapter: adapters[0], Handler: handler, Middlewares: middlewares, Providers: providers}
+	a.function = &Function{Adapter: adapters[0], Handler: handler, Middlewares: middlewares, Providers: providers,
+		ClientProviders: adapterClientProviders(b.graph, adapters)}
 	if len(adapters) > 1 {
 		a.function.Alternatives = adapters[1:]
 	}
 	return nil
+}
+
+// adapterClientProviders returns the inject constructors of the default
+// clients the adapters read with, by client type.
+func adapterClientProviders(g *graph.Graph[inject.Component], adapters []string) map[string]inject.Component {
+	providers := map[string]inject.Component{}
+	for _, name := range adapters {
+		for _, adapter := range functionAdapters[name] {
+			if adapter.Client == "" {
+				continue
+			}
+			if comp, ok := inject.DefaultClientProvider(g, adapter.Client); ok {
+				providers[adapter.Client] = comp
+			}
+		}
+	}
+	return providers
 }
 
 // functionAdapterNames reads the adapter of @Function, one name (nats) or a

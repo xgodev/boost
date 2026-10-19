@@ -8,6 +8,7 @@ import (
 	"go.uber.org/fx"
 
 	src_events_2fb115b0 "example.com/app/events"
+	client_nats_92a4ce51 "example.com/app/gen/client/github.com/nats-io/nats.go"
 	gen_events_2fb115b0 "example.com/app/gen/events"
 	src_cloudevents_c136a3fd "github.com/cloudevents/sdk-go/v2"
 	bsfunction "github.com/xgodev/boost/bootstrap/function"
@@ -51,7 +52,8 @@ func FunctionModule() fx.Option {
 				fx.ResultTags(`name:"bootstrap.function.middlewares"`),
 			)),
 			functionfx.Module[*src_cloudevents_c136a3fd.Event](nil),
-			natsfx.Module[*src_cloudevents_c136a3fd.Event](),
+			natsfx.ModuleWithoutClient[*src_cloudevents_c136a3fd.Event](),
+			client_nats_92a4ce51.DefaultConnModule(),
 		)
 	})
 

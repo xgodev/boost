@@ -8,6 +8,8 @@ import (
 	"go.uber.org/fx"
 
 	src_events_2fb115b0 "example.com/app/events"
+	client_pubsub_39dc3220 "example.com/app/gen/client/cloud.google.com/go/pubsub/v2"
+	client_nats_92a4ce51 "example.com/app/gen/client/github.com/nats-io/nats.go"
 	gen_events_2fb115b0 "example.com/app/gen/events"
 	src_cloudevents_c136a3fd "github.com/cloudevents/sdk-go/v2"
 	bsfunction "github.com/xgodev/boost/bootstrap/function"
@@ -55,10 +57,14 @@ func functionAdapterModule() fx.Option {
 	case "pubsub":
 		return fx.Options(
 			pubsubv1fx.Module[*src_cloudevents_c136a3fd.Event](),
-			pubsubv2fx.Module[*src_cloudevents_c136a3fd.Event](),
+			pubsubv2fx.ModuleWithoutClient[*src_cloudevents_c136a3fd.Event](),
+			client_pubsub_39dc3220.DefaultClientModule(),
 		)
 	case "nats":
-		return natsfx.Module[*src_cloudevents_c136a3fd.Event]()
+		return fx.Options(
+			natsfx.ModuleWithoutClient[*src_cloudevents_c136a3fd.Event](),
+			client_nats_92a4ce51.DefaultConnModule(),
+		)
 	default:
 		return fx.Error(errors.NotValidf("%s: unknown adapter %q; valid: %s", functionAdapterKey, name, "pubsub, nats"))
 	}

@@ -319,6 +319,38 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 	return list, nil
 }
 
+// DefaultClientProvider returns the annotated function that provides the
+// default client of type id ("<import path>.<Type>"), with an unnamed,
+// ungrouped @Provide. inject builds that client only when none does.
+func DefaultClientProvider(g *graph.Graph[Component], id string) (Component, bool) {
+	for _, key := range g.SortedKeys() {
+		comp := g.Vertices[key].Value
+		for _, idx := range sortedIndexes(comp.Provides) {
+			ann := comp.Provides[idx]
+			if ann.Name != "" || ann.Group != "" {
+				continue
+			}
+			if got, ok := pointerTo(comp.Entry, comp.Result(idx)); ok && got == id {
+				return comp, true
+			}
+		}
+	}
+	return Component{}, false
+}
+
+// ClientModule returns the import of the package inject generates for the
+// default client of type id ("<import path>.<Type>") and the call of the
+// module that provides it, given the import path of the output dir
+// (BaseImport). It is NotValid for a type inject does not build.
+func ClientModule(base, id string) (ImportData, string, error) {
+	f, ok := clientFactories[id]
+	if !ok {
+		return ImportData{}, "", errors.NotValidf("inject builds no client of type *%s; it builds %s", id, strings.Join(supportedClients(), ", "))
+	}
+	imp, call := Client{Factory: f}.Module(base)
+	return imp, call, nil
+}
+
 // providedValues maps the id of each value an annotated function provides
 // to the key of its first provider.
 func providedValues(g *graph.Graph[Component]) map[string]string {

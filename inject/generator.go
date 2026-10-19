@@ -37,6 +37,12 @@ type GeneratorOptions struct {
 	// OutputDir is the absolute directory that receives the generated code.
 	// It must be inside ModuleDir so the generated packages can be imported.
 	OutputDir string
+	// DefaultClients are the client types ("<import path>.<Type>", like
+	// github.com/nats-io/nats.go.Conn) whose default client is generated even
+	// when no @Inject parameter asks for it: another generator of OutputDir
+	// wires it, as builder does for the adapter of a @Function. The root
+	// module leaves them out. Leave out a type the application provides.
+	DefaultClients []string
 }
 
 // Generator writes one fx module per component of the graph, mirroring the
@@ -109,6 +115,10 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	extra, err := p.defaultClients(clients)
+	if err != nil {
+		return nil, err
+	}
 	consumers := clientsByConsumer(clients)
 	publisher := PublisherOf(p.graph)
 
@@ -159,9 +169,13 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	for _, c := range clients {
 		addRoot(c.Module(base))
 	}
+	// the generator that asked for them wires them
+	if err := renderClients(tmpl, extra, files); err != nil {
+		return nil, err
+	}
 	if len(publisher.Consumers) > 0 {
 		// the clients of the drivers are wired by the publisher, only the chosen one
-		missing, err := renderPublisher(tmpl, base, publisher, clients, files)
+		missing, err := renderPublisher(tmpl, base, publisher, slices.Concat(clients, extra), files)
 		if err != nil {
 			return nil, err
 		}
@@ -221,6 +235,23 @@ func (p *Generator) renderImplementations(tmpl *template.Template, base string, 
 		files[set.File(base)] = src
 	}
 	return nil
+}
+
+// defaultClients returns the default clients of DefaultClients that clients
+// lacks, in the order of DefaultClients. It is NotValid for a type inject
+// does not build.
+func (p *Generator) defaultClients(clients []Client) ([]Client, error) {
+	var extra []Client
+	for _, id := range p.opts.DefaultClients {
+		f, ok := clientFactories[id]
+		if !ok {
+			return nil, errors.NotValidf("inject builds no client of type *%s; it builds %s", id, strings.Join(supportedClients(), ", "))
+		}
+		if _, ok := defaultClient(slices.Concat(clients, extra), id); !ok {
+			extra = append(extra, Client{Factory: f})
+		}
+	}
+	return extra, nil
 }
 
 // renderClients adds the file of each client inject builds to files. It is
