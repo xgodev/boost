@@ -219,6 +219,7 @@ func TestMain_ReservesOverHTTP(t *testing.T) {
 			t.Fatalf("the worker never reserved: %s", out.String())
 		}
 	}
+	assert.Contains(t, out.String(), "listening on :"+strconv.Itoa(port)+"/", "the worker logs the port it listens on")
 }
 
 // syncBuffer is a bytes.Buffer the child process and the test share.

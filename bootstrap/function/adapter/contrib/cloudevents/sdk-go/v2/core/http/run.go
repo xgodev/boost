@@ -40,7 +40,7 @@ func Run[T any](fn function.Handler[T], opts []client.Option, plugins ...Plugin)
 		return err
 	}
 
-	logger.Infof("listening on :%d%s\n", 8080, "/")
+	logger.Infof("listening on :%d%s", Port(), Path())
 
 	return c.StartReceiver(ctx, Wrapper(fn))
 }
