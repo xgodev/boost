@@ -27,7 +27,7 @@ factory por componente sob `factory/contrib/`.
 - Tag, GitHub Release, PR `develop` → `main` ou bump de versão do site/README
   sem o mantenedor mandar lançar. Issue para no merge em `develop`; release
   só por `release/X.Y.Z` (minor/major) ou `bugfix/X.Y.Z` / `hotfix/X.Y.Z`
-  (patch), sem `v` no nome da branch (ver `docs/development/gitflow.md`, seção Release)
+  (patch), sem `v` no nome da branch (ver `docs/development/gitflow.md`, seção Versão)
 
 ## Regras gerais de código
 

@@ -1,18 +1,23 @@
 # Gitflow — boost
 
 ```
-Issue → Branch (de develop) → Commits → PR → Review/Merge
+Issue → Branch (de develop) → Commits → PR → merge em develop
+                 ... develop acumula ...
+Versão → release|bugfix/X.Y.Z → PR → main → tag vX.Y.Z → PR → develop
 ```
 
-| Branch | Propósito | Merge into |
-|---|---|---|
-| `main` | Releases | — |
-| `develop` | Próxima release | `main` |
-| `feature/*` | Funcionalidades | `develop` |
-| `bugfix/*` | Correções | `develop` |
-| `hotfix/*` | Urgências em produção | `main` + `develop` |
-| `release/X.Y.Z` | Versão minor/major (`X.Y.0`) | `main` + `develop` |
-| `bugfix/X.Y.Z` | Versão patch (`X.Y.Z`, Z > 0), saindo de `develop` | `main` + `develop` |
+| Branch | Propósito | Sai de | Merge into |
+|---|---|---|---|
+| `main` | O que foi lançado; cada merge é uma tag | — | — |
+| `develop` | Próxima versão | — | só pela branch de versão |
+| `feature/{N}-slug` | Issue de funcionalidade | `develop` | `develop` |
+| `bugfix/{N}-slug` | Issue de correção | `develop` | `develop` |
+| `release/X.Y.Z` | Versão minor/major | `develop` | `main` + `develop` |
+| `bugfix/X.Y.Z` | Versão patch | `develop` | `main` + `develop` |
+| `hotfix/X.Y.Z` | Versão patch urgente, de produção | `main` | `main` + `develop` |
+
+O nome de branch **nunca leva `v`**: o `v` é só da tag, por causa do Go
+(`v1.6.2`). `{N}` é o número da issue; `X.Y.Z` é a versão.
 
 ## Regras
 
@@ -20,60 +25,55 @@ Issue → Branch (de develop) → Commits → PR → Review/Merge
    GitHub antes de qualquer código. `gh issue list --search` antes de criar
    (evita duplicata). Label apropriada (`documentation`, `bug`, `enhancement`).
    Responsável `jpfaria` (`--assignee jpfaria`) e o milestone aberto da
-   próxima release (`--milestone vX.Y.Z`); sem milestone aberto, criar o do
+   próxima versão (`--milestone vX.Y.Z`); sem milestone aberto, criar o do
    próximo patch.
 2. **PR sempre.** Nada commitado direto em `develop` ou `main`. Toda mudança
    entra por Pull Request — sem exceção.
-3. **Nome de branch: `feature/{N}-slug` / `bugfix/{N}-slug`** (`{N}` = número
-   da issue) — convenção já em uso no repo. Antes de criar:
-   `git fetch && git branch -a | grep {N}-`.
-4. **A partir de `develop` atualizado**: `git checkout develop && git pull --ff-only`.
-5. **Mergear `develop` antes de trabalho longo**: `git merge origin/develop`.
-6. Commits em **inglês**, foco no **"why"**, **sem `Co-Authored-By`**.
-7. **NUNCA `Closes #N` / `Fixes #N`** em commits — fechamento é manual e só a
-   pedido do usuário.
-8. **NUNCA rebase.** Sempre `git merge`, nunca `git pull --rebase`.
-9. **Quality gate verde é pré-requisito de qualquer `git push`.** *Suspenso por
-   enquanto:* ver o aviso no topo de [`quality-gate.md`](quality-gate.md). Ver
-   [`quality-gate.md`](quality-gate.md). Vermelho → corrige a causa raiz →
-   roda de novo → só então push.
-10. **Push após cada commit lógico** (depois do gate verde). Bugfix/hotfix
-    mergeia rápido; feature aguarda review. **Nunca mergear feature→develop
-    sem o usuário pedir.**
+3. **Uma branch por issue**, `feature/{N}-slug` ou `bugfix/{N}-slug`, a partir
+   de `develop` atualizado (`git fetch && git branch -a | grep {N}-` antes de
+   criar). Nunca a partir de outra branch de issue: nada de PR empilhado.
+4. **Mergear `develop` antes de trabalho longo**: `git merge origin/develop`.
+5. Commits e PRs em **inglês**, foco no **"why"**, **sem `Co-Authored-By`**
+   nem outro trailer de atribuição.
+6. **Nunca `Closes #N` / `Fixes #N`** em commit ou PR: a issue fecha à mão
+   (ver [Fechar issue](#fechar-issue)).
+7. **Nunca rebase.** Sempre `git merge`, nunca `git pull --rebase`.
+8. **Push após cada commit**, com `go build ./...` e `go test ./...` verdes.
+   O quality gate antes do push está suspenso (ver
+   [`quality-gate.md`](quality-gate.md)); religado, vermelho → corrige a causa
+   raiz → roda de novo → só então push.
+9. **Issue pronta = PR mergeado em `develop`** (`gh pr merge N --merge`), sem
+   esperar review. Depois do merge, apagar a branch remota.
 
-## Release
+## Versão (release)
 
 **Issue não gera versão.** A issue termina no merge do PR em `develop`: sem
 tag, sem GitHub Release, sem PR `develop` → `main`, sem mexer na versão do
-site/README e sem branch `feature/N-release-*`. O `develop` acumula as issues
-até a release ser lançada.
+site/README. O `develop` acumula as issues até a versão ser lançada.
 
-Release só quando o mantenedor mandar lançar. A branch segue o semver da
-versão e **não leva `v`** (o `v` é só da tag, por causa do Go):
+Versão só quando o mantenedor mandar lançar, e com o número confirmado por
+ele. O número segue o semver e escolhe a branch:
 
-- minor/major (`X.Y.0`): `release/X.Y.Z`;
-- patch (só a última casa anda): `bugfix/X.Y.Z` saindo de `develop`, ou
-  `hotfix/X.Y.Z` saindo de `main` quando é urgência em produção.
+- major (`X` anda, `/vX` no import) ou minor (`Y` anda): `release/X.Y.Z`;
+- patch (só `Z` anda): `bugfix/X.Y.Z` saindo de `develop`, ou `hotfix/X.Y.Z`
+  saindo de `main` quando é urgência em produção.
 
-Abaixo, `<branch>` é essa branch. Release **não tem issue**: o PR `<branch>`
+Abaixo, `<branch>` é essa branch. A versão **não tem issue**: o PR `<branch>`
 → `main` é o registro dela.
-
 
 0. Milestone `vX.Y.Z` (`gh api repos/xgodev/boost/milestones -f title=vX.Y.Z`)
    com todas as issues mergeadas em `develop` desde a tag anterior
-   (`gh issue edit N --milestone vX.Y.Z`); fechar o milestone no passo 4.
-1. `git checkout -b <branch> origin/develop` (`origin/main` no hotfix). Versão: patch para
-   fix/deps, minor para feature. Mudança de API pequena vai como minor, com
-   nota no release; major (`/v2` no import) só por decisão do mantenedor.
-2. Na `<branch>`, só preparação da release: a versão fixa em
-   `docs/site/index.html` (barra do topo, hero, diff do `go.mod`, timeline) e
-   no `README.md` da raiz (diff do `go.mod`, linha de releases). Nada de
-   feature nova nessa branch.
-3. PR `<branch>` → `main` (`release: vX.Y.Z`), merge com
-   `gh pr merge N --merge`.
+   (`gh issue edit N --milestone vX.Y.Z`).
+1. `git checkout -b <branch> origin/develop` (`origin/main` no hotfix).
+2. Na `<branch>`, só a preparação: a versão fixa em `docs/site/index.html`
+   (barra do topo, hero, diff do `go.mod`, timeline) e no `README.md` da raiz
+   (diff do `go.mod`, linha de releases). Nada de código novo nessa branch;
+   no hotfix, a correção entra por uma issue com PR para a `<branch>`.
+3. PR `<branch>` → `main` (`release: X.Y.Z`), merge com `gh pr merge N --merge`.
 4. Tag anotada `vX.Y.Z` no merge commit de `main` e `gh release create vX.Y.Z
    --verify-tag --latest --generate-notes --notes-start-tag <tag anterior>`,
    com uma seção `Behavior / API changes` no topo (`--notes`) quando houver.
+   Fechar o milestone.
 5. PR `<branch>` → `develop` (traz o bump de versão de volta), merge, e
    apagar a `<branch>`.
 
@@ -90,10 +90,11 @@ análise técnica; merge; resumo final. Opções A/B/C ao usuário vão na issue
 
 ## Fechar issue
 
-Só quando o usuário pedir. `gh issue close <N>` — sem auto-close via commit.
+Depois do merge em `develop`: comentar o PR e o que entrou, e
+`gh issue close <N>`. Nunca por auto-close de commit ou PR.
 
 ## Labels que excluem das release notes
 
 - `duplicate` — escopo idêntico a outra issue (a duplicata é a mais nova).
-- `documentation` quando puramente interno (CI/CD, scripts, planejamento) —
-  use também `wontfix`/critério do mantenedor para não vazar em notas.
+- `documentation` quando puramente interno (CI/CD, scripts, planejamento);
+  `wontfix` para o que não deve aparecer nas notas.
