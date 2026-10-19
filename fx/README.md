@@ -23,6 +23,7 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | `allegro/bigcache/v3` | `Module` | `*bigcache.BigCache` | — |
 | `aws/aws-sdk-go-v2/v1` | `Module` | `aws.Config` | — |
 | `cloud.google.com/bigquery/v1` | `Module` | `*bigquery.Client` | — |
+| `cloud.google.com/bigtable/v1` | `Module` | `*bigtable.Client` | — |
 | `cloud.google.com/firestore/v1` | `Module` | `*firestore.Client` | — |
 | `cloud.google.com/pubsub/v1`, `v2` | `Module` | `*pubsub.Client` | — |
 | `confluentinc/confluent-kafka-go/v2` | `ProducerModule`, `ConsumerModule` | kafka producer / consumer | — |

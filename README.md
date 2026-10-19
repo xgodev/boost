@@ -7,7 +7,7 @@
 <p align="center"><b>Enterprise Go services. Built fast.</b></p>
 
 <p align="center">
-Boot, config, logs, 48 factories, middleware, health and code generation in one framework. You write the business logic.
+Boot, config, logs, 49 factories, middleware, health and code generation in one framework. You write the business logic.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Boot, config, logs, 48 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 48 | 39 | 58 | 220 |
+| 49 | 40 | 58 | 220 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -674,7 +674,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**48** factories · **39** upstream libraries · **58** plugins
+**49** factories · **40** upstream libraries · **58** plugins
 
 ### Plugins
 
@@ -885,7 +885,7 @@ Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → **`v1.3.0`**
 
 ## There's a factory for that.
 
-48 factories over the 39 libraries your services already run on. Each one
+49 factories over the 40 libraries your services already run on. Each one
 arrives configured, with plugins for traces, metrics and health checks, so your
 team writes the business logic, not the plumbing.
 
@@ -921,7 +921,7 @@ team writes the business logic, not the plumbing.
 | Oracle | `godror/v0` |
 | Cassandra | `gocql/v1` |
 | Elasticsearch | `go-elasticsearch/v8` |
-| BigQuery · Firestore · API client | `cloud.google.com` |
+| BigQuery · Bigtable · Firestore · API client | `cloud.google.com` |
 | FTP | `ftp/v0` |
 
 ### Cache
