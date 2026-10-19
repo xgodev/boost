@@ -277,6 +277,7 @@ func TestNewSpec_Errors(t *testing.T) {
 		{"function middleware twice", []annotation.Entry{function("adapter=nats, middlewares=[logger, logger]")}, errors.IsNotValid, "logger twice"},
 		{"function middlewares not a list", []annotation.Entry{function("adapter=nats, middlewares=logger")}, errors.IsNotValid, "[a, b]"},
 		{"empty function middleware", []annotation.Entry{function("adapter=nats, middlewares=[logger, ]")}, errors.IsNotValid, "empty"},
+		{"publisher without driver", []annotation.Entry{function("adapter=nats, middlewares=[publisher]")}, errors.IsNotFound, "publisher.Driver"},
 	}
 
 	for _, tc := range testCases {
@@ -335,6 +336,38 @@ func TestNewSpec_ServerPlugins(t *testing.T) {
 	assert.Equal(t, []string{"Admin"}, pluginNames(admin.Plugins), "a named server takes the []Plugin named after it")
 	assert.Equal(t, []string{"Rest"}, pluginNames(rest.Plugins), "rest takes the default []boostecho.Plugin")
 	assert.Equal(t, []string{"Grpc"}, pluginNames(grpcSrv.Plugins), "grpc takes the default []grpcserver.Plugin")
+}
+
+// driverEntries provide the publisher.Driver the publisher middleware
+// publishes with, and values it does not take.
+func driverEntries() []annotation.Entry {
+	imports := map[string]string{
+		"publisher": "github.com/xgodev/boost/wrapper/publisher",
+		"other":     "example.com/other",
+	}
+	entries := []annotation.Entry{
+		decl("drivers", "", "Driver", nil, []string{"publisher.Driver"}, ann("Provide", "index=0")),
+		decl("drivers", "", "Named", nil, []string{"publisher.Driver"}, ann("Provide", "name=audit, index=0")),
+		decl("drivers", "", "Other", nil, []string{"other.Driver"}, ann("Provide", "index=0")),
+	}
+	for i := range entries {
+		entries[i].Imports = imports
+	}
+	return entries
+}
+
+func TestNewSpec_FunctionMiddlewareProviders(t *testing.T) {
+	handle := func(middlewares string) annotation.Entry {
+		return decl("events", "", "Handle", eventParams, eventResults, ann("Function", "adapter=nats, middlewares=["+middlewares+"]"))
+	}
+
+	spec, err := newTestSpec(t, append(driverEntries(), handle("publisher, logger")))
+	require.NoError(t, err)
+	assert.Equal(t, []string{"Driver"}, pluginNames(spec.Apps[0].Function.Providers), "publisher takes the unnamed publisher.Driver")
+
+	spec, err = newTestSpec(t, append(driverEntries(), handle("recovery, logger")))
+	require.NoError(t, err)
+	assert.Empty(t, spec.Apps[0].Function.Providers, "a middleware that needs no value takes none")
 }
 
 func TestNewSpec_ImplementationSetErrors(t *testing.T) {

@@ -37,6 +37,7 @@ const (
 	contextFxPath     = "github.com/xgodev/boost/fx/modules/core/context"
 	functionPath      = "github.com/xgodev/boost/bootstrap/function"
 	functionFxPath    = "github.com/xgodev/boost/fx/modules/bootstrap/function"
+	publisherPath     = "github.com/xgodev/boost/wrapper/publisher"
 )
 
 // Options are the options of the inject generator of the same application,
@@ -385,13 +386,18 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 
 	var params []string
 	var modules []string
-	call, err := handlerFunc(imps, fn.Handler, map[string]string{}, &params, func(provider inject.Component) {
+	include := func(provider inject.Component) {
 		imp, mod := inject.ModuleOf(base, provider.Entry)
 		imps.add(imp.Alias, imp.Path)
 		modules = append(modules, mod)
-	})
+	}
+	call, err := handlerFunc(imps, fn.Handler, map[string]string{}, &params, include)
 	if err != nil {
 		return doorData{}, err
+	}
+	// the middlewares are built with the values their constructors provide
+	for _, provider := range fn.Providers {
+		include(provider)
 	}
 
 	handlerType := imps.add("bsfunction", functionPath) + ".Handler[" + result + "]"

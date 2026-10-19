@@ -317,3 +317,23 @@ func TestGenerator_RenderIncludesPluginModules(t *testing.T) {
 	assert.Contains(t, string(files["builder/api/ops_module.go"]), ops)
 	assert.NotContains(t, string(files["builder/api/mcp_module.go"]), ops, "the ops plugins are ops' only")
 }
+
+func TestGenerator_RenderIncludesMiddlewareProviders(t *testing.T) {
+	drivers := driverEntries()
+	files, err := render(t, append(drivers,
+		decl("events", "", "Handle", eventParams, eventResults, ann("Function", "adapter=nats, app=worker, middlewares=[publisher]"))))
+	require.NoError(t, err)
+
+	base, err := testOptions("/src/app").BaseImport()
+	require.NoError(t, err)
+	imp, driver := inject.ModuleOf(base, drivers[0])
+	_, named := inject.ModuleOf(base, drivers[1])
+
+	for name, src := range files {
+		assertImportsUsed(t, name, src)
+	}
+	src := string(files["builder/worker/function_module.go"])
+	assert.Contains(t, src, driver, "the function door builds the driver the publisher middleware publishes with")
+	assert.Contains(t, src, imp.Path)
+	assert.NotContains(t, src, named, "a named driver is not the publisher's")
+}

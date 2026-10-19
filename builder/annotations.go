@@ -61,6 +61,9 @@ type functionMiddleware struct {
 	Module inject.ImportData
 	Pkg    inject.ImportData
 	Type   string
+	// Needs are the unnamed values the middleware is built with, provided
+	// by the app.
+	Needs []typeRef
 }
 
 var (
@@ -108,6 +111,7 @@ var (
 			Module: inject.ImportData{Alias: "publisherfx", Path: fxMiddlewareRoot + "/publisher"},
 			Pkg:    inject.ImportData{Alias: "publishermw", Path: middlewareRoot + "/publisher"},
 			Type:   "Publisher",
+			Needs:  []typeRef{{Path: publisherPath, Name: "Driver"}},
 		},
 		"recovery": {
 			Module: inject.ImportData{Alias: "recoveryfx", Path: fxMiddlewareRoot + "/recovery"},
