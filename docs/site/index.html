@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>boost: enterprise Go services, built fast</title>
-<meta name="description" content="Boot, config, logs, 49 factories, middleware, health and code generation in one Go framework. You write the business logic.">
+<meta name="description" content="Boot, config, logs, 53 factories, middleware, health and code generation in one Go framework. You write the business logic.">
 <link rel="canonical" href="https://xgodev.github.io/boost/">
 <meta name="theme-color" content="#0F172A">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://xgodev.github.io/boost/">
 <meta property="og:title" content="boost: enterprise Go services, built fast">
-<meta property="og:description" content="Boot, config, logs, 49 factories, middleware, health and code generation in one Go framework. You write the business logic.">
+<meta property="og:description" content="Boot, config, logs, 53 factories, middleware, health and code generation in one Go framework. You write the business logic.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -36,7 +36,7 @@
       <a href="#integrations">Integrations</a>
     </nav>
     <div class="nav-right">
-      <span class="ver">v1.3.0</span>
+      <span class="ver">v1.4.0</span>
       <a class="btn btn-ghost btn-sm" href="https://github.com/xgodev/boost">GitHub</a>
     </div>
   </div>
@@ -48,18 +48,18 @@
 <div class="hero">
   <div class="wrap">
     <div class="hero-intro">
-      <div class="meta"><span><span class="dot"></span>v1.3.0</span><span>MIT</span><span>go 1.18+</span><span>github.com/xgodev/boost</span></div>
+      <div class="meta"><span><span class="dot"></span>v1.4.0</span><span>MIT</span><span>go 1.18+</span><span>github.com/xgodev/boost</span></div>
       <h1>Enterprise Go services.<br><span class="quiet">Built fast.</span></h1>
-      <p class="lede">Boot, config, logs, 49 factories, middleware, health and code generation in one framework. You write the business logic.</p>
+      <p class="lede">Boot, config, logs, 53 factories, middleware, health and code generation in one framework. You write the business logic.</p>
       <div class="cta-row">
         <div class="install"><span class="prompt">$</span><code id="cmd-get">go get github.com/xgodev/boost</code><button class="copy" type="button" data-copy="cmd-get">copy</button></div>
         <a class="btn btn-primary" href="#builder">Get started</a>
       </div>
     </div>
     <div class="proof" aria-label="Project facts">
-      <span><b>49</b>factories</span>
-      <span><b>40</b>libraries</span>
-      <span><b>58</b>plugins</span>
+      <span><b>53</b>factories</span>
+      <span><b>41</b>libraries</span>
+      <span><b>79</b>plugins</span>
       <span><b>220</b>releases since 2024</span>
     </div>
 
@@ -771,9 +771,9 @@
 srv.GET(<span class="st">"/stock/:sku"</span>, Get)
 srv.Serve(ctx)</pre>
         <div class="stats">
-          <div class="stat"><b>49</b><span>factories</span></div>
-          <div class="stat"><b>40</b><span>upstream libraries</span></div>
-          <div class="stat"><b>58</b><span>plugins</span></div>
+          <div class="stat"><b>53</b><span>factories</span></div>
+          <div class="stat"><b>41</b><span>upstream libraries</span></div>
+          <div class="stat"><b>79</b><span>plugins</span></div>
         </div>
       </article>
 
@@ -852,7 +852,7 @@ ann.<span class="fn">Decode</span>(&amp;r)</pre>
         <div class="doors">
           <div class="door"><span class="a">@REST</span><span><a class="ref" href="https://echo.labstack.com/">echo</a> route</span></div>
           <div class="door"><span class="a">@GRPC</span><span><a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a> service</span></div>
-          <div class="door"><span class="a">@Function</span><span><a class="ref" href="https://github.com/cloudevents/sdk-go">cloudevents</a> · <a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">kafka</a> · <a class="ref" href="https://github.com/nats-io/nats.go">nats</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">pubsub</a></span></div>
+          <div class="door"><span class="a">@Function</span><span><a class="ref" href="https://github.com/cloudevents/sdk-go">cloudevents</a> · <a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">kafka</a> · <a class="ref" href="https://github.com/segmentio/kafka-go">kafka-go</a> · <a class="ref" href="https://github.com/aws/aws-lambda-go">lambda</a> · <a class="ref" href="https://github.com/nats-io/nats.go">nats</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">pubsub</a></span></div>
           <div class="door"><span class="a">@MCP</span><span><a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a> tool</span></div>
           <div class="door"><span class="a">@Middleware</span><span>generated decorator</span></div>
           <div class="door"><span class="a">@Default</span><span>implementation picked by config</span></div>
@@ -863,7 +863,7 @@ ann.<span class="fn">Decode</span>(&amp;r)</pre>
       <article class="cell span-2">
         <span class="path">bootstrap/function</span>
         <h3>Functions</h3>
-        <p>One event handler, four transports. Change the adapter in config; the handler stays the same.</p>
+        <p>One event handler, six transports. Change the adapter in config; the handler stays the same.</p>
 <pre class="mini"><span class="kw">func</span>(ctx, in <span class="ty">cloudevents.Event</span>)
 	(*<span class="ty">cloudevents.Event</span>, <span class="ty">error</span>)</pre>
       </article>
@@ -954,14 +954,14 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
 <pre class="code" style="min-height:0"> <span class="kw">module</span> github.com/acme/shop
 
  <span class="kw">require</span> (
-<span class="del">-	github.com/xgodev/boost v1.2.0</span><span class="add">+	github.com/xgodev/boost v1.3.0</span> )
+<span class="del">-	github.com/xgodev/boost v1.3.0</span><span class="add">+	github.com/xgodev/boost v1.4.0</span> )
 
 <span class="pr">$</span> go build ./... &amp;&amp; go test ./...
 <span class="ok">ok</span>  github.com/acme/shop/...</pre>
           <div class="diff-foot"><span>1 line changed in go.mod</span><b>0 lines changed in your code</b></div>
         </div>
         <div class="timeline" aria-label="Release history">
-          <span>2024-07</span><span class="bar" aria-hidden="true"></span><span class="tag">v1.1.0</span><span class="tag">v1.1.1</span><span class="tag">v1.2.0</span><span class="tag now">v1.3.0</span>
+          <span>2024-07</span><span class="bar" aria-hidden="true"></span><span class="tag">v1.1.0</span><span class="tag">v1.1.1</span><span class="tag">v1.2.0</span><span class="tag">v1.3.0</span><span class="tag now">v1.4.0</span>
         </div>
       </div>
     </div>
@@ -974,10 +974,10 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
     <div class="sec-head">
       <div class="eyebrow">factory/contrib</div>
       <h2>There's a factory for that.</h2>
-      <p class="sec-lede">49 factories over the 40 libraries your services already run on. Each one arrives configured, with plugins for traces, metrics and health checks, so your team writes the business logic, not the plumbing.</p>
+      <p class="sec-lede">53 factories over the 41 libraries your services already run on. Each one arrives configured, with plugins for traces, metrics and health checks, so your team writes the business logic, not the plumbing.</p>
     </div>
     <ul class="fx-wall" aria-label="Libraries boost has factories for">
-      <li><a class="fx-logo" href="https://echo.labstack.com/"><i style="--m:url(logos/echo.svg)" aria-hidden="true"></i><span class="nm">Echo</span><span class="v">echo/v4</span></a></li>
+      <li><a class="fx-logo" href="https://echo.labstack.com/"><i style="--m:url(logos/echo.svg)" aria-hidden="true"></i><span class="nm">Echo</span><span class="v">echo/v4 · v5</span></a></li>
       <li><a class="fx-logo" href="https://grpc.io/docs/languages/go/"><i style="--m:url(logos/grpc.svg);--w:84px" aria-hidden="true"></i><span class="nm">gRPC</span><span class="v">server · client</span></a></li>
       <li><a class="fx-logo" href="https://github.com/graphql-go/graphql"><i style="--m:url(logos/graphql.svg)" aria-hidden="true"></i><span class="nm">GraphQL</span><span class="v">graphql-go/v0</span></a></li>
       <li><a class="fx-logo" href="https://github.com/modelcontextprotocol/go-sdk"><i style="--m:url(logos/mcp.svg)" aria-hidden="true"></i><span class="nm">MCP</span><span class="v">server · client</span></a></li>
@@ -989,8 +989,8 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
       <li><a class="fx-logo" href="https://www.mongodb.com/docs/drivers/go/current/"><i style="--m:url(logos/mongodb.svg)" aria-hidden="true"></i><span class="nm">MongoDB</span><span class="v">mongo-driver/v1 · v2</span></a></li>
       <li><a class="fx-logo" href="https://github.com/jackc/pgx"><i style="--m:url(logos/postgresql.svg)" aria-hidden="true"></i><span class="nm">PostgreSQL</span><span class="v">pgx/v5</span></a></li>
       <li><a class="fx-logo" href="https://github.com/godror/godror"><i style="--m:url(logos/oracle.svg)" aria-hidden="true"></i><span class="nm">Oracle</span><span class="v">godror/v0</span></a></li>
-      <li><a class="fx-logo" href="https://github.com/gocql/gocql"><i style="--m:url(logos/cassandra.svg);--w:64px" aria-hidden="true"></i><span class="nm">Cassandra</span><span class="v">gocql/v1</span></a></li>
-      <li><a class="fx-logo" href="https://github.com/elastic/go-elasticsearch"><i style="--m:url(logos/elasticsearch.svg)" aria-hidden="true"></i><span class="nm">Elasticsearch</span><span class="v">go-elasticsearch/v8</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/apache/cassandra-gocql-driver"><i style="--m:url(logos/cassandra.svg);--w:64px" aria-hidden="true"></i><span class="nm">Cassandra</span><span class="v">gocql/v1 · v2</span></a></li>
+      <li><a class="fx-logo" href="https://github.com/elastic/go-elasticsearch"><i style="--m:url(logos/elasticsearch.svg)" aria-hidden="true"></i><span class="nm">Elasticsearch</span><span class="v">go-elasticsearch/v8 · v9</span></a></li>
       <li><a class="fx-logo" href="https://pkg.go.dev/cloud.google.com/go/bigquery"><i style="--m:url(logos/bigquery.svg)" aria-hidden="true"></i><span class="nm">BigQuery</span><span class="v">bigquery/v1</span></a></li>
       <li><a class="fx-logo" href="https://pkg.go.dev/cloud.google.com/go/firestore"><i style="--m:url(logos/firestore.svg)" aria-hidden="true"></i><span class="nm">Firestore</span><span class="v">firestore/v1</span></a></li>
       <li><a class="fx-logo" href="https://redis.uptrace.dev/"><i style="--m:url(logos/redis.svg)" aria-hidden="true"></i><span class="nm">Redis</span><span class="v">go-redis/v9</span></a></li>
@@ -1000,14 +1000,14 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
       <li><a class="fx-logo" href="https://github.com/kubernetes/client-go"><i style="--m:url(logos/kubernetes.svg)" aria-hidden="true"></i><span class="nm">Kubernetes</span><span class="v">client-go/v0</span></a></li>
       <li><a class="fx-logo" href="https://github.com/mittwald/vaultgo"><i style="--m:url(logos/vault.svg)" aria-hidden="true"></i><span class="nm">Vault</span><span class="v">vaultgo/v0</span></a></li>
       <li><a class="fx-logo" href="https://pkg.go.dev/google.golang.org/api/option"><i style="--m:url(logos/googlecloud.svg)" aria-hidden="true"></i><span class="nm">Google Cloud</span><span class="v">API client</span></a></li>
-      <li><a class="fx-logo fx-more" href="#all-libs"><b>+17</b><span class="nm">more</span><span class="v">see all 40</span></a></li>
+      <li><a class="fx-logo fx-more" href="#all-libs"><b>+18</b><span class="nm">more</span><span class="v">see all 41</span></a></li>
     </ul>
-    <p class="fx-more-list">Also: <span>Resty · HTTP/2 · Goka · Go CDK Pub/Sub · BigCache · FreeCache · BuntDB · memdb · Bigtable · FTP · Hystrix · zap · zerolog · logrus · fx · Cobra · ants</span>.</p>
+    <p class="fx-more-list">Also: <span>Resty · HTTP/2 · kafka-go · Goka · Go CDK Pub/Sub · BigCache · FreeCache · BuntDB · memdb · Bigtable · FTP · Hystrix · zap · zerolog · logrus · fx · Cobra · ants</span>.</p>
     <details class="fx-all" id="all-libs">
-      <summary>All 40 libraries, with the upstream major each factory wraps</summary>
+      <summary>All 41 libraries, with the upstream major each factory wraps</summary>
         <div class="lib-grid">
           <div class="lib-group"><h3>Web, RPC &amp; MCP</h3><ul>
-            <li><span><a class="ref" href="https://echo.labstack.com/">Echo</a></span><span class="v">echo/v4</span></li>
+            <li><span><a class="ref" href="https://echo.labstack.com/">Echo</a></span><span class="v">echo/v4 · v5</span></li>
             <li><span><a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a> server · client</span><span class="v">grpc/v1</span></li>
             <li><span><a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a> server · client</span><span class="v">go-sdk/v1</span></li>
             <li><span><a class="ref" href="https://pkg.go.dev/golang.org/x/net/http2">HTTP/2</a> server</span><span class="v">x/net/v0</span></li>
@@ -1016,6 +1016,7 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
           </ul></div>
           <div class="lib-group"><h3>Messaging</h3><ul>
             <li><span><a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">Kafka (Confluent)</a></span><span class="v">confluent-kafka-go/v2</span></li>
+            <li><span><a class="ref" href="https://github.com/segmentio/kafka-go">Kafka (segmentio)</a></span><span class="v">kafka-go/v0</span></li>
             <li><span><a class="ref" href="https://github.com/nats-io/nats.go">NATS</a></span><span class="v">nats.go/v1</span></li>
             <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">Google Pub/Sub</a></span><span class="v">pubsub/v1 · v2</span></li>
             <li><span><a class="ref" href="https://gocloud.dev/howto/pubsub/">Go CDK Pub/Sub</a></span><span class="v">gocloud.dev/v0</span></li>
@@ -1027,8 +1028,8 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
             <li><span><a class="ref" href="https://www.mongodb.com/docs/drivers/go/current/">MongoDB</a></span><span class="v">mongo-driver/v1 · v2</span></li>
             <li><span><a class="ref" href="https://github.com/jackc/pgx">PostgreSQL</a></span><span class="v">pgx/v5</span></li>
             <li><span><a class="ref" href="https://github.com/godror/godror">Oracle</a></span><span class="v">godror/v0</span></li>
-            <li><span><a class="ref" href="https://github.com/gocql/gocql">Cassandra</a></span><span class="v">gocql/v1</span></li>
-            <li><span><a class="ref" href="https://github.com/elastic/go-elasticsearch">Elasticsearch</a></span><span class="v">go-elasticsearch/v8</span></li>
+            <li><span><a class="ref" href="https://github.com/apache/cassandra-gocql-driver">Cassandra</a></span><span class="v">gocql/v1 · v2</span></li>
+            <li><span><a class="ref" href="https://github.com/elastic/go-elasticsearch">Elasticsearch</a></span><span class="v">go-elasticsearch/v8 · v9</span></li>
             <li><span><a class="ref" href="https://pkg.go.dev/cloud.google.com/go/bigquery">BigQuery</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/bigtable">Bigtable</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/firestore">Firestore</a> · <a class="ref" href="https://pkg.go.dev/google.golang.org/api/option">API client</a></span><span class="v">cloud.google.com</span></li>
             <li><span><a class="ref" href="https://github.com/jlaffaye/ftp">FTP</a></span><span class="v">ftp/v0</span></li>
           </ul></div>
@@ -1064,7 +1065,7 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
           <p>Every option is a config key with a default, read from file or environment: <code>boost.factory.mongo.uri</code> is <code>BOOST_FACTORY_MONGO_URI</code>. One binary for every environment.</p></div>
         <div class="cell"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span><span class="path">what you skip</span><h3>The plumbing comes built</h3>
           <p>Defaults, auth, connect and ping, structured logs through <code>wrapper/log</code>. What a platform team rewrites for every SDK in every service is already there.</p></div>
-        <div class="cell"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg></span><span class="path">plugins/</span><h3>58 plugins to plug in</h3>
+        <div class="cell"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg></span><span class="path">plugins/</span><h3>78 plugins to plug in</h3>
           <p>OpenTelemetry, Prometheus, Datadog, health checks, retry, request id, CORS, gzip. Pass the plugin to the factory; switch it off with a key.</p></div>
       </div>
       <div class="fx-vs">

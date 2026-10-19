@@ -16,9 +16,19 @@ type Client interface {
 	Publish(ctx context.Context, input *kinesis.PutRecordInput) error
 }
 
+// maxBulkAttempts bounds the PutRecords calls for one lot: the records
+// Kinesis rejects are sent again until they get in or the attempts run out.
+const maxBulkAttempts = 5
+
+// api is the part of the Kinesis client the boost client calls.
+type api interface {
+	PutRecord(ctx context.Context, params *kinesis.PutRecordInput, optFns ...func(*kinesis.Options)) (*kinesis.PutRecordOutput, error)
+	PutRecords(ctx context.Context, params *kinesis.PutRecordsInput, optFns ...func(*kinesis.Options)) (*kinesis.PutRecordsOutput, error)
+}
+
 // Client holds client and resource name.
 type client struct {
-	client *kinesis.Client
+	client api
 }
 
 // NewClient returns an initialized client.
@@ -49,31 +59,34 @@ func (c *client) Publish(ctx context.Context, input *kinesis.PutRecordInput) err
 	return nil
 }
 
-// BulkPublish publishes an array of messages on kinesis.
+// BulkPublish publishes an array of messages on kinesis, in lots of 500.
+// It fails when a lot cannot be sent or some of its records are still
+// rejected after maxBulkAttempts.
 func (c *client) BulkPublish(ctx context.Context, entries []types.PutRecordsRequestEntry, resource string) error {
 
 	logger := log.FromContext(ctx).
 		WithTypeOf(*c).
 		WithField("resource", resource)
 
-	bulks := c.splitInputs(entries, 500)
+	for _, lot := range c.splitInputs(entries, 500) {
+		if err := c.putLot(ctx, logger, lot, resource); err != nil {
+			return err
+		}
+	}
 
-	for _, lot := range bulks {
+	return nil
+}
 
-		input := c.buildPutRecordsInput(lot, resource)
+func (c *client) putLot(ctx context.Context, logger log.Logger, lot []types.PutRecordsRequestEntry, resource string) error {
+	total := len(lot)
+
+	for attempt := 1; ; attempt++ {
 
 		logger.Trace("sending bulk message to kinesis")
 
-		response, err := c.client.PutRecords(ctx, input)
+		response, err := c.client.PutRecords(ctx, c.buildPutRecordsInput(lot, resource))
 		if err != nil {
 			return errors.Wrap(err, errors.New("error publishing message on kinesis"))
-		}
-
-		if *response.FailedRecordCount > int32(0) {
-
-			logger.Warnf("Error on publishing bulk lot. total errors: %v / %v",
-				*response.FailedRecordCount, len(lot))
-
 		}
 
 		var retry []types.PutRecordsRequestEntry
@@ -82,35 +95,31 @@ func (c *client) BulkPublish(ctx context.Context, entries []types.PutRecordsRequ
 
 			if r.ErrorMessage != nil {
 				logger.
-					WithField("cause", r.ErrorMessage).
-					WithField("code", r.ErrorCode).
+					WithField("cause", aws.ToString(r.ErrorMessage)).
+					WithField("code", aws.ToString(r.ErrorCode)).
 					Warn("error in kinesis bulk record")
 				retry = append(retry, lot[i])
 				continue
 			}
 
 			logger.
-				WithField("sequence_number", *r.SequenceNumber).
-				WithField("shard_id", *r.ShardId).
+				WithField("sequence_number", aws.ToString(r.SequenceNumber)).
+				WithField("shard_id", aws.ToString(r.ShardId)).
 				Debug("message sent to kinesis")
 
 		}
 
-		if len(retry) > 0 {
-
-			logger.Warnf("Retrying publish %v lot", len(retry))
-
-			err := c.BulkPublish(ctx, retry, resource)
-			if err != nil {
-				logger.WithField("cause", err.Error()).Warn("error in kinesis bulk record")
-				return err
-			}
-
+		if len(retry) == 0 {
+			return nil
 		}
 
-	}
+		if attempt == maxBulkAttempts {
+			return errors.Internalf("%d of %d kinesis records rejected after %d attempts", len(retry), total, maxBulkAttempts)
+		}
 
-	return nil
+		logger.Warnf("retrying %d of %d kinesis records", len(retry), total)
+		lot = retry
+	}
 }
 
 func (c *client) buildPutRecordsInput(messages []types.PutRecordsRequestEntry,

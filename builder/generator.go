@@ -37,6 +37,8 @@ const (
 	contextFxPath     = "github.com/xgodev/boost/fx/modules/core/context"
 	functionPath      = "github.com/xgodev/boost/bootstrap/function"
 	functionFxPath    = "github.com/xgodev/boost/fx/modules/bootstrap/function"
+	wrapperConfigPath = "github.com/xgodev/boost/wrapper/config"
+	errorsPath        = "github.com/xgodev/boost/model/errors"
 )
 
 // Options are the options of the inject generator of the same application,
@@ -403,11 +405,39 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 	d.Options = append(d.Options,
 		imps.add("functionfx", functionFxPath)+".Module["+result+"](nil)",
 	)
-	for _, adapter := range functionAdapters[fn.Adapter] {
-		d.Options = append(d.Options, imps.add(adapter.Alias, adapter.Path)+".Module["+result+"]()")
+	if len(fn.Alternatives) == 0 {
+		d.Options = append(d.Options, adapterOptions(imps, result, fn.Adapter)...)
+		d.Imports = imps.sorted()
+		return d, nil
 	}
+
+	// a list of adapters: config chooses one, and only its module is wired
+	names := append([]string{fn.Adapter}, fn.Alternatives...)
+	sw := &adapterSwitch{
+		Key:    app + "." + functionFile + ".adapter",
+		Names:  strings.Join(names, ", "),
+		Config: imps.add("config", wrapperConfigPath),
+		Errors: imps.add("errors", errorsPath),
+	}
+	for _, name := range names {
+		sw.Cases = append(sw.Cases, adapterCase{Name: name, Options: adapterOptions(imps, result, name)})
+	}
+	d.Adapter = sw
+	d.Doc = fmt.Sprintf("runs the @Function handler with the adapter named by %s (%s; default %s).", sw.Key, sw.Names, fn.Adapter)
+	d.Init = []string{fmt.Sprintf("%s.Add(%sAdapterKey, %q, %q)", sw.Config, d.Var, fn.Adapter,
+		"adapter of the @Function of app "+app+": "+sw.Names)}
+	d.Options = append(d.Options, d.Var+"AdapterModule()")
 	d.Imports = imps.sorted()
 	return d, nil
+}
+
+// adapterOptions returns the fx modules that run the named adapter.
+func adapterOptions(imps *imports, result, name string) []string {
+	var options []string
+	for _, adapter := range functionAdapters[name] {
+		options = append(options, imps.add(adapter.Alias, adapter.Path)+".Module["+result+"]()")
+	}
+	return options
 }
 
 // functionMiddlewareOptions returns, for the middlewares of a @Function, the

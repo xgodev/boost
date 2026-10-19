@@ -247,12 +247,9 @@ func (b *specBuilder) addFunction(entry annotation.Entry, ann annotation.Annotat
 	if err := decode(ann, where, functionKeys, &args); err != nil {
 		return err
 	}
-	adapters := strings.Join(sortedNames(functionAdapters), ", ")
-	if args.Adapter == "" {
-		return errors.NotValidf("@Function on %s: adapter is required (one of %s)", where, adapters)
-	}
-	if _, ok := functionAdapters[args.Adapter]; !ok {
-		return errors.NotValidf("@Function on %s: adapter %s is not one of %s", where, args.Adapter, adapters)
+	adapters, err := functionAdapterNames(args.Adapter, where)
+	if err != nil {
+		return err
 	}
 
 	middlewares, err := parseList(args.Middlewares, "@Function on "+where, "middlewares")
@@ -286,8 +283,34 @@ func (b *specBuilder) addFunction(entry annotation.Entry, ann annotation.Annotat
 		return errors.AlreadyExistsf("@Function on %s: app %s already runs %s and an app runs one @Function; set app= to another app",
 			where, app, declName(a.function.Handler.Entry))
 	}
-	a.function = &Function{Adapter: args.Adapter, Handler: handler, Middlewares: middlewares}
+	a.function = &Function{Adapter: adapters[0], Handler: handler, Middlewares: middlewares}
+	if len(adapters) > 1 {
+		a.function.Alternatives = adapters[1:]
+	}
 	return nil
+}
+
+// functionAdapterNames reads the adapter of @Function, one name (nats) or a
+// list ([pubsub, nats]), and checks that every name is a known adapter.
+func functionAdapterNames(raw, where string) ([]string, error) {
+	names := []string{raw}
+	if strings.HasPrefix(strings.TrimSpace(raw), "[") {
+		var err error
+		if names, err = parseList(raw, "@Function on "+where, "adapter"); err != nil {
+			return nil, err
+		}
+	}
+
+	valid := strings.Join(sortedNames(functionAdapters), ", ")
+	if len(names) == 0 || names[0] == "" {
+		return nil, errors.NotValidf("@Function on %s: adapter is required (one of %s)", where, valid)
+	}
+	for _, name := range names {
+		if _, ok := functionAdapters[name]; !ok {
+			return nil, errors.NotValidf("@Function on %s: adapter %s is not one of %s", where, name, valid)
+		}
+	}
+	return names, nil
 }
 
 // handler checks the declaration serving a door and finds the provider of

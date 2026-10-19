@@ -112,13 +112,13 @@ func (h *Handler) CheckStock(ctx context.Context, req *mcp.CallToolRequest, in I
 package ordercreated
 
 // Handle records the order of the event.
-// @Function(adapter=cloudevents, app=worker, middlewares=[recovery, logger])
+// @Function(adapter=[cloudevents, nats], app=worker, middlewares=[recovery, logger])
 func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevents.Event, error) { ... }
 ```
 
 | Key | Required | Meaning |
 |---|---|---|
-| `adapter` | yes | `cloudevents`, `cenats` (cloudevents over NATS), `kafka`, `nats` or `pubsub` |
+| `adapter` | yes | `cloudevents`, `cenats` (cloudevents over NATS), `kafka`, `kafkago` (kafka on segmentio/kafka-go), `lambda` (AWS Lambda), `nats` or `pubsub`; or a list `[a, b]` of them, chosen by config |
 | `app` | no | application, default `api` |
 | `middlewares` | no | `[a, b]`, the outermost first: `ignore_errors`, `logger`, `opentelemetry`, `prometheus`, `publisher`, `recovery` |
 
@@ -130,6 +130,12 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   `fx/modules/bootstrap/function/adapter/contrib` (`pubsub` includes v1 and v2;
   `boost.bootstrap.function.adapter.pubsub.version`, `v2` by default, turns
   on one).
+- With a list, `adapter=[pubsub, nats]`, config chooses the adapter:
+  `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`), default the first
+  name. The door includes only the chosen adapter module, so the others and
+  their clients are never built; an unknown name fails the boot with
+  `NotValid` naming the key, the value and the valid names. The adapters'
+  own keys (`.enabled`, the pubsub `version`) stay as they are.
 - Each middleware is the fx module under
   `fx/modules/bootstrap/function/middleware` of the
   [`bootstrap/function/middleware`](../bootstrap/function/middleware) of that
@@ -278,7 +284,8 @@ The command fails, without touching the output directory, when:
   constructor, so it takes the chosen value through a type of its own;
 - `@GRPC` has no single default `@Provide`, or `register` does not resolve
   to an exported function;
-- an app has two `@Function`, or `adapter` is missing or unknown;
+- an app has two `@Function`, or `adapter` is missing or unknown, or its
+  list is empty or repeats a name;
 - `middlewares` is not written as `[a, b]`, or lists an empty, unknown or
   repeated name;
 - a server is used by two kinds of door;
@@ -345,15 +352,17 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
   sold-out items from its `@Config Options`
   (`builder.examples.simple.stock.memory.soldOut`, env
   `BUILDER_EXAMPLES_SIMPLE_STOCK_MEMORY_SOLD__OUT`, default `sold-out`);
-- `worker`: the `ordercreated` function on the cloudevents adapter, behind
-  the `recovery` and `logger` middlewares.
+- `worker`: the `ordercreated` function on the cloudevents or the nats
+  adapter, chosen by `worker.function.adapter` (`WORKER_FUNCTION_ADAPTER`,
+  default `cloudevents`), behind the `recovery` and `logger` middlewares.
 
 `cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
 routes, the gRPC service and the MCP tool of the generated app, check that the handler
 receives the stock decorator and that prometheus counted its call, boot the
 api with `unlimited` (wired without the decorator), with an unknown name
 (the boot fails) and with `SOLD__OUT=book,pen` (the env replaces the
-default list), run the function handler, and fail when `gen/` or a main is
+default list), run the function handler, boot the worker with each adapter
+(nats on an embedded server) and with an unknown one (the boot fails), and fail when `gen/` or a main is
 stale.
 
 ## Non-goals

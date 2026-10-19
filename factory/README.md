@@ -24,6 +24,7 @@ The `contrib` directory contains factory implementations for integration with th
 - MCP (modelcontextprotocol/go-sdk): Model Context Protocol server and client
 - Google Cloud Platform (GCP): Integration with GCP services
 - Confluent: For working with Apache Kafka
+- segmentio/kafka-go: Apache Kafka in pure Go (no cgo)
 - Ollama: Integration with AI models
 - Spf13/Cobra: For creating command-line interfaces
 
@@ -58,10 +59,10 @@ either name is interchangeable:
 | Factory | Alias |
 |---|---|
 | `contrib/redis/go-redis/v9` | `Plugin = factory.Plugin[*redis.Client]`, `ClusterPlugin = factory.Plugin[*redis.ClusterClient]` |
-| `contrib/labstack/echo/v4` | `Plugin = factory.Plugin[*Server]` |
+| `contrib/labstack/echo/v4`, `v5` | `Plugin = factory.Plugin[*Server]` |
 | `contrib/go-resty/resty/v2` | `Plugin = factory.Plugin[*resty.Client]` |
-| `contrib/elastic/go-elasticsearch/v8` | `Plugin = factory.Plugin[*elasticsearch.Client]` |
-| `contrib/gocql/gocql/v1` | `Plugin = factory.Plugin[*gocql.Session]` |
+| `contrib/elastic/go-elasticsearch/v8`, `v9` | `Plugin = factory.Plugin[*elasticsearch.Client]` |
+| `contrib/gocql/gocql/v1`, `contrib/apache/cassandra-gocql-driver/v2` | `Plugin = factory.Plugin[*gocql.Session]` |
 | `contrib/aws/aws-sdk-go-v2/v1` | `Plugin = factory.Plugin[*aws.Config]` |
 | `contrib/go.mongodb.org/mongo-driver/v1`, `v2` | `ClientOptionsPlugin = factory.Plugin[*options.ClientOptions]`, `ClientPlugin = factory.Plugin[*mongo.Client]` |
 
