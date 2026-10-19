@@ -78,7 +78,6 @@ require (
 	github.com/swaggo/echo-swagger v1.5.2
 	github.com/tidwall/buntdb v1.3.2
 	github.com/vmihailenco/msgpack/v5 v5.4.1
-	github.com/wesovilabs/beyond v1.0.1
 	go.mongodb.org/mongo-driver v1.17.10
 	go.mongodb.org/mongo-driver/v2 v2.9.2
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.71.0

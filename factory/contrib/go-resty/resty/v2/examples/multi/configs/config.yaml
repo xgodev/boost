@@ -1,0 +1,14 @@
+boost:
+  factory:
+    resty:
+      clients:
+        google:
+          host: http://www.google.com
+          plugins:
+            log:
+              level: INFO
+        bing:
+          host: https://www.bing.com
+          plugins:
+            log:
+              level: INFO
