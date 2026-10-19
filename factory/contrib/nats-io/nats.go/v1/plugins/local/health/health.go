@@ -49,6 +49,12 @@ func NewHealth() *Health {
 	return NewHealthWithOptions(o)
 }
 
+// Plugin returns this health checker as a nats factory plugin, so it can be
+// passed to NewConnWithConfigPath.
+func (i *Health) Plugin(ctx context.Context) (func(context.Context, *nats.Conn) error, func(context.Context, []nats.Option) ([]nats.Option, error)) {
+	return i.Register, nil
+}
+
 // Register registers this health checker plugin for nats connection.
 func (i *Health) Register(ctx context.Context, conn *nats.Conn) error {
 

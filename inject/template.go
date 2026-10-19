@@ -77,14 +77,16 @@ type ClientData struct {
 	Build   string             // ...WithConfigPath constructor of the factory
 	Plugins []ClientPluginData // in the declared order
 	Names   string             // plugin names, comma separated
+	Close   bool               // the module closes the client when the app stops
 	Imports []ImportData       // client type, factory, context module and plugins
 }
 
 // ClientPluginData is one plugin of a client.
 type ClientPluginData struct {
-	Name  string // plugin name, the last segment of its config root
-	Alias string // import alias of the plugin
-	New   string // ...WithConfigPath constructor of the plugin
+	Name     string // plugin name, the last segment of its config root
+	Alias    string // import alias of the plugin
+	New      string // ...WithConfigPath constructor of the plugin
+	Register string // method of the plugin passed to the factory
 }
 
 // ImplementationCase is one implementation of a switch and its module call.
