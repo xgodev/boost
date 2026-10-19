@@ -262,6 +262,7 @@ func newQuoteClient(ctx context.Context) (*resty.Client, error) {
 | `*pubsub.Client` (`cloud.google.com/go/pubsub/v2`) | `factory/contrib/cloud.google.com/pubsub/v2` | `log`, `datadog`, `prometheus` (gRPC client plugins) |
 | `*gocql.Session` (`github.com/gocql/gocql`) | `factory/contrib/gocql/gocql/v1` | `health` |
 | `*gocql.Session` (`github.com/apache/cassandra-gocql-driver/v2`) | `factory/contrib/apache/cassandra-gocql-driver/v2` | `health` |
+| `*sns.Client`, `*sqs.Client`, `*kinesis.Client` (`github.com/aws/aws-sdk-go-v2/service/...`) | `factory/contrib/aws/aws-sdk-go-v2/v1/client/<service>` (root `boost.factory.aws`) | `datadog` |
 
 NATS, Pub/Sub and gocql clients hold connections, so their constructor also
 takes `fx.Lifecycle` and closes the client when the app stops:

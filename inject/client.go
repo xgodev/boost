@@ -97,6 +97,14 @@ func init() {
 			"health": {Path: factory + "/plugins/local/extra/health", New: "NewHealthWithConfigPath"},
 		})
 	}
+
+	// The AWS clients share the aws.Config keys of boost.factory.aws.
+	aws := boostFactories + "aws/aws-sdk-go-v2/v1"
+	for _, service := range []string{"sns", "sqs", "kinesis"} {
+		addClientFactory("github.com/aws/aws-sdk-go-v2/service/"+service, "Client", service, aws+"/client/"+service, "NewSDKClientWithConfigPath", "boost.factory.aws", map[string]ClientPlugin{
+			"datadog": {Path: aws + "/plugins/contrib/datadog/dd-trace-go.v1", New: "NewDatadogWithConfigPath"},
+		})
+	}
 }
 
 func addClientFactory(path, tp, pkg, factory, build, root string, plugins map[string]ClientPlugin) {

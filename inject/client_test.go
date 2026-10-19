@@ -48,6 +48,12 @@ func TestClientFactory(t *testing.T) {
 			wantBuild: "github.com/xgodev/boost/factory/contrib/gocql/gocql/v1.NewSessionWithConfigPath"},
 		{name: "gocql v2", imports: map[string]string{"gocql": gocql2Path}, tp: "*gocql.Session", wantFound: true,
 			wantBuild: "github.com/xgodev/boost/factory/contrib/apache/cassandra-gocql-driver/v2.NewSessionWithConfigPath"},
+		{name: "aws sns", imports: map[string]string{"sns": "github.com/aws/aws-sdk-go-v2/service/sns"}, tp: "*sns.Client", wantFound: true,
+			wantBuild: "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sns.NewSDKClientWithConfigPath"},
+		{name: "aws sqs", imports: map[string]string{"sqs": "github.com/aws/aws-sdk-go-v2/service/sqs"}, tp: "*sqs.Client", wantFound: true,
+			wantBuild: "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs.NewSDKClientWithConfigPath"},
+		{name: "aws kinesis", imports: map[string]string{"kinesis": "github.com/aws/aws-sdk-go-v2/service/kinesis"}, tp: "*kinesis.Client", wantFound: true,
+			wantBuild: "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/kinesis.NewSDKClientWithConfigPath"},
 		{name: "not a pointer", imports: map[string]string{"resty": restyPath}, tp: "resty.Client"},
 		{name: "another type of the package", imports: map[string]string{"resty": restyPath}, tp: "*resty.Request"},
 		{name: "same name, another package", imports: map[string]string{"resty": "example.com/resty"}, tp: "*resty.Client"},
@@ -77,6 +83,8 @@ func TestClientFactories_PluginNames(t *testing.T) {
 	assert.Equal(t, []string{"datadog", "log", "prometheus"}, clientFactories[pubsubPath+".Client"].PluginNames())
 	assert.Equal(t, []string{"health"}, clientFactories[gocqlPath+".Session"].PluginNames())
 	assert.Equal(t, []string{"health"}, clientFactories[gocql2Path+".Session"].PluginNames())
+	assert.Equal(t, []string{"datadog"},
+		clientFactories["github.com/aws/aws-sdk-go-v2/service/sqs.Client"].PluginNames())
 }
 
 func TestParsePlugins(t *testing.T) {
