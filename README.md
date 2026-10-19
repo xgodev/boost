@@ -758,7 +758,7 @@ the app modules and main.
 |---|---|
 | `@REST` | echo route |
 | `@GRPC` | gRPC service |
-| `@Function` | cloudevents · kafka · nats · pubsub |
+| `@Function` | cloudevents · kafka · lambda · nats · pubsub |
 | `@MCP` | MCP tool |
 | `@Middleware` | generated decorator |
 | `@Default` | implementation picked by config |
@@ -767,7 +767,7 @@ the app modules and main.
 
 `bootstrap/function` · [docs](bootstrap/README.md)
 
-One event handler, four transports. Change the adapter in config; the handler
+One event handler, six transports. Change the adapter in config; the handler
 stays the same.
 
 ```go
@@ -966,7 +966,7 @@ every service, so boost writes it once.
 - **The plumbing comes built.** Defaults, auth, connect and ping, structured
   logs through `wrapper/log`. What a platform team rewrites for every SDK in
   every service is already there.
-- **58 plugins to plug in.** OpenTelemetry, Prometheus, Datadog, health checks,
+- **59 plugins to plug in.** OpenTelemetry, Prometheus, Datadog, health checks,
   retry, request id, CORS, gzip. Pass the plugin to the factory; switch it off
   with a key.
 

@@ -852,7 +852,7 @@ ann.<span class="fn">Decode</span>(&amp;r)</pre>
         <div class="doors">
           <div class="door"><span class="a">@REST</span><span><a class="ref" href="https://echo.labstack.com/">echo</a> route</span></div>
           <div class="door"><span class="a">@GRPC</span><span><a class="ref" href="https://grpc.io/docs/languages/go/">gRPC</a> service</span></div>
-          <div class="door"><span class="a">@Function</span><span><a class="ref" href="https://github.com/cloudevents/sdk-go">cloudevents</a> · <a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">kafka</a> · <a class="ref" href="https://github.com/nats-io/nats.go">nats</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">pubsub</a></span></div>
+          <div class="door"><span class="a">@Function</span><span><a class="ref" href="https://github.com/cloudevents/sdk-go">cloudevents</a> · <a class="ref" href="https://github.com/confluentinc/confluent-kafka-go">kafka</a> · <a class="ref" href="https://github.com/aws/aws-lambda-go">lambda</a> · <a class="ref" href="https://github.com/nats-io/nats.go">nats</a> · <a class="ref" href="https://pkg.go.dev/cloud.google.com/go/pubsub">pubsub</a></span></div>
           <div class="door"><span class="a">@MCP</span><span><a class="ref" href="https://github.com/modelcontextprotocol/go-sdk">MCP</a> tool</span></div>
           <div class="door"><span class="a">@Middleware</span><span>generated decorator</span></div>
           <div class="door"><span class="a">@Default</span><span>implementation picked by config</span></div>
@@ -863,7 +863,7 @@ ann.<span class="fn">Decode</span>(&amp;r)</pre>
       <article class="cell span-2">
         <span class="path">bootstrap/function</span>
         <h3>Functions</h3>
-        <p>One event handler, four transports. Change the adapter in config; the handler stays the same.</p>
+        <p>One event handler, six transports. Change the adapter in config; the handler stays the same.</p>
 <pre class="mini"><span class="kw">func</span>(ctx, in <span class="ty">cloudevents.Event</span>)
 	(*<span class="ty">cloudevents.Event</span>, <span class="ty">error</span>)</pre>
       </article>
@@ -1064,7 +1064,7 @@ factory/contrib/go.mongodb.org/mongo-driver/<span class="nu">v2</span>   <span c
           <p>Every option is a config key with a default, read from file or environment: <code>boost.factory.mongo.uri</code> is <code>BOOST_FACTORY_MONGO_URI</code>. One binary for every environment.</p></div>
         <div class="cell"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></span><span class="path">what you skip</span><h3>The plumbing comes built</h3>
           <p>Defaults, auth, connect and ping, structured logs through <code>wrapper/log</code>. What a platform team rewrites for every SDK in every service is already there.</p></div>
-        <div class="cell"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg></span><span class="path">plugins/</span><h3>58 plugins to plug in</h3>
+        <div class="cell"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg></span><span class="path">plugins/</span><h3>59 plugins to plug in</h3>
           <p>OpenTelemetry, Prometheus, Datadog, health checks, retry, request id, CORS, gzip. Pass the plugin to the factory; switch it off with a key.</p></div>
       </div>
       <div class="fx-vs">
