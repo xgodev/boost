@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/pubsub"
 	"cloud.google.com/go/pubsub/pstest"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -30,6 +31,9 @@ import (
 	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"github.com/xgodev/boost/model/errors"
 	"go.uber.org/fx"
+	"google.golang.org/api/option"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // TestMain boots boost: the function and its adapter read their config.
@@ -215,6 +219,128 @@ func recordOrder(t *testing.T) (*exec.Cmd, *syncBuffer, <-chan error) {
 		}
 	}
 	return cmd, out, exited
+}
+
+// versionEnv chooses the Pub/Sub adapter version
+// (boost.bootstrap.function.adapter.pubsub.version, v2 by default).
+const versionEnv = "BOOST_BOOTSTRAP_FUNCTION_ADAPTER_PUBSUB_VERSION"
+
+// pubsubFake runs a Pub/Sub fake with topic orders and, when sub is not
+// empty, subscription sub on it; changeme is the subscription the adapter
+// reads by default.
+func pubsubFake(t *testing.T, sub string) (*pstest.Server, *pubsub.Topic) {
+	t.Helper()
+	fake := pstest.NewServer()
+	t.Cleanup(func() { _ = fake.Close() })
+
+	ctx := context.Background()
+	client, err := pubsub.NewClient(ctx, "example",
+		option.WithEndpoint(fake.Addr), option.WithoutAuthentication(),
+		option.WithGRPCDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())))
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = client.Close() })
+
+	topic, err := client.CreateTopic(ctx, "orders")
+	require.NoError(t, err)
+	t.Cleanup(topic.Stop)
+	if sub != "" {
+		_, err = client.CreateSubscription(ctx, sub, pubsub.SubscriptionConfig{Topic: topic, AckDeadline: 10 * time.Second})
+		require.NoError(t, err)
+	}
+	return fake, topic
+}
+
+// startPubsubWorker runs the generated main of app worker with only
+// WORKER_FUNCTION_ADAPTER=pubsub (plus env) against fake, and returns it,
+// its output and the channel its exit goes to.
+func startPubsubWorker(t *testing.T, fake *pstest.Server, env ...string) (*exec.Cmd, *syncBuffer, <-chan error) {
+	t.Helper()
+	out := &syncBuffer{}
+	cmd := exec.Command(os.Args[0], "-test.run=^TestMainChild$")
+	cmd.Env = append(append(os.Environ(), adapterEnv+"=pubsub", driverEnv+"=noop",
+		emulatorEnv+"="+fake.Addr, projectEnv+"=example", mainEnv+"=1"), env...)
+	cmd.Stdout, cmd.Stderr = out, out
+	require.NoError(t, cmd.Start())
+	exited := make(chan error, 1)
+	go func() { exited <- cmd.Wait() }()
+	t.Cleanup(func() { _ = cmd.Process.Kill() })
+	return cmd, out, exited
+}
+
+// TestMain_HandlesPubSubMessages runs the generated main of app worker on
+// the pubsub adapter, v2 and v1 (#205): it boots, stays up, records the
+// order of a CloudEvent and of a raw message (wrapped as the event data),
+// and exits 0 on SIGTERM.
+func TestMain_HandlesPubSubMessages(t *testing.T) {
+	for _, version := range []string{"v2", "v1"} {
+		t.Run(version, func(t *testing.T) {
+			fake, topic := pubsubFake(t, "changeme")
+			cmd, out, exited := startPubsubWorker(t, fake, versionEnv+"="+version)
+
+			// a CloudEvent in the adapter's binary mode (ce_* attributes) and a
+			// raw message the adapter wraps as the data of an event
+			ctx := context.Background()
+			for _, msg := range []*pubsub.Message{
+				{Data: []byte(`{"item":"book"}`), Attributes: map[string]string{
+					"ce_specversion": "1.0", "ce_id": "evt-1", "ce_source": "test",
+					"ce_type": "order.created", "content-type": "application/json",
+				}},
+				{Data: []byte(`{"item":"pen"}`)},
+			} {
+				_, err := topic.Publish(ctx, msg).Get(ctx)
+				require.NoError(t, err)
+			}
+
+			deadline := time.After(10 * time.Second)
+			tick := time.NewTicker(50 * time.Millisecond)
+			defer tick.Stop()
+			for !strings.Contains(out.String(), "of book") || !strings.Contains(out.String(), "of pen") {
+				select {
+				case <-tick.C:
+				case err := <-exited:
+					t.Fatalf("the worker exited (%v) before handling both orders: %s", err, out.String())
+				case <-deadline:
+					t.Fatalf("the worker never handled both orders: %s", out.String())
+				}
+			}
+
+			select {
+			case err := <-exited:
+				t.Fatalf("the worker exited (%v) after handling the orders: %s", err, out.String())
+			case <-time.After(300 * time.Millisecond):
+			}
+
+			require.NoError(t, cmd.Process.Signal(syscall.SIGTERM))
+			select {
+			case err := <-exited:
+				require.NoError(t, err, "the worker did not exit 0: %s", out.String())
+			case <-time.After(5 * time.Second):
+				t.Fatalf("the worker did not stop on SIGTERM: %s", out.String())
+			}
+		})
+	}
+}
+
+// TestMain_MissingSubscriptionFailsTheBoot runs the generated main of app
+// worker on the pubsub adapter, v2 and v1, with no subscription changeme on
+// the fake (#205): the boot fails with a non-zero exit and an error naming
+// it, instead of a log line and a worker that reads nothing.
+func TestMain_MissingSubscriptionFailsTheBoot(t *testing.T) {
+	for _, version := range []string{"v2", "v1"} {
+		t.Run(version, func(t *testing.T) {
+			fake, _ := pubsubFake(t, "")
+			_, out, exited := startPubsubWorker(t, fake, versionEnv+"="+version)
+
+			select {
+			case err := <-exited:
+				var exit *exec.ExitError
+				require.ErrorAs(t, err, &exit, "the worker exited 0 without its subscription: %s", out.String())
+				assert.Contains(t, out.String(), "pubsub: could not receive on changeme")
+			case <-time.After(10 * time.Second):
+				t.Fatalf("the worker kept running without its subscription: %s", out.String())
+			}
+		})
+	}
 }
 
 // syncBuffer is a bytes.Buffer the child process and the test share.

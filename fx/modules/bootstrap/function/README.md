@@ -64,11 +64,18 @@ fx.Provide(fx.Annotate(
 - **Run ends on its own** (no stop requested) — the app is shut down with
   exit code 0 on success, or 1 when `Run` returned an error (logged).
 
-The `nats`, `cloudevents_nats` and `gcp_pubsub` (v1) adapters run on that
-context (`Helper.Run(cmd.Context())`): when it is cancelled they take no new
-message, let the handler finish the one it holds, with a context the stop
-does not cancel, and return, so SIGTERM stops the app with exit code 0 well
-before the stop timeout. NATS drains its subscriptions; Pub/Sub v1 gives back
-a failed message instead of retrying it. A NATS subject it cannot subscribe
-to fails `Run`. `Helper.Start()` is deprecated: it runs with a context that
-is never cancelled.
+The `nats`, `cloudevents_nats` and `gcp_pubsub` (v1 and v2) adapters run on
+that context (`Helper.Run(cmd.Context())`) and block until it is done: when
+it is cancelled they take no new message, let the handler finish the one it
+holds, with a context the stop does not cancel, and return, so SIGTERM stops
+the app with exit code 0 well before the stop timeout. NATS drains its
+subscriptions; Pub/Sub gives back a failed message instead of retrying it. A
+NATS subject it cannot subscribe to, or a Pub/Sub subscription it cannot
+receive on (`pubsub: could not receive on <name>`, e.g. one that does not
+exist), fails `Run`, so the boot fails with exit code 1. `Helper.Start()` is
+deprecated: it runs with a context that is never cancelled.
+
+The Pub/Sub v1 adapter module provides the v1 `*pubsub.Client`
+(`fx/modules/factory/contrib/cloud.google.com/pubsub/v1.ClientModule()`)
+whatever `boost.factory.gcp.pubsub.version` says, so
+`boost.bootstrap.function.adapter.pubsub.version=v1` alone turns it on.

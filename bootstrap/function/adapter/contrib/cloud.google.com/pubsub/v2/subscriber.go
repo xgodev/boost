@@ -29,10 +29,10 @@ func NewSubscriber[T any](client *pubsub.Client, handler function.Handler[T], su
 	}
 }
 
-// Subscribe subscribes and consumes messages from multiple Pub/Sub topics concurrently
+// Subscribe receives the messages of the subscription until ctx is done, and
+// returns once the handlers finished the ones they hold. It returns an error
+// naming the subscription when it cannot be received.
 func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
-	logger := log.FromContext(ctx).WithTypeOf(l)
-	logger.Infof("pubsub - Subscribing to %s", l.subscription)
 	subscription := l.client.Subscriber(l.subscription)
 	subscription.ReceiveSettings.MaxOutstandingMessages = int(l.options.Concurrency)
 
@@ -49,10 +49,10 @@ func (l *Subscriber[T]) Subscribe(ctx context.Context) error {
 		msg.Ack()
 	})
 	if err != nil {
-		logger.Fatalf("Failed to start subscription %s: %v", l.subscription, err)
+		return errors.Wrap(err, errors.Internalf("pubsub: could not receive on %s", l.subscription))
 	}
 
-	return err
+	return nil
 }
 
 // processMessage processes each message, retries if needed, and applies backoff
@@ -68,12 +68,19 @@ func (l *Subscriber[T]) processMessage(ctx context.Context, msg *pubsub.Message)
 	}
 
 	for {
-		if _, err := l.handler(ctx, in); err != nil {
+		// The stop of the app cancels ctx: the handler finishes the message it
+		// holds instead of failing on it.
+		if _, err := l.handler(context.WithoutCancel(ctx), in); err != nil {
 			retryCount++
 
 			logger.WithField("payload", msg.Data).Warnf("msgID=%s handler failed (attempt %d/%d): %v", msg.ID, retryCount, l.options.RetryLimit, err)
 			if retryCount >= l.options.RetryLimit {
 				return errors.Wrap(err, errors.Internalf("max retry limit reached"))
+			}
+
+			// The app is stopping: give the message back instead of retrying
+			if ctx.Err() != nil {
+				return errors.Wrap(err, errors.Internalf("stopped before a retry"))
 			}
 
 			// Apply backoff if enabled

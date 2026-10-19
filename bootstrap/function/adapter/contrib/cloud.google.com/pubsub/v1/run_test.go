@@ -135,6 +135,27 @@ func TestHelperRun_StopsRetryingOnTheRunContext(t *testing.T) {
 	require.EqualValues(t, 1, h.handled.Load())
 }
 
+// TestHelperRun_FailsWhenASubscriptionIsMissing: one of the subscriptions
+// does not exist (#205). Run stops the others and returns an error naming
+// it, so the app fails its boot instead of running without it.
+func TestHelperRun_FailsWhenASubscriptionIsMissing(t *testing.T) {
+	boost.Start()
+	client, ctx := setup(t)
+	subscription(t, ctx, client, "orders")
+	opts := options("orders")
+	opts.Subscriptions = append(opts.Subscriptions, "missing")
+	helper := NewHelperWithOptions[cloudevents.Event](client, newBlocking().handle, opts)
+
+	ran := make(chan error, 1)
+	go func() { ran <- helper.Run(ctx) }()
+	select {
+	case err := <-ran:
+		require.ErrorContains(t, err, "pubsub: could not receive on missing")
+	case <-time.After(5 * time.Second):
+		t.Fatal("Run kept running without subscription missing")
+	}
+}
+
 // TestNew_RunsUntilTheCommandContextIsDone: the gcp_pubsub command runs the
 // helper, with the subscriptions of config, until the context cobra
 // executes it with is done.
