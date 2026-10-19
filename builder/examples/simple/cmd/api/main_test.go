@@ -27,6 +27,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 )
 
@@ -66,7 +67,7 @@ func TestAPI(t *testing.T) {
 		created := serve(rest, http.MethodPost, "/orders", `{"item":"book"}`)
 		assert.Equal(t, http.StatusCreated, created.Code)
 		assert.JSONEq(t, `{"id":"1","item":"book"}`, created.Body.String())
-		assert.Empty(t, created.Header().Get("X-Served-By"), "the admin plugins are admin's only")
+		assert.Equal(t, "rest", created.Header().Get("X-Served-By"), "rest is built with the plugins provided under its name, not admin's")
 
 		got := serve(rest, http.MethodGet, "/orders/1", "")
 		assert.Equal(t, http.StatusOK, got.Code)
@@ -106,9 +107,11 @@ func TestAPI(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(func() { _ = conn.Close() })
 
-		resp, err := healthpb.NewHealthClient(conn).Check(context.Background(), &healthpb.HealthCheckRequest{Service: "orders"})
+		var header metadata.MD
+		resp, err := healthpb.NewHealthClient(conn).Check(context.Background(), &healthpb.HealthCheckRequest{Service: "orders"}, grpc.Header(&header))
 		require.NoError(t, err)
 		assert.Equal(t, healthpb.HealthCheckResponse_SERVING, resp.GetStatus())
+		assert.Equal(t, []string{"grpc"}, header.Get("x-served-by"), "grpc is built with the plugins provided under its name")
 	})
 
 	t.Run("mcp serves the stock tool", func(t *testing.T) {

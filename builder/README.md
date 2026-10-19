@@ -267,9 +267,10 @@ fails the generation instead of being overwritten. Other files under `cmd/`
   (REST) or `[]server.Plugin` (gRPC,
   [`grpc/v1/server`](../factory/contrib/google.golang.org/grpc/v1/server);
   MCP, [`go-sdk/v1/server`](../factory/contrib/modelcontextprotocol/go-sdk/v1/server))
-  provided without `name` reaches `rest`, `grpc` or `mcp`, and one provided with
-  `name=<server>` reaches that server. The door includes the provider's inject
-  module, so the generated main needs nothing else:
+  provided with `name=<server>` reaches that server, `rest`, `grpc` and `mcp`
+  included; one provided without `name` reaches `rest`, `grpc` or `mcp` too.
+  The door includes the provider's inject module, so the generated main needs
+  nothing else:
 
 ```go
 // Plugins tags the admin responses.
@@ -298,6 +299,8 @@ The command fails, without touching the output directory, when:
 - `middlewares` is not written as `[a, b]`, or lists an empty, unknown or
   repeated name;
 - a server is used by two kinds of door;
+- `rest`, `grpc` or `mcp` gets both a `[]Plugin` with `name=<server>` and
+  one without `name`: provide one of them;
 - an app or server name is invalid, or an annotation has an unknown key;
 - the handler is unexported or in package `main`;
 - `@Middleware` lists no plugin, an unknown one or one twice, is repeated,
