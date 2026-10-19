@@ -7,7 +7,7 @@
 <p align="center"><b>Enterprise Go services. Built fast.</b></p>
 
 <p align="center">
-Boot, config, logs, 53 factories, middleware, health and code generation in one framework. You write the business logic.
+Boot, config, logs, 54 factories, middleware, health and code generation in one framework. You write the business logic.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Boot, config, logs, 53 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 53 | 41 | 79 | 220 |
+| 54 | 42 | 91 | 220 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -674,7 +674,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**53** factories · **41** upstream libraries · **79** plugins
+**54** factories · **42** upstream libraries · **91** plugins
 
 ### Plugins
 
@@ -885,7 +885,7 @@ Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → `v1.3.0` → `v1.4.
 
 ## There's a factory for that.
 
-53 factories over the 41 libraries your services already run on. Each one
+54 factories over the 42 libraries your services already run on. Each one
 arrives configured, with plugins for traces, metrics and health checks, so your
 team writes the business logic, not the plumbing.
 
@@ -894,6 +894,7 @@ team writes the business logic, not the plumbing.
 | Library | Factory wraps |
 |---|---|
 | [Echo](https://echo.labstack.com/) | `echo/v4 · v5` |
+| [chi](https://go-chi.io/) | `chi/v5` |
 | [gRPC](https://grpc.io/docs/languages/go/) server · client | `grpc/v1` |
 | [MCP](https://github.com/modelcontextprotocol/go-sdk) server · client | `go-sdk/v1` |
 | HTTP/2 server | `x/net/v0` |
