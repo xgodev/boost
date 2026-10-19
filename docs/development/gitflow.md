@@ -18,6 +18,9 @@ Issue → Branch (de develop) → Commits → PR → Review/Merge
 1. **Issue sempre, primeiro.** Toda mudança (feature/bug/docs) tem issue no
    GitHub antes de qualquer código. `gh issue list --search` antes de criar
    (evita duplicata). Label apropriada (`documentation`, `bug`, `enhancement`).
+   Responsável `jpfaria` (`--assignee jpfaria`) e o milestone aberto da
+   próxima release (`--milestone vX.Y.Z`); sem milestone aberto, criar o do
+   próximo patch.
 2. **PR sempre.** Nada commitado direto em `develop` ou `main`. Toda mudança
    entra por Pull Request — sem exceção.
 3. **Nome de branch: `feature/{N}-slug` / `bugfix/{N}-slug`** (`{N}` = número
@@ -48,6 +51,9 @@ Release só quando o mantenedor mandar lançar, sempre por `release/vX.Y.Z`.
 Release **não tem issue**: o PR `release/vX.Y.Z` → `main` é o registro dela.
 
 
+0. Milestone `vX.Y.Z` (`gh api repos/xgodev/boost/milestones -f title=vX.Y.Z`)
+   com todas as issues mergeadas em `develop` desde a tag anterior
+   (`gh issue edit N --milestone vX.Y.Z`); fechar o milestone no passo 4.
 1. `git checkout -b release/vX.Y.Z origin/develop`. Versão: patch para
    fix/deps, minor para feature. Mudança de API pequena vai como minor, com
    nota no release; major (`/v2` no import) só por decisão do mantenedor.

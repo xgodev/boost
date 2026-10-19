@@ -19,12 +19,15 @@ type AnnotationIDType int
 // Index points to the function result (@Provide) or parameter (@Inject);
 // Name and Group map to fx `name:"..."` and `group:"..."` tags. Plugins, on
 // the @Inject of a client parameter, lists the plugins of the client inject
-// builds ("[otel, prometheus]").
+// builds ("[otel, prometheus]"). Drivers, on the @Inject of a
+// *publisher.Publisher, lists the publisher drivers inject generates
+// ("[nats, pubsub]"); all of them when no consumer lists them.
 type Annotation struct {
 	Index   *int
 	Name    string
 	Group   string
 	Plugins string
+	Drivers string
 }
 
 // IDType reports whether the annotation is a default, named or grouped value.

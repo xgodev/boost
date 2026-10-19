@@ -3,6 +3,7 @@ package builder
 import (
 	"go/token"
 	"path"
+	"slices"
 	"sort"
 	"strings"
 
@@ -289,24 +290,56 @@ func (b *specBuilder) addFunction(entry annotation.Entry, ann annotation.Annotat
 		return errors.AlreadyExistsf("@Function on %s: app %s already runs %s and an app runs one @Function; set app= to another app",
 			where, app, declName(a.function.Handler.Entry))
 	}
+	if err := validateFunctionClient(args.Client, adapters, where); err != nil {
+		return err
+	}
 	a.function = &Function{Adapter: adapters[0], Handler: handler, Middlewares: middlewares, Providers: providers,
-		ClientProviders: adapterClientProviders(b.graph, adapters)}
+		ClientProviders: adapterClientProviders(b.graph, adapters, args.Client), Client: args.Client}
 	if len(adapters) > 1 {
 		a.function.Alternatives = adapters[1:]
 	}
 	return nil
 }
 
-// adapterClientProviders returns the inject constructors of the default
-// clients the adapters read with, by client type.
-func adapterClientProviders(g *graph.Graph[inject.Component], adapters []string) map[string]inject.Component {
+// validateFunctionClient checks client=x of @Function: an adapter reads with
+// a client inject builds, and the name reaches its keys from an environment
+// variable.
+func validateFunctionClient(client string, adapters []string, where string) error {
+	if client == "" {
+		return nil
+	}
+	if !clientName.MatchString(client) {
+		return errors.NotValidf("@Function on %s: client name %s must match %s so an environment variable reaches its keys", where, client, clientName)
+	}
+	var with []string
+	for name, list := range functionAdapters {
+		for _, adapter := range list {
+			if adapter.Client != "" && !slices.Contains(with, name) {
+				with = append(with, name)
+			}
+		}
+	}
+	sort.Strings(with)
+	for _, name := range adapters {
+		if slices.Contains(with, name) {
+			return nil
+		}
+	}
+	return errors.NotValidf("@Function on %s: client=%s, but no adapter of %s reads with a client; the adapters with one are %s",
+		where, client, strings.Join(adapters, ", "), strings.Join(with, ", "))
+}
+
+// adapterClientProviders returns the inject constructors of the clients
+// named client ("" for the default ones) the adapters read with, by client
+// type.
+func adapterClientProviders(g *graph.Graph[inject.Component], adapters []string, client string) map[string]inject.Component {
 	providers := map[string]inject.Component{}
 	for _, name := range adapters {
 		for _, adapter := range functionAdapters[name] {
 			if adapter.Client == "" {
 				continue
 			}
-			if comp, ok := inject.DefaultClientProvider(g, adapter.Client); ok {
+			if comp, ok := inject.ClientProvider(g, adapter.Client, client); ok {
 				providers[adapter.Client] = comp
 			}
 		}
@@ -348,7 +381,7 @@ func (b *specBuilder) handler(entry annotation.Entry, ann string) (Handler, erro
 	}
 
 	for _, tp := range []string{"*" + entry.Struct, entry.Struct} {
-		if comp, _, ok := inject.Provider(b.graph, entry.Package, tp); ok {
+		if comp, _, ok := inject.ProviderFor(b.graph, entry, tp); ok {
 			if err := b.singleConstructor(comp, ann, declName(entry), "its receiver "+tp); err != nil {
 				return Handler{}, err
 			}

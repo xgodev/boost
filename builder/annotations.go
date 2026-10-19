@@ -48,12 +48,14 @@ type mcpArgs struct {
 	App    string `attr:"app"`
 }
 
-// functionArgs are the arguments of @Function(adapter=nats, app=api, middlewares=[recovery, logger]);
-// adapter may be a list, adapter=[pubsub, nats], chosen by config.
+// functionArgs are the arguments of @Function(adapter=nats, app=api, middlewares=[recovery, logger], client=prices);
+// adapter may be a list, adapter=[pubsub, nats], chosen by config, and client
+// names the client the adapters read with, the default one when unset.
 type functionArgs struct {
 	Adapter     string `attr:"adapter"`
 	App         string `attr:"app"`
 	Middlewares string `attr:"middlewares"`
+	Client      string `attr:"client"`
 }
 
 // functionMiddleware is a middleware of @Function: the fx module that
@@ -128,7 +130,11 @@ var (
 	restKeys     = []string{"method", "path", "server", "app"}
 	grpcKeys     = []string{"register", "server", "app"}
 	mcpKeys      = []string{"name", "server", "app"}
-	functionKeys = []string{"adapter", "app", "middlewares"}
+	functionKeys = []string{"adapter", "app", "middlewares", "client"}
+
+	// clientName is the form of the client of @Function: inject's client
+	// names, reached from an environment variable.
+	clientName = regexp.MustCompile(`^[a-z][a-zA-Z0-9]*$`)
 
 	// identName is the form of app and server names: they become a package,
 	// a file and a function name and a config path element.

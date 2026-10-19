@@ -199,6 +199,13 @@ func pointerTo(entry annotation.Entry, tp string) (string, bool) {
 // parsePlugins reads the plugins attribute of @Inject: "[a, b]" or a single
 // name. It returns nil when raw is empty and a non-nil empty list for "[]".
 func parsePlugins(raw string) ([]string, error) {
+	return parseList("plugins", raw)
+}
+
+// parseList reads the list attribute attr of an annotation: "[a, b]" or a
+// single name. It returns nil when raw is empty and a non-nil empty list for
+// "[]".
+func parseList(attr, raw string) ([]string, error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
 		return nil, nil
@@ -206,7 +213,7 @@ func parsePlugins(raw string) ([]string, error) {
 
 	open, closed := strings.HasPrefix(raw, "["), strings.HasSuffix(raw, "]")
 	if open != closed {
-		return nil, errors.NotValidf("plugins=%s: write the list as [a, b]", raw)
+		return nil, errors.NotValidf("%s=%s: write the list as [a, b]", attr, raw)
 	}
 	if open {
 		raw = strings.TrimSpace(raw[1 : len(raw)-1])
@@ -221,9 +228,9 @@ func parsePlugins(raw string) ([]string, error) {
 		name = strings.TrimSpace(name)
 		switch {
 		case name == "":
-			return nil, errors.NotValidf("plugins=[%s] has an empty name", raw)
+			return nil, errors.NotValidf("%s=[%s] has an empty name", attr, raw)
 		case seen[name]:
-			return nil, errors.NotValidf("plugins=[%s] lists %s twice", raw, name)
+			return nil, errors.NotValidf("%s=[%s] lists %s twice", attr, raw, name)
 		}
 		seen[name] = true
 		names = append(names, name)
@@ -261,7 +268,7 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 				continue
 			}
 
-			if provider, ok := provided[injectID(comp.Entry.Package, tp, ann)]; ok {
+			if provider, ok := provided[injectID(comp.Entry, tp, ann)]; ok {
 				if ann.Plugins != "" {
 					return nil, errors.NotValidf("@Inject on %s parameter %d has plugins, but %s is provided by %s: plugins apply only to a client inject builds",
 						key, idx, tp, provider)
@@ -328,11 +335,19 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 // default client of type id ("<import path>.<Type>"), with an unnamed,
 // ungrouped @Provide. inject builds that client only when none does.
 func DefaultClientProvider(g *graph.Graph[Component], id string) (Component, bool) {
+	return ClientProvider(g, id, "")
+}
+
+// ClientProvider returns the annotated function that provides the client of
+// type id ("<import path>.<Type>") and name, with an ungrouped @Provide of
+// that name; name "" is the default client. inject builds that client only
+// when none does.
+func ClientProvider(g *graph.Graph[Component], id, name string) (Component, bool) {
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for _, idx := range sortedIndexes(comp.Provides) {
 			ann := comp.Provides[idx]
-			if ann.Name != "" || ann.Group != "" {
+			if ann.Name != name || ann.Group != "" {
 				continue
 			}
 			if got, ok := pointerTo(comp.Entry, comp.Result(idx)); ok && got == id {
@@ -348,11 +363,17 @@ func DefaultClientProvider(g *graph.Graph[Component], id string) (Component, boo
 // module that provides it, given the import path of the output dir
 // (BaseImport). It is NotValid for a type inject does not build.
 func ClientModule(base, id string) (ImportData, string, error) {
+	return NamedClientModule(base, id, "")
+}
+
+// NamedClientModule is ClientModule for the client named name; name "" is
+// the default client.
+func NamedClientModule(base, id, name string) (ImportData, string, error) {
 	f, ok := clientFactories[id]
 	if !ok {
 		return ImportData{}, "", errors.NotValidf("inject builds no client of type *%s; it builds %s", id, strings.Join(supportedClients(), ", "))
 	}
-	imp, call := Client{Factory: f}.Module(base)
+	imp, call := Client{Factory: f, Name: name}.Module(base)
 	return imp, call, nil
 }
 
@@ -363,7 +384,7 @@ func providedValues(g *graph.Graph[Component]) map[string]string {
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for _, idx := range sortedIndexes(comp.Provides) {
-			id := xid(comp.Entry.Package, comp.Result(idx), comp.Provides[idx])
+			id := xid(comp.Entry, comp.Result(idx), comp.Provides[idx])
 			if _, ok := provided[id]; !ok {
 				provided[id] = key
 			}

@@ -137,12 +137,25 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   and an `@Inject` without `name` get. The door wires the adapter's
   `ModuleWithoutClient`, so a function that reads from a broker and
   publishes to it boots with one client.
+- `client=orders` reads with the named client `orders` instead: the app's
+  `@Provide(name=orders)` of that type, or else the one inject generates
+  (`OrdersConnModule()`, keys `boost.factory.nats.clients.orders.*`), the
+  same one `@Inject(name=orders)` and the publisher `orders` get. The door
+  wires the adapter's `ModuleWithNamedClient("orders")`. The name follows
+  the client names (`[a-z][a-zA-Z0-9]*`), and the adapters must include one
+  that reads with a client (`nats`, `cenats`, `pubsub`), else `NotValid`.
+  The pubsub v1 adapter keeps its own client.
 - With a list, `adapter=[pubsub, nats]`, config chooses the adapter:
   `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`), default the first
   name. The door includes only the chosen adapter module, so the others and
   their clients are never built; an unknown name fails the boot with
   `NotValid` naming the key, the value and the valid names. The adapters'
-  own keys (`.enabled`, the pubsub `version`) stay as they are.
+  own keys (`.enabled`, the pubsub `version`) stay as they are. The app runs
+  the chosen adapter with no CLI argument and no
+  `boost.bootstrap.function.default`.
+- The pubsub adapter on v1 (`boost.bootstrap.function.adapter.pubsub.version=v1`)
+  reads with its own v1 `*pubsub.Client`, built from the
+  `boost.factory.gcp.pubsub` keys; the app's default client is v2.
 - Each middleware is the fx module under
   `fx/modules/bootstrap/function/middleware` of the
   [`bootstrap/function/middleware`](../bootstrap/function/middleware) of that
@@ -364,9 +377,11 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
   sold-out items from its `@Config Options`
   (`builder.examples.simple.stock.memory.soldOut`, env
   `BUILDER_EXAMPLES_SIMPLE_STOCK_MEMORY_SOLD__OUT`, default `sold-out`);
-- `worker`: the `ordercreated` function on the cloudevents or the nats
-  adapter, chosen by `worker.function.adapter` (`WORKER_FUNCTION_ADAPTER`,
-  default `cloudevents`), behind the `recovery` and `logger` middlewares.
+- `worker`: the `ordercreated` function on the cloudevents, the nats or the
+  pubsub adapter, chosen by `worker.function.adapter` (`WORKER_FUNCTION_ADAPTER`,
+  default `cloudevents`), behind the `recovery` and `logger` middlewares; its
+  handler injects the publisher with `drivers=[nats, pubsub]`, so the worker
+  links no Kafka client.
 
 `cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
 routes, the gRPC service and the MCP tool of the generated app, check that the handler
@@ -374,8 +389,15 @@ receives the stock decorator and that prometheus counted its call, boot the
 api with `unlimited` (wired without the decorator), with an unknown name
 (the boot fails) and with `SOLD__OUT=book,pen` (the env replaces the
 default list), run the function handler, boot the worker with each adapter
-(nats on an embedded server) and with an unknown one (the boot fails), and fail when `gen/` or a main is
-stale.
+(nats on an embedded server) and with an unknown one (the boot fails), run
+the generated main with only `WORKER_FUNCTION_ADAPTER=nats` until it records
+an order published on NATS and then send it SIGTERM (it exits 0 within a
+second), run it with only `WORKER_FUNCTION_ADAPTER=pubsub`, v2 and v1, against
+a `pstest` fake until it records a CloudEvent and a raw message, stays up
+and exits 0 on SIGTERM, and with no subscription (the boot fails naming it),
+build the worker and check with `go version -m` that it has no
+`confluent-kafka-go`, boot it with the kafka driver (the boot fails listing
+`nats, noop, pubsub`), and fail when `gen/` or a main is stale.
 
 ## Non-goals
 

@@ -23,9 +23,10 @@ type Handler struct {
 
 // New provides the handler; the generated function door gets it from here.
 // The publisher announces the recorded orders, on the broker the function
-// may read from.
+// may read from; only the nats and pubsub drivers (and noop, the default)
+// are generated, so the worker links no Kafka client nor librdkafka.
 // @Provide(index=0)
-// @Inject(index=1)
+// @Inject(index=1, name=orders, drivers=[nats, pubsub])
 func New(svc *order.Service, pub *publisher.Publisher) *Handler {
 	return &Handler{svc: svc, pub: pub}
 }
@@ -35,7 +36,7 @@ type payload struct {
 }
 
 // Handle records the order of the event, announces it and replies with it.
-// @Function(adapter=[cloudevents, nats, pubsub], app=worker, middlewares=[recovery, logger])
+// @Function(adapter=[cloudevents, nats, pubsub], app=worker, client=orders, middlewares=[recovery, logger])
 func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevents.Event, error) {
 	var p payload
 	if err := in.DataAs(&p); err != nil || p.Item == "" {

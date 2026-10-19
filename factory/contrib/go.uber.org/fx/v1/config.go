@@ -10,7 +10,7 @@ const (
 )
 
 func init() {
-	config.Add(logLevel, "DEBUG", "define log level")
+	config.Add(logLevel, "DEBUG", "level of fx's lines (TRACE, DEBUG, INFO); an error that stops the app is always logged at ERROR")
 }
 
 func LogLevel() string {

@@ -17,6 +17,7 @@ function plus a root `Module()` that wires the whole application.
 | `@Inject(name=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` receives the named value `X` |
 | `@Inject(group=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` (a slice `[]T`) receives every `T` of group `X` |
 | `@Inject(name=X, index=N, plugins=[a, b])` | `@Provide`/`@Invoke` function | parameter `N`, a factory client (`*resty.Client`, `*nats.Conn`, `*gocql.Session`, ...), is built by the generator with the plugins `a` and `b` (see below) |
+| `@Inject(index=N, drivers=[a, b])` | `@Provide`/`@Invoke` function | parameter `N`, a `*publisher.Publisher`, is built by the generator with only the drivers `a` and `b` (see [Publisher](#publisher)) |
 | `@Invoke` | function | the function runs when the application starts (`fx.Invoke`) |
 | `@Default` | `@Provide` constructor | default implementation of a value with two or more providers; config picks one (see below) |
 | `@Config` | struct | the struct's fields are config keys; the generator registers them and provides `*Struct` (see below) |
@@ -24,7 +25,9 @@ function plus a root `Module()` that wires the whole application.
 `index` is the zero-based position of the result or parameter and is always
 required. A parameter without `@Inject` is linked to a default provider of
 the same type when one is annotated; otherwise the application must provide
-it (for example with `fx.Supply` or another fx module).
+it (for example with `fx.Supply` or another fx module). Types are matched by
+import path: two packages with the same name (one `boost` package per
+publisher, say) declare different types.
 
 ```go
 package greeting
@@ -337,12 +340,31 @@ and its client:
   the app and the publisher share it, with the plugins the app lists. The
   adapter of a builder `@Function` shares it too
   (`GeneratorOptions.DefaultClients`).
+- **Drivers.** `@Inject(index=0, drivers=[nats, pubsub])` generates only
+  those drivers and their clients, plus `noop`, the default; without
+  `drivers` all of them are. The generated drivers are the union of what the
+  consumers list, and all of them when one consumer lists none. A driver not
+  generated is an unknown value for the key: the boot fails listing the
+  generated ones (`valid: nats, noop, pubsub`). An app that leaves `kafka`
+  out links neither `confluent-kafka-go` nor librdkafka. An unknown name,
+  `drivers=[]`, or `drivers` on a parameter that is not
+  `*publisher.Publisher` (or on `@Provide`) fails the generator with
+  `NotValid`.
 - **cgo.** The kafka client binds librdkafka through cgo, so its files build
   only with cgo (`//go:build cgo`). An app built with `CGO_ENABLED=0` still
-  builds; choosing `kafka` there fails the boot with `NotSupported`.
+  builds; choosing `kafka` there fails the boot with `NotSupported`. Leave
+  `kafka` out of `drivers` to keep cgo and librdkafka out of the app.
+- **Named.** `@Inject(index=0, name=orders)` on a `*publisher.Publisher`
+  builds the publisher `orders`, in `gen/client/.../wrapper/publisher/orders`
+  (`orders.PublisherModule()`, provided as `name:"orders"`). Its drivers take
+  the named client `orders` of their factory (`boost.factory.nats.clients.orders.*`,
+  `boost.factory.gcp.pubsub.clients.orders.*`, ...), and its driver is
+  chosen by `boost.wrapper.publisher.clients.orders.driver.name`. `drivers`
+  works per publisher. The name follows the client names: `[a-z][a-zA-Z0-9]*`,
+  else `NotValid`.
 - **The app wins.** When a `@Provide` of the app provides
-  `*publisher.Publisher`, it is used and nothing is generated. A named
-  publisher (`name=x`) is not built: provide it. `plugins` do not apply.
+  `*publisher.Publisher` (with the same name, or none), it is used and
+  nothing is generated for it. `plugins` do not apply.
 - The hand-written driver fx modules (`fx/modules/wrapper/publisher/...`) and
   their `.enabled` keys are unchanged; use them or `PublisherModule()`, not
   both.
@@ -377,6 +399,8 @@ The generator fails, without touching the output directory, when:
 - `plugins` is on a `@Provide`, on a parameter that is not a factory client
   or that the app provides, or with `group`; lists an unknown or repeated
   plugin; or differs between two consumers of one client;
+- `drivers` is on a `@Provide` or on a parameter that is not
+  `*publisher.Publisher`, is empty, or lists an unknown or repeated driver;
 - a client name is not lowerCamel, or two clients would be written to the
   same file (`name=default` and the unnamed client);
 - the dependencies have a cycle, or a function depends on what it provides;
@@ -413,17 +437,22 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | `GenPath(base, importPath)` / `GenPathUnder(base, sub, importPath)` | directory under the output dir (or its `sub` dir) that mirrors a package: its path in the project, the whole import path for another module |
 | `ModuleOf(base, entry)` | import and module call (`gen_x_hash.NewXModule()`, `gen_x_hash.OptionsModule()` for a `@Config`) of a component |
 | `ConfigKey(modulePath, importPath)` / `ConfigEnv(root, segment)` | root config key of a package's `@Config` and the env var of one of its keys |
-| `Provider(g, pkg, tp)` | component and result index providing the default value of a type |
+| `ProviderFor(g, entry, tp)` | component and result index providing the default value of a type written in the file of `entry` |
+| `Provider(g, pkg, tp)` | deprecated: as `ProviderFor`, but matches types by package name |
 | `Alias(prefix, name, path)` | collision-free import alias (`prefix_name_hash`) |
 | `Clients(g)` / `Client.Module(base)` | factory clients the generator builds, and the import and module call of one |
 | `GeneratorOptions.DefaultClients` / `ClientModule(base, id)` | client types (`github.com/nats-io/nats.go.Conn`) whose default client is generated for the caller to wire, and the import and module call of one (`client_nats_hash.DefaultConnModule()`) |
-| `DefaultClientProvider(g, id)` | component providing the default client of a type, with an unnamed, ungrouped `@Provide` |
+| `GeneratorOptions.NamedClients` / `NamedClientModule(base, id, name)` | the same for named clients (`ClientRef{ID, Name}`, `client_nats_hash.OrdersConnModule()`) |
+| `DefaultClientProvider(g, id)` / `ClientProvider(g, id, name)` | component providing the default (or the named) client of a type, with an ungrouped `@Provide` |
+| `Publishers(g)` | publishers the generator builds: the unnamed one, then the named ones by name |
 | `ExecuteTemplate(tmpl, name, data)` | executes a template and gofmt's the output |
 | `WriteGenerated(ctx, dir, files, header)` | writes files and removes stale ones starting with `header` |
 
-See [`examples/simple`](./examples/simple) and
-[`examples/publisher`](./examples/publisher): their tests run the generated
-application and fail when `gen/` is stale.
+See [`examples/simple`](./examples/simple),
+[`examples/publisher`](./examples/publisher) and
+[`examples/samename`](./examples/samename) (two `@Config Options` in packages
+named `boost`): their tests run the generated application and fail when
+`gen/` is stale.
 [`examples/clients`](./examples/clients) injects a NATS conn, a Pub/Sub
 client, gocql v1 and v2 sessions and a Bigtable client; its test starts the
 app against an embedded NATS server, the Pub/Sub emulator, a fake Cassandra
@@ -432,8 +461,6 @@ client is closed when the app stops.
 
 ## Limitations
 
-- Types are matched by package name and type expression, not by import path:
-  two packages with the same name and type name are seen as the same type.
 - Each generated `<Func>Module()` returns its options only on the first call
   (`sync.Once`), so a constructor reached by several modules is registered
   once. Build the fx application once per process.

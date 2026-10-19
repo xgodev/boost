@@ -308,6 +308,8 @@ func TestNewSpec_Errors(t *testing.T) {
 		{"function middlewares not a list", []annotation.Entry{function("adapter=nats, middlewares=logger")}, errors.IsNotValid, "[a, b]"},
 		{"empty function middleware", []annotation.Entry{function("adapter=nats, middlewares=[logger, ]")}, errors.IsNotValid, "empty"},
 		{"publisher without driver", []annotation.Entry{function("adapter=nats, middlewares=[publisher]")}, errors.IsNotFound, "publisher.Driver"},
+		{"client of an adapter without client", []annotation.Entry{function("adapter=[lambda, kafka], client=prices")}, errors.IsNotValid, "client=prices"},
+		{"client name an environment variable does not reach", []annotation.Entry{function("adapter=nats, client=order_prices")}, errors.IsNotValid, "order_prices"},
 	}
 
 	for _, tc := range testCases {

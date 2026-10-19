@@ -63,8 +63,11 @@ func TestModuleDisabledProvidesNothing(t *testing.T) {
 	assert.Empty(t, cmds)
 }
 
+// TestModuleGraphIsComplete loads the adapter on v1 with the factory on its
+// v2 default, as a builder app does (#205): the module still provides the v1
+// *pubsub.Client the adapter reads with.
 func TestModuleGraphIsComplete(t *testing.T) {
-	load(t, "true", "v1", "v1")
+	load(t, "true", "v1", "v2")
 
 	assert.NoError(t, fx.ValidateApp(
 		Module[string](),

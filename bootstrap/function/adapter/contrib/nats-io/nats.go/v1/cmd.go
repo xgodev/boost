@@ -6,7 +6,8 @@ import (
 	"github.com/xgodev/boost/bootstrap/function"
 )
 
-// New returns CmdFunc for cloudevents command.
+// New returns the CmdFunc of the nats command: it handles the messages of
+// the configured subjects until the run context is done.
 func New[T any](conn *nats.Conn) function.CmdFunc[T] {
 	return func(fn function.Handler[T]) *co.Command {
 		return &co.Command{
@@ -14,9 +15,7 @@ func New[T any](conn *nats.Conn) function.CmdFunc[T] {
 			Short: "nats",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				helper := NewHelper[T](conn, fn)
-				helper.Start()
-				return nil
+				return NewHelper[T](conn, fn).Run(cmd.Context())
 			},
 		}
 	}

@@ -2,17 +2,17 @@
 
 //go:build cgo
 
-package publisher
+package prices
 
 import (
 	"go.uber.org/fx"
 
-	client_kafka_0b369746 "github.com/xgodev/boost/builder/examples/simple/gen/client/github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	client_kafka_a3a75155 "example.com/app/gen/client/github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	driver_confluent_f4b0f64e "github.com/xgodev/boost/wrapper/publisher/driver/contrib/confluentinc/confluent-kafka-go/v2"
 )
 
 // kafkaDriver returns the options wiring the kafka driver and its
 // client, which builds only with cgo.
 func kafkaDriver() []fx.Option {
-	return []fx.Option{client_kafka_0b369746.DefaultProducerModule(), fx.Provide(fx.Private, driver_confluent_f4b0f64e.New)}
+	return []fx.Option{client_kafka_a3a75155.PricesProducerModule(), fx.Provide(fx.Private, fx.Annotate(driver_confluent_f4b0f64e.New, fx.ParamTags("", `name:"prices"`)))}
 }

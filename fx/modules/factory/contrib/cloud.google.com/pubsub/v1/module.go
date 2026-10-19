@@ -17,20 +17,27 @@ func Module() fx.Option {
 		return fx.Error(err)
 	}
 
-	options := fx.Options()
 	if !IsEnabled() {
-		return options
+		return fx.Options()
 	}
 
-	once.Do(func() {
+	return ClientModule()
+}
 
+// ClientModule provides the v1 *pubsub.Client whatever
+// boost.factory.gcp.pubsub.version says. Modules that read with the v1 client,
+// like the v1 function adapter, include it. It shares Module's once, so the
+// client is provided a single time when both are included.
+func ClientModule() fx.Option {
+	options := fx.Options()
+
+	once.Do(func() {
 		options = fx.Options(
 			contextfx.Module(),
 			fx.Provide(
 				pubsub.NewClient,
 			),
 		)
-
 	})
 
 	return options

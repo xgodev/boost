@@ -14,9 +14,7 @@ func New[T any](client *pubsub.Client) function.CmdFunc[T] {
 			Short: "gcp_pubsub",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				helper := NewHelper[T](client, fn)
-				helper.Start()
-				return nil
+				return NewHelper[T](client, fn).Run(cmd.Context())
 			},
 		}
 	}

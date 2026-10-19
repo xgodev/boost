@@ -33,3 +33,27 @@ func TestModuleWithoutClientTakesTheAppClient(t *testing.T) {
 	require.Len(t, cmds, 1)
 	assert.True(t, provided, "the adapter reads with the app's *pubsub.Client")
 }
+
+// TestModuleWithNamedClientTakesTheNamedClient wires the adapter with the
+// *pubsub.Client named prices, the app's only one (#208).
+func TestModuleWithNamedClientTakesTheNamedClient(t *testing.T) {
+	load(t, "true", "v2", "v2")
+	once = sync.Once{}
+	t.Cleanup(func() { once = sync.Once{} })
+
+	provided := false
+	var cmds []function.CmdFunc[string]
+	app := fx.New(
+		fx.NopLogger,
+		fx.Provide(fx.Annotate(func() *pubsub.Client { provided = true; return &pubsub.Client{} }, fx.ResultTags(`name:"prices"`))),
+		ModuleWithNamedClient[string]("prices"),
+		fx.Invoke(fx.Annotate(
+			func(c []function.CmdFunc[string]) { cmds = c },
+			fx.ParamTags(`group:"`+fxfunction.BSFunctionAdaptersGroupKey+`"`),
+		)),
+	)
+	require.NoError(t, app.Err(), "the adapter reads with the *pubsub.Client named prices")
+
+	require.Len(t, cmds, 1)
+	assert.True(t, provided)
+}

@@ -2,7 +2,7 @@
 
 //go:build !cgo
 
-package publisher
+package prices
 
 import (
 	"github.com/xgodev/boost/model/errors"

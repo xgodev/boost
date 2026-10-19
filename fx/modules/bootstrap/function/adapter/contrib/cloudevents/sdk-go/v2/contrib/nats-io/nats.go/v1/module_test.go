@@ -71,3 +71,27 @@ func TestModuleWithoutClientTakesTheAppConn(t *testing.T) {
 	assert.Equal(t, "cloudevents_nats", adapters[0](nil).Use)
 	assert.True(t, provided, "the adapter reads with the app's *nats.Conn")
 }
+
+// TestModuleWithNamedClientTakesTheNamedConn wires the adapter with the
+// *nats.Conn named prices, the app's only one (#208).
+func TestModuleWithNamedClientTakesTheNamedConn(t *testing.T) {
+	once = sync.Once{}
+	t.Cleanup(func() { once = sync.Once{} })
+
+	provided := false
+	var adapters []function.CmdFunc[*event.Event]
+	app := fx.New(
+		fx.NopLogger,
+		fx.Provide(fx.Annotate(func() *nats.Conn { provided = true; return &nats.Conn{} }, fx.ResultTags(`name:"prices"`))),
+		ModuleWithNamedClient[*event.Event]("prices"),
+		fx.Invoke(fx.Annotate(
+			func(a []function.CmdFunc[*event.Event]) { adapters = a },
+			fx.ParamTags(`group:"`+fxfunction.BSFunctionAdaptersGroupKey+`"`),
+		)),
+	)
+	require.NoError(t, app.Err(), "the adapter reads with the *nats.Conn named prices")
+
+	require.Len(t, adapters, 1)
+	assert.Equal(t, "cloudevents_nats", adapters[0](nil).Use)
+	assert.True(t, provided)
+}

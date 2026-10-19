@@ -84,6 +84,11 @@ type ClientData struct {
 
 // PublisherData feeds the template of the publisher inject builds.
 type PublisherData struct {
+	Package string          // package of the publisher's file
+	Name    string          // fx name of the publisher, "" for the unnamed one
+	Desc    string          // "the publisher", "the prices publisher"
+	Provide string          // constructor of the publisher given to fx.Provide
+	Module  string          // name of the fx module
 	Key     string          // config key naming the driver
 	Default string          // driver when the key is unset
 	Names   string          // driver names, comma separated
@@ -100,6 +105,7 @@ type PublisherCase struct {
 // PublisherDriverData feeds the templates of a driver whose client builds
 // only under a constraint: its file and the fallback without the constraint.
 type PublisherDriverData struct {
+	Package    string       // package of the publisher's file
 	Name       string       // driver name
 	Constraint string       // build constraint of its client
 	Options    string       // fx options wiring the driver and its client
