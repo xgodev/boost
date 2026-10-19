@@ -1,0 +1,10 @@
+{
+  "addr": ":8086",
+  "debug": true,
+  "db": {
+    "username": "foosss"
+  },
+  "red": {
+    "h": "127.0.0.2"
+  }
+}

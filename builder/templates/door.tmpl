@@ -11,6 +11,10 @@ import (
 	{{.Alias}} "{{.Path}}"
 {{- end}}
 )
+{{with .Adapter}}
+// {{$.Var}}AdapterKey chooses the adapter of the @Function of app {{$.Package}}.
+const {{$.Var}}AdapterKey = {{printf "%q" .Key}}
+{{end}}
 {{if .Init}}
 func init() {
 {{- range .Init}}
@@ -35,6 +39,29 @@ func {{.Func}}Module() fx.Option {
 
 	return options
 }
+{{with .Adapter}}
+// {{$.Var}}AdapterModule wires the adapter named by {{.Key}}
+// and only that one: the others, and their clients, are never built. An
+// unknown name fails the boot.
+func {{$.Var}}AdapterModule() fx.Option {
+	switch name := {{.Config}}.String({{$.Var}}AdapterKey); name {
+{{- range .Cases}}
+	case {{printf "%q" .Name}}:
+{{- if eq (len .Options) 1}}
+		return {{index .Options 0}}
+{{- else}}
+		return fx.Options(
+{{- range .Options}}
+			{{.}},
+{{- end}}
+		)
+{{- end}}
+{{- end}}
+	default:
+		return fx.Error({{.Errors}}.NotValidf("%s: unknown adapter %q; valid: %s", {{$.Var}}AdapterKey, name, {{printf "%q" .Names}}))
+	}
+}
+{{end -}}
 {{end}}
 
 {{define "modules" -}}

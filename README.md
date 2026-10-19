@@ -758,7 +758,7 @@ the app modules and main.
 |---|---|
 | `@REST` | echo route |
 | `@GRPC` | gRPC service |
-| `@Function` | cloudevents · kafka · nats · pubsub |
+| `@Function` | cloudevents · kafka · lambda · nats · pubsub |
 | `@MCP` | MCP tool |
 | `@Middleware` | generated decorator |
 | `@Default` | implementation picked by config |
@@ -767,7 +767,7 @@ the app modules and main.
 
 `bootstrap/function` · [docs](bootstrap/README.md)
 
-One event handler, four transports. Change the adapter in config; the handler
+One event handler, six transports. Change the adapter in config; the handler
 stays the same.
 
 ```go
@@ -868,8 +868,8 @@ same or get better, never worse.
  module github.com/acme/shop
 
  require (
--	github.com/xgodev/boost v1.1.1
-+	github.com/xgodev/boost v1.2.0
+-	github.com/xgodev/boost v1.3.0
++	github.com/xgodev/boost v1.4.0
  )
 ```
 
@@ -880,7 +880,7 @@ ok  github.com/acme/shop/...
 
 1 line changed in go.mod, **0 lines changed in your code**.
 
-Releases: 2024-07 → `v1.1.0` → `v1.1.1` → **`v1.2.0`**
+Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → `v1.3.0` → **`v1.4.0`**
 ([all releases](https://github.com/xgodev/boost/releases)).
 
 ## There's a factory for that.

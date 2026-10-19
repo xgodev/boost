@@ -1,19 +1,13 @@
 package pubsub
 
 import (
-	"github.com/xgodev/boost/wrapper/config"
+	pubsubcfg "github.com/xgodev/boost/fx/modules/factory/contrib/cloud.google.com/pubsub"
 )
 
-const (
-	Root    = "boost.factory.gcp.pubsub"
-	version = Root + ".version"
-)
+// Root is the config root of the Pub/Sub factory fx modules.
+const Root = pubsubcfg.Root
 
-func init() {
-	config.Add(version, "v1", "defines the pubsub version: v1 or v2")
-}
-
-// IsEnabled returns true when the configured version is v2.
+// IsEnabled returns true when the configured version is v2 (the default).
 func IsEnabled() bool {
-	return config.String(version) == "v2"
+	return pubsubcfg.Enabled(pubsubcfg.VersionKey, pubsubcfg.V2)
 }
