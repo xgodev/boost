@@ -112,22 +112,31 @@ func (h *Handler) CheckStock(ctx context.Context, req *mcp.CallToolRequest, in I
 package ordercreated
 
 // Handle records the order of the event.
-// @Function(adapter=cloudevents, app=worker)
+// @Function(adapter=cloudevents, app=worker, middlewares=[recovery, logger])
 func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevents.Event, error) { ... }
 ```
 
 | Key | Required | Meaning |
 |---|---|---|
-| `adapter` | yes | `cloudevents`, `kafka`, `nats` or `pubsub` |
+| `adapter` | yes | `cloudevents`, `cenats` (cloudevents over NATS), `kafka`, `nats` or `pubsub` |
 | `app` | no | application, default `api` |
+| `middlewares` | no | `[a, b]`, the outermost first: `ignore_errors`, `logger`, `opentelemetry`, `prometheus`, `publisher`, `recovery` |
 
 - The handler is a [`function.Handler[T]`](../bootstrap/function):
   `func(context.Context, cloudevents.Event) (T, error)`; `T` is its first
   result. A method needs a provided receiver, as in `@REST`.
 - An app runs at most one `@Function`. The door includes
   `functionfx.Module[T]` and the adapter module under
-  `fx/modules/bootstrap/function/adapter/contrib` (`pubsub` includes v1 and v2,
-  each enabled by its own config).
+  `fx/modules/bootstrap/function/adapter/contrib` (`pubsub` includes v1 and v2;
+  `boost.bootstrap.function.adapter.pubsub.version`, `v2` by default, turns
+  on one).
+- Each middleware is the fx module under
+  `fx/modules/bootstrap/function/middleware` of the
+  [`bootstrap/function/middleware`](../bootstrap/function/middleware) of that
+  name; the door hands them to `functionfx.Module` under
+  `functionfx.MiddlewaresName`. One turned off in config
+  (`boost.bootstrap.function.middleware.<name>.enabled`) is skipped.
+  `publisher` needs a `publisher.Driver` provided by the app.
 
 ### `@Middleware`: plugins around every method of a service
 
@@ -270,6 +279,8 @@ The command fails, without touching the output directory, when:
 - `@GRPC` has no single default `@Provide`, or `register` does not resolve
   to an exported function;
 - an app has two `@Function`, or `adapter` is missing or unknown;
+- `middlewares` is not written as `[a, b]`, or lists an empty, unknown or
+  repeated name;
 - a server is used by two kinds of door;
 - an app or server name is invalid, or an annotation has an unknown key;
 - the handler is unexported or in package `main`;
@@ -282,6 +293,27 @@ The command fails, without touching the output directory, when:
 - any inject validation fails (see [`inject`](../inject#validation)).
 
 ## Library
+
+```go
+// what cmd/builder does: gen/ under the module of src, mains under cmd
+err := builder.Generate(ctx, src, "gen", "cmd") // empty cmd: no main
+
+// the files Generate would write, change or remove, relative to src
+stale, err := builder.Stale(ctx, src, "gen", "cmd")
+```
+
+`Stale` writes nothing, which lets a test of the app check that `gen/` and
+the mains are up to date:
+
+```go
+func TestGeneratedCodeIsUpToDate(t *testing.T) {
+	stale, err := builder.Stale(context.Background(), ".", "gen", "cmd")
+	require.NoError(t, err)
+	assert.Empty(t, stale, "run go generate")
+}
+```
+
+The steps underneath, for a tool of its own:
 
 ```go
 modulePath, moduleDir, _ := inject.FindModule(".")
@@ -298,9 +330,6 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
 // or doors.Generate(ctx) to write both
 ```
 
-`Render` and `RenderCmd` do not write anything, which lets a test check that
-`gen/` and the mains are up to date.
-
 ## Example
 
 [`examples/simple`](./examples/simple) has two apps:
@@ -316,7 +345,8 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
   sold-out items from its `@Config Options`
   (`builder.examples.simple.stock.memory.soldOut`, env
   `BUILDER_EXAMPLES_SIMPLE_STOCK_MEMORY_SOLD__OUT`, default `sold-out`);
-- `worker`: the `ordercreated` function on the cloudevents adapter.
+- `worker`: the `ordercreated` function on the cloudevents adapter, behind
+  the `recovery` and `logger` middlewares.
 
 `cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
 routes, the gRPC service and the MCP tool of the generated app, check that the handler

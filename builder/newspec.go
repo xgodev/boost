@@ -255,6 +255,16 @@ func (b *specBuilder) addFunction(entry annotation.Entry, ann annotation.Annotat
 		return errors.NotValidf("@Function on %s: adapter %s is not one of %s", where, args.Adapter, adapters)
 	}
 
+	middlewares, err := parseList(args.Middlewares, "@Function on "+where, "middlewares")
+	if err != nil {
+		return err
+	}
+	for _, name := range middlewares {
+		if _, ok := functionMiddlewares[name]; !ok {
+			return errors.NotValidf("@Function on %s: middleware %s is not one of %s", where, name, strings.Join(sortedNames(functionMiddlewares), ", "))
+		}
+	}
+
 	app := orDefault(args.App, defaultApp)
 	if err := validateNames(ann.Name, where, app, ""); err != nil {
 		return err
@@ -276,7 +286,7 @@ func (b *specBuilder) addFunction(entry annotation.Entry, ann annotation.Annotat
 		return errors.AlreadyExistsf("@Function on %s: app %s already runs %s and an app runs one @Function; set app= to another app",
 			where, app, declName(a.function.Handler.Entry))
 	}
-	a.function = &Function{Adapter: args.Adapter, Handler: handler}
+	a.function = &Function{Adapter: args.Adapter, Handler: handler, Middlewares: middlewares}
 	return nil
 }
 

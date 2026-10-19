@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"github.com/xgodev/boost/fx/modules/extra/multiserver"
 	"github.com/xgodev/boost/inject"
 	"github.com/xgodev/boost/model/errors"
@@ -397,6 +398,9 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 	d.Options = append(d.Options, modules...)
 	d.Options = append(d.Options,
 		"fx.Provide(func("+strings.Join(params, ", ")+") "+handlerType+" {\nreturn "+call+"\n})",
+	)
+	d.Options = append(d.Options, functionMiddlewareOptions(imps, result, fn.Middlewares)...)
+	d.Options = append(d.Options,
 		imps.add("functionfx", functionFxPath)+".Module["+result+"](nil)",
 	)
 	for _, adapter := range functionAdapters[fn.Adapter] {
@@ -404,6 +408,35 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 	}
 	d.Imports = imps.sorted()
 	return d, nil
+}
+
+// functionMiddlewareOptions returns, for the middlewares of a @Function, the
+// fx module of each one and the provider of the list the function module runs,
+// in the given order. A middleware disabled in config is left out.
+func functionMiddlewareOptions(imps *imports, result string, names []string) []string {
+	if len(names) == 0 {
+		return nil
+	}
+
+	list := "[]" + imps.add("bsmiddleware", middlewarePath) + ".AnyErrorMiddleware[" + result + "]"
+	var options, params, tags, appends []string
+	for i, name := range names {
+		mw := functionMiddlewares[name]
+		options = append(options, imps.add(mw.Module.Alias, mw.Module.Path)+".Module["+result+"]()")
+		param := fmt.Sprintf("m%d", i)
+		params = append(params, param+" *"+imps.add(mw.Pkg.Alias, mw.Pkg.Path)+"."+mw.Type+"["+result+"]")
+		tags = append(tags, goTag(`optional:"true"`))
+		appends = append(appends, "if "+param+" != nil {\nm = append(m, "+param+")\n}\n")
+	}
+
+	return append(options, "fx.Provide(fx.Annotate(\n"+
+		"func("+strings.Join(params, ", ")+") "+list+" {\n"+
+		"// a middleware disabled in config is not provided\n"+
+		"var m "+list+"\n"+
+		strings.Join(appends, "")+
+		"return m\n},\n"+
+		"fx.ParamTags("+strings.Join(tags, ", ")+"),\n"+
+		"fx.ResultTags("+goTag(`name:"`+functionfx.MiddlewaresName+`"`)+"),\n))")
 }
 
 // handlerFunc returns the expression of the handler: pkg.Func, or h<N>.Method

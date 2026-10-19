@@ -73,11 +73,12 @@ type Tool struct {
 	Handler     Handler
 }
 
-// Function is a @Function annotation: the event handler of a function app
-// and the adapter that feeds it.
+// Function is a @Function annotation: the event handler of a function app,
+// the adapter that feeds it and the middlewares it runs around the handler.
 type Function struct {
-	Adapter string
-	Handler Handler
+	Adapter     string
+	Handler     Handler
+	Middlewares []string // middleware names, the outermost first
 }
 
 // Handler is the annotated function or method serving a door.

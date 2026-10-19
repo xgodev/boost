@@ -24,7 +24,7 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | `aws/aws-sdk-go-v2/v1` | `Module` | `aws.Config` | — |
 | `cloud.google.com/bigquery/v1` | `Module` | `*bigquery.Client` | — |
 | `cloud.google.com/firestore/v1` | `Module` | `*firestore.Client` | — |
-| `cloud.google.com/pubsub/v1` | `Module` | `*pubsub.Client` | — |
+| `cloud.google.com/pubsub/v1`, `v2` | `Module` | `*pubsub.Client` | — |
 | `confluentinc/confluent-kafka-go/v2` | `ProducerModule`, `ConsumerModule` | kafka producer / consumer | — |
 | `coocood/freecache/v1` | `Module` | `*freecache.Cache` | — |
 | `datadog/dd-trace-go/v1` | `TracerModule`, `ProfilerModule` | starts tracer/profiler | — |
@@ -52,6 +52,13 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | `tidwall/buntdb/v1` | `Module` | `*buntdb.DB` | — |
 
 `godror` and `pgx` both provide `*sql.DB`: compose only one per app.
+
+Pub/Sub v1 and v2 are both composable: `boost.factory.gcp.pubsub.version`
+(`v2` by default) turns on one of them. The publisher driver and the function
+adapter pick their version the same way, through
+`boost.wrapper.publisher.driver.pubsub.version` and
+`boost.bootstrap.function.adapter.pubsub.version`. To stay on v1, set the
+three keys to `v1`; any value other than `v1` or `v2` fails the boot.
 
 ## How to Use
 

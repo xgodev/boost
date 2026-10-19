@@ -7,6 +7,7 @@ import (
 	codec_binary "github.com/xgodev/boost/wrapper/cache/codec/binary"
 	codec_goccy "github.com/xgodev/boost/wrapper/cache/codec/contrib/goccy/go-json/v0"
 	codec_shamaton_msgpack "github.com/xgodev/boost/wrapper/cache/codec/contrib/shamaton/msgpack/v2"
+	codec_shamaton_msgpack_v3 "github.com/xgodev/boost/wrapper/cache/codec/contrib/shamaton/msgpack/v3"
 	codec_vmihailenco_msgpack "github.com/xgodev/boost/wrapper/cache/codec/contrib/vmihailenco/msgpack/v5"
 	codec_gob "github.com/xgodev/boost/wrapper/cache/codec/gob"
 	codec_json "github.com/xgodev/boost/wrapper/cache/codec/json"
@@ -190,6 +191,7 @@ func (s *ManagerSuite) Test_manager_Codecs_SimpleString() {
 				"gob":                 codec_gob.New[string](),
 				"msgpack_vmihailenco": codec_vmihailenco_msgpack.New[string](),
 				"msgpack_shamaton":    codec_shamaton_msgpack.New[string](),
+				"msgpack_shamaton_v3": codec_shamaton_msgpack_v3.New[string](),
 				"string":              codec_string.New[string](),
 				"goccy":               codec_goccy.New[string](),
 				"json":                codec_json.New[string](),
@@ -315,6 +317,7 @@ func (s *ManagerSuite) Test_manager_Codecs_ByteArray() {
 				"gob":                 codec_gob.New[[]byte](),
 				"msgpack_vmihailenco": codec_vmihailenco_msgpack.New[[]byte](),
 				"msgpack_shamaton":    codec_shamaton_msgpack.New[[]byte](),
+				"msgpack_shamaton_v3": codec_shamaton_msgpack_v3.New[[]byte](),
 				"goccy":               codec_goccy.New[[]byte](),
 				"json":                codec_json.New[[]byte](),
 			}
@@ -468,6 +471,7 @@ func (s *ManagerSuite) Test_manager_Codecs_Struct() {
 				"gob":                 codec_gob.New[Complex](),
 				"msgpack_vmihailenco": codec_vmihailenco_msgpack.New[Complex](),
 				"msgpack_shamaton":    codec_shamaton_msgpack.New[Complex](),
+				"msgpack_shamaton_v3": codec_shamaton_msgpack_v3.New[Complex](),
 				"json":                codec_json.New[Complex](),
 				"goccy":               codec_goccy.New[Complex](),
 			}
@@ -823,6 +827,7 @@ func (s *ManagerSuite) Test_manager_Codecs_BigData() {
 				"gob":                 codec_gob.New[[]MyStruct](),
 				"msgpack_vmihailenco": codec_vmihailenco_msgpack.New[[]MyStruct](),
 				"msgpack_shamaton":    codec_shamaton_msgpack.New[[]MyStruct](),
+				"msgpack_shamaton_v3": codec_shamaton_msgpack_v3.New[[]MyStruct](),
 				"json":                codec_json.New[[]MyStruct](),
 				"goccy":               codec_goccy.New[[]MyStruct](),
 			}

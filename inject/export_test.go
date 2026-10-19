@@ -138,7 +138,7 @@ func TestWriteGenerated(t *testing.T) {
 		require.NoError(t, os.WriteFile(p, []byte(content), 0o644))
 	}
 	write("old/stale.go", header+"\n\npackage old\n")
-	write("inject/kept.go", generatedHeader+"\n\npackage inject\n")
+	write("inject/kept.go", GeneratedHeader+"\n\npackage inject\n")
 
 	files := map[string][]byte{"api/modules.go": []byte(header + "\n\npackage api\n")}
 	require.NoError(t, WriteGenerated(context.Background(), dir, files, header))

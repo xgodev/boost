@@ -8,12 +8,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
-	apubsub "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v1"
+	apubsub "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloud.google.com/pubsub/v2"
 	lm "github.com/xgodev/boost/bootstrap/function/middleware/logger"
 	pm "github.com/xgodev/boost/bootstrap/function/middleware/publisher"
-	fpubsub "github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v1"
+	fpubsub "github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v2"
 	"github.com/xgodev/boost/wrapper/publisher"
-	drvpubsub "github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v1"
+	drvpubsub "github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v2"
 )
 
 type Handler[T any] func(context.Context, cloudevents.Event) (T, error)

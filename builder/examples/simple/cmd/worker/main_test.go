@@ -10,9 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
+	"github.com/xgodev/boost/bootstrap/function/middleware/logger"
+	"github.com/xgodev/boost/bootstrap/function/middleware/recovery"
 	"github.com/xgodev/boost/builder/examples/simple/gen/builder/worker"
 	"github.com/xgodev/boost/builder/examples/simple/order"
 	"github.com/xgodev/boost/builder/examples/simple/ordercreated"
+	"github.com/xgodev/boost/extra/middleware"
+	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"github.com/xgodev/boost/model/errors"
 	"go.uber.org/fx"
 )
@@ -37,11 +41,21 @@ func event(t *testing.T, data any) cloudevents.Event {
 // function handler it provides, as the adapter does for each event.
 func TestWorker(t *testing.T) {
 	var (
-		handle function.Handler[*cloudevents.Event]
-		svc    *order.Service
+		handle      function.Handler[*cloudevents.Event]
+		svc         *order.Service
+		middlewares []middleware.AnyErrorMiddleware[*cloudevents.Event]
 	)
-	app := fx.New(append(worker.Modules(), fx.NopLogger, fx.Populate(&handle, &svc))...)
+	app := fx.New(append(worker.Modules(), fx.NopLogger, fx.Populate(&handle, &svc),
+		fx.Invoke(fx.Annotate(
+			func(m []middleware.AnyErrorMiddleware[*cloudevents.Event]) { middlewares = m },
+			fx.ParamTags(`name:"`+functionfx.MiddlewaresName+`"`),
+		)),
+	)...)
 	require.NoError(t, app.Err())
+
+	require.Len(t, middlewares, 2, "the function runs the middlewares of @Function")
+	assert.IsType(t, &recovery.Recovery[*cloudevents.Event]{}, middlewares[0], "the outermost first")
+	assert.IsType(t, &logger.Logger[*cloudevents.Event]{}, middlewares[1])
 
 	out, err := handle(context.Background(), event(t, map[string]string{"item": "book"}))
 	require.NoError(t, err)
