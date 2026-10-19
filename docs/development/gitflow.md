@@ -16,8 +16,8 @@ Versão → release|bugfix/X.Y.Z → PR → main → tag vX.Y.Z → PR → devel
 | `bugfix/X.Y.Z` | Versão patch | `develop` | `main` + `develop` |
 | `hotfix/X.Y.Z` | Versão patch urgente, de produção | `main` | `main` + `develop` |
 
-O nome de branch **nunca leva `v`**: o `v` é só da tag, por causa do Go
-(`v1.6.2`). `{N}` é o número da issue; `X.Y.Z` é a versão.
+**Só a tag leva `v`** (`v1.6.2`), porque o Go exige. Branch, milestone,
+título de PR e de GitHub Release usam `X.Y.Z` (`1.6.2`). `{N}` é o número da issue; `X.Y.Z` é a versão.
 
 ## Regras
 
@@ -25,7 +25,7 @@ O nome de branch **nunca leva `v`**: o `v` é só da tag, por causa do Go
    GitHub antes de qualquer código. `gh issue list --search` antes de criar
    (evita duplicata). Label apropriada (`documentation`, `bug`, `enhancement`).
    Responsável `jpfaria` (`--assignee jpfaria`) e o milestone aberto da
-   próxima versão (`--milestone vX.Y.Z`); sem milestone aberto, criar o do
+   próxima versão (`--milestone X.Y.Z`); sem milestone aberto, criar o do
    próximo patch.
 2. **PR sempre.** Nada commitado direto em `develop` ou `main`. Toda mudança
    entra por Pull Request — sem exceção.
@@ -61,9 +61,9 @@ ele. O número segue o semver e escolhe a branch:
 Abaixo, `<branch>` é essa branch. A versão **não tem issue**: o PR `<branch>`
 → `main` é o registro dela.
 
-0. Milestone `vX.Y.Z` (`gh api repos/xgodev/boost/milestones -f title=vX.Y.Z`)
+0. Milestone `X.Y.Z` (`gh api repos/xgodev/boost/milestones -f title=X.Y.Z`)
    com todas as issues mergeadas em `develop` desde a tag anterior
-   (`gh issue edit N --milestone vX.Y.Z`).
+   (`gh issue edit N --milestone X.Y.Z`).
 1. `git checkout -b <branch> origin/develop` (`origin/main` no hotfix).
 2. Na `<branch>`, só a preparação: a versão fixa em `docs/site/index.html`
    (barra do topo, hero, diff do `go.mod`, timeline) e no `README.md` da raiz
@@ -71,10 +71,10 @@ Abaixo, `<branch>` é essa branch. A versão **não tem issue**: o PR `<branch>`
    no hotfix, a correção entra por uma issue com PR para a `<branch>`.
 3. PR `<branch>` → `main` (`release: X.Y.Z`), merge com `gh pr merge N --merge`.
 4. Tag anotada `vX.Y.Z` no merge commit de `main` e `gh release create vX.Y.Z
-   --verify-tag --latest --generate-notes --notes-start-tag <tag anterior>`,
+   --title X.Y.Z --verify-tag --latest --generate-notes --notes-start-tag <tag anterior>`,
    com uma seção `Behavior / API changes` no topo (`--notes`) quando houver.
    Fechar o milestone.
-5. PR `<branch>` → `develop` (traz o bump de versão de volta), merge, e
+5. PR `<branch>` → `develop` (`release: X.Y.Z back to develop`, traz o bump de versão de volta), merge, e
    apagar a `<branch>`.
 
 O site (`docs/site/`) publica sozinho a cada push em `develop` que mexe em
