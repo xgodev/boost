@@ -185,7 +185,7 @@ func init() {
 var {{.Var}}Once sync.Once
 
 // {{.Ident}}Module provides the {{.Desc}}, built from the keys under
-// {{.Root}}{{if .Names}} with the plugins {{.Names}}{{else}} without plugins{{end}}.
+// {{.Root}}{{if .Names}} with the plugins {{.Names}}{{else}} without plugins{{end}}{{if .Close}}, and closes it when the app stops{{end}}.
 // It returns an empty option after the first call, so every consumer can
 // include it.
 func {{.Ident}}Module() fx.Option {
@@ -201,13 +201,22 @@ func {{.Ident}}Module() fx.Option {
 	return options
 }
 
-func new{{.Ident}}(ctx context.Context) ({{.Type}}, error) {
+func new{{.Ident}}(ctx context.Context{{if .Close}}, lc fx.Lifecycle{{end}}) ({{.Type}}, error) {
 {{- range .Plugins}}
 	{{.Name}}, err := {{.Alias}}.{{.New}}({{$.Var}}Root + ".plugins.{{.Name}}")
 	if err != nil {
 		return nil, err
 	}
 {{- end}}
-	return factory.{{.Build}}(ctx, {{.Var}}Root{{range .Plugins}}, {{.Name}}.Register{{end}})
+{{- if .Close}}
+	c, err := factory.{{.Build}}(ctx, {{.Var}}Root{{range .Plugins}}, {{.Name}}.{{.Register}}{{end}})
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
+{{- else}}
+	return factory.{{.Build}}(ctx, {{.Var}}Root{{range .Plugins}}, {{.Name}}.{{.Register}}{{end}})
+{{- end}}
 }
 {{end}}
