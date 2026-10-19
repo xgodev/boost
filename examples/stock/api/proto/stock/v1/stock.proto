@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+// stock.v1 is the gRPC door of app api: the same use cases its REST routes
+// and MCP tool serve.
+package stock.v1;
+
+option go_package = "github.com/xgodev/boost/examples/stock/api/proto/stock/v1;stockv1";
+
+// StockFinder reads the units in stock of an item.
+service StockFinder {
+  // Find returns the stock of the sku; an unknown sku is NOT_FOUND.
+  rpc Find(FindRequest) returns (Stock) {}
+}
+
+// StockReserver takes units out of stock.
+service StockReserver {
+  // Reserve takes one unit of the sku; an unknown sku is NOT_FOUND and a
+  // sold-out one the code boost maps a Conflict to.
+  rpc Reserve(ReserveRequest) returns (Stock) {}
+}
+
+message FindRequest {
+  string sku = 1;
+}
+
+message ReserveRequest {
+  string sku = 1;
+}
+
+message Stock {
+  string sku = 1;
+  int64 units = 2;
+}

@@ -1,0 +1,4 @@
+boost:
+  factory:
+    zerolog:
+      level: DEBUG
