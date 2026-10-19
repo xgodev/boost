@@ -24,7 +24,9 @@ function plus a root `Module()` that wires the whole application.
 `index` is the zero-based position of the result or parameter and is always
 required. A parameter without `@Inject` is linked to a default provider of
 the same type when one is annotated; otherwise the application must provide
-it (for example with `fx.Supply` or another fx module).
+it (for example with `fx.Supply` or another fx module). Types are matched by
+import path: two packages with the same name (one `boost` package per
+publisher, say) declare different types.
 
 ```go
 package greeting
@@ -413,7 +415,8 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | `GenPath(base, importPath)` / `GenPathUnder(base, sub, importPath)` | directory under the output dir (or its `sub` dir) that mirrors a package: its path in the project, the whole import path for another module |
 | `ModuleOf(base, entry)` | import and module call (`gen_x_hash.NewXModule()`, `gen_x_hash.OptionsModule()` for a `@Config`) of a component |
 | `ConfigKey(modulePath, importPath)` / `ConfigEnv(root, segment)` | root config key of a package's `@Config` and the env var of one of its keys |
-| `Provider(g, pkg, tp)` | component and result index providing the default value of a type |
+| `ProviderFor(g, entry, tp)` | component and result index providing the default value of a type written in the file of `entry` |
+| `Provider(g, pkg, tp)` | deprecated: as `ProviderFor`, but matches types by package name |
 | `Alias(prefix, name, path)` | collision-free import alias (`prefix_name_hash`) |
 | `Clients(g)` / `Client.Module(base)` | factory clients the generator builds, and the import and module call of one |
 | `GeneratorOptions.DefaultClients` / `ClientModule(base, id)` | client types (`github.com/nats-io/nats.go.Conn`) whose default client is generated for the caller to wire, and the import and module call of one (`client_nats_hash.DefaultConnModule()`) |
@@ -421,9 +424,11 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | `ExecuteTemplate(tmpl, name, data)` | executes a template and gofmt's the output |
 | `WriteGenerated(ctx, dir, files, header)` | writes files and removes stale ones starting with `header` |
 
-See [`examples/simple`](./examples/simple) and
-[`examples/publisher`](./examples/publisher): their tests run the generated
-application and fail when `gen/` is stale.
+See [`examples/simple`](./examples/simple),
+[`examples/publisher`](./examples/publisher) and
+[`examples/samename`](./examples/samename) (two `@Config Options` in packages
+named `boost`): their tests run the generated application and fail when
+`gen/` is stale.
 [`examples/clients`](./examples/clients) injects a NATS conn, a Pub/Sub
 client, gocql v1 and v2 sessions and a Bigtable client; its test starts the
 app against an embedded NATS server, the Pub/Sub emulator, a fake Cassandra
@@ -432,8 +437,6 @@ client is closed when the app stops.
 
 ## Limitations
 
-- Types are matched by package name and type expression, not by import path:
-  two packages with the same name and type name are seen as the same type.
 - Each generated `<Func>Module()` returns its options only on the first call
   (`sync.Once`), so a constructor reached by several modules is registered
   once. Build the fx application once per process.

@@ -75,7 +75,7 @@ func PublisherOf(g *graph.Graph[Component]) Publisher {
 			if ann.Name != "" || ann.Group != "" || !isPublisher(comp.Entry, tp) {
 				continue
 			}
-			if _, ok := provided[injectID(comp.Entry.Package, tp, ann)]; ok {
+			if _, ok := provided[injectID(comp.Entry, tp, ann)]; ok {
 				continue
 			}
 			if !slices.Contains(p.Consumers, key) {

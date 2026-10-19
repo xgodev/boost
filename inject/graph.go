@@ -35,6 +35,7 @@ import (
 // @Inject has no provider.
 func NewGraphFromEntries(ctx context.Context, entries []annotation.Entry) (*graph.Graph[Component], error) {
 	g := graph.NewGraph[Component]()
+	entries = withImports(entries)
 
 	providers, err := addComponents(g, entries)
 	if err != nil {
@@ -85,7 +86,7 @@ func addComponents(g *graph.Graph[Component], entries []annotation.Entry) (map[s
 
 		for _, idx := range sortedIndexes(comp.Provides) {
 			ann := comp.Provides[idx]
-			id := xid(entry.Package, comp.Result(idx), ann)
+			id := xid(entry, comp.Result(idx), ann)
 			providers[id] = append(providers[id], key)
 			groups[id] = ann.Group != ""
 		}
@@ -136,7 +137,7 @@ func linkComponents(ctx context.Context, g *graph.Graph[Component], providers ma
 		comp := g.Vertices[key].Value
 		for i, param := range comp.Entry.Func.Parameters {
 			ann, injected := comp.Injects[i]
-			id := injectID(comp.Entry.Package, param.Type, ann)
+			id := injectID(comp.Entry, param.Type, ann)
 
 			keys := providers[id]
 			if _, client := clientFactory(comp.Entry, param.Type); len(keys) == 0 && injected && client && ann.Group == "" {
@@ -170,13 +171,32 @@ func linkComponents(ctx context.Context, g *graph.Graph[Component], providers ma
 // no group) of type tp, written as in package pkg ("*Handler" in package
 // orders and "*orders.Handler" elsewhere are the same type), and the index of
 // that result.
+//
+// Deprecated: Provider matches types by package name, so it cannot tell two
+// packages with the same name apart; use ProviderFor.
 func Provider(g *graph.Graph[Component], pkg, tp string) (Component, int, bool) {
-	want := xid(pkg, tp, Annotation{})
+	none := Annotation{}
+	want := qualifyName(pkg, tp) + "_" + none.ID()
+	return findProvider(g, func(comp Component, idx int, ann Annotation) bool {
+		return qualifyName(comp.Entry.Package, comp.Result(idx))+"_"+ann.ID() == want
+	})
+}
+
+// ProviderFor returns the component that provides the default value (no
+// name, no group) of type tp, written in the file of entry, and the index of
+// that result. Types are matched by import path.
+func ProviderFor(g *graph.Graph[Component], entry annotation.Entry, tp string) (Component, int, bool) {
+	want := xid(entry, tp, Annotation{})
+	return findProvider(g, func(comp Component, idx int, ann Annotation) bool {
+		return xid(comp.Entry, comp.Result(idx), ann) == want
+	})
+}
+
+func findProvider(g *graph.Graph[Component], match func(Component, int, Annotation) bool) (Component, int, bool) {
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for _, idx := range sortedIndexes(comp.Provides) {
-			ann := comp.Provides[idx]
-			if xid(comp.Entry.Package, comp.Result(idx), ann) == want {
+			if match(comp, idx, comp.Provides[idx]) {
 				return comp, idx, true
 			}
 		}
@@ -407,21 +427,22 @@ func declName(entry annotation.Entry) string {
 	return entry.Func.Name
 }
 
-// xid identifies a provided or injected value by its qualified type and
-// annotation (default, named or grouped).
-func xid(pkg, tp string, ann Annotation) string {
-	return fmt.Sprintf("%s_%s", qualifyType(pkg, tp), ann.ID())
+// xid identifies a provided or injected value by its type, qualified by
+// import path in the file of entry, and its annotation (default, named or
+// grouped).
+func xid(entry annotation.Entry, tp string, ann Annotation) string {
+	return fmt.Sprintf("%s_%s", qualifyType(entry, tp), ann.ID())
 }
 
 // injectID returns the id a parameter depends on. A group parameter `[]T`
 // depends on the providers of T in that group.
-func injectID(pkg, tp string, ann Annotation) string {
+func injectID(entry annotation.Entry, tp string, ann Annotation) string {
 	if ann.Group != "" {
 		if elem, ok := sliceElem(tp); ok {
 			tp = elem
 		}
 	}
-	return xid(pkg, tp, ann)
+	return xid(entry, tp, ann)
 }
 
 func sortedIndexes(m map[int]Annotation) []int {

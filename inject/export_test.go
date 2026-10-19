@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/model/errors"
 )
 
@@ -109,6 +110,41 @@ func TestProvider(t *testing.T) {
 			if ok {
 				assert.Equal(t, tc.wantKey, comp.Key())
 				assert.Equal(t, tc.wantIdx, idx)
+			}
+		})
+	}
+}
+
+func TestProviderFor(t *testing.T) {
+	received := at("pricereceived/boost", "NewPublisher", nil, []string{"*Publisher"}, provide("index=0"))
+	changed := at("pricechanged/boost", "NewPublisher", nil, []string{"*Publisher"}, provide("index=0"))
+	g := newTestGraph(t, []annotation.Entry{received, changed})
+
+	consumer := at("app", "Run", nil, nil)
+	consumer.Imports = map[string]string{"boost": testModule + "/pricechanged/boost"}
+
+	testCases := []struct {
+		name    string
+		entry   annotation.Entry
+		tp      string
+		wantKey string
+	}{
+		{name: "local type in one of two same-named packages", entry: received, tp: "*Publisher",
+			wantKey: testModule + "/pricereceived/boost.NewPublisher"},
+		{name: "the other one", entry: changed, tp: "*Publisher",
+			wantKey: testModule + "/pricechanged/boost.NewPublisher"},
+		{name: "qualified, resolved by the file's import", entry: consumer, tp: "*boost.Publisher",
+			wantKey: testModule + "/pricechanged/boost.NewPublisher"},
+		{name: "unknown type", entry: consumer, tp: "*Missing"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			comp, idx, ok := ProviderFor(g, tc.entry, tc.tp)
+			require.Equal(t, tc.wantKey != "", ok)
+			if ok {
+				assert.Equal(t, tc.wantKey, comp.Key())
+				assert.Equal(t, 0, idx)
 			}
 		})
 	}
