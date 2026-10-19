@@ -16,13 +16,23 @@ import (
 	bsmiddleware "github.com/xgodev/boost/extra/middleware"
 	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
 	cloudeventsfx "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http"
+	natsfx "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/nats-io/nats.go/v1"
 	loggerfx "github.com/xgodev/boost/fx/modules/bootstrap/function/middleware/logger"
 	recoveryfx "github.com/xgodev/boost/fx/modules/bootstrap/function/middleware/recovery"
+	errors "github.com/xgodev/boost/model/errors"
+	config "github.com/xgodev/boost/wrapper/config"
 )
+
+// functionAdapterKey chooses the adapter of the @Function of app worker.
+const functionAdapterKey = "worker.function.adapter"
+
+func init() {
+	config.Add(functionAdapterKey, "cloudevents", "adapter of the @Function of app worker: cloudevents, nats")
+}
 
 var functionOnce sync.Once
 
-// FunctionModule runs the @Function handler with the cloudevents adapter.
+// FunctionModule runs the @Function handler with the adapter named by worker.function.adapter (cloudevents, nats; default cloudevents).
 // It returns an empty option after the first call.
 func FunctionModule() fx.Option {
 	options := fx.Options()
@@ -51,9 +61,23 @@ func FunctionModule() fx.Option {
 				fx.ResultTags(`name:"bootstrap.function.middlewares"`),
 			)),
 			functionfx.Module[*src_cloudevents_c136a3fd.Event](nil),
-			cloudeventsfx.Module[*src_cloudevents_c136a3fd.Event](),
+			functionAdapterModule(),
 		)
 	})
 
 	return options
+}
+
+// functionAdapterModule wires the adapter named by worker.function.adapter
+// and only that one: the others, and their clients, are never built. An
+// unknown name fails the boot.
+func functionAdapterModule() fx.Option {
+	switch name := config.String(functionAdapterKey); name {
+	case "cloudevents":
+		return cloudeventsfx.Module[*src_cloudevents_c136a3fd.Event]()
+	case "nats":
+		return natsfx.Module[*src_cloudevents_c136a3fd.Event]()
+	default:
+		return fx.Error(errors.NotValidf("%s: unknown adapter %q; valid: %s", functionAdapterKey, name, "cloudevents, nats"))
+	}
 }
