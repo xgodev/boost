@@ -36,7 +36,7 @@ func Implementations(g *graph.Graph[Component]) ([]Implementation, error) {
 			if ann.Group != "" {
 				continue
 			}
-			id := xid(comp.Entry.Package, comp.Result(idx), ann)
+			id := xid(comp.Entry, comp.Result(idx), ann)
 			providers[id] = append(providers[id], comp)
 		}
 	}
@@ -183,7 +183,7 @@ func checkConsumers(g *graph.Graph[Component], sets map[string]Implementation) e
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for i, param := range comp.Entry.Func.Parameters {
-			set, ok := sets[injectID(comp.Entry.Package, param.Type, comp.Injects[i])]
+			set, ok := sets[injectID(comp.Entry, param.Type, comp.Injects[i])]
 			if !ok {
 				continue
 			}

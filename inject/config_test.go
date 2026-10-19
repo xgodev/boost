@@ -273,3 +273,44 @@ func TestConfigKeyAndEnv(t *testing.T) {
 	assert.Equal(t, "INTERNAL_PKG_CLIENT_QUOTE_RESTY_BASE__URL", ConfigEnv("internal.pkg.client.quote.resty", "baseUrl"))
 	assert.Equal(t, "STOCK_SDK__GO_TIMEOUT", ConfigEnv("stock.sdkGo", "timeout"))
 }
+
+// Two @Config Options in packages that share a name are two types (#202): each
+// is keyed by its import path, so both are provided and each reaches its own
+// consumers.
+func TestGenerator_RenderConfigInSameNamedPackages(t *testing.T) {
+	received := cfg("pricereceived/boost", "Options", field("Subject", "string", `default:"precos-entrada" desc:"subject"`))
+	changed := cfg("pricechanged/boost", "Options", field("Subject", "string", `default:"precos-alteracao" desc:"subject"`))
+	newReceived := at("pricereceived/boost", "NewPublisher", []string{"*Options"}, []string{"*Publisher"}, provide("index=0"))
+	newChanged := at("pricechanged/boost", "NewPublisher", []string{"*Options"}, []string{"*Publisher"}, provide("index=0"))
+	service := at("app", "NewService", []string{"*received.Publisher", "*changed.Publisher"}, []string{"*Service"}, provide("index=0"))
+	service.Imports = map[string]string{
+		"received": testModule + "/pricereceived/boost",
+		"changed":  testModule + "/pricechanged/boost",
+	}
+
+	g := newTestGraph(t, []annotation.Entry{received, changed, newReceived, newChanged, service})
+
+	assert.Equal(t, []string{testModule + "/pricereceived/boost.NewPublisher"},
+		edgesOf(g.Edges[testModule+"/pricereceived/boost.Options"]), "each Options reaches only its package")
+	assert.Equal(t, []string{testModule + "/pricechanged/boost.NewPublisher"},
+		edgesOf(g.Edges[testModule+"/pricechanged/boost.Options"]))
+	assert.Equal(t, []string{testModule + "/app.NewService"},
+		edgesOf(g.Edges[testModule+"/pricereceived/boost.NewPublisher"]), "an aliased import resolves by path")
+	assert.Equal(t, []string{testModule + "/app.NewService"},
+		edgesOf(g.Edges[testModule+"/pricechanged/boost.NewPublisher"]))
+
+	files, err := NewGenerator(g, testOptions("/mod")).Render(context.Background())
+	require.NoError(t, err)
+
+	for _, name := range []string{
+		"pricereceived/boost/options_module.go",
+		"pricereceived/boost/newpublisher_module.go",
+		"pricechanged/boost/options_module.go",
+		"pricechanged/boost/newpublisher_module.go",
+		"app/newservice_module.go",
+		"module.go",
+	} {
+		require.Contains(t, files, name)
+		golden(t, filepath.Join("testdata", "samename", name+".golden"), files[name])
+	}
+}

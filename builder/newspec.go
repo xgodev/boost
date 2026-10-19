@@ -348,7 +348,7 @@ func (b *specBuilder) handler(entry annotation.Entry, ann string) (Handler, erro
 	}
 
 	for _, tp := range []string{"*" + entry.Struct, entry.Struct} {
-		if comp, _, ok := inject.Provider(b.graph, entry.Package, tp); ok {
+		if comp, _, ok := inject.ProviderFor(b.graph, entry, tp); ok {
 			if err := b.singleConstructor(comp, ann, declName(entry), "its receiver "+tp); err != nil {
 				return Handler{}, err
 			}

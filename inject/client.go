@@ -261,7 +261,7 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 				continue
 			}
 
-			if provider, ok := provided[injectID(comp.Entry.Package, tp, ann)]; ok {
+			if provider, ok := provided[injectID(comp.Entry, tp, ann)]; ok {
 				if ann.Plugins != "" {
 					return nil, errors.NotValidf("@Inject on %s parameter %d has plugins, but %s is provided by %s: plugins apply only to a client inject builds",
 						key, idx, tp, provider)
@@ -363,7 +363,7 @@ func providedValues(g *graph.Graph[Component]) map[string]string {
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for _, idx := range sortedIndexes(comp.Provides) {
-			id := xid(comp.Entry.Package, comp.Result(idx), comp.Provides[idx])
+			id := xid(comp.Entry, comp.Result(idx), comp.Provides[idx])
 			if _, ok := provided[id]; !ok {
 				provided[id] = key
 			}
