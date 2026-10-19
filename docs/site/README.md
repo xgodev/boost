@@ -104,7 +104,7 @@ path (`// github.com/xgodev/boost/factory`, …).
 | `#packages` | Every piece has one job. | Bento: factories, plugins, wrappers, middleware onion, inject graph, annotation, builder doors (`@REST`, `@GRPC`, `@Function`, `@MCP`, `@Middleware`, `@Default`), functions, MCP |
 | `#builder` | From annotation to binary in two commands. | Annotate → `go generate ./...` → `go run ./cmd/api`, generated file tree |
 | `#compat` | Upgrade boost. Keep your code. | Public API as a contract, SDK majors side by side (mongo-driver v1/v2), comparative quality gate, `go.mod` diff, release timeline |
-| `#integrations` | There's a factory for that. | Logo wall of 23 libraries plus a `+16` tile; the other 16 by name; the full 39 by group with version paths in `<details id="all-libs">` (the `+16` tile opens it); why a factory: config keys, built-in plumbing, plugins; MongoDB by hand vs `mongo.NewConn` with plugins and env keys (#101) |
+| `#integrations` | There's a factory for that. | Logo wall of 23 libraries plus a `+18` tile; the other 18 by name; the full 41 by group with version paths in `<details id="all-libs">` (the `+18` tile opens it); why a factory: config keys, built-in plumbing, plugins; MongoDB by hand vs `mongo.NewConn` with plugins and env keys (#101) |
 | `#agents` | — | `claude-plugin@xgodev` install, the 5 Iron Laws |
 | final CTA | Start with one line. | `go get` |
 
@@ -158,16 +158,16 @@ reader can check what boost builds on.
 
 ## Numbers used on the page
 
-Counted from the repo on 2026-10-18 (#88). Recount when a factory or library is added.
+Counted from the repo on 2026-10-18 (#88, #131, #129, #126). Recount when a factory or library is added.
 
 | Number | What |
 |---|---|
-| 48 | factories: directories under `factory/contrib/` with a `New…`/`Register…` constructor in non-test, non-example Go files, outside `/plugins/` and `/internal/` |
-| 58 | plugins: the same count, only `/plugins/` directories |
-| 39 | upstream libraries: the 40 `org/repo` directories under `factory/contrib/`, minus `cloud.google.com/grpc`, which wraps `google.golang.org/grpc` (already counted). `cloud.google.com/api` is `google.golang.org/api` |
+| 53 | factories: directories under `factory/contrib/` with a `New…`/`Register…` constructor in non-test, non-example Go files, outside `/plugins/` and `/internal/` |
+| 79 | plugins: the same count, only `/plugins/` directories |
+| 41 | upstream libraries: the 43 `org/repo` directories under `factory/contrib/`, minus `cloud.google.com/grpc`, which wraps `google.golang.org/grpc` (already counted), and `apache/cassandra-gocql-driver`, the Apache home of `gocql/gocql` (#131). `cloud.google.com/api` is `google.golang.org/api` |
 | 220 | tags since 2024-07 (latest `v1.1.1`) |
 
-The 48/58/39 include the MCP factory (server and client, #70).
+The 53/79/41 include the MCP factory (server and client, #70), echo v5 (#129) and Bigtable (#126).
 
 `annotation`, `inject`, the MCP factory, `builder` and its doors (`@MCP`
 since #79), `@Middleware`, `@Default`, `@Config` and the `gen/` layout that mirrors the project are on

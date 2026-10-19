@@ -48,7 +48,8 @@ type mcpArgs struct {
 	App    string `attr:"app"`
 }
 
-// functionArgs are the arguments of @Function(adapter=nats, app=api, middlewares=[recovery, logger]).
+// functionArgs are the arguments of @Function(adapter=nats, app=api, middlewares=[recovery, logger]);
+// adapter may be a list, adapter=[pubsub, nats], chosen by config.
 type functionArgs struct {
 	Adapter     string `attr:"adapter"`
 	App         string `attr:"app"`
@@ -73,9 +74,12 @@ var (
 	// functionAdapters maps the adapter of @Function to the fx modules that
 	// run it, imported under fixed aliases by the generated function door.
 	functionAdapters = map[string][]inject.ImportData{
+		"azure":       {{Alias: "azurefx", Path: fxAdapterRoot + "/azure/functions/v1"}},
 		"cenats":      {{Alias: "cenatsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1"}},
 		"cloudevents": {{Alias: "cloudeventsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/core/http"}},
 		"kafka":       {{Alias: "kafkafx", Path: fxAdapterRoot + "/confluentinc/confluent-kafka-go/v2"}},
+		"kafkago":     {{Alias: "kafkagofx", Path: fxAdapterRoot + "/segmentio/kafka-go/v0"}},
+		"lambda":      {{Alias: "lambdafx", Path: fxAdapterRoot + "/aws/aws-lambda-go/v1"}},
 		"nats":        {{Alias: "natsfx", Path: fxAdapterRoot + "/nats-io/nats.go/v1"}},
 		// each version is enabled by its own config, so both are included
 		"pubsub": {

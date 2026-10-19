@@ -21,14 +21,17 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | Module | Entry points | Provides | Requires from the app |
 |---|---|---|---|
 | `allegro/bigcache/v3` | `Module` | `*bigcache.BigCache` | — |
+| `apache/cassandra-gocql-driver/v2` | `Module` | `*gocql.Session` | — |
 | `aws/aws-sdk-go-v2/v1` | `Module` | `aws.Config` | — |
+| `aws/aws-sdk-go-v2/v1/client/sns`, `/sqs`, `/kinesis` | `Module` | SDK `*<service>.Client` and boost `<service>.Client` | — |
 | `cloud.google.com/bigquery/v1` | `Module` | `*bigquery.Client` | — |
+| `cloud.google.com/bigtable/v1` | `Module` | `*bigtable.Client` | — |
 | `cloud.google.com/firestore/v1` | `Module` | `*firestore.Client` | — |
-| `cloud.google.com/pubsub/v1` | `Module` | `*pubsub.Client` | — |
+| `cloud.google.com/pubsub/v1`, `v2` | `Module` | `*pubsub.Client` | — |
 | `confluentinc/confluent-kafka-go/v2` | `ProducerModule`, `ConsumerModule` | kafka producer / consumer | — |
 | `coocood/freecache/v1` | `Module` | `*freecache.Cache` | — |
 | `datadog/dd-trace-go/v1` | `TracerModule`, `ProfilerModule` | starts tracer/profiler | — |
-| `elastic/go-elasticsearch/v8` | `Module`, `BulkModule` | `*elasticsearch.Client` | — |
+| `elastic/go-elasticsearch/v8`, `v9` | `Module`, `BulkModule` | `*elasticsearch.Client`, `esutil.BulkIndexer` | — |
 | `go-resty/resty/v2` | `Module` | `*resty.Client` | — |
 | `go.mongodb.org/mongo-driver/v1`, `v2` | `Module` | `*mongo.Conn`, `*mongo.Database` | — |
 | `go.opentelemetry.io/otel/v1` | `Module` | starts tracer and meter providers | — |
@@ -49,9 +52,17 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | `panjf2000/ants/v2` | `Module` | `*ants.Wrapper` | — |
 | `prometheus/client_golang/v1` | `PusherModule` | starts push gateway pusher (if enabled) | — |
 | `redis/go-redis/v9` | `ClientModule`, `ClusterModule` | `*redis.Client`, `*redis.ClusterClient` | — |
+| `segmentio/kafka-go/v0` | `WriterModule`, `ReaderModule` | `*kafka.Writer`, `*kafka.Reader` (closed on stop) | — |
 | `tidwall/buntdb/v1` | `Module` | `*buntdb.DB` | — |
 
 `godror` and `pgx` both provide `*sql.DB`: compose only one per app.
+
+Pub/Sub v1 and v2 are both composable: `boost.factory.gcp.pubsub.version`
+(`v2` by default) turns on one of them. The publisher driver and the function
+adapter pick their version the same way, through
+`boost.wrapper.publisher.driver.pubsub.version` and
+`boost.bootstrap.function.adapter.pubsub.version`. To stay on v1, set the
+three keys to `v1`; any value other than `v1` or `v2` fails the boot.
 
 ## How to Use
 

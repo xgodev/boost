@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"cloud.google.com/go/pubsub"
 	"cloud.google.com/go/pubsub/pstest"
+	"cloud.google.com/go/pubsub/v2"
+	"cloud.google.com/go/pubsub/v2/apiv1/pubsubpb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xgodev/boost"
@@ -36,14 +37,16 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// topic creates topic id and a subscription to it.
-func topic(t *testing.T, client *pubsub.Client, id, sub string) *pubsub.Topic {
+// topic creates topic id and a subscription sub to it.
+func topic(t *testing.T, client *pubsub.Client, id, sub string) {
 	ctx := context.Background()
-	tp, err := client.CreateTopic(ctx, id)
+	tp, err := client.TopicAdminClient.CreateTopic(ctx, &pubsubpb.Topic{Name: "projects/" + project + "/topics/" + id})
 	require.NoError(t, err)
-	_, err = client.CreateSubscription(ctx, sub, pubsub.SubscriptionConfig{Topic: tp})
+	_, err = client.SubscriptionAdminClient.CreateSubscription(ctx, &pubsubpb.Subscription{
+		Name:  "projects/" + project + "/subscriptions/" + sub,
+		Topic: tp.GetName(),
+	})
 	require.NoError(t, err)
-	return tp
 }
 
 // TestWorker starts app worker, publishes a message on topic messages and
@@ -58,20 +61,20 @@ func TestWorker(t *testing.T) {
 		option.WithGRPCDialOption(grpc.WithTransportCredentials(insecure.NewCredentials())))
 	require.NoError(t, err)
 	defer client.Close()
-	messages := topic(t, client, "messages", "messages-worker")
+	topic(t, client, "messages", "messages-worker")
 	topic(t, client, replier.RepliesSubject, "replies-test")
 
 	app := fx.New(append(worker.Modules(), fx.NopLogger)...)
 	require.NoError(t, app.Err())
 	require.NoError(t, app.Start(ctx))
 
-	_, err = messages.Publish(ctx, &pubsub.Message{Data: []byte(`{"message":"hi"}`)}).Get(ctx)
+	_, err = client.Publisher("messages").Publish(ctx, &pubsub.Message{Data: []byte(`{"message":"hi"}`)}).Get(ctx)
 	require.NoError(t, err)
 
 	rctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	var reply *pubsub.Message
-	err = client.Subscription("replies-test").Receive(rctx, func(_ context.Context, msg *pubsub.Message) {
+	err = client.Subscriber("replies-test").Receive(rctx, func(_ context.Context, msg *pubsub.Message) {
 		msg.Ack()
 		reply = msg
 		cancel()

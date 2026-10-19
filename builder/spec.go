@@ -76,9 +76,14 @@ type Tool struct {
 // Function is a @Function annotation: the event handler of a function app,
 // the adapter that feeds it and the middlewares it runs around the handler.
 type Function struct {
-	Adapter     string
-	Handler     Handler
-	Middlewares []string // middleware names, the outermost first
+	// Adapter is the adapter of adapter=x, or the first of adapter=[x, y]:
+	// the one wired when <app>.function.adapter is unset.
+	Adapter string
+	// Alternatives are the other adapters of adapter=[x, y], in order, that
+	// <app>.function.adapter may choose instead. Empty for a single adapter.
+	Alternatives []string
+	Handler      Handler
+	Middlewares  []string // middleware names, the outermost first
 	// Providers are the inject constructors of the values the middlewares
 	// are built with, like the publisher.Driver of publisher. Sorted by key.
 	Providers []inject.Component

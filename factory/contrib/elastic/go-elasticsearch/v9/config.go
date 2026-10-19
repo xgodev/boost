@@ -1,0 +1,63 @@
+package elasticsearch
+
+import (
+	"runtime"
+	"time"
+
+	"github.com/xgodev/boost/wrapper/config"
+)
+
+const (
+	root                  = "boost.factory.elasticsearch"
+	addresses             = ".addresses"
+	pu                    = ".username"
+	pp                    = ".password"
+	cloudID               = ".cloudID"
+	apiKey                = ".APIKey"
+	caCert                = ".CACert"
+	retryOnStatus         = ".retryOnStatus"
+	disableRetry          = ".disableRetry"
+	maxRetries            = ".maxRetries"
+	discoverNodesOnStart  = ".discoverNodesOnStart"
+	discoverNodesInterval = ".discoverNodesInterval"
+	enableMetrics         = ".enableMetrics"
+	enableDebugLogger     = ".enableDebugLogger"
+	retryBackoff          = ".retryBackoff"
+	bulk                  = ".bulk"
+	index                 = bulk + ".index"
+	numWorkers            = bulk + ".numWorkers"
+	flushInterval         = bulk + ".flushInterval"
+	flushBytes            = bulk + ".flushBytes"
+	pipeline              = bulk + ".pipeline"
+	timeout               = bulk + ".timeout"
+	// PluginsRoot is the config root of this factory's plugins.
+	PluginsRoot = root + ".plugins"
+)
+
+func init() {
+	ConfigAdd(root)
+}
+
+// ConfigAdd registers the client and bulk indexer keys under path.
+func ConfigAdd(path string) {
+	config.Add(path+addresses, []string{"http://127.0.0.1:9200"}, "a list of Elasticsearch nodes to use")
+	config.Add(path+pu, "", "username for HTTP Basic Authentication")
+	config.Add(path+pp, "", "password for HTTP Basic Authentication", config.WithHide())
+	config.Add(path+cloudID, "", "endpoint for the Elastic Service (https://elastic.co/cloud)")
+	config.Add(path+apiKey, "", "base64-encoded token for authorization; if set, overrides username and password", config.WithHide())
+	config.Add(path+caCert, "", "PEM-encoded certificate authorities")
+	config.Add(path+retryOnStatus, []int{502, 503, 504}, "list of status codes for retry")
+	config.Add(path+disableRetry, false, "disable the retries")
+	config.Add(path+maxRetries, 3, "maximum number of retries")
+	config.Add(path+discoverNodesOnStart, false, "discover nodes when initializing the client")
+	config.Add(path+discoverNodesInterval, 0*time.Millisecond, "discover nodes periodically. Default: 0 (disabled)")
+	config.Add(path+enableMetrics, false, "enable the metrics collection")
+	config.Add(path+enableDebugLogger, false, "enable the debug logging")
+	config.Add(path+retryBackoff, 5*time.Millisecond, "backoff per retry attempt, multiplied by the attempt number")
+	config.Add(path+index, "index", "defines index")
+	config.Add(path+numWorkers, runtime.NumCPU(), "defines bulk workers")
+	config.Add(path+flushInterval, 30*time.Second, "defines flush interval")
+	config.Add(path+flushBytes, 5242880, "defines flush bytes")
+	config.Add(path+pipeline, "", "defines pipeline")
+	config.Add(path+timeout, 2*time.Second, "defines timeout")
+}

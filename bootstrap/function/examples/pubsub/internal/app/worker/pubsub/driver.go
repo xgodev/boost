@@ -5,9 +5,9 @@ package pubsub
 import (
 	"context"
 
-	gpubsub "cloud.google.com/go/pubsub"
+	gpubsub "cloud.google.com/go/pubsub/v2"
 	"github.com/xgodev/boost/wrapper/publisher"
-	drvpubsub "github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v1"
+	drvpubsub "github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v2"
 )
 
 // Driver is the driver the publisher middleware publishes the replies with:

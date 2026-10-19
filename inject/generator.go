@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"text/template"
@@ -109,6 +110,7 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 		return nil, err
 	}
 	consumers := clientsByConsumer(clients)
+	publisher := PublisherOf(p.graph)
 
 	files := map[string][]byte{}
 	root := RootData{Package: packageIdent(filepath.Base(p.opts.OutputDir))}
@@ -124,7 +126,11 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 
 	for _, key := range p.graph.SortedKeys() {
 		vertex := p.graph.Vertices[key]
-		name, src, err := p.renderVertex(tmpl, base, vertex, switches, consumers[key])
+		var injects *Publisher
+		if slices.Contains(publisher.Consumers, key) {
+			injects = &publisher
+		}
+		name, src, err := p.renderVertex(tmpl, base, vertex, switches, consumers[key], injects)
 		if err != nil {
 			return nil, err
 		}
@@ -153,6 +159,17 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 	for _, c := range clients {
 		addRoot(c.Module(base))
 	}
+	if len(publisher.Consumers) > 0 {
+		// the clients of the drivers are wired by the publisher, only the chosen one
+		missing, err := renderPublisher(tmpl, base, publisher, clients, files)
+		if err != nil {
+			return nil, err
+		}
+		if err := renderClients(tmpl, missing, files); err != nil {
+			return nil, err
+		}
+		addRoot(publisher.Module(base))
+	}
 
 	src, err := ExecuteTemplate(tmpl, "root", root)
 	if err != nil {
@@ -166,7 +183,7 @@ func (p *Generator) Render(ctx context.Context) (map[string][]byte, error) {
 // renderVertex returns the path, relative to OutputDir, and the source of
 // the module of one component: the config module of a @Config struct, the
 // fx module of a function otherwise.
-func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client) (string, []byte, error) {
+func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client, publisher *Publisher) (string, []byte, error) {
 	comp := vertex.Value
 	name := path.Join(GenPath(base, comp.Entry.Path), strings.ToLower(declName(comp.Entry))+"_module.go")
 
@@ -174,7 +191,7 @@ func (p *Generator) renderVertex(tmpl *template.Template, base string, vertex *g
 	if comp.IsConfig() {
 		data = configData(p.opts.ModulePath, comp)
 	} else {
-		module, err := p.moduleData(base, vertex, switches, clients)
+		module, err := p.moduleData(base, vertex, switches, clients, publisher)
 		if err != nil {
 			return "", nil, err
 		}
@@ -275,9 +292,9 @@ func implementationData(base, key string, set Implementation) ImplementationData
 
 // moduleData collects what the module template needs for one component. A
 // dependency that is a member of an implementation set is replaced by the
-// set's switch module; the clients the component injects come after its
-// dependencies.
-func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client) (ModuleData, error) {
+// set's switch module; the clients the component injects, then the publisher
+// when it injects the one inject builds, come after its dependencies.
+func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], switches map[string]Implementation, clients []Client, publisher *Publisher) (ModuleData, error) {
 	comp := vertex.Value
 	entry := comp.Entry
 
@@ -333,6 +350,11 @@ func (p *Generator) moduleData(base string, vertex *graph.Vertex[Component], swi
 	}
 	for _, c := range clients {
 		imp, call := c.Module(base)
+		data.Deps = append(data.Deps, call)
+		importOnce(imp)
+	}
+	if publisher != nil {
+		imp, call := publisher.Module(base)
 		data.Deps = append(data.Deps, call)
 		importOnce(imp)
 	}
