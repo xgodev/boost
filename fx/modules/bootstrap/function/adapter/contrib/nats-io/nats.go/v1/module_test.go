@@ -58,3 +58,23 @@ func TestModuleBringsItsConn(t *testing.T) {
 	var got []function.CmdFunc[string]
 	assert.NoError(t, fx.ValidateApp(Module[string](), adapters(&got)), "the nats factory module provides the *nats.Conn")
 }
+
+// TestModuleWithNamedClientTakesTheNamedConn wires the adapter with the
+// *nats.Conn named prices, the app's only one (#208).
+func TestModuleWithNamedClientTakesTheNamedConn(t *testing.T) {
+	reset(t)
+
+	provided := false
+	var got []function.CmdFunc[string]
+	app := fx.New(
+		fx.NopLogger,
+		fx.Provide(fx.Annotate(func() *nats.Conn { provided = true; return &nats.Conn{} }, fx.ResultTags(`name:"prices"`))),
+		ModuleWithNamedClient[string]("prices"),
+		adapters(&got),
+	)
+	require.NoError(t, app.Err(), "the adapter reads with the *nats.Conn named prices")
+
+	require.Len(t, got, 1)
+	assert.Equal(t, "nats", got[0](nil).Use)
+	assert.True(t, provided)
+}

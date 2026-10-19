@@ -354,9 +354,17 @@ and its client:
   only with cgo (`//go:build cgo`). An app built with `CGO_ENABLED=0` still
   builds; choosing `kafka` there fails the boot with `NotSupported`. Leave
   `kafka` out of `drivers` to keep cgo and librdkafka out of the app.
+- **Named.** `@Inject(index=0, name=orders)` on a `*publisher.Publisher`
+  builds the publisher `orders`, in `gen/client/.../wrapper/publisher/orders`
+  (`orders.PublisherModule()`, provided as `name:"orders"`). Its drivers take
+  the named client `orders` of their factory (`boost.factory.nats.clients.orders.*`,
+  `boost.factory.gcp.pubsub.clients.orders.*`, ...), and its driver is
+  chosen by `boost.wrapper.publisher.clients.orders.driver.name`. `drivers`
+  works per publisher. The name follows the client names: `[a-z][a-zA-Z0-9]*`,
+  else `NotValid`.
 - **The app wins.** When a `@Provide` of the app provides
-  `*publisher.Publisher`, it is used and nothing is generated. A named
-  publisher (`name=x`) is not built: provide it. `plugins` do not apply.
+  `*publisher.Publisher` (with the same name, or none), it is used and
+  nothing is generated for it. `plugins` do not apply.
 - The hand-written driver fx modules (`fx/modules/wrapper/publisher/...`) and
   their `.enabled` keys are unchanged; use them or `PublisherModule()`, not
   both.
@@ -434,7 +442,9 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 | `Alias(prefix, name, path)` | collision-free import alias (`prefix_name_hash`) |
 | `Clients(g)` / `Client.Module(base)` | factory clients the generator builds, and the import and module call of one |
 | `GeneratorOptions.DefaultClients` / `ClientModule(base, id)` | client types (`github.com/nats-io/nats.go.Conn`) whose default client is generated for the caller to wire, and the import and module call of one (`client_nats_hash.DefaultConnModule()`) |
-| `DefaultClientProvider(g, id)` | component providing the default client of a type, with an unnamed, ungrouped `@Provide` |
+| `GeneratorOptions.NamedClients` / `NamedClientModule(base, id, name)` | the same for named clients (`ClientRef{ID, Name}`, `client_nats_hash.OrdersConnModule()`) |
+| `DefaultClientProvider(g, id)` / `ClientProvider(g, id, name)` | component providing the default (or the named) client of a type, with an ungrouped `@Provide` |
+| `Publishers(g)` | publishers the generator builds: the unnamed one, then the named ones by name |
 | `ExecuteTemplate(tmpl, name, data)` | executes a template and gofmt's the output |
 | `WriteGenerated(ctx, dir, files, header)` | writes files and removes stale ones starting with `header` |
 

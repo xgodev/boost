@@ -2,6 +2,7 @@ package builder
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
@@ -78,8 +79,9 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 }
 
 // adapterOptions returns the fx modules that run the named adapter of fn.
-// An adapter reading with a client inject builds takes the app's default
-// client: the module of its inject constructor, or the one inject generates.
+// An adapter reading with a client inject builds takes the app's client of
+// that type, the default one or the one client=x names: the module of its
+// inject constructor, or the one inject generates.
 func adapterOptions(base string, imps *imports, result string, fn Function, name string) ([]string, error) {
 	var options []string
 	for _, adapter := range functionAdapters[name] {
@@ -95,12 +97,16 @@ func adapterOptions(base string, imps *imports, result string, fn Function, name
 			imp, call = inject.ModuleOf(base, provider.Entry)
 		} else {
 			var err error
-			if imp, call, err = inject.ClientModule(base, adapter.Client); err != nil {
+			if imp, call, err = inject.NamedClientModule(base, adapter.Client, fn.Client); err != nil {
 				return nil, err
 			}
 		}
 		imps.add(imp.Alias, imp.Path)
-		options = append(options, alias+".ModuleWithoutClient["+result+"]()", call)
+		module := alias + ".ModuleWithoutClient[" + result + "]()"
+		if fn.Client != "" {
+			module = alias + ".ModuleWithNamedClient[" + result + "](" + strconv.Quote(fn.Client) + ")"
+		}
+		options = append(options, module, call)
 	}
 	return options, nil
 }

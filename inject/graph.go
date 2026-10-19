@@ -144,7 +144,11 @@ func linkComponents(ctx context.Context, g *graph.Graph[Component], providers ma
 				log.FromContext(ctx).Debugf("parameter %d of %s (%s) is a client inject builds", i, key, param.Type)
 				continue
 			}
-			if len(keys) == 0 && injected && ann.Name == "" && ann.Group == "" && isPublisher(comp.Entry, param.Type) {
+			if len(keys) == 0 && injected && ann.Group == "" && isPublisher(comp.Entry, param.Type) {
+				if ann.Name != "" && !envSegment.MatchString(ann.Name) {
+					return errors.NotValidf("@Inject on %s parameter %d: the name %s of the %s inject builds must match %s so an environment variable reaches its keys",
+						key, i, ann.Name, param.Type, envSegment)
+				}
 				log.FromContext(ctx).Debugf("parameter %d of %s (%s) is the publisher inject builds", i, key, param.Type)
 				continue
 			}

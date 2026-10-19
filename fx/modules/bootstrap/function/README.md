@@ -35,12 +35,13 @@ The `nats`, `cloudevents_nats` and Pub/Sub v2 adapter modules
 |---|---|
 | `Module[T]()` | brings its own: the factory fx module of `*nats.Conn` or `*pubsub.Client` |
 | `ModuleWithoutClient[T]()` | takes the one the app provides |
+| `ModuleWithNamedClient[T](name)` | takes the one the app provides as `name:"<name>"` (nats, cenats, pubsub v2) |
 
 Use `ModuleWithoutClient` when the app already provides that client, such as
 the default client a publisher driver or an `@Inject` gets: fx accepts one
 provider per type, so `Module` there fails the boot with "already provided".
-builder generates it that way. Both share one `sync.Once`: the first call
-wins.
+builder generates it that way, and `ModuleWithNamedClient` for
+`@Function(client=x)`. All share one `sync.Once`: the first call wins.
 
 The function runs the middlewares given to `Module`, then the
 `[]middleware.AnyErrorMiddleware[T]` provided under the name

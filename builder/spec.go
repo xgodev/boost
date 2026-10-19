@@ -95,6 +95,9 @@ type Function struct {
 	// adapters read with, by client type ("<import path>.<Type>"). inject
 	// builds the default client of a type no constructor provides.
 	ClientProviders map[string]inject.Component
+	// Client is the name of the client the adapters read with, from
+	// client=x; "" for the default client.
+	Client string
 }
 
 // Adapters returns the adapter and its alternatives, in order.
@@ -103,28 +106,60 @@ func (f Function) Adapters() []string {
 }
 
 // DefaultClients returns the client types ("<import path>.<Type>") the
-// adapters of the functions read with that no inject constructor provides,
-// sorted: inject generates their default client for the function doors.
+// adapters of the functions without client=x read with that no inject
+// constructor provides, sorted: inject generates their default client for
+// the function doors.
 func (s Spec) DefaultClients() []string {
-	seen := map[string]bool{}
 	var ids []string
+	for _, ref := range s.adapterClients() {
+		if ref.Name == "" {
+			ids = append(ids, ref.ID)
+		}
+	}
+	return ids
+}
+
+// NamedClients returns the clients the adapters of the functions with
+// client=x read with that no inject constructor provides, sorted by type
+// and name: inject generates them for the function doors.
+func (s Spec) NamedClients() []inject.ClientRef {
+	var refs []inject.ClientRef
+	for _, ref := range s.adapterClients() {
+		if ref.Name != "" {
+			refs = append(refs, ref)
+		}
+	}
+	return refs
+}
+
+// adapterClients returns the clients the adapters of the functions read
+// with that no inject constructor provides, sorted by type and name.
+func (s Spec) adapterClients() []inject.ClientRef {
+	seen := map[inject.ClientRef]bool{}
+	var refs []inject.ClientRef
 	for _, app := range s.Apps {
 		if app.Function == nil {
 			continue
 		}
 		for _, name := range app.Function.Adapters() {
 			for _, adapter := range functionAdapters[name] {
+				ref := inject.ClientRef{ID: adapter.Client, Name: app.Function.Client}
 				_, provided := app.Function.ClientProviders[adapter.Client]
-				if adapter.Client == "" || provided || seen[adapter.Client] {
+				if adapter.Client == "" || provided || seen[ref] {
 					continue
 				}
-				seen[adapter.Client] = true
-				ids = append(ids, adapter.Client)
+				seen[ref] = true
+				refs = append(refs, ref)
 			}
 		}
 	}
-	sort.Strings(ids)
-	return ids
+	sort.Slice(refs, func(i, j int) bool {
+		if refs[i].ID != refs[j].ID {
+			return refs[i].ID < refs[j].ID
+		}
+		return refs[i].Name < refs[j].Name
+	})
+	return refs
 }
 
 // Handler is the annotated function or method serving a door.

@@ -335,11 +335,19 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 // default client of type id ("<import path>.<Type>"), with an unnamed,
 // ungrouped @Provide. inject builds that client only when none does.
 func DefaultClientProvider(g *graph.Graph[Component], id string) (Component, bool) {
+	return ClientProvider(g, id, "")
+}
+
+// ClientProvider returns the annotated function that provides the client of
+// type id ("<import path>.<Type>") and name, with an ungrouped @Provide of
+// that name; name "" is the default client. inject builds that client only
+// when none does.
+func ClientProvider(g *graph.Graph[Component], id, name string) (Component, bool) {
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for _, idx := range sortedIndexes(comp.Provides) {
 			ann := comp.Provides[idx]
-			if ann.Name != "" || ann.Group != "" {
+			if ann.Name != name || ann.Group != "" {
 				continue
 			}
 			if got, ok := pointerTo(comp.Entry, comp.Result(idx)); ok && got == id {
@@ -355,11 +363,17 @@ func DefaultClientProvider(g *graph.Graph[Component], id string) (Component, boo
 // module that provides it, given the import path of the output dir
 // (BaseImport). It is NotValid for a type inject does not build.
 func ClientModule(base, id string) (ImportData, string, error) {
+	return NamedClientModule(base, id, "")
+}
+
+// NamedClientModule is ClientModule for the client named name; name "" is
+// the default client.
+func NamedClientModule(base, id, name string) (ImportData, string, error) {
 	f, ok := clientFactories[id]
 	if !ok {
 		return ImportData{}, "", errors.NotValidf("inject builds no client of type *%s; it builds %s", id, strings.Join(supportedClients(), ", "))
 	}
-	imp, call := Client{Factory: f}.Module(base)
+	imp, call := Client{Factory: f, Name: name}.Module(base)
 	return imp, call, nil
 }
 
