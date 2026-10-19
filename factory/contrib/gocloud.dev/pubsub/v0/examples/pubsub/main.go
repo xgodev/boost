@@ -5,10 +5,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/xgodev/boost"
-	fpubsub "github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v1"
+	fpubsub "github.com/xgodev/boost/factory/contrib/cloud.google.com/pubsub/v2"
 	"github.com/xgodev/boost/wrapper/log"
 	"github.com/xgodev/boost/wrapper/publisher"
-	drvpubsub "github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v1"
+	drvpubsub "github.com/xgodev/boost/wrapper/publisher/driver/contrib/cloud.google.com/pubsub/v2"
 
 	v2 "github.com/cloudevents/sdk-go/v2"
 )
