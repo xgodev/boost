@@ -33,6 +33,7 @@ require (
 	github.com/coocood/freecache v1.2.7
 	github.com/dubonzi/otelresty v1.8.0
 	github.com/elastic/go-elasticsearch/v8 v8.19.7
+	github.com/elastic/go-elasticsearch/v9 v9.5.2
 	github.com/globocom/echo-prometheus v0.1.2
 	github.com/go-logr/logr v1.4.4
 	github.com/go-playground/validator/v10 v10.30.5
