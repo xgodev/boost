@@ -7,12 +7,15 @@ import (
 	"strconv"
 	"testing"
 
+	"cloud.google.com/go/bigtable"
+	"cloud.google.com/go/bigtable/bttest"
 	"cloud.google.com/go/pubsub/pstest"
 	natsserver "github.com/nats-io/nats-server/v2/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/inject"
+	"github.com/xgodev/boost/inject/examples/clients/catalog"
 	"github.com/xgodev/boost/inject/examples/clients/events"
 	"github.com/xgodev/boost/inject/examples/clients/gen"
 	"github.com/xgodev/boost/inject/examples/clients/ledger"
@@ -22,9 +25,9 @@ import (
 )
 
 // TestGeneratedModulesStartAndStopTheClients boots the app against an
-// embedded NATS server, the Pub/Sub fake and a fake CQL node, reached by
-// both gocql drivers: each client works after start and is closed after
-// stop.
+// embedded NATS server, the Pub/Sub fake, a fake CQL node, reached by both
+// gocql drivers, and the in-process Bigtable emulator: each client works
+// after start and is closed after stop.
 func TestGeneratedModulesStartAndStopTheClients(t *testing.T) {
 	opts := natsserver.DefaultTestOptions
 	opts.Port = -1
@@ -40,6 +43,9 @@ func TestGeneratedModulesStartAndStopTheClients(t *testing.T) {
 	cqlPort := strconv.Itoa(startCQLNode(t))
 	t.Setenv("BOOST_FACTORY_GOCQL_CLIENTS_STORE_PORT", cqlPort)
 	t.Setenv("BOOST_FACTORY_GOCQL_CLIENTS_LEDGER_PORT", cqlPort)
+	startBigtable(t, "example", "catalog")
+	t.Setenv("BOOST_FACTORY_BIGTABLE_CLIENTS_CATALOG_PROJECT", "example")
+	t.Setenv("BOOST_FACTORY_BIGTABLE_CLIENTS_CATALOG_INSTANCE", "catalog")
 	boost.Start() // loads the config keys the generated modules registered
 
 	ctx := context.Background()
@@ -47,7 +53,8 @@ func TestGeneratedModulesStartAndStopTheClients(t *testing.T) {
 	var topics *orders.Topics
 	var cluster *store.Cluster
 	var ledgerCluster *ledger.Cluster
-	app := fx.New(gen.Module(), fx.Populate(&publisher, &topics, &cluster, &ledgerCluster), fx.NopLogger)
+	var prices *catalog.Prices
+	app := fx.New(gen.Module(), fx.Populate(&publisher, &topics, &cluster, &ledgerCluster, &prices), fx.NopLogger)
 	require.NoError(t, app.Err())
 	require.NoError(t, app.Start(ctx))
 
@@ -59,6 +66,10 @@ func TestGeneratedModulesStartAndStopTheClients(t *testing.T) {
 	version, err = ledgerCluster.Version()
 	require.NoError(t, err)
 	assert.Equal(t, cqlReleaseVersion, version)
+	require.NoError(t, prices.Set(ctx, "sku-1", "9.90"))
+	price, err := prices.Get(ctx, "sku-1")
+	require.NoError(t, err)
+	assert.Equal(t, "9.90", price)
 
 	require.NoError(t, app.Stop(ctx))
 
@@ -66,6 +77,26 @@ func TestGeneratedModulesStartAndStopTheClients(t *testing.T) {
 	assert.Error(t, topics.Create(ctx, "after-stop"), "the Pub/Sub client is closed on stop")
 	assert.True(t, cluster.Closed(), "the gocql session is closed on stop")
 	assert.True(t, ledgerCluster.Closed(), "the gocql v2 session is closed on stop")
+	_, err = prices.Get(ctx, "sku-1")
+	assert.Error(t, err, "the Bigtable client is closed on stop")
+}
+
+// startBigtable starts the in-process Bigtable emulator (bttest), points the
+// SDK at it through BIGTABLE_EMULATOR_HOST and creates the prices table in
+// project and instance.
+func startBigtable(t *testing.T, project, instance string) {
+	t.Helper()
+	srv, err := bttest.NewServer("localhost:0")
+	require.NoError(t, err)
+	t.Cleanup(srv.Close)
+	t.Setenv("BIGTABLE_EMULATOR_HOST", srv.Addr)
+
+	ctx := context.Background()
+	admin, err := bigtable.NewAdminClient(ctx, project, instance)
+	require.NoError(t, err)
+	defer func() { _ = admin.Close() }()
+	require.NoError(t, admin.CreateTable(ctx, catalog.Table))
+	require.NoError(t, admin.CreateColumnFamily(ctx, catalog.Table, catalog.Family))
 }
 
 // TestGeneratedCodeIsUpToDate fails when gen/ differs from what the
