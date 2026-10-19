@@ -23,13 +23,16 @@ type ClientFactory struct {
 	Build   string                  // factory import path + "." + the ...WithConfigPath constructor
 	Root    string                  // config root of the factory
 	Plugins map[string]ClientPlugin // by name: the last segment of the plugin's config root
+	Close   bool                    // the generated module closes the client when the app stops
 }
 
 // ClientPlugin is a plugin of a client factory. The value of its constructor
-// registers itself through its Register method.
+// registers itself through its Register method, or the method named by
+// Register when the factory takes a plugin of another shape.
 type ClientPlugin struct {
-	Path string // import path of the plugin
-	New  string // ...WithConfigPath constructor of the plugin
+	Path     string // import path of the plugin
+	New      string // ...WithConfigPath constructor of the plugin
+	Register string // method passed to the factory, "" for Register
 }
 
 const boostFactories = "github.com/xgodev/boost/factory/contrib/"
@@ -73,6 +76,28 @@ func init() {
 		})
 	}
 
+	nats := boostFactories + "nats-io/nats.go/v1"
+	addClosingClientFactory("github.com/nats-io/nats.go", "Conn", "nats", nats, "NewConnWithConfigPath", "boost.factory.nats", map[string]ClientPlugin{
+		"health": {Path: nats + "/plugins/local/health", New: "NewHealthWithConfigPath", Register: "Plugin"},
+		"log":    {Path: nats + "/plugins/local/log", New: "NewLogWithConfigPath"},
+	})
+
+	grpc := boostFactories + "google.golang.org/grpc/v1/client/plugins"
+	addClosingClientFactory("cloud.google.com/go/pubsub/v2", "Client", "pubsub", boostFactories+"cloud.google.com/pubsub/v2", "NewClientWithConfigPath", "boost.factory.gcp.pubsub", map[string]ClientPlugin{
+		"log":        {Path: grpc + "/local/wrapper/log", New: "NewLogWithConfigPath"},
+		"datadog":    {Path: grpc + "/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath"},
+		"prometheus": {Path: grpc + "/contrib/prometheus/client_golang/v1", New: "NewPrometheusWithConfigPath"},
+	})
+
+	for path, factory := range map[string]string{
+		"github.com/gocql/gocql":                      boostFactories + "gocql/gocql/v1",
+		"github.com/apache/cassandra-gocql-driver/v2": boostFactories + "apache/cassandra-gocql-driver/v2",
+	} {
+		addClosingClientFactory(path, "Session", "gocql", factory, "NewSessionWithConfigPath", "boost.factory.gocql", map[string]ClientPlugin{
+			"health": {Path: factory + "/plugins/local/extra/health", New: "NewHealthWithConfigPath"},
+		})
+	}
+
 	// The AWS clients share the aws.Config keys of boost.factory.aws.
 	aws := boostFactories + "aws/aws-sdk-go-v2/v1"
 	for _, service := range []string{"sns", "sqs", "kinesis"} {
@@ -84,6 +109,15 @@ func init() {
 
 func addClientFactory(path, tp, pkg, factory, build, root string, plugins map[string]ClientPlugin) {
 	clientFactories[path+"."+tp] = ClientFactory{Path: path, Type: tp, Package: pkg, Build: factory + "." + build, Root: root, Plugins: plugins}
+}
+
+// addClosingClientFactory adds a client whose module closes it when the app
+// stops: its Close method releases a connection the factory opened.
+func addClosingClientFactory(path, tp, pkg, factory, build, root string, plugins map[string]ClientPlugin) {
+	addClientFactory(path, tp, pkg, factory, build, root, plugins)
+	f := clientFactories[path+"."+tp]
+	f.Close = true
+	clientFactories[path+"."+tp] = f
 }
 
 // supportedClients returns the client types inject builds, sorted.
@@ -346,6 +380,7 @@ func clientData(c Client) ClientData {
 		Type:    "*factory." + c.Factory.Type,
 		Build:   c.Factory.Constructor(),
 		Names:   strings.Join(c.Plugins, ", "),
+		Close:   c.Factory.Close,
 		Imports: []ImportData{
 			{Alias: "factory", Path: c.Factory.FactoryPath()},
 			{Alias: "contextfx", Path: "github.com/xgodev/boost/fx/modules/core/context"},
@@ -361,7 +396,11 @@ func clientData(c Client) ClientData {
 	for _, name := range c.Plugins {
 		plugin := c.Factory.Plugins[name]
 		alias := name + "plugin"
-		data.Plugins = append(data.Plugins, ClientPluginData{Name: name, Alias: alias, New: plugin.New})
+		register := plugin.Register
+		if register == "" {
+			register = "Register"
+		}
+		data.Plugins = append(data.Plugins, ClientPluginData{Name: name, Alias: alias, New: plugin.New, Register: register})
 		data.Imports = append(data.Imports, ImportData{Alias: alias, Path: plugin.Path})
 	}
 	return data

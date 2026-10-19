@@ -61,12 +61,12 @@ func NewConnWithOptions(ctx context.Context, options *Options, plugins ...Plugin
 }
 
 // NewConnWithConfigPath returns a new nats connection with options from config path.
-func NewConnWithConfigPath(ctx context.Context, path string) (*nats.Conn, error) {
+func NewConnWithConfigPath(ctx context.Context, path string, plugins ...Plugin) (*nats.Conn, error) {
 	options, err := NewOptionsWithPath(path)
 	if err != nil {
 		return nil, err
 	}
-	return NewConnWithOptions(ctx, options)
+	return NewConnWithOptions(ctx, options, plugins...)
 }
 
 // NewConn returns a new connection with default options.
