@@ -120,6 +120,34 @@ func TestWorkerAdapter(t *testing.T) {
 	}
 }
 
+// mainEnv makes the process TestMain_BadConfigExitsWithTheReason starts run
+// the generated main instead of the tests.
+const mainEnv = "BUILDER_EXAMPLE_MAIN"
+
+// TestMain_BadConfigExitsWithTheReason runs the generated main of app worker
+// with an unknown adapter and every log level at its default: the process
+// exits non-zero and says why, so a pod that restarts shows its reason.
+func TestMain_BadConfigExitsWithTheReason(t *testing.T) {
+	cmd := exec.Command(os.Args[0], "-test.run=^TestMainChild$")
+	cmd.Env = append(os.Environ(), adapterEnv+"=nope", mainEnv+"=1")
+	out, err := cmd.CombinedOutput()
+
+	var exit *exec.ExitError
+	require.ErrorAs(t, err, &exit, "the main must fail: %s", out)
+	assert.NotZero(t, exit.ExitCode())
+	assert.Contains(t, string(out), "worker.function.adapter")
+	assert.Contains(t, string(out), `unknown adapter "nope"`)
+}
+
+// TestMainChild runs the generated main in the process
+// TestMain_BadConfigExitsWithTheReason starts.
+func TestMainChild(t *testing.T) {
+	if os.Getenv(mainEnv) != "1" {
+		t.Skip("run by TestMain_BadConfigExitsWithTheReason")
+	}
+	main()
+}
+
 // TestWorkerAdapterChild runs in the process TestWorkerAdapter starts, with
 // the adapter and driver keys set. The adapter and the publisher share the
 // one default client of their broker.
