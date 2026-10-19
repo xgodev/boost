@@ -15,5 +15,5 @@ func init() {
 }
 
 func ConfigAdd(path string) {
-	config.Add(enabled, true, "enable/disable datadog integration")
+	config.Add(path+enabled, true, "enable/disable datadog integration")
 }

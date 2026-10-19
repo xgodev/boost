@@ -39,25 +39,31 @@ Issue → Branch (de develop) → Commits → PR → Review/Merge
 
 ## Release
 
-Trabalho mergeado em `develop` só chega a quem usa o boost com tag: o
-`go get` pega a última tag semver. Ciclo fechado = `develop` em `main` +
-tag + GitHub Release.
+**Issue não gera versão.** A issue termina no merge do PR em `develop`: sem
+tag, sem GitHub Release, sem PR `develop` → `main`, sem mexer na versão do
+site/README e sem branch `feature/N-release-*`. O `develop` acumula as issues
+até a release ser lançada.
 
-1. PR `develop` → `main` (`release: merge develop into main`), merge com
+Release só quando o mantenedor mandar lançar, sempre por `release/vX.Y.Z`:
+
+1. `git checkout -b release/vX.Y.Z origin/develop`. Versão: patch para
+   fix/deps, minor para feature. Mudança de API pequena vai como minor, com
+   nota no release; major (`/v2` no import) só por decisão do mantenedor.
+2. Na `release/vX.Y.Z`, só preparação da release: a versão fixa em
+   `docs/site/index.html` (barra do topo, hero, diff do `go.mod`, timeline) e
+   no `README.md` da raiz (diff do `go.mod`, linha de releases). Nada de
+   feature nova nessa branch.
+3. PR `release/vX.Y.Z` → `main` (`release: vX.Y.Z`), merge com
    `gh pr merge N --merge`.
-2. Tag anotada no merge commit de `main`: patch para fix/deps, minor para
-   feature. Mudança de API pequena vai como minor, com nota no release; major
-   (`/v2` no import) só por decisão do mantenedor.
-3. `gh release create vX.Y.Z --verify-tag --latest --generate-notes
-   --notes-start-tag <tag anterior>`, com uma seção `Behavior / API changes`
-   no topo (`--notes`) quando houver.
-4. Versão do site e do README: a versão é fixa em `docs/site/index.html`
-   (barra do topo, hero, diff do `go.mod`, timeline) e no `README.md` da raiz
-   (diff do `go.mod`, linha de releases). Atualizar os dois para a tag nova por
-   PR em `develop`.
+4. Tag anotada `vX.Y.Z` no merge commit de `main` e `gh release create vX.Y.Z
+   --verify-tag --latest --generate-notes --notes-start-tag <tag anterior>`,
+   com uma seção `Behavior / API changes` no topo (`--notes`) quando houver.
+5. PR `release/vX.Y.Z` → `develop` (traz o bump de versão de volta), merge, e
+   apagar a `release/vX.Y.Z`.
 
 O site (`docs/site/`) publica sozinho a cada push em `develop` que mexe em
-`docs/site/` (`.github/workflows/site.yml`).
+`docs/site/` (`.github/workflows/site.yml`): a versão nova aparece no site no
+passo 5.
 
 ## Rastreabilidade — comentários na issue
 

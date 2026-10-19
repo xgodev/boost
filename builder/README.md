@@ -118,7 +118,7 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
 
 | Key | Required | Meaning |
 |---|---|---|
-| `adapter` | yes | `cloudevents`, `cenats` (cloudevents over NATS), `kafka`, `nats` or `pubsub`; or a list `[a, b]` of them, chosen by config |
+| `adapter` | yes | `cloudevents`, `cenats` (cloudevents over NATS), `kafka`, `kafkago` (kafka on segmentio/kafka-go), `lambda` (AWS Lambda), `nats` or `pubsub`; or a list `[a, b]` of them, chosen by config |
 | `app` | no | application, default `api` |
 | `middlewares` | no | `[a, b]`, the outermost first: `ignore_errors`, `logger`, `opentelemetry`, `prometheus`, `publisher`, `recovery` |
 
@@ -234,10 +234,10 @@ key per field and provides `*Struct` to the constructors that receive it (see
 [`inject`](../inject#config)). A door that reaches such a constructor
 includes the config module, so the package never imports `wrapper/config`.
 Factory clients too: `@Inject(index=0, name=quote, plugins=[otel])` on a
-`*resty.Client` (redis, mongo) parameter makes inject build that client with
-those plugins and its own config under `boost.factory.resty.clients.quote`
-(see [`inject`](../inject#factory-clients)), so the app writes no factory
-module.
+`*resty.Client` (redis, mongo, NATS, Pub/Sub, gocql, AWS) parameter makes
+inject build that client with those plugins and its own config under
+`boost.factory.resty.clients.quote` (see
+[`inject`](../inject#factory-clients)), so the app writes no factory module.
 
 builder owns the main of every app: a `cmd/<app>/main.go` without that header
 fails the generation instead of being overwritten. Other files under `cmd/`

@@ -2,7 +2,7 @@
 
 fx module that runs a `bootstrap/function` handler through the adapter
 commands provided in the `boostrap.function.adapters` group
-(`BSFunctionAdaptersGroupKey`) — cloudevents HTTP, NATS, Pub/Sub, Kafka.
+(`BSFunctionAdaptersGroupKey`) — cloudevents HTTP, NATS, Pub/Sub, Kafka, AWS Lambda.
 
 ```go
 fxfact.NewApp(

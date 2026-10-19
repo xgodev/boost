@@ -74,6 +74,8 @@ var (
 		"cenats":      {{Alias: "cenatsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1"}},
 		"cloudevents": {{Alias: "cloudeventsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/core/http"}},
 		"kafka":       {{Alias: "kafkafx", Path: fxAdapterRoot + "/confluentinc/confluent-kafka-go/v2"}},
+		"kafkago":     {{Alias: "kafkagofx", Path: fxAdapterRoot + "/segmentio/kafka-go/v0"}},
+		"lambda":      {{Alias: "lambdafx", Path: fxAdapterRoot + "/aws/aws-lambda-go/v1"}},
 		"nats":        {{Alias: "natsfx", Path: fxAdapterRoot + "/nats-io/nats.go/v1"}},
 		// each version is enabled by its own config, so both are included
 		"pubsub": {
