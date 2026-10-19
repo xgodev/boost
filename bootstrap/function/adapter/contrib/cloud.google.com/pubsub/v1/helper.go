@@ -33,9 +33,18 @@ func NewHelper[T any](client *pubsub.Client, handler function.Handler[T]) *Helpe
 	return NewHelperWithOptions(client, handler, opt)
 }
 
-// Start subscribes to the topics and processes messages concurrently.
+// Start runs the helper with no way to stop it.
+//
+// Deprecated: use Run with the run context, so the app stops on SIGTERM.
 func (h *Helper[T]) Start() {
-	logger := log.WithTypeOf(*h)
+	_ = h.Run(context.Background())
+}
+
+// Run receives the messages of every subscription concurrently until ctx is
+// done. Then it pulls no new message, waits for the handlers to finish the
+// ones they hold, and returns.
+func (h *Helper[T]) Run(ctx context.Context) error {
+	logger := log.FromContext(ctx).WithTypeOf(*h)
 	var wg sync.WaitGroup
 
 	// Subscribe to each subscription in a goroutine
@@ -45,17 +54,14 @@ func (h *Helper[T]) Start() {
 		go func(subscription string) {
 			defer wg.Done()
 
-			subscriber := NewSubscriber[T](h.client, h.handler, subscription, h.options)
-
-			// Subscribe to the subscription
-			if err := subscriber.Subscribe(context.Background()); err != nil {
+			logger.Infof("pubsub: receiving on %s", subscription)
+			if err := NewSubscriber[T](h.client, h.handler, subscription, h.options).Subscribe(ctx); err != nil {
 				logger.Errorf("Failed to subscribe to subscription %s: %v", subscription, err)
-			} else {
-				logger.Infof("Successfully subscribed to subscription %s", subscription)
 			}
 		}(subscription)
 	}
 
-	// Wait for all subscriptions to complete
+	// Wait for all subscriptions to stop
 	wg.Wait()
+	return nil
 }

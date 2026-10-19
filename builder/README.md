@@ -378,7 +378,8 @@ api with `unlimited` (wired without the decorator), with an unknown name
 default list), run the function handler, boot the worker with each adapter
 (nats on an embedded server) and with an unknown one (the boot fails), run
 the generated main with only `WORKER_FUNCTION_ADAPTER=nats` until it records
-an order published on NATS, and fail when `gen/` or a main is stale.
+an order published on NATS and then send it SIGTERM (it exits 0 within a
+second), and fail when `gen/` or a main is stale.
 
 ## Non-goals
 

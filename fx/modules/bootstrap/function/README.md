@@ -63,3 +63,12 @@ fx.Provide(fx.Annotate(
   (fx's stop timeout), and returns the context error if it does not.
 - **Run ends on its own** (no stop requested) — the app is shut down with
   exit code 0 on success, or 1 when `Run` returned an error (logged).
+
+The `nats`, `cloudevents_nats` and `gcp_pubsub` (v1) adapters run on that
+context (`Helper.Run(cmd.Context())`): when it is cancelled they take no new
+message, let the handler finish the one it holds, with a context the stop
+does not cancel, and return, so SIGTERM stops the app with exit code 0 well
+before the stop timeout. NATS drains its subscriptions; Pub/Sub v1 gives back
+a failed message instead of retrying it. A NATS subject it cannot subscribe
+to fails `Run`. `Helper.Start()` is deprecated: it runs with a context that
+is never cancelled.
