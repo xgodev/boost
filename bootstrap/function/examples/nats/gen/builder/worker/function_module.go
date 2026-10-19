@@ -9,6 +9,7 @@ import (
 
 	src_cloudevents_c136a3fd "github.com/cloudevents/sdk-go/v2"
 	bsfunction "github.com/xgodev/boost/bootstrap/function"
+	client_nats_c5703ab3 "github.com/xgodev/boost/bootstrap/function/examples/nats/gen/client/github.com/nats-io/nats.go"
 	gen_nats_9025ab7a "github.com/xgodev/boost/bootstrap/function/examples/nats/gen/internal/app/worker/nats"
 	gen_replier_23b9128f "github.com/xgodev/boost/bootstrap/function/examples/nats/gen/internal/app/worker/nats/handler/message/replier"
 	src_replier_23b9128f "github.com/xgodev/boost/bootstrap/function/examples/nats/internal/app/worker/nats/handler/message/replier"
@@ -53,7 +54,8 @@ func FunctionModule() fx.Option {
 				fx.ResultTags(`name:"bootstrap.function.middlewares"`),
 			)),
 			functionfx.Module[*src_cloudevents_c136a3fd.Event](nil),
-			natsfx.Module[*src_cloudevents_c136a3fd.Event](),
+			natsfx.ModuleWithoutClient[*src_cloudevents_c136a3fd.Event](),
+			client_nats_c5703ab3.DefaultConnModule(),
 		)
 	})
 
