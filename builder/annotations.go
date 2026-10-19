@@ -14,7 +14,9 @@ import (
 )
 
 const (
-	fxAdapterRoot = "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib"
+	fxAdapterRoot    = "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib"
+	fxMiddlewareRoot = "github.com/xgodev/boost/fx/modules/bootstrap/function/middleware"
+	middlewareRoot   = "github.com/xgodev/boost/bootstrap/function/middleware"
 
 	defaultApp        = "api"
 	defaultRESTServer = "rest"
@@ -46,10 +48,19 @@ type mcpArgs struct {
 	App    string `attr:"app"`
 }
 
-// functionArgs are the arguments of @Function(adapter=nats, app=api).
+// functionArgs are the arguments of @Function(adapter=nats, app=api, middlewares=[recovery, logger]).
 type functionArgs struct {
-	Adapter string `attr:"adapter"`
-	App     string `attr:"app"`
+	Adapter     string `attr:"adapter"`
+	App         string `attr:"app"`
+	Middlewares string `attr:"middlewares"`
+}
+
+// functionMiddleware is a middleware of @Function: the fx module that
+// provides it and the type it provides, *Type[T] of package Pkg.
+type functionMiddleware struct {
+	Module inject.ImportData
+	Pkg    inject.ImportData
+	Type   string
 }
 
 var (
@@ -59,6 +70,7 @@ var (
 	// functionAdapters maps the adapter of @Function to the fx modules that
 	// run it, imported under fixed aliases by the generated function door.
 	functionAdapters = map[string][]inject.ImportData{
+		"cenats":      {{Alias: "cenatsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/contrib/nats-io/nats.go/v1"}},
 		"cloudevents": {{Alias: "cloudeventsfx", Path: fxAdapterRoot + "/cloudevents/sdk-go/v2/core/http"}},
 		"kafka":       {{Alias: "kafkafx", Path: fxAdapterRoot + "/confluentinc/confluent-kafka-go/v2"}},
 		"nats":        {{Alias: "natsfx", Path: fxAdapterRoot + "/nats-io/nats.go/v1"}},
@@ -69,10 +81,45 @@ var (
 		},
 	}
 
+	// functionMiddlewares maps the names in @Function(middlewares=[...]) to
+	// the bootstrap/function middlewares.
+	functionMiddlewares = map[string]functionMiddleware{
+		"ignore_errors": {
+			Module: inject.ImportData{Alias: "ignoreerrorsfx", Path: fxMiddlewareRoot + "/ignore_errors"},
+			Pkg:    inject.ImportData{Alias: "ignoreerrorsmw", Path: middlewareRoot + "/ignore_errors"},
+			Type:   "IgnoreErrors",
+		},
+		"logger": {
+			Module: inject.ImportData{Alias: "loggerfx", Path: fxMiddlewareRoot + "/logger"},
+			Pkg:    inject.ImportData{Alias: "loggermw", Path: middlewareRoot + "/logger"},
+			Type:   "Logger",
+		},
+		"opentelemetry": {
+			Module: inject.ImportData{Alias: "opentelemetryfx", Path: fxMiddlewareRoot + "/opentelemetry"},
+			Pkg:    inject.ImportData{Alias: "opentelemetrymw", Path: middlewareRoot + "/go.opentelemetry.io/otel/v1"},
+			Type:   "OpenTelemetry",
+		},
+		"prometheus": {
+			Module: inject.ImportData{Alias: "prometheusfx", Path: fxMiddlewareRoot + "/prometheus"},
+			Pkg:    inject.ImportData{Alias: "prometheusmw", Path: middlewareRoot + "/prometheus"},
+			Type:   "Prometheus",
+		},
+		"publisher": {
+			Module: inject.ImportData{Alias: "publisherfx", Path: fxMiddlewareRoot + "/publisher"},
+			Pkg:    inject.ImportData{Alias: "publishermw", Path: middlewareRoot + "/publisher"},
+			Type:   "Publisher",
+		},
+		"recovery": {
+			Module: inject.ImportData{Alias: "recoveryfx", Path: fxMiddlewareRoot + "/recovery"},
+			Pkg:    inject.ImportData{Alias: "recoverymw", Path: middlewareRoot + "/recovery"},
+			Type:   "Recovery",
+		},
+	}
+
 	restKeys     = []string{"method", "path", "server", "app"}
 	grpcKeys     = []string{"register", "server", "app"}
 	mcpKeys      = []string{"name", "server", "app"}
-	functionKeys = []string{"adapter", "app"}
+	functionKeys = []string{"adapter", "app", "middlewares"}
 
 	// identName is the form of app and server names: they become a package,
 	// a file and a function name and a config path element.
@@ -97,6 +144,37 @@ func decode(ann annotation.Annotation, where string, keys []string, args any) er
 		return errors.NotValidf("@%s on %s: %v", ann.Name, where, err)
 	}
 	return nil
+}
+
+// parseList reads a list value written as [a, b]: names not empty, none twice.
+func parseList(raw, where, key string) ([]string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil, nil
+	}
+	inner, open := strings.CutPrefix(raw, "[")
+	inner, closed := strings.CutSuffix(inner, "]")
+	if !open || !closed {
+		return nil, errors.NotValidf("%s: %s=%s: write the list as [a, b]", where, key, raw)
+	}
+	if strings.TrimSpace(inner) == "" {
+		return nil, nil
+	}
+
+	var names []string
+	seen := map[string]bool{}
+	for _, name := range strings.Split(inner, ",") {
+		name = strings.TrimSpace(name)
+		switch {
+		case name == "":
+			return nil, errors.NotValidf("%s: %s=%s has an empty name", where, key, raw)
+		case seen[name]:
+			return nil, errors.NotValidf("%s: %s=%s lists %s twice", where, key, raw, name)
+		}
+		seen[name] = true
+		names = append(names, name)
+	}
+	return names, nil
 }
 
 func validateNames(ann, where, app, server string) error {

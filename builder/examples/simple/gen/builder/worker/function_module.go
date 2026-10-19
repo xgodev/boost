@@ -9,10 +9,15 @@ import (
 
 	src_cloudevents_c136a3fd "github.com/cloudevents/sdk-go/v2"
 	bsfunction "github.com/xgodev/boost/bootstrap/function"
+	loggermw "github.com/xgodev/boost/bootstrap/function/middleware/logger"
+	recoverymw "github.com/xgodev/boost/bootstrap/function/middleware/recovery"
 	gen_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/gen/ordercreated"
 	src_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/ordercreated"
+	bsmiddleware "github.com/xgodev/boost/extra/middleware"
 	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
 	cloudeventsfx "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http"
+	loggerfx "github.com/xgodev/boost/fx/modules/bootstrap/function/middleware/logger"
+	recoveryfx "github.com/xgodev/boost/fx/modules/bootstrap/function/middleware/recovery"
 )
 
 var functionOnce sync.Once
@@ -28,6 +33,23 @@ func FunctionModule() fx.Option {
 			fx.Provide(func(h0 *src_ordercreated_37848569.Handler) bsfunction.Handler[*src_cloudevents_c136a3fd.Event] {
 				return h0.Handle
 			}),
+			recoveryfx.Module[*src_cloudevents_c136a3fd.Event](),
+			loggerfx.Module[*src_cloudevents_c136a3fd.Event](),
+			fx.Provide(fx.Annotate(
+				func(m0 *recoverymw.Recovery[*src_cloudevents_c136a3fd.Event], m1 *loggermw.Logger[*src_cloudevents_c136a3fd.Event]) []bsmiddleware.AnyErrorMiddleware[*src_cloudevents_c136a3fd.Event] {
+					// a middleware disabled in config is not provided
+					var m []bsmiddleware.AnyErrorMiddleware[*src_cloudevents_c136a3fd.Event]
+					if m0 != nil {
+						m = append(m, m0)
+					}
+					if m1 != nil {
+						m = append(m, m1)
+					}
+					return m
+				},
+				fx.ParamTags(`optional:"true"`, `optional:"true"`),
+				fx.ResultTags(`name:"bootstrap.function.middlewares"`),
+			)),
 			functionfx.Module[*src_cloudevents_c136a3fd.Event](nil),
 			cloudeventsfx.Module[*src_cloudevents_c136a3fd.Event](),
 		)

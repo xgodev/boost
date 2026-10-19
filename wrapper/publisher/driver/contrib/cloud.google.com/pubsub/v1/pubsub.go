@@ -53,7 +53,7 @@ func NewWithOptions(ctx context.Context, c *pubsub.Client, options *Options) pub
 
 // Publish sends a batch of events to Pub/Sub.
 func (p *client) Publish(ctx context.Context, events []*v2.Event) ([]publisher.PublishOutput, error) {
-	logger := log.FromContext(ctx).WithTypeOf(*p)
+	logger := log.FromContext(ctx).WithTypeOf(client{})
 	logger.Info("publishing to Pub/Sub")
 
 	if len(events) == 0 {

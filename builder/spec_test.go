@@ -76,7 +76,7 @@ func validEntries() []annotation.Entry {
 			ann("Provide", "index=0"), ann("GRPC", "register=healthpb.RegisterHealthServer")),
 		decl("events", "", "New", nil, []string{"Handler"}, ann("Provide", "index=0")),
 		decl("events", "Handler", "Handle", []string{"context.Context", "event.Event"}, eventResults,
-			ann("Function", "adapter=nats, app=worker")),
+			ann("Function", "adapter=nats, app=worker, middlewares=[recovery, logger]")),
 	}
 }
 
@@ -149,10 +149,25 @@ func TestNewSpec(t *testing.T) {
 	assert.Empty(t, worker.Servers)
 	require.NotNil(t, worker.Function)
 	assert.Equal(t, "nats", worker.Function.Adapter)
+	assert.Equal(t, []string{"recovery", "logger"}, worker.Function.Middlewares, "the middlewares keep their order, the outermost first")
 	assert.Equal(t, "Handle", worker.Function.Handler.Entry.Func.Name)
 	require.NotNil(t, worker.Function.Handler.Receiver)
 	assert.Equal(t, "Handler", worker.Function.Handler.Receiver.Type, "a value provider serves a value receiver")
 	assert.Nil(t, api.Function)
+}
+
+func TestNewSpec_FunctionAdapters(t *testing.T) {
+	for _, adapter := range []string{"cenats", "cloudevents", "kafka", "nats", "pubsub"} {
+		t.Run(adapter, func(t *testing.T) {
+			spec, err := newTestSpec(t, []annotation.Entry{
+				decl("events", "", "Handle", eventParams, eventResults, ann("Function", "adapter="+adapter)),
+			})
+			require.NoError(t, err)
+			require.NotNil(t, spec.Apps[0].Function)
+			assert.Equal(t, adapter, spec.Apps[0].Function.Adapter)
+			assert.Empty(t, spec.Apps[0].Function.Middlewares)
+		})
+	}
 }
 
 func TestNewSpec_ReceiverProvidedByAnotherPackage(t *testing.T) {
@@ -258,6 +273,10 @@ func TestNewSpec_Errors(t *testing.T) {
 		{"missing adapter", []annotation.Entry{function("app=worker")}, errors.IsNotValid, "adapter"},
 		{"function params", []annotation.Entry{decl("events", "", "Handle", []string{"context.Context", "string"}, eventResults, ann("Function", "adapter=nats"))}, errors.IsNotValid, "func(context.Context, cloudevents.Event) (T, error)"},
 		{"function results", []annotation.Entry{decl("events", "", "Handle", eventParams, []string{"error"}, ann("Function", "adapter=nats"))}, errors.IsNotValid, "func(context.Context, cloudevents.Event) (T, error)"},
+		{"unknown function middleware", []annotation.Entry{function("adapter=nats, middlewares=[recovery, tracing]")}, errors.IsNotValid, "middleware tracing"},
+		{"function middleware twice", []annotation.Entry{function("adapter=nats, middlewares=[logger, logger]")}, errors.IsNotValid, "logger twice"},
+		{"function middlewares not a list", []annotation.Entry{function("adapter=nats, middlewares=logger")}, errors.IsNotValid, "[a, b]"},
+		{"empty function middleware", []annotation.Entry{function("adapter=nats, middlewares=[logger, ]")}, errors.IsNotValid, "empty"},
 	}
 
 	for _, tc := range testCases {

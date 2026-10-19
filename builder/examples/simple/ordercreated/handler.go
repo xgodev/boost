@@ -30,7 +30,7 @@ type payload struct {
 }
 
 // Handle records the order of the event and replies with it.
-// @Function(adapter=cloudevents, app=worker)
+// @Function(adapter=cloudevents, app=worker, middlewares=[recovery, logger])
 func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevents.Event, error) {
 	var p payload
 	if err := in.DataAs(&p); err != nil || p.Item == "" {

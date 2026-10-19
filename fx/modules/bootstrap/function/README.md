@@ -14,6 +14,18 @@ fxfact.NewApp(
 
 `T` must be `*event.Event` or `[]*event.Event`.
 
+The function runs the middlewares given to `Module`, then the
+`[]middleware.AnyErrorMiddleware[T]` provided under the name
+`MiddlewaresName` (`bootstrap.function.middlewares`), when there is one. That
+is how a builder app passes the `middlewares` of its `@Function`:
+
+```go
+fx.Provide(fx.Annotate(
+	func() []middleware.AnyErrorMiddleware[*event.Event] { return mws },
+	fx.ResultTags(`name:"`+functionfx.MiddlewaresName+`"`),
+))
+```
+
 ## Lifecycle
 
 - **OnStart** — `Function.Run` runs in a goroutine, so `fx.New` returns and

@@ -190,7 +190,7 @@ func TestGenerator_RenderConfig(t *testing.T) {
 
 	src := string(files["quote/options_module.go"])
 	require.NotEmpty(t, src, "the config module is generated next to the package's other modules")
-	assert.True(t, strings.HasPrefix(src, generatedHeader))
+	assert.True(t, strings.HasPrefix(src, GeneratedHeader))
 	_, err = parser.ParseFile(token.NewFileSet(), "options_module.go", src, parser.AllErrors)
 	require.NoError(t, err)
 
