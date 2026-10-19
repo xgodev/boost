@@ -65,6 +65,8 @@ github.com/DataDog/dd-trace-go/contrib/aws/aws-sdk-go-v2/v2 v2.11.2 h1:1p3oARRWC
 github.com/DataDog/dd-trace-go/contrib/aws/aws-sdk-go-v2/v2 v2.11.2/go.mod h1:U8ydpoWyQrNFUUwTmiPDf5+x9ONWTdcqQJEwhmQrPRw=
 github.com/DataDog/dd-trace-go/contrib/database/sql/v2 v2.11.2 h1:06wWcls1mspvlPw+O5TrguT9wuEoY+nDQeey7efvEyw=
 github.com/DataDog/dd-trace-go/contrib/database/sql/v2 v2.11.2/go.mod h1:R2qvNcS5IIrzT4D0ZuHxmJe/H+S+MC8p+ms+pa8HWWc=
+github.com/DataDog/dd-trace-go/contrib/go-chi/chi.v5/v2 v2.11.2 h1:Y/Iljz5XwxHNtkwx3BNeRwn1wEkncgn+nNCrSqtrJf0=
+github.com/DataDog/dd-trace-go/contrib/go-chi/chi.v5/v2 v2.11.2/go.mod h1:SNqN8Pm6EP84rYIneAnvGqWl/BAFD9bwrANrQ94amig=
 github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver.v2/v2 v2.11.2 h1:mSHZqWJhLUsa/5/rupLYcgOci54qqjWPDZr3DsSPBns=
 github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver.v2/v2 v2.11.2/go.mod h1:js5aWzb9efJ/9Gk3HiES2+abTGTwB1rjy4oXjyaOybo=
 github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver/v2 v2.11.2 h1:fSiNETcPPkImBi8DzqZT2ijzWB3lO7+hfiEIHMh+NVk=
@@ -329,6 +331,10 @@ github.com/gabriel-vasile/mimetype v1.4.16/go.mod h1:3oFFwxX8kTklZwzIl2aQEDZT0lK
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/globocom/echo-prometheus v0.1.2 h1:tyusm7z6+873CHVhnl6QN8VOaKvNVgWfbNaiELkTRGc=
 github.com/globocom/echo-prometheus v0.1.2/go.mod h1:3oQLuoG5ZI5nufWK0ILpMl4vmw1q9OIPe2iy+ToRE+A=
+github.com/go-chi/chi/v5 v5.5.0 h1:xdKQ1dJmVJsmgahrXSKhUx8NyVPzpwdlyrrQFpMPJgg=
+github.com/go-chi/chi/v5 v5.5.0/go.mod h1:d1IG7GtKPSjPyBP365PH8sAGVHk3qfB/IhjFNRH1wWM=
+github.com/go-chi/cors v1.2.2 h1:Jmey33TE+b+rB7fT8MUy1u0I4L+NARQlK6LhzKPSyQE=
+github.com/go-chi/cors v1.2.2/go.mod h1:sSbTewc+6wYHBBCW7ytsFSn836hqM7JxpglAy2Vzc58=
 github.com/go-jose/go-jose/v4 v4.1.6 h1:sNRkftxFJxwsILiQukqp5z83QBSmntVwmgRY7AqBDO4=
 github.com/go-jose/go-jose/v4 v4.1.6/go.mod h1:x4oUasVrzR7071A4TnHLGSPpNOm2a21K9Kf04k1rs08=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=

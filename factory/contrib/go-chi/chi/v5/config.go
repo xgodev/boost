@@ -1,0 +1,41 @@
+package chi
+
+import (
+	"github.com/xgodev/boost/factory/contrib/golang.org/x/net/v0/http2/server"
+	"github.com/xgodev/boost/wrapper/config"
+)
+
+const (
+	root         = "boost.factory.chi"
+	disableHTTP2 = ".disableHTTP2"
+	port         = ".port"
+	protocol     = ".protocol"
+	hc2Root      = ".hc2"
+	tlsRoot      = ".tls"
+	tlsEnabled   = tlsRoot + ".enabled"
+	tlsType      = tlsRoot + ".type"
+	tlsAutoRoot  = tlsRoot + ".auto"
+	tlsAutoHost  = tlsAutoRoot + ".host"
+	tlsFileRoot  = tlsRoot + ".file"
+	tlsFileCert  = tlsFileRoot + ".cert"
+	tlsFileKey   = tlsFileRoot + ".key"
+	// PluginsRoot is the config root every chi plugin key lives under.
+	PluginsRoot = root + ".plugins"
+)
+
+func init() {
+	ConfigAdd(root)
+}
+
+// ConfigAdd registers the chi server config keys under path.
+func ConfigAdd(path string) {
+	server.ConfigAdd(path + hc2Root)
+	config.Add(path+disableHTTP2, false, "disable http2")
+	config.Add(path+port, 8080, "Server http port")
+	config.Add(path+protocol, "HTTP", "defines protocol HTTP/H2C")
+	config.Add(path+tlsEnabled, false, "enable/disable tls")
+	config.Add(path+tlsType, "AUTO", "defines tls type. AUTO/FILE")
+	config.Add(path+tlsAutoHost, "localhost", "defines tls auto host")
+	config.Add(path+tlsFileCert, "", "defines tls cert")
+	config.Add(path+tlsFileKey, "", "defines tls key")
+}

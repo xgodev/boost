@@ -10,6 +10,7 @@ require (
 	cloud.google.com/go/pubsub/v2 v2.7.0
 	github.com/DataDog/dd-trace-go/contrib/aws/aws-sdk-go-v2/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/database/sql/v2 v2.11.2
+	github.com/DataDog/dd-trace-go/contrib/go-chi/chi.v5/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver.v2/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/google.golang.org/grpc/v2 v2.11.2
@@ -38,6 +39,8 @@ require (
 	github.com/elastic/go-elasticsearch/v8 v8.19.7
 	github.com/elastic/go-elasticsearch/v9 v9.5.2
 	github.com/globocom/echo-prometheus v0.1.2
+	github.com/go-chi/chi/v5 v5.5.0
+	github.com/go-chi/cors v1.2.2
 	github.com/go-logr/logr v1.4.4
 	github.com/go-playground/validator/v10 v10.30.5
 	github.com/go-redis/redis/v7 v7.4.1
