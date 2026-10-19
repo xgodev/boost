@@ -11,7 +11,8 @@ Issue → Branch (de develop) → Commits → PR → Review/Merge
 | `feature/*` | Funcionalidades | `develop` |
 | `bugfix/*` | Correções | `develop` |
 | `hotfix/*` | Urgências em produção | `main` + `develop` |
-| `release/*` | Preparação de release | `main` + `develop` |
+| `release/X.Y.Z` | Versão minor/major (`X.Y.0`) | `main` + `develop` |
+| `bugfix/X.Y.Z` | Versão patch (`X.Y.Z`, Z > 0), saindo de `develop` | `main` + `develop` |
 
 ## Regras
 
@@ -47,27 +48,34 @@ tag, sem GitHub Release, sem PR `develop` → `main`, sem mexer na versão do
 site/README e sem branch `feature/N-release-*`. O `develop` acumula as issues
 até a release ser lançada.
 
-Release só quando o mantenedor mandar lançar, sempre por `release/vX.Y.Z`.
-Release **não tem issue**: o PR `release/vX.Y.Z` → `main` é o registro dela.
+Release só quando o mantenedor mandar lançar. A branch segue o semver da
+versão e **não leva `v`** (o `v` é só da tag, por causa do Go):
+
+- minor/major (`X.Y.0`): `release/X.Y.Z`;
+- patch (só a última casa anda): `bugfix/X.Y.Z` saindo de `develop`, ou
+  `hotfix/X.Y.Z` saindo de `main` quando é urgência em produção.
+
+Abaixo, `<branch>` é essa branch. Release **não tem issue**: o PR `<branch>`
+→ `main` é o registro dela.
 
 
 0. Milestone `vX.Y.Z` (`gh api repos/xgodev/boost/milestones -f title=vX.Y.Z`)
    com todas as issues mergeadas em `develop` desde a tag anterior
    (`gh issue edit N --milestone vX.Y.Z`); fechar o milestone no passo 4.
-1. `git checkout -b release/vX.Y.Z origin/develop`. Versão: patch para
+1. `git checkout -b <branch> origin/develop` (`origin/main` no hotfix). Versão: patch para
    fix/deps, minor para feature. Mudança de API pequena vai como minor, com
    nota no release; major (`/v2` no import) só por decisão do mantenedor.
-2. Na `release/vX.Y.Z`, só preparação da release: a versão fixa em
+2. Na `<branch>`, só preparação da release: a versão fixa em
    `docs/site/index.html` (barra do topo, hero, diff do `go.mod`, timeline) e
    no `README.md` da raiz (diff do `go.mod`, linha de releases). Nada de
    feature nova nessa branch.
-3. PR `release/vX.Y.Z` → `main` (`release: vX.Y.Z`), merge com
+3. PR `<branch>` → `main` (`release: vX.Y.Z`), merge com
    `gh pr merge N --merge`.
 4. Tag anotada `vX.Y.Z` no merge commit de `main` e `gh release create vX.Y.Z
    --verify-tag --latest --generate-notes --notes-start-tag <tag anterior>`,
    com uma seção `Behavior / API changes` no topo (`--notes`) quando houver.
-5. PR `release/vX.Y.Z` → `develop` (traz o bump de versão de volta), merge, e
-   apagar a `release/vX.Y.Z`.
+5. PR `<branch>` → `develop` (traz o bump de versão de volta), merge, e
+   apagar a `<branch>`.
 
 O site (`docs/site/`) publica sozinho a cada push em `develop` que mexe em
 `docs/site/` (`.github/workflows/site.yml`): a versão nova aparece no site no
