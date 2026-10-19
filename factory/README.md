@@ -24,6 +24,7 @@ The `contrib` directory contains factory implementations for integration with th
 - MCP (modelcontextprotocol/go-sdk): Model Context Protocol server and client
 - Google Cloud Platform (GCP): Integration with GCP services
 - Confluent: For working with Apache Kafka
+- segmentio/kafka-go: Apache Kafka in pure Go (no cgo)
 - Ollama: Integration with AI models
 - Spf13/Cobra: For creating command-line interfaces
 

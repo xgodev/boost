@@ -23,6 +23,7 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | `allegro/bigcache/v3` | `Module` | `*bigcache.BigCache` | — |
 | `apache/cassandra-gocql-driver/v2` | `Module` | `*gocql.Session` | — |
 | `aws/aws-sdk-go-v2/v1` | `Module` | `aws.Config` | — |
+| `aws/aws-sdk-go-v2/v1/client/sns`, `/sqs`, `/kinesis` | `Module` | SDK `*<service>.Client` and boost `<service>.Client` | — |
 | `cloud.google.com/bigquery/v1` | `Module` | `*bigquery.Client` | — |
 | `cloud.google.com/firestore/v1` | `Module` | `*firestore.Client` | — |
 | `cloud.google.com/pubsub/v1`, `v2` | `Module` | `*pubsub.Client` | — |
@@ -50,6 +51,7 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | `panjf2000/ants/v2` | `Module` | `*ants.Wrapper` | — |
 | `prometheus/client_golang/v1` | `PusherModule` | starts push gateway pusher (if enabled) | — |
 | `redis/go-redis/v9` | `ClientModule`, `ClusterModule` | `*redis.Client`, `*redis.ClusterClient` | — |
+| `segmentio/kafka-go/v0` | `WriterModule`, `ReaderModule` | `*kafka.Writer`, `*kafka.Reader` (closed on stop) | — |
 | `tidwall/buntdb/v1` | `Module` | `*buntdb.DB` | — |
 
 `godror` and `pgx` both provide `*sql.DB`: compose only one per app.

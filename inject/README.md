@@ -258,6 +258,7 @@ func newQuoteClient(ctx context.Context) (*resty.Client, error) {
 | `*resty.Client` (`github.com/go-resty/resty/v2`) | `factory/contrib/go-resty/resty/v2` | `log`, `health`, `otel`, `datadog`, `prometheus`, `retry`, `requestid` |
 | `*redis.Client`, `*redis.ClusterClient` (`github.com/redis/go-redis/v9`) | `factory/contrib/redis/go-redis/v9` | `health`, `otel`, `datadog`, `prometheus` |
 | `*mongo.Conn` (`factory/contrib/go.mongodb.org/mongo-driver/v1`, `/v2`) | the same package | `health`, `otel`, `datadog`, `prometheus` |
+| `*sns.Client`, `*sqs.Client`, `*kinesis.Client` (`github.com/aws/aws-sdk-go-v2/service/...`) | `factory/contrib/aws/aws-sdk-go-v2/v1/client/<service>` (root `boost.factory.aws`) | `datadog` |
 | `*nats.Conn` (`github.com/nats-io/nats.go`) | `factory/contrib/nats-io/nats.go/v1` | none |
 | `*pubsub.Client` (`cloud.google.com/go/pubsub/v2`) | `factory/contrib/cloud.google.com/pubsub/v2` | none |
 | `*kafka.Producer` (`github.com/confluentinc/confluent-kafka-go/v2/kafka`, needs cgo) | `factory/contrib/confluentinc/confluent-kafka-go/v2` | none |

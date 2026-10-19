@@ -116,6 +116,30 @@ boost:
           signingRegion: "us-east-1"
 ```
 
+### SNS, SQS and Kinesis Clients
+
+`client/sns`, `client/sqs` and `client/kinesis` build the SDK client from the
+same keys (`boost.factory.aws.*`) and wrap it in a boost `Client`:
+
+```go
+sdk, err := sqs.NewSDKClient(ctx)                                   // *github.com/aws/aws-sdk-go-v2/service/sqs.Client
+sdk, err := sqs.NewSDKClientWithConfigPath(ctx, "boost.factory.aws.clients.orders")
+c := sqs.NewClient(sdk)                                             // boost sqs.Client
+```
+
+- **fx:** `fx/modules/factory/contrib/aws/aws-sdk-go-v2/v1/client/<service>`
+  provides the SDK client and the boost `Client`.
+- **@Inject:** a `*sns.Client`, `*sqs.Client` or `*kinesis.Client` parameter
+  is built by the generator (plugin `datadog`); a named client reads
+  `boost.factory.aws.clients.<name>.*`.
+- `kinesis.Client.BulkPublish` resends only the rejected records, at most 5
+  attempts per lot of 500, then returns an error.
+- `sqs.Client.ResolveQueueUrl` caches the queue URL and is safe for
+  concurrent use.
+
+A config that cannot be loaded (for example `AWS_PROFILE` naming a missing
+profile) makes `NewConfig*` return the error instead of an empty `aws.Config`.
+
 ## Configuration Parameters
 
 | Parameter | Description | Default |

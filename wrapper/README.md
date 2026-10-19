@@ -45,7 +45,7 @@ This component allows consistent and configurable recording of application event
 
 The `publisher` subpackage offers abstractions for message publishing/subscription systems, including:
 
-- Drivers for different providers (Google Cloud Pub/Sub, Kafka, NATS)
+- Drivers for different providers (Google Cloud Pub/Sub, Kafka, NATS, AWS SNS, SQS and Kinesis)
 - Middleware for message interception and modification
 - Utilities for monitoring and metrics
 
@@ -69,6 +69,29 @@ message timeout or unknown partition) or a `ctx` that ends before the report
 arrives becomes that event's `Error`. Reports go to a delivery channel per
 `Publish` call, so they no longer reach the producer's `Events()` channel; the
 driver logs each delivery at its own `log.level`.
+
+The kafka-go driver (`driver/contrib/segmentio/kafka-go/v0`, on the writer of
+`factory/contrib/segmentio/kafka-go/v0`) writes all events in one
+`WriteMessages`, in CloudEvents binary mode: the data is the value, the
+attributes and extensions are `ce_*` headers (`ce_time` in RFC3339) plus
+`content-type`. The topic is the event subject; the key is the `key`
+extension, else `partitionkey`, else the event ID. An event without subject,
+or one kafka-go reports in `kafka.WriteErrors`, gets its own `Error`; any
+other write error fails every event of the call. fx:
+`fx/modules/wrapper/publisher/driver/contrib/segmentio/kafka-go/v0`, switched by
+`boost.wrapper.publisher.driver.kafkago.enabled`.
+
+The AWS drivers (`driver/contrib/aws/{sns,sqs,kinesis}/v1`, on the clients of
+`factory/contrib/aws/aws-sdk-go-v2/v1/client/...`) send the event subject as
+the destination: the SNS topic ARN, the SQS queue name (URL resolved and
+cached) or the Kinesis stream name. The payload is the whole CloudEvent as
+JSON, or only its data when the `target` extension is `data`
+(`util.Payload`). SQS takes `MessageGroupId` from the `group` extension;
+Kinesis takes the partition key from the `partitionkey` extension (the event
+ID without it) and puts the events of one stream in one `PutRecords`, so a
+failed stream fails all its events. Retries are the AWS SDK retryer's
+(`boost.factory.aws.retryer.*`). fx: `fx/modules/wrapper/publisher/driver/contrib/aws/<service>/v1`,
+switched by `boost.wrapper.publisher.driver.<service>.enabled`.
 
 ## How to Use
 

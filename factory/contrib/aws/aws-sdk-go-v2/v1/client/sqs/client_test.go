@@ -37,7 +37,7 @@ func (s *SqsClientSuite) TestNewClient() {
 		{
 			name:   "success",
 			client: sqsCli,
-			want:   &client{sqsCli, map[string]*string{}},
+			want:   &client{client: sqsCli, queueUrls: map[string]*string{}},
 		},
 	}
 
@@ -67,7 +67,7 @@ func (s *SqsClientSuite) TestPublish() {
 				}, nil)
 			},
 			cli: func(m sqsClient) *client {
-				return &client{m, map[string]*string{}}
+				return &client{client: m, queueUrls: map[string]*string{}}
 			},
 			wantErr: func(e error) bool {
 				return e == nil
@@ -80,7 +80,7 @@ func (s *SqsClientSuite) TestPublish() {
 				m.On("SendMessage", mock.Anything, mock.Anything).Once().Return(nil, errors.New("OPs!"))
 			},
 			cli: func(m sqsClient) *client {
-				return &client{m, map[string]*string{}}
+				return &client{client: m, queueUrls: map[string]*string{}}
 			},
 			wantErr: func(e error) bool {
 				return e != nil
@@ -116,7 +116,7 @@ func (s *SqsClientSuite) TestResolveQueueUrl() {
 			mock: func(m *mockSqsClient) {
 			},
 			cli: func(m sqsClient) *client {
-				return &client{m, map[string]*string{"queueName": aws.String("blah")}}
+				return &client{client: m, queueUrls: map[string]*string{"queueName": aws.String("blah")}}
 			},
 			want: aws.String("blah"),
 			wantErr: func(e error) bool {
@@ -132,7 +132,7 @@ func (s *SqsClientSuite) TestResolveQueueUrl() {
 				}, nil)
 			},
 			cli: func(m sqsClient) *client {
-				return &client{m, map[string]*string{}}
+				return &client{client: m, queueUrls: map[string]*string{}}
 			},
 			want: aws.String("Blah"),
 			wantErr: func(e error) bool {
@@ -147,7 +147,7 @@ func (s *SqsClientSuite) TestResolveQueueUrl() {
 					Once().Return(nil, errors.New("ops!"))
 			},
 			cli: func(m sqsClient) *client {
-				return &client{m, map[string]*string{}}
+				return &client{client: m, queueUrls: map[string]*string{}}
 			},
 			want: nil,
 			wantErr: func(e error) bool {
@@ -162,7 +162,7 @@ func (s *SqsClientSuite) TestResolveQueueUrl() {
 					Once().Return(nil, nil)
 			},
 			cli: func(m sqsClient) *client {
-				return &client{m, map[string]*string{}}
+				return &client{client: m, queueUrls: map[string]*string{}}
 			},
 			want: nil,
 			wantErr: func(e error) bool {
@@ -179,7 +179,7 @@ func (s *SqsClientSuite) TestResolveQueueUrl() {
 				}, nil)
 			},
 			cli: func(m sqsClient) *client {
-				return &client{m, map[string]*string{}}
+				return &client{client: m, queueUrls: map[string]*string{}}
 			},
 			want: nil,
 			wantErr: func(e error) bool {
