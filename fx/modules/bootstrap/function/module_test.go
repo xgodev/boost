@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -13,6 +14,7 @@ import (
 	co "github.com/spf13/cobra"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
+	"github.com/xgodev/boost/extra/middleware"
 	fxcontext "github.com/xgodev/boost/fx/modules/core/context"
 	"go.uber.org/fx"
 )
@@ -29,18 +31,21 @@ func TestMain(m *testing.M) {
 }
 
 // adapter is a function adapter command whose run is observable: it reports
-// when it starts and returns, and runs body with the command context.
+// when it starts and returns, and runs body with the command context and,
+// in handler, the handler the function gave the command.
 type adapter struct {
 	started  chan struct{}
 	returned chan struct{}
 	body     func(ctx context.Context) error
+	handler  function.Handler[*event.Event]
 }
 
 func newAdapter(body func(ctx context.Context) error) *adapter {
 	return &adapter{started: make(chan struct{}), returned: make(chan struct{}), body: body}
 }
 
-func (a *adapter) cmd(function.Handler[*event.Event]) *co.Command {
+func (a *adapter) cmd(h function.Handler[*event.Event]) *co.Command {
+	a.handler = h
 	return &co.Command{
 		Use: "fake",
 		RunE: func(cmd *co.Command, _ []string) error {
@@ -55,6 +60,12 @@ func (a *adapter) cmd(function.Handler[*event.Event]) *co.Command {
 // blocks: construction must not run the function, or lifecycle hooks never run.
 func newApp(t *testing.T, a *adapter) *fx.App {
 	t.Helper()
+	return newAppWith(t, a, nil)
+}
+
+// newAppWith is newApp with the middlewares given to Module and more options.
+func newAppWith(t *testing.T, a *adapter, m []middleware.AnyErrorMiddleware[*event.Event], opts ...fx.Option) *fx.App {
+	t.Helper()
 	once = sync.Once{} // Module() registers once per process
 
 	args := os.Args
@@ -65,7 +76,8 @@ func newApp(t *testing.T, a *adapter) *fx.App {
 	go func() {
 		built <- fx.New(
 			fx.NopLogger,
-			Module[*event.Event](nil),
+			Module[*event.Event](m),
+			fx.Options(opts...),
 			fx.Provide(
 				context.Background,
 				func() function.Handler[*event.Event] {
@@ -169,5 +181,43 @@ func TestModuleShutsDownWhenFunctionEnds(t *testing.T) {
 				t.Fatalf("app.Stop: %v", err)
 			}
 		})
+	}
+}
+
+// recorder is a middleware that appends its name to calls and runs the next.
+type recorder struct {
+	name  string
+	calls *[]string
+}
+
+func (r recorder) Exec(ctx *middleware.AnyErrorContext[*event.Event], exec middleware.AnyErrorExecFunc[*event.Event], fallback middleware.AnyErrorReturnFunc[*event.Event]) (*event.Event, error) {
+	*r.calls = append(*r.calls, r.name)
+	return ctx.Next(exec, fallback)
+}
+
+func TestModuleRunsTheGivenThenTheNamedMiddlewares(t *testing.T) {
+	var calls []string
+	var a *adapter
+	a = newAdapter(func(ctx context.Context) error {
+		_, err := a.handler(ctx, cloudevents.NewEvent())
+		return err
+	})
+	app := newAppWith(t, a,
+		[]middleware.AnyErrorMiddleware[*event.Event]{recorder{"given", &calls}},
+		fx.Provide(fx.Annotate(
+			func() []middleware.AnyErrorMiddleware[*event.Event] {
+				return []middleware.AnyErrorMiddleware[*event.Event]{recorder{"first", &calls}, recorder{"second", &calls}}
+			},
+			fx.ResultTags(`name:"`+MiddlewaresName+`"`),
+		)),
+	)
+	startApp(t, app)
+	waitClosed(t, a.returned, "the function did not run")
+	if err := stopApp(t, app); err != nil {
+		t.Fatalf("app.Stop: %v", err)
+	}
+
+	if got, want := strings.Join(calls, ","), "given,first,second"; got != want {
+		t.Fatalf("middlewares ran as %q, want %q", got, want)
 	}
 }

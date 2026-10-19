@@ -65,7 +65,7 @@ func TestGenerator_Render(t *testing.T) {
 	}, sortedFileNames(files))
 
 	for name, src := range files {
-		assert.True(t, bytes.HasPrefix(src, []byte(generatedHeader)), "%s has no generated header", name)
+		assert.True(t, bytes.HasPrefix(src, []byte(GeneratedHeader)), "%s has no generated header", name)
 		_, err := parser.ParseFile(token.NewFileSet(), name, src, parser.AllErrors)
 		assert.NoError(t, err, "%s is not valid Go", name)
 	}
@@ -181,9 +181,9 @@ func TestGenerator_Generate(t *testing.T) {
 		require.NoError(t, os.MkdirAll(filepath.Dir(p), os.ModePerm))
 		require.NoError(t, os.WriteFile(p, []byte(content), 0o644))
 	}
-	write("old/gone_module.go", generatedHeader+"\n\npackage old\n")
+	write("old/gone_module.go", GeneratedHeader+"\n\npackage old\n")
 	write("handwritten.go", "package gen\n")
-	write("notes.txt", generatedHeader)
+	write("notes.txt", GeneratedHeader)
 
 	g := newTestGraph(t, greetingEntries())
 	require.NoError(t, NewGenerator(g, opts).Generate(context.Background()))

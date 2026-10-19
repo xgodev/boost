@@ -3,6 +3,7 @@ package function
 import (
 	"context"
 	"errors"
+	"slices"
 	"sync"
 	"sync/atomic"
 
@@ -15,6 +16,11 @@ import (
 
 const (
 	BSFunctionAdaptersGroupKey = "boostrap.function.adapters"
+
+	// MiddlewaresName names the optional []middleware.AnyErrorMiddleware[T]
+	// the function runs after the middlewares given to Module, in order.
+	// builder provides it for @Function(middlewares=[...]).
+	MiddlewaresName = "bootstrap.function.middlewares"
 )
 
 type params[T any] struct {
@@ -24,12 +30,18 @@ type params[T any] struct {
 	Adapters   []function.CmdFunc[T] `group:"boostrap.function.adapters"`
 }
 
+type middlewares[T any] struct {
+	fx.In
+	Named []middleware.AnyErrorMiddleware[T] `name:"bootstrap.function.middlewares" optional:"true"`
+}
+
 var once sync.Once
 
 // Module fx module for bootstrap function. The function runs from the app's
 // OnStart and its context is cancelled on OnStop, so app.Run handles SIGTERM
 // gracefully; when the function ends on its own the app shuts down, with
-// exit code 1 if it failed.
+// exit code 1 if it failed. The function runs m, then the middlewares named
+// MiddlewaresName when the app provides them.
 func Module[T any](m []middleware.AnyErrorMiddleware[T]) fx.Option {
 	options := fx.Options()
 
@@ -37,8 +49,8 @@ func Module[T any](m []middleware.AnyErrorMiddleware[T]) fx.Option {
 		options = fx.Options(
 			fxcontext.Module(),
 			fx.Provide(
-				func(ctx context.Context, p params[T]) (*function.Function[T], error) {
-					return function.New[T](m...)
+				func(mw middlewares[T]) (*function.Function[T], error) {
+					return function.New[T](append(slices.Clip(m), mw.Named...)...)
 				}),
 			fx.Invoke(register[T]),
 		)
