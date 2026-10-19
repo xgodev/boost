@@ -26,7 +26,7 @@ func init() {
 var defaultProducerOnce sync.Once
 
 // DefaultProducerModule provides the default client (*github.com/confluentinc/confluent-kafka-go/v2/kafka.Producer), built from the keys under
-// boost.factory.confluent without plugins.
+// boost.factory.confluent without plugins, and closes it when the app stops.
 // It returns an empty option after the first call, so every consumer can
 // include it.
 func DefaultProducerModule() fx.Option {
@@ -42,6 +42,11 @@ func DefaultProducerModule() fx.Option {
 	return options
 }
 
-func newDefaultProducer(ctx context.Context) (*client.Producer, error) {
-	return factory.NewProducerWithConfigPath(ctx, defaultProducerRoot)
+func newDefaultProducer(ctx context.Context, lc fx.Lifecycle) (*client.Producer, error) {
+	c, err := factory.NewProducerWithConfigPath(ctx, defaultProducerRoot)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
 }

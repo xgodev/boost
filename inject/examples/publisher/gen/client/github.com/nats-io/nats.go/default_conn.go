@@ -24,7 +24,7 @@ func init() {
 var defaultConnOnce sync.Once
 
 // DefaultConnModule provides the default client (*github.com/nats-io/nats.go.Conn), built from the keys under
-// boost.factory.nats without plugins.
+// boost.factory.nats without plugins, and closes it when the app stops.
 // It returns an empty option after the first call, so every consumer can
 // include it.
 func DefaultConnModule() fx.Option {
@@ -40,6 +40,11 @@ func DefaultConnModule() fx.Option {
 	return options
 }
 
-func newDefaultConn(ctx context.Context) (*client.Conn, error) {
-	return factory.NewConnWithConfigPath(ctx, defaultConnRoot)
+func newDefaultConn(ctx context.Context, lc fx.Lifecycle) (*client.Conn, error) {
+	c, err := factory.NewConnWithConfigPath(ctx, defaultConnRoot)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
 }

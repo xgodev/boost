@@ -11,10 +11,9 @@ import (
 	"github.com/xgodev/boost/model/errors"
 )
 
+// natsPath and pubsubPath are declared in client_test.go.
 const (
 	publisherPath = "github.com/xgodev/boost/wrapper/publisher"
-	natsPath      = "github.com/nats-io/nats.go"
-	pubsubPath    = "cloud.google.com/go/pubsub/v2"
 	kafkaPath     = "github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 

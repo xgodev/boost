@@ -24,7 +24,7 @@ func init() {
 var defaultClientOnce sync.Once
 
 // DefaultClientModule provides the default client (*cloud.google.com/go/pubsub/v2.Client), built from the keys under
-// boost.factory.gcp.pubsub without plugins.
+// boost.factory.gcp.pubsub without plugins, and closes it when the app stops.
 // It returns an empty option after the first call, so every consumer can
 // include it.
 func DefaultClientModule() fx.Option {
@@ -40,6 +40,11 @@ func DefaultClientModule() fx.Option {
 	return options
 }
 
-func newDefaultClient(ctx context.Context) (*client.Client, error) {
-	return factory.NewClientWithConfigPath(ctx, defaultClientRoot)
+func newDefaultClient(ctx context.Context, lc fx.Lifecycle) (*client.Client, error) {
+	c, err := factory.NewClientWithConfigPath(ctx, defaultClientRoot)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
 }

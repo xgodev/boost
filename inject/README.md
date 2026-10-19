@@ -16,7 +16,7 @@ function plus a root `Module()` that wires the whole application.
 | `@Inject(index=N)` | `@Provide`/`@Invoke` function | parameter `N` must have a provider in the graph |
 | `@Inject(name=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` receives the named value `X` |
 | `@Inject(group=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` (a slice `[]T`) receives every `T` of group `X` |
-| `@Inject(name=X, index=N, plugins=[a, b])` | `@Provide`/`@Invoke` function | parameter `N`, a factory client (`*resty.Client`, ...), is built by the generator with the plugins `a` and `b` (see below) |
+| `@Inject(name=X, index=N, plugins=[a, b])` | `@Provide`/`@Invoke` function | parameter `N`, a factory client (`*resty.Client`, `*nats.Conn`, `*gocql.Session`, ...), is built by the generator with the plugins `a` and `b` (see below) |
 | `@Invoke` | function | the function runs when the application starts (`fx.Invoke`) |
 | `@Default` | `@Provide` constructor | default implementation of a value with two or more providers; config picks one (see below) |
 | `@Config` | struct | the struct's fields are config keys; the generator registers them and provides `*Struct` (see below) |
@@ -258,10 +258,27 @@ func newQuoteClient(ctx context.Context) (*resty.Client, error) {
 | `*resty.Client` (`github.com/go-resty/resty/v2`) | `factory/contrib/go-resty/resty/v2` | `log`, `health`, `otel`, `datadog`, `prometheus`, `retry`, `requestid` |
 | `*redis.Client`, `*redis.ClusterClient` (`github.com/redis/go-redis/v9`) | `factory/contrib/redis/go-redis/v9` | `health`, `otel`, `datadog`, `prometheus` |
 | `*mongo.Conn` (`factory/contrib/go.mongodb.org/mongo-driver/v1`, `/v2`) | the same package | `health`, `otel`, `datadog`, `prometheus` |
+| `*nats.Conn` (`github.com/nats-io/nats.go`) | `factory/contrib/nats-io/nats.go/v1` | `health`, `log` |
+| `*pubsub.Client` (`cloud.google.com/go/pubsub/v2`) | `factory/contrib/cloud.google.com/pubsub/v2` | `log`, `datadog`, `prometheus` (gRPC client plugins) |
+| `*gocql.Session` (`github.com/gocql/gocql`) | `factory/contrib/gocql/gocql/v1` | `health` |
+| `*gocql.Session` (`github.com/apache/cassandra-gocql-driver/v2`) | `factory/contrib/apache/cassandra-gocql-driver/v2` | `health` |
 | `*sns.Client`, `*sqs.Client`, `*kinesis.Client` (`github.com/aws/aws-sdk-go-v2/service/...`) | `factory/contrib/aws/aws-sdk-go-v2/v1/client/<service>` (root `boost.factory.aws`) | `datadog` |
-| `*nats.Conn` (`github.com/nats-io/nats.go`) | `factory/contrib/nats-io/nats.go/v1` | none |
-| `*pubsub.Client` (`cloud.google.com/go/pubsub/v2`) | `factory/contrib/cloud.google.com/pubsub/v2` | none |
 | `*kafka.Producer` (`github.com/confluentinc/confluent-kafka-go/v2/kafka`, needs cgo) | `factory/contrib/confluentinc/confluent-kafka-go/v2` | none |
+
+NATS, Pub/Sub, gocql and kafka clients hold connections, so their constructor also
+takes `fx.Lifecycle` and closes the client when the app stops:
+
+```go
+func newEventsConn(ctx context.Context, lc fx.Lifecycle) (*nats.Conn, error) {
+	...
+	c, err := factory.NewConnWithConfigPath(ctx, eventsConnRoot, health.Plugin, log.Register)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
+}
+```
 
 - **Name.** `name=x` is the client `x`; without `name` it is the default
   client of the factory. A name is lowerCamel (`^[a-z][a-zA-Z0-9]*$`) so an
@@ -402,6 +419,10 @@ Generators built on top of inject (such as [`builder`](../builder)) reuse:
 See [`examples/simple`](./examples/simple) and
 [`examples/publisher`](./examples/publisher): their tests run the generated
 application and fail when `gen/` is stale.
+[`examples/clients`](./examples/clients) injects a NATS conn, a Pub/Sub
+client and gocql v1 and v2 sessions; its test starts the app against an
+embedded NATS server, the Pub/Sub emulator and a fake Cassandra node, and
+checks every client is closed when the app stops.
 
 ## Limitations
 
