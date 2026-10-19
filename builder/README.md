@@ -118,7 +118,7 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
 
 | Key | Required | Meaning |
 |---|---|---|
-| `adapter` | yes | `cloudevents`, `cenats` (cloudevents over NATS), `kafka`, `kafkago` (kafka on segmentio/kafka-go), `lambda` (AWS Lambda), `nats` or `pubsub`; or a list `[a, b]` of them, chosen by config |
+| `adapter` | yes | `azure` (Azure Functions custom handler), `cloudevents`, `cenats` (cloudevents over NATS), `kafka`, `kafkago` (kafka on segmentio/kafka-go), `lambda` (AWS Lambda), `nats` or `pubsub`; or a list `[a, b]` of them, chosen by config |
 | `app` | no | application, default `api` |
 | `middlewares` | no | `[a, b]`, the outermost first: `ignore_errors`, `logger`, `opentelemetry`, `prometheus`, `publisher`, `recovery` |
 
