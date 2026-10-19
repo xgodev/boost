@@ -17,6 +17,7 @@ function plus a root `Module()` that wires the whole application.
 | `@Inject(name=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` receives the named value `X` |
 | `@Inject(group=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` (a slice `[]T`) receives every `T` of group `X` |
 | `@Inject(name=X, index=N, plugins=[a, b])` | `@Provide`/`@Invoke` function | parameter `N`, a factory client (`*resty.Client`, `*nats.Conn`, `*gocql.Session`, ...), is built by the generator with the plugins `a` and `b` (see below) |
+| `@Inject(index=N, drivers=[a, b])` | `@Provide`/`@Invoke` function | parameter `N`, a `*publisher.Publisher`, is built by the generator with only the drivers `a` and `b` (see [Publisher](#publisher)) |
 | `@Invoke` | function | the function runs when the application starts (`fx.Invoke`) |
 | `@Default` | `@Provide` constructor | default implementation of a value with two or more providers; config picks one (see below) |
 | `@Config` | struct | the struct's fields are config keys; the generator registers them and provides `*Struct` (see below) |
@@ -339,9 +340,20 @@ and its client:
   the app and the publisher share it, with the plugins the app lists. The
   adapter of a builder `@Function` shares it too
   (`GeneratorOptions.DefaultClients`).
+- **Drivers.** `@Inject(index=0, drivers=[nats, pubsub])` generates only
+  those drivers and their clients, plus `noop`, the default; without
+  `drivers` all of them are. The generated drivers are the union of what the
+  consumers list, and all of them when one consumer lists none. A driver not
+  generated is an unknown value for the key: the boot fails listing the
+  generated ones (`valid: nats, noop, pubsub`). An app that leaves `kafka`
+  out links neither `confluent-kafka-go` nor librdkafka. An unknown name,
+  `drivers=[]`, or `drivers` on a parameter that is not
+  `*publisher.Publisher` (or on `@Provide`) fails the generator with
+  `NotValid`.
 - **cgo.** The kafka client binds librdkafka through cgo, so its files build
   only with cgo (`//go:build cgo`). An app built with `CGO_ENABLED=0` still
-  builds; choosing `kafka` there fails the boot with `NotSupported`.
+  builds; choosing `kafka` there fails the boot with `NotSupported`. Leave
+  `kafka` out of `drivers` to keep cgo and librdkafka out of the app.
 - **The app wins.** When a `@Provide` of the app provides
   `*publisher.Publisher`, it is used and nothing is generated. A named
   publisher (`name=x`) is not built: provide it. `plugins` do not apply.
@@ -379,6 +391,8 @@ The generator fails, without touching the output directory, when:
 - `plugins` is on a `@Provide`, on a parameter that is not a factory client
   or that the app provides, or with `group`; lists an unknown or repeated
   plugin; or differs between two consumers of one client;
+- `drivers` is on a `@Provide` or on a parameter that is not
+  `*publisher.Publisher`, is empty, or lists an unknown or repeated driver;
 - a client name is not lowerCamel, or two clients would be written to the
   same file (`name=default` and the unnamed client);
 - the dependencies have a cycle, or a function depends on what it provides;

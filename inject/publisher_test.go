@@ -2,6 +2,7 @@ package inject
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -147,4 +148,78 @@ func TestGenerator_RenderPublisherSharesTheClient(t *testing.T) {
 	assert.Contains(t, string(files["client/github.com/xgodev/boost/wrapper/publisher/publisher.go"]), call,
 		"the nats driver gets the default *nats.Conn the app injects")
 	assert.Equal(t, 1, strings.Count(string(files["module.go"]), call+","), "the root includes the app's client once")
+}
+
+func TestPublisherOf_Drivers(t *testing.T) {
+	all := []string{"kafka", "nats", "noop", "pubsub"}
+	testCases := []struct {
+		name      string
+		consumers []string // the @Inject of each consumer
+		want      []string
+	}{
+		{name: "all by default", consumers: []string{"index=0"}, want: all},
+		{name: "the listed ones and noop, the default", consumers: []string{"index=0, drivers=[pubsub, nats]"}, want: []string{"nats", "noop", "pubsub"}},
+		{name: "a single name", consumers: []string{"index=0, drivers=nats"}, want: []string{"nats", "noop"}},
+		{name: "noop alone", consumers: []string{"index=0, drivers=[noop]"}, want: []string{"noop"}},
+		{name: "the union of the consumers", consumers: []string{"index=0, drivers=[nats]", "index=0, drivers=[pubsub]"}, want: []string{"nats", "noop", "pubsub"}},
+		{name: "a consumer without drivers takes all", consumers: []string{"index=0, drivers=[nats]", "index=0"}, want: all},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var entries []annotation.Entry
+			for i, c := range tc.consumers {
+				entries = append(entries, publisherConsumer(fmt.Sprintf("consumer%d", i), inject(c)))
+			}
+			assert.Equal(t, tc.want, PublisherOf(newTestGraph(t, entries)).Drivers)
+		})
+	}
+
+	t.Run("no publisher", func(t *testing.T) {
+		assert.Empty(t, PublisherOf(newTestGraph(t, []annotation.Entry{publisherConsumer("order")})).Drivers)
+	})
+}
+
+func TestPublisherOf_DriversRules(t *testing.T) {
+	stream := at("stream", "New", []string{"*nats.Conn"}, []string{"*Stream"}, provide("index=0"), inject("index=0, drivers=[nats]"))
+	stream.Imports = map[string]string{"nats": natsPath}
+	provider := at("events", "NewPublisher", nil, []string{"*publisher.Publisher"}, provide("index=0, drivers=[nats]"))
+	provider.Imports = map[string]string{"publisher": publisherPath}
+
+	testCases := []struct {
+		name  string
+		entry annotation.Entry
+		parts []string
+	}{
+		{name: "unknown driver", entry: publisherConsumer("order", inject("index=0, drivers=[nats, sqs]")),
+			parts: []string{"sqs", "kafka, nats, noop, pubsub"}},
+		{name: "empty list", entry: publisherConsumer("order", inject("index=0, drivers=[]")), parts: []string{"drivers=[]"}},
+		{name: "listed twice", entry: publisherConsumer("order", inject("index=0, drivers=[nats, nats]")), parts: []string{"nats twice"}},
+		{name: "not a publisher", entry: stream, parts: []string{"drivers", "*nats.Conn", "*publisher.Publisher"}},
+		{name: "on @Provide", entry: provider, parts: []string{"@Provide", "drivers"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := NewGraphFromEntries(context.Background(), []annotation.Entry{tc.entry})
+			assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
+			errorContains(t, err, tc.parts...)
+		})
+	}
+}
+
+// TestGenerator_RenderPublisherDrivers renders the publisher of a consumer
+// with drivers=[nats, pubsub] (#207): no Kafka file, client or import, so
+// the app links neither confluent-kafka-go nor librdkafka, and an unknown
+// driver lists the generated ones.
+func TestGenerator_RenderPublisherDrivers(t *testing.T) {
+	entries := []annotation.Entry{publisherConsumer("order", inject("index=0, drivers=[nats, pubsub]"))}
+	files, err := NewGenerator(newTestGraph(t, entries), testOptions("/mod")).Render(context.Background())
+	require.NoError(t, err)
+
+	golden(t, "testdata/publisher/drivers/publisher.go.golden", files["client/github.com/xgodev/boost/wrapper/publisher/publisher.go"])
+	for name, src := range files {
+		assert.NotContains(t, name, "kafka", "only the listed drivers are generated")
+		assert.NotContains(t, string(src), "confluent", "%s imports the kafka driver", name)
+	}
+	assert.NotNil(t, files["client/github.com/nats-io/nats.go/default_conn.go"])
+	assert.NotNil(t, files["client/cloud.google.com/go/pubsub/v2/default_client.go"])
 }

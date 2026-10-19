@@ -151,6 +151,36 @@ func TestMain_BadConfigExitsWithTheReason(t *testing.T) {
 	assert.Contains(t, string(out), `unknown adapter "nope"`)
 }
 
+// TestMain_LinksOnlyTheDriversItUses builds the generated main of app worker,
+// whose handler injects the publisher with drivers=[nats, pubsub] (#207): the
+// binary has no confluent-kafka-go, so it needs no librdkafka nor cgo for it.
+func TestMain_LinksOnlyTheDriversItUses(t *testing.T) {
+	bin := t.TempDir() + "/worker"
+	out, err := exec.Command("go", "build", "-o", bin, ".").CombinedOutput()
+	require.NoError(t, err, "go build: %s", out)
+
+	out, err = exec.Command("go", "version", "-m", bin).CombinedOutput()
+	require.NoError(t, err, "go version -m: %s", out)
+	assert.Contains(t, string(out), "github.com/nats-io/nats.go")
+	assert.NotContains(t, string(out), "confluent-kafka-go", "the worker links the kafka driver")
+}
+
+// TestMain_UnknownDriverListsTheGenerated runs the generated main of app
+// worker with the kafka driver, which drivers=[nats, pubsub] does not
+// generate (#207): the boot fails naming the drivers the app has.
+func TestMain_UnknownDriverListsTheGenerated(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestMainChild$")
+	cmd.Env = append(os.Environ(), driverEnv+"=kafka", mainEnv+"=1")
+	out, err := cmd.CombinedOutput()
+
+	require.NoError(t, ctx.Err(), "the worker booted with the kafka driver: %s", out)
+	var exit *exec.ExitError
+	require.ErrorAs(t, err, &exit, "the main must fail: %s", out)
+	assert.Contains(t, string(out), `unknown driver "kafka"; valid: nats, noop, pubsub`)
+}
+
 // TestMain_RunsTheChosenAdapter runs the generated main of app worker with
 // only WORKER_FUNCTION_ADAPTER=nats set (#203): no CLI argument and no
 // boost.bootstrap.function.default. The worker subscribes and records the

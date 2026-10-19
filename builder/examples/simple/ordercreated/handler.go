@@ -23,9 +23,10 @@ type Handler struct {
 
 // New provides the handler; the generated function door gets it from here.
 // The publisher announces the recorded orders, on the broker the function
-// may read from.
+// may read from; only the nats and pubsub drivers (and noop, the default)
+// are generated, so the worker links no Kafka client nor librdkafka.
 // @Provide(index=0)
-// @Inject(index=1)
+// @Inject(index=1, drivers=[nats, pubsub])
 func New(svc *order.Service, pub *publisher.Publisher) *Handler {
 	return &Handler{svc: svc, pub: pub}
 }

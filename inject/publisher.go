@@ -54,10 +54,37 @@ func publisherDriverNames() string {
 	return strings.Join(names, ", ")
 }
 
+// publisherDriver returns the driver named name.
+func publisherDriver(name string) (PublisherDriver, bool) {
+	for _, d := range publisherDrivers {
+		if d.Name == name {
+			return d, true
+		}
+	}
+	return PublisherDriver{}, false
+}
+
+// parseDrivers reads the drivers attribute of @Inject: "[a, b]" or a single
+// name. A list without names is NotValid: the publisher needs a driver.
+func parseDrivers(raw string) ([]string, error) {
+	names, err := parseList("drivers", raw)
+	if err != nil {
+		return nil, err
+	}
+	if len(names) == 0 {
+		return nil, errors.NotValidf("drivers=[] lists no driver: omit it to generate all of them (%s)", publisherDriverNames())
+	}
+	return names, nil
+}
+
 // Publisher is the *publisher.Publisher inject builds: one for the
 // application, with the driver PublisherDriverKey names.
 type Publisher struct {
 	Consumers []string // keys of the components injecting it, sorted
+	// Drivers are the names of the drivers generated, in the order of
+	// publisherDrivers: the ones the consumers list, plus DefaultPublisherDriver;
+	// all of them when a consumer lists none.
+	Drivers []string
 }
 
 // PublisherOf returns the publisher inject builds: its consumers are the
@@ -67,6 +94,8 @@ func PublisherOf(g *graph.Graph[Component]) Publisher {
 	provided := providedValues(g)
 
 	var p Publisher
+	listed := map[string]bool{DefaultPublisherDriver: true}
+	all := false
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for _, idx := range sortedIndexes(comp.Injects) {
@@ -81,6 +110,21 @@ func PublisherOf(g *graph.Graph[Component]) Publisher {
 			if !slices.Contains(p.Consumers, key) {
 				p.Consumers = append(p.Consumers, key)
 			}
+			// validateDrivers checked the names when the graph was built
+			drivers, _ := parseDrivers(ann.Drivers)
+			all = all || ann.Drivers == ""
+			for _, name := range drivers {
+				listed[name] = true
+			}
+		}
+	}
+
+	if len(p.Consumers) == 0 {
+		return p
+	}
+	for _, d := range publisherDrivers {
+		if all || listed[d.Name] {
+			p.Drivers = append(p.Drivers, d.Name)
 		}
 	}
 	return p
@@ -121,13 +165,15 @@ func (p Publisher) constrainedFile(d PublisherDriver, constraint string) (string
 
 // renderPublisher adds the files of the publisher to files and returns the
 // default clients of its drivers that clients lacks: the generated package
-// of a driver's client holds the module the publisher wires. A driver whose
-// client builds only under a constraint goes in a file of its own, with a
-// fallback that fails the boot when the driver is chosen.
+// of a driver's client holds the module the publisher wires. Only the drivers
+// of p are generated, so an app links no other driver nor its client. A
+// driver whose client builds only under a constraint goes in a file of its
+// own, with a fallback that fails the boot when the driver is chosen.
 func renderPublisher(tmpl *template.Template, base string, p Publisher, clients []Client, files map[string][]byte) ([]Client, error) {
-	data := PublisherData{Key: PublisherDriverKey, Default: DefaultPublisherDriver, Names: publisherDriverNames()}
+	data := PublisherData{Key: PublisherDriverKey, Default: DefaultPublisherDriver, Names: strings.Join(p.Drivers, ", ")}
 	var missing []Client
-	for _, d := range publisherDrivers {
+	for _, name := range p.Drivers {
+		d, _ := publisherDriver(name)
 		drv := ImportData{Alias: Alias("driver", d.Package, d.Path), Path: d.Path}
 		imports := []ImportData{drv}
 		var options []string

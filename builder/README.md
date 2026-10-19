@@ -371,7 +371,9 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
   `BUILDER_EXAMPLES_SIMPLE_STOCK_MEMORY_SOLD__OUT`, default `sold-out`);
 - `worker`: the `ordercreated` function on the cloudevents, the nats or the
   pubsub adapter, chosen by `worker.function.adapter` (`WORKER_FUNCTION_ADAPTER`,
-  default `cloudevents`), behind the `recovery` and `logger` middlewares.
+  default `cloudevents`), behind the `recovery` and `logger` middlewares; its
+  handler injects the publisher with `drivers=[nats, pubsub]`, so the worker
+  links no Kafka client.
 
 `cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
 routes, the gRPC service and the MCP tool of the generated app, check that the handler
@@ -385,7 +387,9 @@ an order published on NATS and then send it SIGTERM (it exits 0 within a
 second), run it with only `WORKER_FUNCTION_ADAPTER=pubsub`, v2 and v1, against
 a `pstest` fake until it records a CloudEvent and a raw message, stays up
 and exits 0 on SIGTERM, and with no subscription (the boot fails naming it),
-and fail when `gen/` or a main is stale.
+build the worker and check with `go version -m` that it has no
+`confluent-kafka-go`, boot it with the kafka driver (the boot fails listing
+`nats, noop, pubsub`), and fail when `gen/` or a main is stale.
 
 ## Non-goals
 

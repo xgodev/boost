@@ -22,7 +22,7 @@ import (
 const publisherDriverKey = "boost.wrapper.publisher.driver.name"
 
 func init() {
-	config.Add(publisherDriverKey, "noop", "driver of the publisher inject builds: kafka, nats, noop, pubsub")
+	config.Add(publisherDriverKey, "noop", "driver of the publisher inject builds: nats, noop, pubsub")
 }
 
 // PublisherDriver returns the name of the driver PublisherModule wires.
@@ -34,7 +34,7 @@ var publisherOnce sync.Once
 
 // PublisherModule provides the *publisher.Publisher of
 // github.com/xgodev/boost/wrapper/publisher with the driver named by
-// boost.wrapper.publisher.driver.name (kafka, nats, noop, pubsub; default noop)
+// boost.wrapper.publisher.driver.name (nats, noop, pubsub; default noop)
 // and only that driver and its client. An unknown name fails the boot. It
 // returns an empty option after the first call, so every consumer can include
 // it.
@@ -43,8 +43,6 @@ func PublisherModule() fx.Option {
 
 	publisherOnce.Do(func() {
 		switch name := PublisherDriver(); name {
-		case "kafka":
-			options = publisherModule(kafkaDriver()...)
 		case "nats":
 			options = publisherModule(client_nats_5da165e5.DefaultConnModule(), fx.Provide(fx.Private, driver_nats_3a6a55c7.New))
 		case "noop":
@@ -52,7 +50,7 @@ func PublisherModule() fx.Option {
 		case "pubsub":
 			options = publisherModule(client_pubsub_0cd2c75d.DefaultClientModule(), fx.Provide(fx.Private, driver_pubsub_d9085a5a.New))
 		default:
-			options = fx.Error(errors.NotValidf("%s: unknown driver %q; valid: %s", publisherDriverKey, name, "kafka, nats, noop, pubsub"))
+			options = fx.Error(errors.NotValidf("%s: unknown driver %q; valid: %s", publisherDriverKey, name, "nats, noop, pubsub"))
 		}
 	})
 
