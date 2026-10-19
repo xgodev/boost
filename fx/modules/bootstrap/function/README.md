@@ -14,6 +14,16 @@ fxfact.NewApp(
 
 `T` must be `*event.Event` or `[]*event.Event`.
 
+## Which adapter runs
+
+`Function.Run` runs the adapter command the first CLI argument names
+(`app nats`). With no command named, it runs the one
+`boost.bootstrap.function.default` names, or the only adapter in the group:
+an app that wires one adapter, as builder does, runs with no argument and no
+key. No adapter, or more than one and none chosen, fails the boot with
+`NotValid` (exit code 1) naming the adapters and the key, instead of
+printing the usage.
+
 ## Adapter clients
 
 The `nats`, `cloudevents_nats` and Pub/Sub v2 adapter modules

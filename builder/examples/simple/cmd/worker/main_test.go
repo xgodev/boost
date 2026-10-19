@@ -1,18 +1,25 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 	"os/exec"
+	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"cloud.google.com/go/pubsub/pstest"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	natsserver "github.com/nats-io/nats-server/v2/test"
+	natsgo "github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/bootstrap/function"
+	natsadapter "github.com/xgodev/boost/bootstrap/function/adapter/contrib/nats-io/nats.go/v1"
 	"github.com/xgodev/boost/bootstrap/function/middleware/logger"
 	"github.com/xgodev/boost/bootstrap/function/middleware/recovery"
 	"github.com/xgodev/boost/builder/examples/simple/gen/builder/worker"
@@ -120,8 +127,8 @@ func TestWorkerAdapter(t *testing.T) {
 	}
 }
 
-// mainEnv makes the process TestMain_BadConfigExitsWithTheReason starts run
-// the generated main instead of the tests.
+// mainEnv makes the process the TestMain_* tests start run the generated
+// main instead of the tests.
 const mainEnv = "BUILDER_EXAMPLE_MAIN"
 
 // TestMain_BadConfigExitsWithTheReason runs the generated main of app worker
@@ -139,12 +146,76 @@ func TestMain_BadConfigExitsWithTheReason(t *testing.T) {
 	assert.Contains(t, string(out), `unknown adapter "nope"`)
 }
 
-// TestMainChild runs the generated main in the process
-// TestMain_BadConfigExitsWithTheReason starts.
+// TestMain_RunsTheChosenAdapter runs the generated main of app worker with
+// only WORKER_FUNCTION_ADAPTER=nats set (#203): no CLI argument and no
+// boost.bootstrap.function.default. The worker subscribes and records the
+// order this test publishes.
+func TestMain_RunsTheChosenAdapter(t *testing.T) {
+	opts := natsserver.DefaultTestOptions
+	opts.Port = -1
+	srv := natsserver.RunServer(&opts)
+	t.Cleanup(srv.Shutdown)
+
+	conn, err := natsgo.Connect(srv.ClientURL())
+	require.NoError(t, err)
+	t.Cleanup(conn.Close)
+
+	var out syncBuffer
+	cmd := exec.Command(os.Args[0], "-test.run=^TestMainChild$")
+	cmd.Env = append(os.Environ(), adapterEnv+"=nats", natsURLEnv+"="+srv.ClientURL(), mainEnv+"=1")
+	cmd.Stdout, cmd.Stderr = &out, &out
+	require.NoError(t, cmd.Start())
+	exited := make(chan error, 1)
+	go func() { exited <- cmd.Wait() }()
+	t.Cleanup(func() { _ = cmd.Process.Kill() })
+
+	adapter, err := natsadapter.DefaultOptions()
+	require.NoError(t, err)
+	require.NotEmpty(t, adapter.Subjects)
+	payload, err := json.Marshal(event(t, map[string]string{"item": "book"}))
+	require.NoError(t, err)
+
+	// the worker subscribes once it boots: publish until it records the order
+	tick := time.NewTicker(100 * time.Millisecond)
+	defer tick.Stop()
+	deadline := time.After(10 * time.Second)
+	for !strings.Contains(out.String(), "recorded order 1 of book") {
+		select {
+		case <-tick.C:
+			require.NoError(t, conn.Publish(adapter.Subjects[0], payload))
+		case err := <-exited:
+			t.Fatalf("the worker exited (%v) without handling the order: %s", err, out.String())
+		case <-deadline:
+			t.Fatalf("the worker never handled the order: %s", out.String())
+		}
+	}
+}
+
+// syncBuffer is a bytes.Buffer the child process and the test share.
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *syncBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p)
+}
+
+func (b *syncBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
+}
+
+// TestMainChild runs the generated main, with no argument as a deployed
+// binary gets, in the process the TestMain_* tests start.
 func TestMainChild(t *testing.T) {
 	if os.Getenv(mainEnv) != "1" {
-		t.Skip("run by TestMain_BadConfigExitsWithTheReason")
+		t.Skip("run by the TestMain_* tests")
 	}
+	os.Args = os.Args[:1]
 	main()
 }
 

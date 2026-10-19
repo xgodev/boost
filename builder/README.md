@@ -142,7 +142,9 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   name. The door includes only the chosen adapter module, so the others and
   their clients are never built; an unknown name fails the boot with
   `NotValid` naming the key, the value and the valid names. The adapters'
-  own keys (`.enabled`, the pubsub `version`) stay as they are.
+  own keys (`.enabled`, the pubsub `version`) stay as they are. The app runs
+  the chosen adapter with no CLI argument and no
+  `boost.bootstrap.function.default`.
 - Each middleware is the fx module under
   `fx/modules/bootstrap/function/middleware` of the
   [`bootstrap/function/middleware`](../bootstrap/function/middleware) of that
@@ -364,8 +366,8 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
   sold-out items from its `@Config Options`
   (`builder.examples.simple.stock.memory.soldOut`, env
   `BUILDER_EXAMPLES_SIMPLE_STOCK_MEMORY_SOLD__OUT`, default `sold-out`);
-- `worker`: the `ordercreated` function on the cloudevents or the nats
-  adapter, chosen by `worker.function.adapter` (`WORKER_FUNCTION_ADAPTER`,
+- `worker`: the `ordercreated` function on the cloudevents, the nats or the
+  pubsub adapter, chosen by `worker.function.adapter` (`WORKER_FUNCTION_ADAPTER`,
   default `cloudevents`), behind the `recovery` and `logger` middlewares.
 
 `cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
@@ -374,8 +376,9 @@ receives the stock decorator and that prometheus counted its call, boot the
 api with `unlimited` (wired without the decorator), with an unknown name
 (the boot fails) and with `SOLD__OUT=book,pen` (the env replaces the
 default list), run the function handler, boot the worker with each adapter
-(nats on an embedded server) and with an unknown one (the boot fails), and fail when `gen/` or a main is
-stale.
+(nats on an embedded server) and with an unknown one (the boot fails), run
+the generated main with only `WORKER_FUNCTION_ADAPTER=nats` until it records
+an order published on NATS, and fail when `gen/` or a main is stale.
 
 ## Non-goals
 
