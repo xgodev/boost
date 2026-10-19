@@ -758,7 +758,7 @@ the app modules and main.
 |---|---|
 | `@REST` | echo route |
 | `@GRPC` | gRPC service |
-| `@Function` | cloudevents · kafka · nats · pubsub |
+| `@Function` | cloudevents · kafka · lambda · nats · pubsub |
 | `@MCP` | MCP tool |
 | `@Middleware` | generated decorator |
 | `@Default` | implementation picked by config |
@@ -767,7 +767,7 @@ the app modules and main.
 
 `bootstrap/function` · [docs](bootstrap/README.md)
 
-One event handler, four transports. Change the adapter in config; the handler
+One event handler, six transports. Change the adapter in config; the handler
 stays the same.
 
 ```go

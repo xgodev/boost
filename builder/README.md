@@ -118,7 +118,7 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
 
 | Key | Required | Meaning |
 |---|---|---|
-| `adapter` | yes | `cloudevents`, `cenats` (cloudevents over NATS), `kafka`, `nats` or `pubsub` |
+| `adapter` | yes | `cloudevents`, `cenats` (cloudevents over NATS), `kafka`, `lambda` (AWS Lambda), `nats` or `pubsub` |
 | `app` | no | application, default `api` |
 | `middlewares` | no | `[a, b]`, the outermost first: `ignore_errors`, `logger`, `opentelemetry`, `prometheus`, `publisher`, `recovery` |
 
