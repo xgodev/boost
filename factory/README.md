@@ -22,6 +22,7 @@ The `contrib` directory contains factory implementations for integration with th
 
 - gRPC: For communication between services
 - go-chi/chi: `net/http` router (v5)
+- gofiber/fiber: fasthttp web framework (v2)
 - MCP (modelcontextprotocol/go-sdk): Model Context Protocol server and client
 - Google Cloud Platform (GCP): Integration with GCP services
 - Confluent: For working with Apache Kafka
@@ -62,6 +63,7 @@ either name is interchangeable:
 | `contrib/redis/go-redis/v9` | `Plugin = factory.Plugin[*redis.Client]`, `ClusterPlugin = factory.Plugin[*redis.ClusterClient]` |
 | `contrib/labstack/echo/v4`, `v5` | `Plugin = factory.Plugin[*Server]` |
 | `contrib/go-chi/chi/v5` | `Plugin = factory.Plugin[*Server]` |
+| `contrib/gofiber/fiber/v2` | `Plugin = factory.Plugin[*Server]` |
 | `contrib/go-resty/resty/v2` | `Plugin = factory.Plugin[*resty.Client]` |
 | `contrib/elastic/go-elasticsearch/v8`, `v9` | `Plugin = factory.Plugin[*elasticsearch.Client]` |
 | `contrib/gocql/gocql/v1`, `contrib/apache/cassandra-gocql-driver/v2` | `Plugin = factory.Plugin[*gocql.Session]` |
