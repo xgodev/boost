@@ -7,7 +7,7 @@
 <p align="center"><b>Enterprise Go services. Built fast.</b></p>
 
 <p align="center">
-Boot, config, logs, 55 factories, middleware, health and code generation in one framework. You write the business logic.
+Boot, config, logs, 56 factories, middleware, health and code generation in one framework. You write the business logic.
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Boot, config, logs, 55 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 55 | 43 | 107 | 220 |
+| 56 | 44 | 107 | 220 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -674,7 +674,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**55** factories · **43** upstream libraries · **107** plugins
+**56** factories · **44** upstream libraries · **107** plugins
 
 ### Plugins
 
@@ -885,7 +885,7 @@ Releases: 2024-07 → `v1.1.0` → `v1.1.1` → `v1.2.0` → `v1.3.0` → `v1.4.
 
 ## There's a factory for that.
 
-55 factories over the 43 libraries your services already run on. Each one
+56 factories over the 44 libraries your services already run on. Each one
 arrives configured, with plugins for traces, metrics and health checks, so your
 team writes the business logic, not the plumbing.
 
@@ -901,6 +901,7 @@ team writes the business logic, not the plumbing.
 | HTTP/2 server | `x/net/v0` |
 | GraphQL | `graphql-go/v0` |
 | Resty | `resty/v2` |
+| [fasthttp](https://github.com/valyala/fasthttp) client | `fasthttp/v1` |
 
 ### Messaging
 
