@@ -102,10 +102,11 @@ SRC = [
     (4, "datastore.go", "internal/pkg/datastore/stock/memory/datastore.go", "@Default", "a"),
     (3, "mongodb/", None, "", ""),
     (4, "config.go", "internal/pkg/datastore/stock/mongodb/config.go", "@Config", "a"),
-    (4, "datastore.go", "internal/pkg/datastore/stock/mongodb/datastore.go", "@Provide", "a"),
+    (4, "datastore.go", "internal/pkg/datastore/stock/mongodb/datastore.go", "@Inject", "a"),
     (0, "doc.go", "doc.go", "go:generate", ""),
 ]
 MID = "gen/builder/middleware/internal_/pkg/domain/service/stock/reserver/local/new_middleware.go"
+CONN = "gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2/default_conn.go"
 IMPL = "gen/implementation/internal_/pkg/domain/repository/stock/repository_implementation.go"
 G = "gen/internal/"
 GEN = [
@@ -118,6 +119,8 @@ GEN = [
     (3, "rest_module.go", "gen/builder/api/rest_module.go", "@REST", "a"),
     (2, "middleware/…/local/", None, "", ""),
     (3, "new_middleware.go", MID, "@Middleware", "a"),
+    (1, "client/…/mongo-driver/v2/", None, "", ""),
+    (2, "default_conn.go", CONN, "@Inject", "a"),
     (1, "implementation/…/stock/", None, "", ""),
     (2, "repository_implementation.go", IMPL, "@Default", "a"),
     (1, "internal/", None, "", ""),

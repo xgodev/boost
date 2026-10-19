@@ -68,7 +68,7 @@
 <div class="win" id="hero-win">
   <div class="win-bar" role="tablist" aria-label="The shop example: what you write, what go generate writes, and the run">
     <button class="tab" type="button" role="tab" id="t-src" aria-selected="true" aria-controls="p-src"><span class="k k-ann">you write</span><span class="tab-n">9 files</span></button>
-    <button class="tab" type="button" role="tab" id="t-gen" aria-selected="false" aria-controls="p-gen" tabindex="-1"><span class="k k-gen">generated</span><span class="tab-n">12 files</span></button>
+    <button class="tab" type="button" role="tab" id="t-gen" aria-selected="false" aria-controls="p-gen" tabindex="-1"><span class="k k-gen">generated</span><span class="tab-n">13 files</span></button>
     <button class="tab" type="button" role="tab" id="t-run" aria-selected="false" aria-controls="p-run" tabindex="-1"><span class="k k-run">run</span><span class="tab-n">terminal</span></button>
     <span class="win-step">github.com/acme/shop</span>
   </div>
@@ -93,7 +93,7 @@
 <button class="file" type="button" role="tab" id="ft-internal-pkg-datastore-stock-memory-datastore-go" aria-selected="false" aria-controls="fp-internal-pkg-datastore-stock-memory-datastore-go" tabindex="-1" style="--d:4"><span class="fname">datastore.go</span><span class="hint a">@Default</span></button>
 <div class="dir" role="none" style="--d:3">mongodb/</div>
 <button class="file" type="button" role="tab" id="ft-internal-pkg-datastore-stock-mongodb-config-go" aria-selected="false" aria-controls="fp-internal-pkg-datastore-stock-mongodb-config-go" tabindex="-1" style="--d:4"><span class="fname">config.go</span><span class="hint a">@Config</span></button>
-<button class="file" type="button" role="tab" id="ft-internal-pkg-datastore-stock-mongodb-datastore-go" aria-selected="false" aria-controls="fp-internal-pkg-datastore-stock-mongodb-datastore-go" tabindex="-1" style="--d:4"><span class="fname">datastore.go</span><span class="hint a">@Provide</span></button>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-datastore-stock-mongodb-datastore-go" aria-selected="false" aria-controls="fp-internal-pkg-datastore-stock-mongodb-datastore-go" tabindex="-1" style="--d:4"><span class="fname">datastore.go</span><span class="hint a">@Inject</span></button>
 <button class="file" type="button" role="tab" id="ft-doc-go" aria-selected="false" aria-controls="fp-doc-go" tabindex="-1" style="--d:0"><span class="fname">doc.go</span><span class="hint">go:generate</span></button>
 </div>
 <div class="panes">
@@ -239,14 +239,12 @@
 	coll *<span class="ty">mongo.Collection</span>
 }
 
-<span class="c">// New connects through boost&#x27;s mongo factory (boost.factory.mongo.*).</span>
+<span class="c">// New keeps the stock on the conn inject builds from boost.factory.mongo.*,</span>
+<span class="c">// which the app closes when it stops.</span>
 <span class="c">// </span><span class="a">@Provide</span><span class="c">(index=0)</span>
-<span class="kw">func</span> <span class="fn">New</span>(ctx <span class="ty">context.Context</span>, o *<span class="ty">Options</span>) (<span class="ty">stock.Repository</span>, <span class="ty">error</span>) {
-	conn, err := mongofact.NewConn(ctx)
-	<span class="kw">if</span> err != <span class="kw">nil</span> {
-		<span class="kw">return</span> <span class="kw">nil</span>, err
-	}
-	<span class="kw">return</span> &amp;<span class="ty">datastore</span>{coll: conn.Database.Collection(o.Collection)}, <span class="kw">nil</span>
+<span class="c">// </span><span class="a">@Inject</span><span class="c">(index=0, plugins=[health, prometheus])</span>
+<span class="kw">func</span> <span class="fn">New</span>(conn *mongofact.Conn, o *<span class="ty">Options</span>) <span class="ty">stock.Repository</span> {
+	<span class="kw">return</span> &amp;<span class="ty">datastore</span>{coll: conn.Database.Collection(o.Collection)}
 }
 
 <span class="kw">func</span> (d *<span class="ty">datastore</span>) <span class="fn">Take</span>(ctx <span class="ty">context.Context</span>, sku <span class="ty">string</span>) <span class="ty">error</span> {
@@ -278,6 +276,8 @@
 <button class="file" type="button" role="tab" id="ft-gen-builder-api-rest-module-go" aria-selected="false" aria-controls="fp-gen-builder-api-rest-module-go" tabindex="-1" style="--d:3"><span class="fname">rest_module.go</span><span class="hint a">@REST</span></button>
 <div class="dir" role="none" style="--d:2">middleware/…/local/</div>
 <button class="file" type="button" role="tab" id="ft-gen-builder-middleware-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" aria-selected="false" aria-controls="fp-gen-builder-middleware-internal-pkg-domain-service-stock-reserver-local-new-middleware-go" tabindex="-1" style="--d:3"><span class="fname">new_middleware.go</span><span class="hint a">@Middleware</span></button>
+<div class="dir" role="none" style="--d:1">client/…/mongo-driver/v2/</div>
+<button class="file" type="button" role="tab" id="ft-gen-client-github-com-xgodev-boost-factory-contrib-go-mongodb-org-mongo-driver-v2-default-conn-go" aria-selected="false" aria-controls="fp-gen-client-github-com-xgodev-boost-factory-contrib-go-mongodb-org-mongo-driver-v2-default-conn-go" tabindex="-1" style="--d:2"><span class="fname">default_conn.go</span><span class="hint a">@Inject</span></button>
 <div class="dir" role="none" style="--d:1">implementation/…/stock/</div>
 <button class="file" type="button" role="tab" id="ft-gen-implementation-internal-pkg-domain-repository-stock-repository-implementation-go" aria-selected="false" aria-controls="fp-gen-implementation-internal-pkg-domain-repository-stock-repository-implementation-go" tabindex="-1" style="--d:2"><span class="fname">repository_implementation.go</span><span class="hint a">@Default</span></button>
 <div class="dir" role="none" style="--d:1">internal/</div>
@@ -428,6 +428,67 @@
 			<span class="kw">return</span> err
 		},
 	)
+}</pre></div>
+<div class="pane" role="tabpanel" id="fp-gen-client-github-com-xgodev-boost-factory-contrib-go-mongodb-org-mongo-driver-v2-default-conn-go" aria-labelledby="ft-gen-client-github-com-xgodev-boost-factory-contrib-go-mongodb-org-mongo-driver-v2-default-conn-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2/default_conn.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
+
+<span class="kw">package</span> mongo
+
+<span class="kw">import</span> (
+	<span class="st">&quot;context&quot;</span>
+	<span class="st">&quot;sync&quot;</span>
+
+	<span class="st">&quot;go.uber.org/fx&quot;</span>
+
+	factory <span class="st">&quot;github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2&quot;</span>
+	prometheusplugin <span class="st">&quot;github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/contrib/prometheus/client_golang/v1&quot;</span>
+	healthplugin <span class="st">&quot;github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2/plugins/local/health&quot;</span>
+	contextfx <span class="st">&quot;github.com/xgodev/boost/fx/modules/core/context&quot;</span>
+)
+
+<span class="c">// defaultConnRoot is the config root of the default client (*github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2.Conn);</span>
+<span class="c">// env BOOST_FACTORY_MONGO_*.</span>
+<span class="kw">const</span> defaultConnRoot = <span class="st">&quot;boost.factory.mongo&quot;</span>
+
+<span class="kw">func</span> <span class="fn">init</span>() {
+	factory.ConfigAdd(defaultConnRoot)
+	healthplugin.ConfigAdd(defaultConnRoot + <span class="st">&quot;.plugins.health&quot;</span>)
+	prometheusplugin.ConfigAdd(defaultConnRoot + <span class="st">&quot;.plugins.prometheus&quot;</span>)
+}
+
+<span class="kw">var</span> defaultConnOnce <span class="ty">sync.Once</span>
+
+<span class="c">// DefaultConnModule provides the default client (*github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2.Conn), built from the keys under</span>
+<span class="c">// boost.factory.mongo with the plugins health, prometheus, and closes it when the app stops.</span>
+<span class="c">// It returns an empty option after the first call, so every consumer can</span>
+<span class="c">// include it.</span>
+<span class="kw">func</span> <span class="fn">DefaultConnModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
+	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
+
+	defaultConnOnce.Do(<span class="kw">func</span>() {
+		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2.DefaultConn&quot;</span>,
+			contextfx.Module(),
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(newDefaultConn),
+		)
+	})
+
+	<span class="kw">return</span> options
+}
+
+<span class="kw">func</span> <span class="fn">newDefaultConn</span>(ctx <span class="ty">context.Context</span>, lc <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Lifecycle) (*factory.Conn, <span class="ty">error</span>) {
+	health, err := healthplugin.NewHealthWithConfigPath(defaultConnRoot + <span class="st">&quot;.plugins.health&quot;</span>)
+	<span class="kw">if</span> err != <span class="kw">nil</span> {
+		<span class="kw">return</span> <span class="kw">nil</span>, err
+	}
+	prometheus, err := prometheusplugin.NewPrometheusWithConfigPath(defaultConnRoot + <span class="st">&quot;.plugins.prometheus&quot;</span>)
+	<span class="kw">if</span> err != <span class="kw">nil</span> {
+		<span class="kw">return</span> <span class="kw">nil</span>, err
+	}
+	c, err := factory.NewConnWithConfigPath(ctx, defaultConnRoot, health.Register, prometheus.Register)
+	<span class="kw">if</span> err != <span class="kw">nil</span> {
+		<span class="kw">return</span> <span class="kw">nil</span>, err
+	}
+	lc.Append(<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.StopHook(c.Close))
+	<span class="kw">return</span> c, <span class="kw">nil</span>
 }</pre></div>
 <div class="pane" role="tabpanel" id="fp-gen-implementation-internal-pkg-domain-repository-stock-repository-implementation-go" aria-labelledby="ft-gen-implementation-internal-pkg-domain-repository-stock-repository-implementation-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/implementation/internal_/pkg/domain/repository/stock/repository_implementation.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
 
@@ -604,6 +665,7 @@
 
 	<span class="st">&quot;go.uber.org/fx&quot;</span>
 
+	client_mongo_d932eadb <span class="st">&quot;github.com/acme/shop/gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2&quot;</span>
 	src_mongodb_1bacb721 <span class="st">&quot;github.com/acme/shop/internal/pkg/datastore/stock/mongodb&quot;</span>
 )
 
@@ -618,6 +680,7 @@
 	NewOnce.Do(<span class="kw">func</span>() {
 		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/pkg/datastore/stock/mongodb.New&quot;</span>,
 			OptionsModule(),
+			client_mongo_d932eadb.DefaultConnModule(),
 			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_mongodb_1bacb721.New),
 		)
 	})
@@ -671,6 +734,7 @@
 <span class="kw">import</span> (
 	<span class="st">&quot;go.uber.org/fx&quot;</span>
 
+	client_mongo_d932eadb <span class="st">&quot;github.com/acme/shop/gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2&quot;</span>
 	impl_stock_f8e11fb6 <span class="st">&quot;github.com/acme/shop/gen/implementation/internal_/pkg/domain/repository/stock&quot;</span>
 	gen_rest_54b9e997 <span class="st">&quot;github.com/acme/shop/gen/internal/app/api/rest&quot;</span>
 	gen_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/gen/internal/app/api/rest/handler/stock/reserver&quot;</span>
@@ -686,6 +750,7 @@
 		impl_stock_f8e11fb6.RepositoryImplementationModule(),
 		gen_mongodb_1bacb721.OptionsModule(),
 		gen_local_9afcd4bd.NewModule(),
+		client_mongo_d932eadb.DefaultConnModule(),
 	)
 }</pre></div>
 </div>
