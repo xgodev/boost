@@ -48,6 +48,9 @@ Release só quando o mantenedor mandar lançar, sempre por `release/vX.Y.Z`.
 Release **não tem issue**: o PR `release/vX.Y.Z` → `main` é o registro dela.
 
 
+0. Milestone `vX.Y.Z` (`gh api repos/xgodev/boost/milestones -f title=vX.Y.Z`)
+   com todas as issues mergeadas em `develop` desde a tag anterior
+   (`gh issue edit N --milestone vX.Y.Z`); fechar o milestone no passo 4.
 1. `git checkout -b release/vX.Y.Z origin/develop`. Versão: patch para
    fix/deps, minor para feature. Mudança de API pequena vai como minor, com
    nota no release; major (`/v2` no import) só por decisão do mantenedor.
