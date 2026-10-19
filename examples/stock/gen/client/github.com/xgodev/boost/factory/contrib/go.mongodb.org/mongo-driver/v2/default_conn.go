@@ -27,7 +27,7 @@ func init() {
 var defaultConnOnce sync.Once
 
 // DefaultConnModule provides the default client (*github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2.Conn), built from the keys under
-// boost.factory.mongo with the plugins health, prometheus.
+// boost.factory.mongo with the plugins health, prometheus, and closes it when the app stops.
 // It returns an empty option after the first call, so every consumer can
 // include it.
 func DefaultConnModule() fx.Option {
@@ -43,7 +43,7 @@ func DefaultConnModule() fx.Option {
 	return options
 }
 
-func newDefaultConn(ctx context.Context) (*factory.Conn, error) {
+func newDefaultConn(ctx context.Context, lc fx.Lifecycle) (*factory.Conn, error) {
 	health, err := healthplugin.NewHealthWithConfigPath(defaultConnRoot + ".plugins.health")
 	if err != nil {
 		return nil, err
@@ -52,5 +52,10 @@ func newDefaultConn(ctx context.Context) (*factory.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return factory.NewConnWithConfigPath(ctx, defaultConnRoot, health.Register, prometheus.Register)
+	c, err := factory.NewConnWithConfigPath(ctx, defaultConnRoot, health.Register, prometheus.Register)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
 }

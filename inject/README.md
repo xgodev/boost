@@ -269,8 +269,9 @@ func newQuoteClient(ctx context.Context) (*resty.Client, error) {
 | `*sns.Client`, `*sqs.Client`, `*kinesis.Client` (`github.com/aws/aws-sdk-go-v2/service/...`) | `factory/contrib/aws/aws-sdk-go-v2/v1/client/<service>` (root `boost.factory.aws`) | `datadog` |
 | `*kafka.Producer` (`github.com/confluentinc/confluent-kafka-go/v2/kafka`, needs cgo) | `factory/contrib/confluentinc/confluent-kafka-go/v2` | none |
 
-NATS, Pub/Sub, Bigtable, gocql and kafka clients hold connections, so their constructor also
-takes `fx.Lifecycle` and closes the client when the app stops:
+Redis, MongoDB, NATS, Pub/Sub, Bigtable, gocql and kafka clients hold connections, so their
+constructor also takes `fx.Lifecycle` and closes the client when the app stops (`*mongo.Conn`
+through `Conn.Close`, which disconnects its `*mongo.Client`):
 
 ```go
 func newEventsConn(ctx context.Context, lc fx.Lifecycle) (*nats.Conn, error) {

@@ -62,14 +62,14 @@ func init() {
 			"prometheus": {Path: redis + "/plugins/contrib/prometheus/client_golang/v1", New: others},
 		}
 	}
-	addClientFactory("github.com/redis/go-redis/v9", "Client", "redis", redis, "NewClientWithConfigPath", "boost.factory.redis",
+	addClosingClientFactory("github.com/redis/go-redis/v9", "Client", "redis", redis, "NewClientWithConfigPath", "boost.factory.redis",
 		redisPlugins("NewClientHealthWithConfigPath", "NewClientWithConfigPath"))
-	addClientFactory("github.com/redis/go-redis/v9", "ClusterClient", "redis", redis, "NewClusterClientWithConfigPath", "boost.factory.redis",
+	addClosingClientFactory("github.com/redis/go-redis/v9", "ClusterClient", "redis", redis, "NewClusterClientWithConfigPath", "boost.factory.redis",
 		redisPlugins("NewClusterHealthWithConfigPath", "NewClusterWithConfigPath"))
 
 	for _, version := range []string{"v1", "v2"} {
 		mongo := boostFactories + "go.mongodb.org/mongo-driver/" + version
-		addClientFactory(mongo, "Conn", "mongo", mongo, "NewConnWithConfigPath", "boost.factory.mongo", map[string]ClientPlugin{
+		addClosingClientFactory(mongo, "Conn", "mongo", mongo, "NewConnWithConfigPath", "boost.factory.mongo", map[string]ClientPlugin{
 			"health":     {Path: mongo + "/plugins/local/health", New: "NewHealthWithConfigPath"},
 			"otel":       {Path: mongo + "/plugins/contrib/go.opentelemetry.io/contrib/v0", New: "NewOtelMongoWithConfigPath"},
 			"datadog":    {Path: mongo + "/plugins/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath"},

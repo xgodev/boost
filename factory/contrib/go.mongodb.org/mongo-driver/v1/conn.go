@@ -23,6 +23,11 @@ type Conn struct {
 	Plugins       []Plugin
 }
 
+// Close disconnects the client of the connection.
+func (c *Conn) Close(ctx context.Context) error {
+	return c.Client.Disconnect(ctx)
+}
+
 // ClientOptionsPlugin defines a mongo client options plugin signature.
 type ClientOptionsPlugin = factory.Plugin[*options.ClientOptions]
 
