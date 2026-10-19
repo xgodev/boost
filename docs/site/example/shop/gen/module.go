@@ -5,6 +5,7 @@ package gen
 import (
 	"go.uber.org/fx"
 
+	client_mongo_d932eadb "github.com/acme/shop/gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
 	impl_stock_f8e11fb6 "github.com/acme/shop/gen/implementation/internal_/pkg/domain/repository/stock"
 	gen_rest_54b9e997 "github.com/acme/shop/gen/internal/app/api/rest"
 	gen_reserver_5a8b66f7 "github.com/acme/shop/gen/internal/app/api/rest/handler/stock/reserver"
@@ -20,5 +21,6 @@ func Module() fx.Option {
 		impl_stock_f8e11fb6.RepositoryImplementationModule(),
 		gen_mongodb_1bacb721.OptionsModule(),
 		gen_local_9afcd4bd.NewModule(),
+		client_mongo_d932eadb.DefaultConnModule(),
 	)
 }
