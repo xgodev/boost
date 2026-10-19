@@ -1,0 +1,23 @@
+getters:
+  int: 42
+  ints: [1, 2]
+  float: 1.5
+  floats: [1.5, 2.5]
+  floatmap:
+    a: 1.5
+  intmap:
+    a: 1
+  int64map:
+    a: 2
+  duration: 3s
+  time: "2026-10-18"
+  string: text
+  strings: [a, b]
+  stringmap:
+    a: A
+  bool: true
+  bools: [true, false]
+  boolmap:
+    a: true
+  db:
+    username: getter
