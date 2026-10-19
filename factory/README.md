@@ -25,6 +25,7 @@ The `contrib` directory contains factory implementations for integration with th
 - gofiber/fiber: fasthttp web framework (v2)
 - valyala/fasthttp: fasthttp client (v1)
 - mittwald/vaultgo: Vault client and credential managers for redis, elasticsearch and mongo (v0)
+- Azure (azure-sdk-for-go): token credential and Blob Storage client (v1)
 - storj/drpc: lightweight drop-in replacement for gRPC, server and client (v1)
 - MCP (modelcontextprotocol/go-sdk): Model Context Protocol server and client
 - Google Cloud Platform (GCP): Integration with GCP services
@@ -74,6 +75,7 @@ either name is interchangeable:
 | `contrib/elastic/go-elasticsearch/v8`, `v9` | `Plugin = factory.Plugin[*elasticsearch.Client]` |
 | `contrib/gocql/gocql/v1`, `contrib/apache/cassandra-gocql-driver/v2` | `Plugin = factory.Plugin[*gocql.Session]` |
 | `contrib/aws/aws-sdk-go-v2/v1` | `Plugin = factory.Plugin[*aws.Config]` |
+| `contrib/azure/azure-sdk-for-go/v1/client/azblob` | `Plugin = factory.Plugin[*azblob.ClientOptions]` |
 | `contrib/go.mongodb.org/mongo-driver/v1`, `v2` | `ClientOptionsPlugin = factory.Plugin[*options.ClientOptions]`, `ClientPlugin = factory.Plugin[*mongo.Client]` |
 
 Factories whose plugins have a different shape (gRPC, NATS, Hystrix, the
