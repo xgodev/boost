@@ -36,6 +36,12 @@ func TestClientFactory(t *testing.T) {
 			wantBuild: "github.com/xgodev/boost/factory/contrib/redis/go-redis/v9.NewClusterClientWithConfigPath"},
 		{name: "mongo v2", imports: map[string]string{"mongo": mongoPath}, tp: "*mongo.Conn", wantFound: true,
 			wantBuild: mongoPath + ".NewConnWithConfigPath"},
+		{name: "aws sns", imports: map[string]string{"sns": "github.com/aws/aws-sdk-go-v2/service/sns"}, tp: "*sns.Client", wantFound: true,
+			wantBuild: "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sns.NewSDKClientWithConfigPath"},
+		{name: "aws sqs", imports: map[string]string{"sqs": "github.com/aws/aws-sdk-go-v2/service/sqs"}, tp: "*sqs.Client", wantFound: true,
+			wantBuild: "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/sqs.NewSDKClientWithConfigPath"},
+		{name: "aws kinesis", imports: map[string]string{"kinesis": "github.com/aws/aws-sdk-go-v2/service/kinesis"}, tp: "*kinesis.Client", wantFound: true,
+			wantBuild: "github.com/xgodev/boost/factory/contrib/aws/aws-sdk-go-v2/v1/client/kinesis.NewSDKClientWithConfigPath"},
 		{name: "not a pointer", imports: map[string]string{"resty": restyPath}, tp: "resty.Client"},
 		{name: "another type of the package", imports: map[string]string{"resty": restyPath}, tp: "*resty.Request"},
 		{name: "same name, another package", imports: map[string]string{"resty": "example.com/resty"}, tp: "*resty.Client"},
@@ -61,6 +67,8 @@ func TestClientFactories_PluginNames(t *testing.T) {
 		clientFactories[restyPath+".Client"].PluginNames())
 	assert.Equal(t, []string{"datadog", "health", "otel", "prometheus"},
 		clientFactories[redisPath+".ClusterClient"].PluginNames())
+	assert.Equal(t, []string{"datadog"},
+		clientFactories["github.com/aws/aws-sdk-go-v2/service/sqs.Client"].PluginNames())
 }
 
 func TestParsePlugins(t *testing.T) {
