@@ -354,3 +354,87 @@ func TestClientRegistryCompiles(t *testing.T) {
 	out, err := exec.Command("go", "build", "./"+filepath.Base(dir)+"/...").CombinedOutput()
 	require.NoError(t, err, "%s", out)
 }
+
+// TestGenerator_RenderDefaultClients checks the default clients another
+// generator asks for (builder, for the adapter of a @Function): inject
+// generates them though no consumer injects them, leaves them out of the
+// root module, and the publisher shares them.
+func TestGenerator_RenderDefaultClients(t *testing.T) {
+	natsConn, pubsubClient := natsPath+".Conn", pubsubPath+".Client"
+	opts := testOptions("/mod")
+	opts.DefaultClients = []string{natsConn, pubsubClient}
+
+	t.Run("without consumers", func(t *testing.T) {
+		entries := []annotation.Entry{at("app", "New", nil, []string{"*App"}, provide("index=0"))}
+		files, err := NewGenerator(newTestGraph(t, entries), opts).Render(context.Background())
+		require.NoError(t, err)
+
+		for _, name := range []string{"client/github.com/nats-io/nats.go/default_conn.go", "client/cloud.google.com/go/pubsub/v2/default_client.go"} {
+			assert.NotNil(t, files[name], "files: %v", sortedFileNames(files))
+		}
+		root := string(files["module.go"])
+		assert.NotContains(t, root, "DefaultConnModule()", "the generator that asked for it wires it")
+		assert.NotContains(t, root, "DefaultClientModule()")
+	})
+
+	t.Run("with the publisher and an injecting consumer", func(t *testing.T) {
+		stream := at("stream", "New", []string{"*nats.Conn"}, []string{"*Stream"}, provide("index=0"), inject("index=0"))
+		stream.Imports = map[string]string{"nats": natsPath}
+		entries := []annotation.Entry{publisherConsumer("order", inject("index=0")), stream}
+
+		files, err := NewGenerator(newTestGraph(t, entries), opts).Render(context.Background())
+		require.NoError(t, err, "a client asked twice is generated once")
+
+		_, conn, err := ClientModule("example.com/app/gen", natsConn)
+		require.NoError(t, err)
+		_, client, err := ClientModule("example.com/app/gen", pubsubClient)
+		require.NoError(t, err)
+		publisher := string(files["client/github.com/xgodev/boost/wrapper/publisher/publisher.go"])
+		assert.Contains(t, publisher, conn, "the nats driver shares the default *nats.Conn")
+		assert.Contains(t, publisher, client, "the pubsub driver shares the default *pubsub.Client")
+		assert.Equal(t, 1, strings.Count(string(files["module.go"]), conn+","), "the client the app injects stays in the root once")
+	})
+
+	t.Run("a client inject does not build", func(t *testing.T) {
+		opts := testOptions("/mod")
+		opts.DefaultClients = []string{"example.com/broker.Conn"}
+		_, err := NewGenerator(newTestGraph(t, nil), opts).Render(context.Background())
+		assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
+		errorContains(t, err, "*example.com/broker.Conn")
+	})
+}
+
+func TestDefaultClientProvider(t *testing.T) {
+	conn := func(anns ...annotation.Annotation) annotation.Entry {
+		entry := at("broker", "NewConn", nil, []string{"*nats.Conn"}, anns...)
+		entry.Imports = map[string]string{"nats": natsPath}
+		return entry
+	}
+
+	comp, ok := DefaultClientProvider(newTestGraph(t, []annotation.Entry{conn(provide("index=0"))}), natsPath+".Conn")
+	require.True(t, ok)
+	assert.Equal(t, "NewConn", comp.Entry.Func.Name)
+
+	for name, entry := range map[string]annotation.Entry{
+		"named":   conn(provide("index=0, name=events")),
+		"grouped": conn(provide("index=0, group=conns")),
+	} {
+		t.Run(name, func(t *testing.T) {
+			_, ok := DefaultClientProvider(newTestGraph(t, []annotation.Entry{entry}), natsPath+".Conn")
+			assert.False(t, ok, "only an unnamed, ungrouped @Provide is the default client")
+		})
+	}
+
+	_, ok = DefaultClientProvider(newTestGraph(t, []annotation.Entry{conn(provide("index=0"))}), pubsubPath+".Client")
+	assert.False(t, ok)
+}
+
+func TestClientModule(t *testing.T) {
+	imp, call, err := ClientModule("example.com/app/gen", natsPath+".Conn")
+	require.NoError(t, err)
+	assert.Equal(t, "example.com/app/gen/client/github.com/nats-io/nats.go", imp.Path)
+	assert.Equal(t, imp.Alias+".DefaultConnModule()", call)
+
+	_, _, err = ClientModule("example.com/app/gen", "example.com/broker.Conn")
+	assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
+}

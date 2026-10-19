@@ -412,13 +412,17 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 		imps.add("functionfx", functionFxPath)+".Module["+result+"](nil)",
 	)
 	if len(fn.Alternatives) == 0 {
-		d.Options = append(d.Options, adapterOptions(imps, result, fn.Adapter)...)
+		options, err := adapterOptions(base, imps, result, fn, fn.Adapter)
+		if err != nil {
+			return doorData{}, err
+		}
+		d.Options = append(d.Options, options...)
 		d.Imports = imps.sorted()
 		return d, nil
 	}
 
 	// a list of adapters: config chooses one, and only its module is wired
-	names := append([]string{fn.Adapter}, fn.Alternatives...)
+	names := fn.Adapters()
 	sw := &adapterSwitch{
 		Key:    app + "." + functionFile + ".adapter",
 		Names:  strings.Join(names, ", "),
@@ -426,7 +430,11 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 		Errors: imps.add("errors", errorsPath),
 	}
 	for _, name := range names {
-		sw.Cases = append(sw.Cases, adapterCase{Name: name, Options: adapterOptions(imps, result, name)})
+		options, err := adapterOptions(base, imps, result, fn, name)
+		if err != nil {
+			return doorData{}, err
+		}
+		sw.Cases = append(sw.Cases, adapterCase{Name: name, Options: options})
 	}
 	d.Adapter = sw
 	d.Doc = fmt.Sprintf("runs the @Function handler with the adapter named by %s (%s; default %s).", sw.Key, sw.Names, fn.Adapter)
@@ -437,13 +445,32 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 	return d, nil
 }
 
-// adapterOptions returns the fx modules that run the named adapter.
-func adapterOptions(imps *imports, result, name string) []string {
+// adapterOptions returns the fx modules that run the named adapter of fn.
+// An adapter reading with a client inject builds takes the app's default
+// client: the module of its inject constructor, or the one inject generates.
+func adapterOptions(base string, imps *imports, result string, fn Function, name string) ([]string, error) {
 	var options []string
 	for _, adapter := range functionAdapters[name] {
-		options = append(options, imps.add(adapter.Alias, adapter.Path)+".Module["+result+"]()")
+		alias := imps.add(adapter.Alias, adapter.Path)
+		if adapter.Client == "" {
+			options = append(options, alias+".Module["+result+"]()")
+			continue
+		}
+
+		var imp inject.ImportData
+		var call string
+		if provider, ok := fn.ClientProviders[adapter.Client]; ok {
+			imp, call = inject.ModuleOf(base, provider.Entry)
+		} else {
+			var err error
+			if imp, call, err = inject.ClientModule(base, adapter.Client); err != nil {
+				return nil, err
+			}
+		}
+		imps.add(imp.Alias, imp.Path)
+		options = append(options, alias+".ModuleWithoutClient["+result+"]()", call)
 	}
-	return options
+	return options, nil
 }
 
 // functionMiddlewareOptions returns, for the middlewares of a @Function, the

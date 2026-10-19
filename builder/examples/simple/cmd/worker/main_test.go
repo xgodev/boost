@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"testing"
 
+	"cloud.google.com/go/pubsub/pstest"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	natsserver "github.com/nats-io/nats-server/v2/test"
 	"github.com/stretchr/testify/assert"
@@ -73,25 +74,45 @@ func TestWorker(t *testing.T) {
 
 const (
 	// adapterEnv chooses the adapter of the @Function of app worker
-	// (worker.function.adapter, generated for adapter=[cloudevents, nats]).
+	// (worker.function.adapter, generated for adapter=[cloudevents, nats, pubsub]).
 	adapterEnv = "WORKER_FUNCTION_ADAPTER"
-	natsURLEnv = "BOOST_FACTORY_NATS_URL"
-	childEnv   = "BUILDER_EXAMPLE_CHILD"
+	// driverEnv chooses the driver of the publisher the handler announces
+	// with (boost.wrapper.publisher.driver.name).
+	driverEnv   = "BOOST_WRAPPER_PUBLISHER_DRIVER_NAME"
+	natsURLEnv  = "BOOST_FACTORY_NATS_URL"
+	projectEnv  = "BOOST_FACTORY_GCP_PUBSUB_API__OPTIONS_PROJECT__ID"
+	emulatorEnv = "PUBSUB_EMULATOR_HOST"
+	childEnv    = "BUILDER_EXAMPLE_CHILD"
 )
 
-// TestWorkerAdapter boots app worker in a new process per value of the
-// adapter key: config is read once per process. The nats adapter connects
-// to a NATS server this test runs.
+// TestWorkerAdapter boots app worker in a new process per adapter and
+// publisher driver: config is read once per process. The function reads
+// from the broker the handler announces to, or from another one; the nats
+// and pubsub clients connect to a NATS server and a Pub/Sub fake this test
+// runs.
 func TestWorkerAdapter(t *testing.T) {
 	opts := natsserver.DefaultTestOptions
 	opts.Port = -1
 	srv := natsserver.RunServer(&opts)
 	t.Cleanup(srv.Shutdown)
 
-	for _, value := range []string{"cloudevents", "nats", "nope"} {
-		t.Run(value, func(t *testing.T) {
+	fake := pstest.NewServer()
+	t.Cleanup(func() { _ = fake.Close() })
+
+	for _, c := range []struct{ adapter, driver string }{
+		{"cloudevents", "noop"},
+		{"nats", "noop"},
+		{"pubsub", "noop"},
+		{"nats", "nats"},
+		{"pubsub", "pubsub"},
+		{"nats", "pubsub"},
+		{"pubsub", "nats"},
+		{"nope", "noop"},
+	} {
+		t.Run(c.adapter+"+"+c.driver, func(t *testing.T) {
 			cmd := exec.Command(os.Args[0], "-test.run=^TestWorkerAdapterChild$", "-test.v")
-			cmd.Env = append(os.Environ(), adapterEnv+"="+value, natsURLEnv+"="+srv.ClientURL(), childEnv+"=1")
+			cmd.Env = append(os.Environ(), adapterEnv+"="+c.adapter, driverEnv+"="+c.driver,
+				natsURLEnv+"="+srv.ClientURL(), emulatorEnv+"="+fake.Addr, projectEnv+"=example", childEnv+"=1")
 			out, err := cmd.CombinedOutput()
 			require.NoError(t, err, "%s", out)
 			assert.Contains(t, string(out), "--- PASS: TestWorkerAdapterChild")
@@ -100,14 +121,18 @@ func TestWorkerAdapter(t *testing.T) {
 }
 
 // TestWorkerAdapterChild runs in the process TestWorkerAdapter starts, with
-// the adapter key set.
+// the adapter and driver keys set. The adapter and the publisher share the
+// one default client of their broker.
 func TestWorkerAdapterChild(t *testing.T) {
 	if os.Getenv(childEnv) != "1" {
 		t.Skip("run by TestWorkerAdapter")
 	}
 
-	var adapters []function.CmdFunc[*cloudevents.Event]
-	app := fx.New(append(worker.Modules(), fx.NopLogger,
+	var (
+		adapters []function.CmdFunc[*cloudevents.Event]
+		handle   function.Handler[*cloudevents.Event]
+	)
+	app := fx.New(append(worker.Modules(), fx.NopLogger, fx.Populate(&handle),
 		fx.Invoke(fx.Annotate(
 			func(a []function.CmdFunc[*cloudevents.Event]) { adapters = a },
 			fx.ParamTags(`group:"`+functionfx.BSFunctionAdaptersGroupKey+`"`),
@@ -115,17 +140,18 @@ func TestWorkerAdapterChild(t *testing.T) {
 	)...)
 
 	// the command each adapter runs the function with
-	commands := map[string]string{"cloudevents": "cloudevents_http", "nats": "nats"}
+	commands := map[string]string{"cloudevents": "cloudevents_http", "nats": "nats", "pubsub": "gcp_pubsub"}
 	switch value := os.Getenv(adapterEnv); value {
-	case "cloudevents", "nats":
+	case "cloudevents", "nats", "pubsub":
 		require.NoError(t, app.Err())
 		require.Len(t, adapters, 1, "config wires the chosen adapter and only that one")
 		assert.Equal(t, commands[value], adapters[0](nil).Use)
+		assert.NotNil(t, handle, "the handler got the publisher of the chosen driver")
 	default:
 		require.Error(t, app.Err(), "an unknown adapter fails the boot")
 		assert.True(t, errors.IsNotValid(app.Err()), "got %v", app.Err())
 		assert.Contains(t, app.Err().Error(), "worker.function.adapter")
 		assert.Contains(t, app.Err().Error(), `"`+value+`"`)
-		assert.Contains(t, app.Err().Error(), "cloudevents, nats")
+		assert.Contains(t, app.Err().Error(), "cloudevents, nats, pubsub")
 	}
 }
