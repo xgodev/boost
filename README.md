@@ -758,7 +758,7 @@ the app modules and main.
 |---|---|
 | `@REST` | echo route |
 | `@GRPC` | gRPC service |
-| `@Function` | cloudevents · kafka · lambda · nats · pubsub |
+| `@Function` | cloudevents · kafka · kafka-go · lambda · nats · pubsub |
 | `@MCP` | MCP tool |
 | `@Middleware` | generated decorator |
 | `@Default` | implementation picked by config |
