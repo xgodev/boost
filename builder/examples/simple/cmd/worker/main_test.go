@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"os"
+	"os/exec"
 	"testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	natsserver "github.com/nats-io/nats-server/v2/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xgodev/boost"
@@ -67,4 +69,63 @@ func TestWorker(t *testing.T) {
 
 	_, err = handle(context.Background(), event(t, map[string]string{}))
 	assert.True(t, errors.IsNotValid(err), "got %v", err)
+}
+
+const (
+	// adapterEnv chooses the adapter of the @Function of app worker
+	// (worker.function.adapter, generated for adapter=[cloudevents, nats]).
+	adapterEnv = "WORKER_FUNCTION_ADAPTER"
+	natsURLEnv = "BOOST_FACTORY_NATS_URL"
+	childEnv   = "BUILDER_EXAMPLE_CHILD"
+)
+
+// TestWorkerAdapter boots app worker in a new process per value of the
+// adapter key: config is read once per process. The nats adapter connects
+// to a NATS server this test runs.
+func TestWorkerAdapter(t *testing.T) {
+	opts := natsserver.DefaultTestOptions
+	opts.Port = -1
+	srv := natsserver.RunServer(&opts)
+	t.Cleanup(srv.Shutdown)
+
+	for _, value := range []string{"cloudevents", "nats", "nope"} {
+		t.Run(value, func(t *testing.T) {
+			cmd := exec.Command(os.Args[0], "-test.run=^TestWorkerAdapterChild$", "-test.v")
+			cmd.Env = append(os.Environ(), adapterEnv+"="+value, natsURLEnv+"="+srv.ClientURL(), childEnv+"=1")
+			out, err := cmd.CombinedOutput()
+			require.NoError(t, err, "%s", out)
+			assert.Contains(t, string(out), "--- PASS: TestWorkerAdapterChild")
+		})
+	}
+}
+
+// TestWorkerAdapterChild runs in the process TestWorkerAdapter starts, with
+// the adapter key set.
+func TestWorkerAdapterChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestWorkerAdapter")
+	}
+
+	var adapters []function.CmdFunc[*cloudevents.Event]
+	app := fx.New(append(worker.Modules(), fx.NopLogger,
+		fx.Invoke(fx.Annotate(
+			func(a []function.CmdFunc[*cloudevents.Event]) { adapters = a },
+			fx.ParamTags(`group:"`+functionfx.BSFunctionAdaptersGroupKey+`"`),
+		)),
+	)...)
+
+	// the command each adapter runs the function with
+	commands := map[string]string{"cloudevents": "cloudevents_http", "nats": "nats"}
+	switch value := os.Getenv(adapterEnv); value {
+	case "cloudevents", "nats":
+		require.NoError(t, app.Err())
+		require.Len(t, adapters, 1, "config wires the chosen adapter and only that one")
+		assert.Equal(t, commands[value], adapters[0](nil).Use)
+	default:
+		require.Error(t, app.Err(), "an unknown adapter fails the boot")
+		assert.True(t, errors.IsNotValid(app.Err()), "got %v", app.Err())
+		assert.Contains(t, app.Err().Error(), "worker.function.adapter")
+		assert.Contains(t, app.Err().Error(), `"`+value+`"`)
+		assert.Contains(t, app.Err().Error(), "cloudevents, nats")
+	}
 }
