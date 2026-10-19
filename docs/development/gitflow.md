@@ -44,7 +44,9 @@ tag, sem GitHub Release, sem PR `develop` → `main`, sem mexer na versão do
 site/README e sem branch `feature/N-release-*`. O `develop` acumula as issues
 até a release ser lançada.
 
-Release só quando o mantenedor mandar lançar, sempre por `release/vX.Y.Z`:
+Release só quando o mantenedor mandar lançar, sempre por `release/vX.Y.Z`.
+Release **não tem issue**: o PR `release/vX.Y.Z` → `main` é o registro dela.
+
 
 1. `git checkout -b release/vX.Y.Z origin/develop`. Versão: patch para
    fix/deps, minor para feature. Mudança de API pequena vai como minor, com
