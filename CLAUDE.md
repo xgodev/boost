@@ -38,6 +38,9 @@ factory por componente sob `factory/contrib/`.
 - **Separação de concerns** — factory constrói, wrapper abstrai, app consome.
 - Documentação é parte da tarefa: mudou componente/config key/comportamento →
   atualizar o README do pacote no mesmo commit.
+- **`examples/stock` é o app de exemplo completo.** Recurso novo no boost
+  (factory, plugin, adapter, anotação do builder) entra nele no mesmo PR,
+  com teste em `cmd/<app>/main_test.go`.
 - **`README.md` da raiz espelha o site** (`docs/site/index.html`): mesmas
   seções, texto, números, exemplo e versão. Mudou um, muda o outro no mesmo PR.
 - Teste valida comportamento, não só cobre linha. Bug fix → teste vermelho

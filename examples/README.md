@@ -10,6 +10,14 @@ all.
 [`boot`](boot) is the smallest one: one handler, one service and the
 generated main, whose `boost.Start` loads the config and sets the logger.
 
+[`stock`](stock) is the complete one: a stock with reservation that uses
+every resource it can — REST, gRPC and MCP doors, a CloudEvents/NATS
+function, service middlewares (log, prometheus), a memory or MongoDB
+repository, a resty client, the publisher and `@Config` options, each
+switched by config. A resource that lands in boost is added to it in the
+same PR. Open `examples/stock` in GoLand and run `cmd/api` and `cmd/worker`
+as its `doc.go` says.
+
 ## Where they are
 
 | Package | Examples |
@@ -23,6 +31,7 @@ generated main, whose `boost.Start` loads the config and sets the logger.
 | [`wrapper/cache`](../wrapper/cache/examples) | freecache, freecache-binary, multi, plugin |
 | [`wrapper/config`](../wrapper/config/examples) | env, env_file |
 | [`builder`](../builder/examples) | simple: two apps with rest, grpc, mcp and function doors |
+| [`examples/stock`](stock) | the complete app: every resource boost has |
 | [`docs/site/example/shop`](../docs/site/example/shop) | the app of the site |
 
 ## Shape of an example
