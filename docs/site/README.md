@@ -165,13 +165,13 @@ Counted from the repo on 2026-10-18 (#88, #131, #129, #126). Recount when a fact
 | 53 | factories: directories under `factory/contrib/` with a `New…`/`Register…` constructor in non-test, non-example Go files, outside `/plugins/` and `/internal/` |
 | 79 | plugins: the same count, only `/plugins/` directories |
 | 41 | upstream libraries: the 43 `org/repo` directories under `factory/contrib/`, minus `cloud.google.com/grpc`, which wraps `google.golang.org/grpc` (already counted), and `apache/cassandra-gocql-driver`, the Apache home of `gocql/gocql` (#131). `cloud.google.com/api` is `google.golang.org/api` |
-| 220 | tags since 2024-07 (latest `v1.2.0`) |
+| 220 | tags since 2024-07 (latest `v1.6.0`) |
 
 The 53/79/41 include the MCP factory (server and client, #70), echo v5 (#129) and Bigtable (#126).
 
 `annotation`, `inject`, the MCP factory, `builder` and its doors (`@MCP`
 since #79), `@Middleware`, `@Default`, `@Config` and the `gen/` layout that mirrors the project are on
-`develop` and released in `v1.2.0`. `@MCP` puts a handler
+`develop` and released in `v1.6.0`. `@MCP` puts a handler
 `func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, Out, error)`
 on the boost MCP server as a tool: the name is the handler in snake case and the
 description is its doc comment (`builder/examples/simple/stocktool`).
