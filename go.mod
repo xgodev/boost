@@ -13,6 +13,7 @@ require (
 	github.com/DataDog/dd-trace-go/contrib/go-chi/chi.v5/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver.v2/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/go.mongodb.org/mongo-driver/v2 v2.11.2
+	github.com/DataDog/dd-trace-go/contrib/gofiber/fiber.v2/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/google.golang.org/grpc/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/labstack/echo.v4/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/labstack/echo.v5/v2 v2.11.2
@@ -50,6 +51,7 @@ require (
 	github.com/goccy/go-json v0.11.2
 	github.com/gocql/gocql v1.7.0
 	github.com/godror/godror v0.51.5
+	github.com/gofiber/fiber/v2 v2.52.15
 	github.com/google/uuid v1.6.0
 	github.com/graphql-go/graphql v0.8.1
 	github.com/graphql-go/handler v0.2.4
@@ -166,6 +168,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.4 // indirect
 	github.com/VictoriaMetrics/easyproto v1.2.0 // indirect
+	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/antithesishq/antithesis-sdk-go v0.6.0-default-no-op // indirect
 	github.com/apache/arrow/go/v15 v15.0.2 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.22 // indirect
@@ -337,6 +340,7 @@ require (
 	github.com/trailofbits/go-mutexasserts v0.0.0-20250514102930-c1f3d2e37561 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.70.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
