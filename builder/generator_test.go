@@ -114,6 +114,32 @@ func TestGenerator_RenderIsStable(t *testing.T) {
 	assert.Equal(t, first, second, "the order of the annotations does not change the output")
 }
 
+// TestGenerator_RenderFunctionAdapterList checks the function door of an
+// adapter list: the key that chooses the adapter and the switch that wires
+// only the chosen one. A single adapter renders as in TestGenerator_Render.
+func TestGenerator_RenderFunctionAdapterList(t *testing.T) {
+	files, err := render(t, []annotation.Entry{
+		decl("events", "", "New", nil, []string{"Handler"}, ann("Provide", "index=0")),
+		decl("events", "Handler", "Handle", eventParams, eventResults, ann("Function", "adapter=[pubsub, nats], app=worker")),
+	})
+	require.NoError(t, err)
+
+	name := "builder/worker/function_module.go"
+	src, ok := files[name]
+	require.True(t, ok, "files: %v", fileNames(files))
+	assertImportsUsed(t, name, src)
+
+	golden := filepath.Join("testdata", "golden", "adapters", "function_module.go.golden")
+	if *update {
+		require.NoError(t, os.MkdirAll(filepath.Dir(golden), 0o755))
+		require.NoError(t, os.WriteFile(golden, src, 0o644))
+		return
+	}
+	want, err := os.ReadFile(golden)
+	require.NoError(t, err, "run go test ./builder/ -run TestGenerator_RenderFunctionAdapterList -update")
+	assert.Equal(t, string(want), string(src))
+}
+
 func TestGenerator_RenderErrors(t *testing.T) {
 	handle := func(results ...string) annotation.Entry {
 		return decl("events", "", "Handle", eventParams, results, ann("Function", "adapter=nats"))
