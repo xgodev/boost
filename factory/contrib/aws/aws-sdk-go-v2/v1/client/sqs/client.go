@@ -2,6 +2,7 @@ package sqs
 
 import (
 	"context"
+	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -25,20 +26,22 @@ type sqsClient interface {
 
 // Client holds client and resource name.
 type client struct {
-	client    sqsClient
+	client sqsClient
+
+	mu        sync.RWMutex // guards queueUrls: publishes resolve queues concurrently
 	queueUrls map[string]*string
 }
 
 // NewClient returns a initialized client.
 func NewClient(c *sqs.Client) Client {
-	return &client{c, map[string]*string{}}
+	return &client{client: c, queueUrls: map[string]*string{}}
 }
 
 // Publish publishes input message to the configured sqs queue.
 func (c *client) Publish(ctx context.Context, input *sqs.SendMessageInput) error {
 
 	logger := log.FromContext(ctx).
-		WithTypeOf(*c).
+		WithTypeOf(client{}). // not *c: that copies the lock.
 		WithField("subject", input.QueueUrl)
 
 	logger.Tracef("sending message to sqs")
@@ -57,7 +60,10 @@ func (c *client) Publish(ctx context.Context, input *sqs.SendMessageInput) error
 
 // ResolveQueueUrl resolves sqs queue url according to queueName.
 func (c *client) ResolveQueueUrl(ctx context.Context, queueName string) (*string, error) {
-	if queueUrl, ok := c.queueUrls[queueName]; ok {
+	c.mu.RLock()
+	queueUrl, ok := c.queueUrls[queueName]
+	c.mu.RUnlock()
+	if ok {
 		return queueUrl, nil
 	}
 
@@ -73,7 +79,9 @@ func (c *client) ResolveQueueUrl(ctx context.Context, queueName string) (*string
 		return nil, errors.Errorf("sqs queue %s not found", queueName)
 	}
 
+	c.mu.Lock()
 	c.queueUrls[queueName] = result.QueueUrl
+	c.mu.Unlock()
 
 	return result.QueueUrl, nil
 }

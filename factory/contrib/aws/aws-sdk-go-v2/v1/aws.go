@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/xgodev/boost/factory"
 	"github.com/xgodev/boost/factory/core/net/http/client"
+	"github.com/xgodev/boost/model/errors"
 	"github.com/xgodev/boost/wrapper/log"
 )
 
@@ -37,12 +38,9 @@ func NewConfigWithConfigPath(ctx context.Context, path string, plugins ...Plugin
 // NewConfigWithOptions returns aws config with options.
 func NewConfigWithOptions(ctx context.Context, options *Options, plugins ...Plugin) (aws.Config, error) {
 
-	logger := log.FromContext(ctx)
-
 	cfg, err := c.LoadDefaultConfig(ctx, c.WithEndpointResolverWithOptions(customResolver(ctx, options)))
 	if err != nil {
-		logger.Errorf("unable to load AWS SDK config, %s", err.Error())
-		return aws.Config{}, nil
+		return aws.Config{}, errors.Wrap(err, errors.Internalf("unable to load the AWS SDK config"))
 	}
 
 	if options.DefaultRegion != "" {
