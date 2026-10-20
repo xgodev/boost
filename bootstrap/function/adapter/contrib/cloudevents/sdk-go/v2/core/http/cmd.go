@@ -6,7 +6,8 @@ import (
 	"github.com/xgodev/boost/bootstrap/function"
 )
 
-// New returns CmdFunc for cloudevents command.
+// New returns the CmdFunc of the cloudevents_http command: it serves the
+// events posted to it until the run context is done.
 func New[T any](opts []client.Option, plugins ...Plugin) function.CmdFunc[T] {
 	return func(fn function.Handler[T]) *co.Command {
 		return &co.Command{
@@ -14,7 +15,7 @@ func New[T any](opts []client.Option, plugins ...Plugin) function.CmdFunc[T] {
 			Short: "cloudevents_http",
 			Long:  "",
 			RunE: func(cmd *co.Command, args []string) error {
-				return Run[T](fn, opts, plugins...)
+				return RunContext[T](cmd.Context(), fn, opts, plugins...)
 			},
 		}
 	}

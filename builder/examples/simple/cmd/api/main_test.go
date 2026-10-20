@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/exec"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -20,6 +22,8 @@ import (
 	"github.com/xgodev/boost"
 	"github.com/xgodev/boost/builder/examples/simple/gen/builder/api"
 	"github.com/xgodev/boost/builder/examples/simple/stock"
+	otelboost "github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1"
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1/oteltest"
 	grpcserver "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
@@ -31,10 +35,30 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 )
 
-// TestMain boots boost: the servers read their config.
+// TestMain boots boost: the servers read their config. The warehouse client
+// exports spans: they go to a collector of the process,
+// which the processes the tests start inherit, unless a test points its own
+// at another.
 func TestMain(m *testing.M) {
+	os.Exit(run(m))
+}
+
+func run(m *testing.M) int {
+	collector, err := oteltest.NewCollector()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	defer collector.Close()
+	if os.Getenv(otelEndpointEnv) == "" {
+		if err := os.Setenv(otelEndpointEnv, collector.Endpoint()); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+	}
+
 	boost.Start()
-	os.Exit(m.Run())
+	return m.Run()
 }
 
 func serve(srv *boostecho.Server, method, target, body string) *httptest.ResponseRecorder {
@@ -148,21 +172,35 @@ const (
 	// warehouseHostEnv points the warehouse client builder generates for
 	// stock/remote at a server (boost.factory.resty.clients.warehouse.host).
 	warehouseHostEnv = "BOOST_FACTORY_RESTY_CLIENTS_WAREHOUSE_HOST"
+	// otelEndpointEnv is where the OpenTelemetry providers export
+	// (boost.factory.otel.endpoint).
+	otelEndpointEnv = "BOOST_FACTORY_OTEL_ENDPOINT"
 )
+
+// warehouse serves the stock of the remote implementation: it is out of
+// sold-out only. Each request's traceparent header goes to traceparents.
+func warehouse(t *testing.T, traceparents chan<- string) *httptest.Server {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || !strings.HasPrefix(r.URL.Path, "/items/") {
+			http.NotFound(w, r)
+			return
+		}
+		if traceparents != nil {
+			traceparents <- r.Header.Get("traceparent")
+		}
+		w.Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		_, _ = w.Write([]byte(`{"available":` + strconv.FormatBool(r.URL.Path != "/items/sold-out") + `}`))
+	}))
+	t.Cleanup(srv.Close)
+	return srv
+}
 
 // TestAPIImplementation boots app api in a new process per value of the
 // implementation key: config is read once per process. The remote
 // implementation asks a warehouse this test serves.
 func TestAPIImplementation(t *testing.T) {
-	warehouse := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet || !strings.HasPrefix(r.URL.Path, "/items/") {
-			http.NotFound(w, r)
-			return
-		}
-		w.Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-		_, _ = w.Write([]byte(`{"available":` + strconv.FormatBool(r.URL.Path != "/items/sold-out") + `}`))
-	}))
-	t.Cleanup(warehouse.Close)
+	warehouse := warehouse(t, nil)
 
 	for _, value := range []string{"unlimited", "remote", "nope"} {
 		t.Run(value, func(t *testing.T) {
@@ -209,6 +247,51 @@ func TestAPIImplementationChild(t *testing.T) {
 		assert.Contains(t, app.Err().Error(), `"`+value+`"`)
 		assert.Contains(t, app.Err().Error(), "memory, remote, unlimited")
 	}
+}
+
+// TestAPITelemetry boots app api in a new process that exports to a
+// collector of its own, with the remote implementation: the warehouse client
+// is built with the otel plugin, so its generated module starts the
+// providers and an order leaves the span of the call to the warehouse, which
+// receives its trace context.
+func TestAPITelemetry(t *testing.T) {
+	collector, err := oteltest.NewCollector()
+	require.NoError(t, err)
+	t.Cleanup(collector.Close)
+	traceparents := make(chan string, 1)
+	warehouse := warehouse(t, traceparents)
+
+	cmd := exec.Command(os.Args[0], "-test.run=^TestAPITelemetryChild$", "-test.v")
+	cmd.Env = append(os.Environ(), implementationEnv+"=remote", warehouseHostEnv+"="+warehouse.URL,
+		otelEndpointEnv+"="+collector.Endpoint(), childEnv+"=1")
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, "%s", out)
+	assert.Contains(t, string(out), "--- PASS: TestAPITelemetryChild")
+
+	spans := collector.Spans()
+	assert.True(t, slices.ContainsFunc(spans, func(name string) bool { return strings.Contains(name, http.MethodGet) }),
+		"the warehouse client exports the span of GET /items/{item}: %v", spans)
+	select {
+	case traceparent := <-traceparents:
+		assert.NotEmpty(t, traceparent, "the warehouse client sends the trace context")
+	default:
+		t.Fatal("the warehouse was not called")
+	}
+}
+
+// TestAPITelemetryChild runs in the process TestAPITelemetry starts: it
+// places an order and shuts the providers down, which exports the spans.
+func TestAPITelemetryChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestAPITelemetry")
+	}
+
+	var rest *boostecho.Server
+	app := fx.New(append(api.Modules(), fx.NopLogger, fx.Populate(&rest))...)
+	require.NoError(t, app.Err())
+
+	assert.Equal(t, http.StatusCreated, serve(rest, http.MethodPost, "/orders", `{"item":"book"}`).Code)
+	require.NoError(t, otelboost.Shutdown(context.Background()))
 }
 
 // soldOutEnv sets the items the memory stock is out of

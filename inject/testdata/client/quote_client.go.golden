@@ -13,6 +13,7 @@ import (
 	otelplugin "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/contrib/dubonzi/otelresty/v1"
 	prometheusplugin "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/contrib/prometheus/client_golang/v1"
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
+	otelfx "github.com/xgodev/boost/fx/modules/factory/contrib/go.opentelemetry.io/otel/v1"
 )
 
 // quoteClientRoot is the config root of the quote client (*github.com/go-resty/resty/v2.Client);
@@ -37,6 +38,7 @@ func QuoteClientModule() fx.Option {
 	quoteClientOnce.Do(func() {
 		options = fx.Module("github.com/go-resty/resty/v2.QuoteClient",
 			contextfx.Module(),
+			otelfx.Module(),
 			fx.Provide(fx.Annotate(newQuoteClient, fx.ResultTags(`name:"quote"`))),
 		)
 	})

@@ -93,7 +93,8 @@ $ curl localhost:8081 -H 'Ce-Id: 1' -H 'Ce-Source: shop' -H 'Ce-Type: order.crea
 ```
 
 Its log says `reserved one tshirt for event 1, 1 left`, and app `api` now
-answers `{"sku":"tshirt","units":1}`.
+answers `{"sku":"tshirt","units":1}`. Ctrl-C (SIGTERM) stops the worker at
+once with exit 0, after it answers the events in hand.
 
 The job:
 
@@ -115,6 +116,7 @@ Every switch is a config key; the env var is the key in upper case with `_`.
 | `BOOST_WRAPPER_PUBLISHER_DRIVER_NAME=nats` | announce `stock.reserved` on NATS (`BOOST_FACTORY_NATS_URL`) |
 | `WORKER_FUNCTION_ADAPTER=nats` | the worker reads `order.created` from NATS (`BOOST_BOOTSTRAP_FUNCTION_ADAPTER_NATS_SUBJECTS`) |
 | `BOOST_FACTORY_ECHO_PLUGINS_PROMETHEUS_ENABLED=false` | turns one plugin of a server off; the others stay |
+| `BOOST_FACTORY_OTEL_ENDPOINT=collector:4317` | where the worker exports its traces and metrics (default `localhost:4317`): the `otel` plugin of its cloudevents `@Server` starts the OpenTelemetry providers |
 | `INTERNAL_APP_STOCKCHECK_JOB_STOCK_CHECKER_SKUS=tshirt,mug` | the skus the job checks |
 
 ## Where each resource is
@@ -152,6 +154,8 @@ go test ./...
 `gen/` and `cmd/*/main.go` are generated and committed; `gen_test.go` fails
 when they are stale. `api/proto/stock/v1` is regenerated with the `protoc`
 line of its `doc.go`. The tests run each app in process on the defaults and
-on each switch above; the MongoDB and Oracle ones skip unless
+on each switch above, and send SIGTERM to the generated main of `worker`
+after it reserved over HTTP: it exits 0 within two seconds, with and without
+its `otel` plugin; the MongoDB and Oracle ones skip unless
 `BOOST_FACTORY_MONGO_URI` or `BOOST_FACTORY_GODROR_CONNECTSTRING` points at a
 database.

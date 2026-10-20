@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/xgodev/boost/fx/modules/extra/multiserver"
@@ -41,7 +42,20 @@ const (
 	publisherPath     = "github.com/xgodev/boost/wrapper/publisher"
 	wrapperConfigPath = "github.com/xgodev/boost/wrapper/config"
 	errorsPath        = "github.com/xgodev/boost/model/errors"
+	otelFxPath        = "github.com/xgodev/boost/fx/modules/factory/contrib/go.opentelemetry.io/otel/v1"
 )
+
+// otelPlugin is the plugin, in every server type that has one, that reports
+// to the OpenTelemetry providers.
+const otelPlugin = "otel"
+
+// otelModule returns the fx module that starts the OpenTelemetry providers:
+// a door built with an OTel plugin or middleware includes it, or every span
+// and metric goes to the noop provider. It is once-guarded, so doors of the
+// same app can all include it.
+func otelModule(imps *imports) string {
+	return imps.add("otelfx", otelFxPath) + ".Module()"
+}
 
 // Options are the options of the inject generator of the same application,
 // whose modules the doors include, and the directory of the mains.
@@ -351,6 +365,9 @@ func serverDoor(base string, srv Server) (doorData, error) {
 	}
 
 	invoke := "func(srv *" + serverPkg + ".Server" + joinPrefixed(params) + ") {\n" + strings.Join(body, "\n") + "\n}"
+	if slices.Contains(srv.Builtin, otelPlugin) {
+		d.Options = append(d.Options, otelModule(imps))
+	}
 
 	if isDefault(srv) {
 		def := defaultServers[srv.Kind]

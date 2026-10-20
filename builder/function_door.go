@@ -2,6 +2,7 @@ package builder
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -36,6 +37,9 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 	}
 
 	handlerType := imps.add("bsfunction", functionPath) + ".Handler[" + result + "]"
+	if slices.ContainsFunc(fn.Middlewares, func(name string) bool { return functionMiddlewares[name].OTel }) {
+		d.Options = append(d.Options, otelModule(imps))
+	}
 	d.Options = append(d.Options, modules...)
 	d.Options = append(d.Options,
 		"fx.Provide(func("+strings.Join(params, ", ")+") "+handlerType+" {\nreturn "+call+"\n})",
@@ -111,6 +115,9 @@ func adapterOptions(base string, imps *imports, result string, fn Function, name
 	}
 	// the adapter is built with the plugins its @Server lists
 	if plugins := fn.Builtin[name]; len(plugins) > 0 {
+		if slices.Contains(plugins, otelPlugin) {
+			options = append(options, otelModule(imps))
+		}
 		options = append(options, builtinOption(imps, name, plugins, ""))
 	}
 	return options, nil

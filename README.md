@@ -936,7 +936,7 @@ same or get better, never worse.
 
  require (
 -	github.com/xgodev/boost v1.1.1
-+	github.com/xgodev/boost v1.7.0
++	github.com/xgodev/boost v1.7.1
  )
 ```
 
@@ -947,7 +947,7 @@ ok  github.com/acme/shop/...
 
 1 line changed in go.mod, **0 lines changed in your code**.
 
-Releases: 2024-07 → `v1.1.0` → `v1.1.1` → **`v1.7.0`**
+Releases: 2024-07 → `v1.1.0` → `v1.1.1` → **`v1.7.1`**
 ([all releases](https://github.com/xgodev/boost/releases)).
 
 ## There's a factory for that.

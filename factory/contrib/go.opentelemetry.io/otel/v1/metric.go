@@ -41,10 +41,15 @@ var metricOnce sync.Once
 
 // StartMetricProviderWithOptions starts the tracer provider with the given set of options. Calling
 // it multiple times will have no effect. If an error occours during tracer initialization,
-// a Noop trace provider will be used instead.
+// a Noop trace provider will be used instead. After Shutdown it only logs a warning.
 func StartMetricProviderWithOptions(ctx context.Context, options *Options, startOptions ...sdkmetric.Option) {
 
 	if !IsMetricEnabled() {
+		return
+	}
+
+	if shutDown.Load() {
+		log.FromContext(ctx).Warn("opentelemetry was shut down; the meter provider does not start again")
 		return
 	}
 
@@ -94,6 +99,7 @@ func StartMetricProviderWithOptions(ctx context.Context, options *Options, start
 
 		otel.SetMeterProvider(prov)
 		MeterProvider = prov
+		meterProvider = prov
 
 		err = runtime.Start(runtime.WithMinimumReadMemStatsInterval(5 * time.Second))
 		if err != nil {

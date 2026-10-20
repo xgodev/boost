@@ -69,7 +69,11 @@ The `nats`, `cloudevents_nats` and `gcp_pubsub` (v1 and v2) adapters run on
 that context (`Helper.Run(cmd.Context())`) and block until it is done: when
 it is cancelled they take no new message, let the handler finish the one it
 holds, with a context the stop does not cancel, and return, so SIGTERM stops
-the app with exit code 0 well before the stop timeout. NATS drains its
+the app with exit code 0 well before the stop timeout. The `cloudevents_http`
+adapter does the same (`RunContext(cmd.Context(), ...)`): it takes no new
+request, shuts its server down once the events in hand are answered and
+returns. An option the HTTP protocol rejects (e.g. a bad port) fails `Run`.
+`http.Run` is deprecated: it serves with a context that is never cancelled. NATS drains its
 subscriptions; Pub/Sub gives back a failed message instead of retrying it. A
 NATS subject it cannot subscribe to, or a Pub/Sub subscription it cannot
 receive on (`pubsub: could not receive on <name>`, e.g. one that does not

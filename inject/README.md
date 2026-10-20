@@ -297,6 +297,11 @@ func newEventsConn(ctx context.Context, lc fx.Lifecycle) (*nats.Conn, error) {
   Each plugin sits under the client
   (`boost.factory.resty.clients.quote.plugins.otel.enabled`, default
   `true`): the annotation chooses the plugins, config only turns one off.
+- **OpenTelemetry.** The module of a client with the `otel` plugin also
+  includes
+  [`otelfx.Module()`](../fx/modules/factory/contrib/go.opentelemetry.io/otel/v1),
+  which starts the providers on boot and shuts them down on stop (once per
+  app): without it the plugin reports to a noop provider.
 - **Shared.** Consumers with the same type and name share one client. Each
   may list `plugins` only if the lists are equal; a consumer without
   `plugins` takes the client as the others declare it; no list anywhere is a

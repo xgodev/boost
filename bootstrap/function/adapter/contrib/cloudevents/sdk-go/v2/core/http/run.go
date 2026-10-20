@@ -17,10 +17,19 @@ import (
 // Plugin defines a function to process plugin.
 type Plugin func(context.Context, []cehttp.Option) []cehttp.Option
 
-func Run[T any](fn function.Handler[T], opts []client.Option, plugins ...Plugin) (err error) {
+// Run serves fn with a context that is never cancelled, so it never returns
+// on its own.
+//
+// Deprecated: use RunContext, which stops when its context is done.
+func Run[T any](fn function.Handler[T], opts []client.Option, plugins ...Plugin) error {
+	return RunContext[T](context.Background(), fn, opts, plugins...)
+}
 
-	ctx := context.Background()
-
+// RunContext serves fn over HTTP on Port() and Path() until ctx is done:
+// then it takes no new event, shuts the server down once the events in hand
+// are answered, and returns. A handler runs with a context the stop does not
+// cancel, so the event it holds finishes.
+func RunContext[T any](ctx context.Context, fn function.Handler[T], opts []client.Option, plugins ...Plugin) error {
 	logger := log.FromContext(ctx)
 
 	httpOpts := []cehttp.Option{ce.WithPort(Port()), ce.WithPath(Path())}
@@ -32,6 +41,7 @@ func Run[T any](fn function.Handler[T], opts []client.Option, plugins ...Plugin)
 	p, err := ce.NewHTTP(httpOpts...)
 	if err != nil {
 		logger.Errorf("failed to create protocol: %s", err.Error())
+		return err
 	}
 
 	c, err := ce.NewClient(p, opts...)
@@ -42,7 +52,10 @@ func Run[T any](fn function.Handler[T], opts []client.Option, plugins ...Plugin)
 
 	logger.Infof("listening on :%d%s", Port(), Path())
 
-	return c.StartReceiver(ctx, Wrapper(fn))
+	handle := Wrapper(fn)
+	return c.StartReceiver(ctx, func(ctx context.Context, event ce.Event) ce.Result {
+		return handle(context.WithoutCancel(ctx), event)
+	})
 }
 
 func Wrapper[T any](fn function.Handler[T]) func(context.Context, ce.Event) ce.Result {
