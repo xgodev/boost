@@ -12,7 +12,7 @@ import (
 {{- end}}
 )
 {{with .Adapter}}
-// {{$.Var}}AdapterKey chooses the adapter of the @Function of app {{$.Package}}.
+// {{$.Var}}AdapterKey chooses the adapter of the @Function of app {{$.App}}.
 const {{$.Var}}AdapterKey = {{printf "%q" .Key}}
 {{end}}
 {{if .Init}}
@@ -76,7 +76,7 @@ import (
 {{- end}}
 )
 
-// Modules returns the doors of app {{.Package}}{{if .Servers}} and the multiserver that runs its servers{{end}}:
+// Modules returns the doors of app {{.App}}{{if .Servers}} and the multiserver that runs its servers{{end}}:
 //
 //	fxfact.NewApp({{.Package}}.Modules()...).Run()
 func Modules() []fx.Option {
