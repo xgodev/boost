@@ -40,10 +40,15 @@ var tracerOnce sync.Once
 
 // StartTracerProviderWithOptions starts the tracer provider with the given set of options. Calling
 // it multiple times will have no effect. If an error occours during tracer initialization,
-// a Noop trace provider will be used instead.
+// a Noop trace provider will be used instead. After Shutdown it only logs a warning.
 func StartTracerProviderWithOptions(ctx context.Context, options *Options, startOptions ...sdktrace.TracerProviderOption) {
 
 	if !IsTraceEnabled() {
+		return
+	}
+
+	if shutDown.Load() {
+		log.FromContext(ctx).Warn("opentelemetry was shut down; the tracer provider does not start again")
 		return
 	}
 
@@ -86,6 +91,7 @@ func StartTracerProviderWithOptions(ctx context.Context, options *Options, start
 		otel.SetTracerProvider(prov)
 		otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 		TracerProvider = prov
+		tracerProvider = prov
 
 		log.Infof("started opentelemetry tracer: %s", options.Service)
 	})

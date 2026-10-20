@@ -34,7 +34,7 @@ Each `fx/modules/factory/contrib/<path>` mirrors `factory/contrib/<path>` and wr
 | `elastic/go-elasticsearch/v8`, `v9` | `Module`, `BulkModule` | `*elasticsearch.Client`, `esutil.BulkIndexer` | — |
 | `go-resty/resty/v2` | `Module` | `*resty.Client` | — |
 | `go.mongodb.org/mongo-driver/v1`, `v2` | `Module` | `*mongo.Conn`, `*mongo.Database` | — |
-| `go.opentelemetry.io/otel/v1` | `Module` | starts tracer and meter providers | — |
+| `go.opentelemetry.io/otel/v1` | `Module` | starts tracer and meter providers, shuts them down on stop | — |
 | `gocloud.dev/pubsub/v0` | `TopicModule`, `SubscriptionModule` | `*pubsub.Topic`, `*pubsub.Subscription` | — |
 | `gocql/gocql/v1` | `Module` | `*gocql.Session` | — |
 | `godror/godror/v0` | `Module` | `*sql.DB` | — |

@@ -22,10 +22,10 @@ type Options struct {
 	Console struct {
 		Enabled bool
 	}
-	Protocol   string
-	Endpoint   string
-	Insecure   bool
-	Metric     struct {
+	Protocol string
+	Endpoint string
+	Insecure bool
+	Metric   struct {
 		Endpoint string
 		Protocol string
 	}
