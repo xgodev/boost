@@ -46,7 +46,7 @@ func (d *datastore) Create(ctx context.Context, s *entity.Stock) error {
 
 func (d *datastore) Get(ctx context.Context, sku string) (*entity.Stock, error) {
 	var doc document
-	err := d.coll.FindOne(ctx, bson.M{"_id": sku}).Decode(&doc)
+	err := d.coll.FindOne(ctx, bson.M{"_id": bson.M{"$eq": sku}}).Decode(&doc)
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, errors.NewNotFound(nil, sku+" is not in stock")
 	}
@@ -59,7 +59,7 @@ func (d *datastore) Get(ctx context.Context, sku string) (*entity.Stock, error) 
 func (d *datastore) Take(ctx context.Context, sku string) (*entity.Stock, error) {
 	var doc document
 	err := d.coll.FindOneAndUpdate(ctx,
-		bson.M{"_id": sku, "units": bson.M{"$gt": 0}},
+		bson.M{"_id": bson.M{"$eq": sku}, "units": bson.M{"$gt": 0}},
 		bson.M{"$inc": bson.M{"units": -1}},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	).Decode(&doc)
