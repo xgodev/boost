@@ -14,8 +14,10 @@ import (
 )
 
 // NewSpec builds the doors declared by the @REST, @GRPC, @MCP, @Function and
-// @Job annotations of entries, and the @Middleware of the constructors each app
-// builds. g is the inject graph of the same entries: it provides the
+// @Job annotations of entries, the @Middleware of the constructors each app
+// builds and the plugins each server is built with: the ones the @Server of
+// a package doc lists or, without one, the default set of its type. g is the
+// inject graph of the same entries: it provides the
 // receivers of handler methods and the values of @GRPC constructors. load
 // reads the interfaces @Middleware decorates; it is only called, once, when
 // there is a @Middleware.
@@ -26,23 +28,34 @@ import (
 // NotFound when the receiver of a handler method or a value a @Function
 // middleware needs has no provider, and
 // AlreadyExists for a duplicate route, service or tool, for a second @Function or
-// @Job in an app, for two @Middleware that decorate the same interface and for a rest,
-// grpc or mcp server given both a named and an unnamed []Plugin.
+// @Job in an app, for two @Middleware that decorate the same interface, for a
+// rest, grpc or mcp server given both a named and an unnamed []Plugin and for
+// a server given two @Server or both a @Server and a @Provide []Plugin. A
+// @Server of a server or adapter no app has is NotFound.
 func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component], load PackageLoader) (*Spec, error) {
-	b := &specBuilder{graph: g, apps: map[string]*appState{}, middlewares: map[string]*Middleware{}}
+	b := &specBuilder{graph: g, apps: map[string]*appState{}, middlewares: map[string]*Middleware{}, servers: map[string]*serverDecl{}}
 
 	seen := map[string]bool{}
 	for _, entry := range entries {
 		// the collector may load a package twice
-		if where := declName(entry); seen[where] {
-			continue
-		} else {
-			seen[where] = true
+		key := declName(entry)
+		if entry.IsPackage() {
+			key += " " + entry.File
 		}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
 
 		for _, ann := range entry.Annotations {
+			// a package doc only declares the plugins of a server
+			if entry.IsPackage() && ann.Name != "Server" {
+				continue
+			}
 			var err error
 			switch ann.Name {
+			case "Server":
+				err = b.addServer(entry, ann)
 			case "REST":
 				err = b.addRoute(entry, ann)
 			case "GRPC":
@@ -72,6 +85,7 @@ type specBuilder struct {
 	graph       *graph.Graph[inject.Component]
 	apps        map[string]*appState
 	middlewares map[string]*Middleware // by constructor key
+	servers     map[string]*serverDecl // the @Server, by serverKey
 }
 
 type appState struct {
@@ -480,10 +494,19 @@ func (b *specBuilder) spec() (*Spec, error) {
 				return nil, err
 			}
 			srv.Plugins, srv.PluginsName = plugins, pluginsName
+			if srv.Builtin, err = b.serverBuiltin(srv, plugins); err != nil {
+				return nil, err
+			}
 			app.Servers = append(app.Servers, srv)
+		}
+		if app.Function != nil {
+			app.Function.Builtin = b.functionBuiltin(name, app.Function)
 		}
 		app.Middlewares = appMiddlewares(b.middlewares, reached(appRoots(app), b.dependencies))
 		spec.Apps = append(spec.Apps, app)
+	}
+	if err := b.unusedServer(); err != nil {
+		return nil, err
 	}
 	return spec, nil
 }
@@ -520,8 +543,12 @@ func (b *specBuilder) dependencies(key string) []string {
 	return keys
 }
 
-// declName names a declaration in messages: path.Func, path.Type.Method or path.Type.
+// declName names a declaration in messages: path.Func, path.Type.Method,
+// path.Type or, for a package doc, path.
 func declName(entry annotation.Entry) string {
+	if entry.IsPackage() {
+		return entry.Path
+	}
 	name := entry.Func.Name
 	switch {
 	case entry.Struct != "" && name != "":

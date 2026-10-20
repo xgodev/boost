@@ -68,7 +68,7 @@
 <div class="win" id="hero-win">
   <div class="win-bar" role="tablist" aria-label="The shop example: what you write, what go generate writes, and the run">
     <button class="tab" type="button" role="tab" id="t-src" aria-selected="true" aria-controls="p-src"><span class="k k-ann">you write</span><span class="tab-n">9 files</span></button>
-    <button class="tab" type="button" role="tab" id="t-gen" aria-selected="false" aria-controls="p-gen" tabindex="-1"><span class="k k-gen">generated</span><span class="tab-n">13 files</span></button>
+    <button class="tab" type="button" role="tab" id="t-gen" aria-selected="false" aria-controls="p-gen" tabindex="-1"><span class="k k-gen">generated</span><span class="tab-n">12 files</span></button>
     <button class="tab" type="button" role="tab" id="t-run" aria-selected="false" aria-controls="p-run" tabindex="-1"><span class="k k-run">run</span><span class="tab-n">terminal</span></button>
     <span class="win-step">github.com/acme/shop</span>
   </div>
@@ -79,8 +79,9 @@
 <div class="dir" role="none" style="--d:2">api/rest/</div>
 <div class="dir" role="none" style="--d:3">handler/stock/reserver/</div>
 <button class="file" type="button" role="tab" id="ft-internal-app-api-rest-handler-stock-reserver-handler-go" aria-selected="true" aria-controls="fp-internal-app-api-rest-handler-stock-reserver-handler-go" tabindex="0" style="--d:4"><span class="fname">handler.go</span><span class="hint a">@REST</span></button>
-<button class="file" type="button" role="tab" id="ft-internal-app-api-rest-plugins-go" aria-selected="false" aria-controls="fp-internal-app-api-rest-plugins-go" tabindex="-1" style="--d:3"><span class="fname">plugins.go</span><span class="hint a">@Provide</span></button>
 <div class="dir" role="none" style="--d:1">pkg/</div>
+<div class="dir" role="none" style="--d:2">server/rest/</div>
+<button class="file" type="button" role="tab" id="ft-internal-pkg-server-rest-doc-go" aria-selected="false" aria-controls="fp-internal-pkg-server-rest-doc-go" tabindex="-1" style="--d:3"><span class="fname">doc.go</span><span class="hint a">@Server</span></button>
 <div class="dir" role="none" style="--d:2">domain/</div>
 <div class="dir" role="none" style="--d:3">service/stock/reserver/</div>
 <div class="dir" role="none" style="--d:4">local/</div>
@@ -126,20 +127,11 @@
 	}
 	<span class="kw">return</span> c.NoContent(http.StatusNoContent)
 }</pre></div>
-<div class="pane" role="tabpanel" id="fp-internal-app-api-rest-plugins-go" aria-labelledby="ft-internal-app-api-rest-plugins-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/app/api/rest/plugins.go</div><pre class="code" tabindex="0"><span class="c">// Package rest holds what the rest server of app api needs besides its</span>
-<span class="c">// handlers.</span>
-<span class="kw">package</span> rest
-
-<span class="kw">import</span> (
-	boostecho <span class="st">&quot;github.com/xgodev/boost/factory/contrib/labstack/echo/v4&quot;</span>
-	<span class="st">&quot;github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler&quot;</span>
-)
-
-<span class="c">// Plugins turns boost errors into HTTP statuses: a Conflict answers 409.</span>
-<span class="c">// </span><span class="a">@Provide</span><span class="c">(index=0)</span>
-<span class="kw">func</span> <span class="fn">Plugins</span>() []<span class="ty">boostecho.Plugin</span> {
-	<span class="kw">return</span> []<span class="ty">boostecho.Plugin</span>{error_handler.Register}
-}</pre></div>
+<div class="pane" role="tabpanel" id="fp-internal-pkg-server-rest-doc-go" aria-labelledby="ft-internal-pkg-server-rest-doc-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/server/rest/doc.go</div><pre class="code" tabindex="0"><span class="c">// Package rest holds what the rest server of app api needs besides its</span>
+<span class="c">// handlers: errorHandler turns boost errors into HTTP statuses, so a</span>
+<span class="c">// Conflict answers 409.</span>
+<span class="c">// </span><span class="a">@Server</span><span class="c">(type=rest, plugins=[recover, errorHandler])</span>
+<span class="kw">package</span> rest</pre></div>
 <div class="pane" role="tabpanel" id="fp-internal-pkg-domain-service-stock-reserver-local-service-go" aria-labelledby="ft-internal-pkg-domain-service-stock-reserver-local-service-go" hidden><div class="pane-path"><span class="k k-ann">you write</span>internal/pkg/domain/service/stock/reserver/local/service.go</div><pre class="code" tabindex="0"><span class="c">// Package local reserves stock in process, on the stock repository.</span>
 <span class="kw">package</span> local
 
@@ -285,7 +277,6 @@
 <div class="dir" role="none" style="--d:3">api/rest/</div>
 <div class="dir" role="none" style="--d:4">handler/stock/reserver/</div>
 <button class="file" type="button" role="tab" id="ft-gen-internal-app-api-rest-handler-stock-reserver-new-module-go" aria-selected="false" aria-controls="fp-gen-internal-app-api-rest-handler-stock-reserver-new-module-go" tabindex="-1" style="--d:5"><span class="fname">new_module.go</span></button>
-<button class="file" type="button" role="tab" id="ft-gen-internal-app-api-rest-plugins-module-go" aria-selected="false" aria-controls="fp-gen-internal-app-api-rest-plugins-module-go" tabindex="-1" style="--d:4"><span class="fname">plugins_module.go</span></button>
 <div class="dir" role="none" style="--d:2">pkg/</div>
 <div class="dir" role="none" style="--d:3">domain/service/…/local/</div>
 <button class="file" type="button" role="tab" id="ft-gen-internal-pkg-domain-service-stock-reserver-local-new-module-go" aria-selected="false" aria-controls="fp-gen-internal-pkg-domain-service-stock-reserver-local-new-module-go" tabindex="-1" style="--d:4"><span class="fname">new_module.go</span></button>
@@ -343,10 +334,11 @@
 
 	<span class="st">&quot;go.uber.org/fx&quot;</span>
 
-	gen_rest_54b9e997 <span class="st">&quot;github.com/acme/shop/gen/internal/app/api/rest&quot;</span>
 	gen_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/gen/internal/app/api/rest/handler/stock/reserver&quot;</span>
 	src_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/internal/app/api/rest/handler/stock/reserver&quot;</span>
 	boostecho <span class="st">&quot;github.com/xgodev/boost/factory/contrib/labstack/echo/v4&quot;</span>
+	echoerrorhandler <span class="st">&quot;github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler&quot;</span>
+	echorecover <span class="st">&quot;github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/recover&quot;</span>
 	echofx <span class="st">&quot;github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4&quot;</span>
 )
 
@@ -360,8 +352,13 @@
 	restOnce.Do(<span class="kw">func</span>() {
 		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;api.rest&quot;</span>,
 			echofx.Module(),
+			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(<span class="kw">func</span>() []<span class="ty">boostecho.Plugin</span> {
+				<span class="kw">return</span> []<span class="ty">boostecho.Plugin</span>{
+					echorecover.Register,
+					echoerrorhandler.Register,
+				}
+			}),
 			gen_reserver_5a8b66f7.NewModule(),
-			gen_rest_54b9e997.PluginsModule(),
 			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Invoke(<span class="kw">func</span>(srv *<span class="ty">boostecho.Server</span>, h0 *<span class="ty">src_reserver_5a8b66f7.Handler</span>) {
 				srv.Add(<span class="st">&quot;POST&quot;</span>, <span class="st">&quot;/stock/:sku/reserve&quot;</span>, h0.Handle)
 			}),
@@ -570,34 +567,6 @@
 
 	<span class="kw">return</span> options
 }</pre></div>
-<div class="pane" role="tabpanel" id="fp-gen-internal-app-api-rest-plugins-module-go" aria-labelledby="ft-gen-internal-app-api-rest-plugins-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/internal/app/api/rest/plugins_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
-
-<span class="kw">package</span> rest
-
-<span class="kw">import</span> (
-	<span class="st">&quot;sync&quot;</span>
-
-	<span class="st">&quot;go.uber.org/fx&quot;</span>
-
-	src_rest_54b9e997 <span class="st">&quot;github.com/acme/shop/internal/app/api/rest&quot;</span>
-)
-
-<span class="kw">var</span> PluginsOnce <span class="ty">sync.Once</span>
-
-<span class="c">// PluginsModule registers github.com/acme/shop/internal/app/api/rest.Plugins and the modules it depends on.</span>
-<span class="c">// It returns an empty option after the first call, so a constructor shared by</span>
-<span class="c">// several modules is registered only once.</span>
-<span class="kw">func</span> <span class="fn">PluginsModule</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
-	options := <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options()
-
-	PluginsOnce.Do(<span class="kw">func</span>() {
-		options = <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Module(<span class="st">&quot;github.com/acme/shop/internal/app/api/rest.Plugins&quot;</span>,
-			<a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Provide(src_rest_54b9e997.Plugins),
-		)
-	})
-
-	<span class="kw">return</span> options
-}</pre></div>
 <div class="pane" role="tabpanel" id="fp-gen-internal-pkg-domain-service-stock-reserver-local-new-module-go" aria-labelledby="ft-gen-internal-pkg-domain-service-stock-reserver-local-new-module-go" hidden><div class="pane-path"><span class="k k-gen">generated</span>gen/internal/pkg/domain/service/stock/reserver/local/new_module.go</div><pre class="code" tabindex="0"><span class="gen-banner">// Code generated by inject; DO NOT EDIT.</span>
 
 <span class="kw">package</span> local
@@ -736,7 +705,6 @@
 
 	client_mongo_d932eadb <span class="st">&quot;github.com/acme/shop/gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2&quot;</span>
 	impl_stock_f8e11fb6 <span class="st">&quot;github.com/acme/shop/gen/implementation/internal_/pkg/domain/repository/stock&quot;</span>
-	gen_rest_54b9e997 <span class="st">&quot;github.com/acme/shop/gen/internal/app/api/rest&quot;</span>
 	gen_reserver_5a8b66f7 <span class="st">&quot;github.com/acme/shop/gen/internal/app/api/rest/handler/stock/reserver&quot;</span>
 	gen_mongodb_1bacb721 <span class="st">&quot;github.com/acme/shop/gen/internal/pkg/datastore/stock/mongodb&quot;</span>
 	gen_local_9afcd4bd <span class="st">&quot;github.com/acme/shop/gen/internal/pkg/domain/service/stock/reserver/local&quot;</span>
@@ -745,7 +713,6 @@
 <span class="c">// Module registers every module generated by inject.</span>
 <span class="kw">func</span> <span class="fn">Module</span>() <span class="ty"><a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Option</span> {
 	<span class="kw">return</span> <a class="ref" href="https://uber-go.github.io/fx/">fx</a>.Options(
-		gen_rest_54b9e997.PluginsModule(),
 		gen_reserver_5a8b66f7.NewModule(),
 		impl_stock_f8e11fb6.RepositoryImplementationModule(),
 		gen_mongodb_1bacb721.OptionsModule(),
@@ -757,7 +724,7 @@
 </div>
 <div class="ide-run" role="tabpanel" id="p-run" aria-labelledby="t-run" hidden><pre class="code" tabindex="0"><span class="pr">$</span> go generate ./...
 <span class="dim">5:35PM</span> <span class="ok">INF</span> scanning ~/shop (module github.com/acme/shop)
-<span class="dim">5:35PM</span> <span class="ok">INF</span> generated 6 inject modules and 1 apps in ~/shop/gen, mains in ~/shop/cmd
+<span class="dim">5:35PM</span> <span class="ok">INF</span> generated 5 inject modules and 1 apps in ~/shop/gen, mains in ~/shop/cmd
 
 <span class="pr">$</span> go run ./cmd/api &amp;
 <span class="dim">5:36PM</span> <span class="ok">INF</span> starting Echo Server. https://echo.labstack.com/
@@ -922,6 +889,7 @@ ann.<span class="fn">Decode</span>(&amp;r)</pre>
           <div class="door"><span class="a">@Job</span><span>runs once and exits · <a class="ref" href="https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/">CronJob</a></span></div>
           <div class="door"><span class="a">@Middleware</span><span>generated decorator</span></div>
           <div class="door"><span class="a">@Default</span><span>implementation picked by config</span></div>
+          <div class="door"><span class="a">@Server</span><span>plugins of a server</span></div>
         </div>
       </article>
 
@@ -963,7 +931,7 @@ srv.<span class="fn">Serve</span>(ctx)</pre>
     </div>
     <div class="walk">
       <ol class="steps">
-        <li><div><h3>Annotate</h3><p>Mark constructors with <span class="mono" style="color:var(--ann)">@Provide</span>, handlers with a door, services with <span class="mono" style="color:var(--ann)">@Middleware</span>, the default implementation with <span class="mono" style="color:var(--ann)">@Default</span>, options with <span class="mono" style="color:var(--ann)">@Config</span>.</p></div></li>
+        <li><div><h3>Annotate</h3><p>Mark constructors with <span class="mono" style="color:var(--ann)">@Provide</span>, handlers with a door, services with <span class="mono" style="color:var(--ann)">@Middleware</span>, the default implementation with <span class="mono" style="color:var(--ann)">@Default</span>, options with <span class="mono" style="color:var(--ann)">@Config</span>, the plugins of a server with <span class="mono" style="color:var(--ann)">@Server</span>.</p></div></li>
         <li><div><h3>Generate</h3><p>Inject and builder run in one pass. A broken graph stops here and leaves your output untouched.</p><code class="cmd">go generate ./...</code></div></li>
         <li><div><h3>Run</h3><p>Each app gets its own <code class="mono">main</code>, with the servers and plugins it declared.</p><code class="cmd">go run ./cmd/api</code></div></li>
       </ol>

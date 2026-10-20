@@ -336,9 +336,18 @@ func serverDoor(base string, srv Server) (doorData, error) {
 		}
 	}
 
-	// the server is built with the plugins its constructors provide
+	// the server is built with the plugins its constructors provide, or
+	// with the ones its @Server lists
 	for _, plugin := range srv.Plugins {
 		include(plugin)
+	}
+	var builtin string
+	if len(srv.Builtin) > 0 {
+		name := srv.Name
+		if isDefault(srv) {
+			name = ""
+		}
+		builtin = builtinOption(imps, string(srv.Kind), srv.Builtin, name)
 	}
 
 	invoke := "func(srv *" + serverPkg + ".Server" + joinPrefixed(params) + ") {\n" + strings.Join(body, "\n") + "\n}"
@@ -347,6 +356,9 @@ func serverDoor(base string, srv Server) (doorData, error) {
 		def := defaultServers[srv.Kind]
 		fxModule := imps.add(def.alias, def.fxPath)
 		d.Options = append(d.Options, fxModule+".Module()")
+		if builtin != "" {
+			d.Options = append(d.Options, builtin)
+		}
 		if srv.PluginsName != "" {
 			// the shipped module takes the default []Plugin: give it the
 			// value provided under the server's name
@@ -386,6 +398,9 @@ func serverDoor(base string, srv Server) (doorData, error) {
 			"fx.ParamTags("+named+"),\n"+
 			"fx.ResultTags("+goTag(`group:"`+multiserver.ServersGroupKey+`"`)+"),\n),\n)",
 	)
+	if builtin != "" {
+		d.Options = append(d.Options, builtin)
+	}
 	d.Options = append(d.Options, modules...)
 	d.Options = append(d.Options, "fx.Invoke(fx.Annotate(\n"+invoke+",\nfx.ParamTags("+named+"),\n))")
 	d.Imports = imps.sorted()

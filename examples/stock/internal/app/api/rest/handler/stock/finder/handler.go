@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/xgodev/boost/examples/stock/internal/pkg/domain/service/stock/finder"
+	"github.com/xgodev/boost/examples/stock/internal/pkg/server/rest/model"
 )
 
 // Handler reads the stock of an item.
@@ -19,12 +20,6 @@ func New(svc finder.Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-// Stock is the body of the response.
-type Stock struct {
-	SKU   string `json:"sku"`
-	Units int64  `json:"units"`
-}
-
 // Handle returns the stock of the sku in the path.
 // @REST(method=GET, path=/stocks/:sku)
 func (h *Handler) Handle(c echo.Context) error {
@@ -32,5 +27,5 @@ func (h *Handler) Handle(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, Stock{SKU: s.SKU, Units: s.Units})
+	return c.JSON(http.StatusOK, model.FromEntity(s))
 }

@@ -108,9 +108,10 @@ func TestAPI(t *testing.T) {
 		assert.Equal(t, "nope is not in stock", body.Message)
 	})
 
-	t.Run("rest serves health and metrics", func(t *testing.T) {
+	t.Run("rest runs the plugins its @Server lists", func(t *testing.T) {
 		assert.Equal(t, http.StatusOK, serve(rest, http.MethodGet, "/health", "").Code)
 		assert.Equal(t, http.StatusOK, serve(rest, http.MethodGet, "/metrics", "").Code)
+		assert.NotEmpty(t, serve(rest, http.MethodGet, "/stocks/tshirt", "").Header().Get(echo.HeaderXRequestID), "requestId")
 	})
 
 	t.Run("the services run in their middlewares", func(t *testing.T) {
@@ -216,6 +217,30 @@ func TestAPIConfigChild(t *testing.T) {
 
 	assert.JSONEq(t, `{"sku":"hat","units":5}`, serve(rest, http.MethodGet, "/stocks/hat", "").Body.String())
 	assert.Equal(t, http.StatusNotFound, serve(rest, http.MethodGet, "/stocks/tshirt", "").Code, "the env replaces the default seed")
+}
+
+// metricsEnv turns off the prometheus plugin the @Server of the rest server
+// lists (boost.factory.echo.plugins.prometheus.enabled).
+const metricsEnv = "BOOST_FACTORY_ECHO_PLUGINS_PROMETHEUS_ENABLED"
+
+// TestAPIPluginOff boots app api with config turning off one plugin of its
+// @Server: the others stay.
+func TestAPIPluginOff(t *testing.T) {
+	child(t, "TestAPIPluginOffChild", metricsEnv+"=false")
+}
+
+// TestAPIPluginOffChild runs in the process TestAPIPluginOff starts.
+func TestAPIPluginOffChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestAPIPluginOff")
+	}
+
+	var rest *boostecho.Server
+	app := fx.New(append(api.Modules(), fx.NopLogger, fx.Populate(&rest))...)
+	require.NoError(t, app.Err())
+
+	assert.Equal(t, http.StatusNotFound, serve(rest, http.MethodGet, "/metrics", "").Code, "prometheus is off")
+	assert.Equal(t, http.StatusOK, serve(rest, http.MethodGet, "/health", "").Code, "health stays")
 }
 
 const (

@@ -88,8 +88,9 @@ SRC = [
     (2, "api/rest/", None, "", ""),
     (3, "handler/stock/reserver/", None, "", ""),
     (4, "handler.go", "internal/app/api/rest/handler/stock/reserver/handler.go", "@REST", "a"),
-    (3, "plugins.go", "internal/app/api/rest/plugins.go", "@Provide", "a"),
     (1, "pkg/", None, "", ""),
+    (2, "server/rest/", None, "", ""),
+    (3, "doc.go", "internal/pkg/server/rest/doc.go", "@Server", "a"),
     (2, "domain/", None, "", ""),
     (3, "service/stock/reserver/", None, "", ""),
     (4, "local/", None, "", ""),
@@ -128,7 +129,6 @@ GEN = [
     (3, "api/rest/", None, "", ""),
     (4, "handler/stock/reserver/", None, "", ""),
     (5, "new_module.go", G + "app/api/rest/handler/stock/reserver/new_module.go", "", ""),
-    (4, "plugins_module.go", G + "app/api/rest/plugins_module.go", "", ""),
     (2, "pkg/", None, "", ""),
     (3, "domain/service/…/local/", None, "", ""),
     (4, "new_module.go", G + "pkg/domain/service/stock/reserver/local/new_module.go", "", ""),
@@ -141,7 +141,7 @@ GEN = [
 
 RUN = """<span class="pr">$</span> go generate ./...
 <span class="dim">5:35PM</span> <span class="ok">INF</span> scanning ~/shop (module github.com/acme/shop)
-<span class="dim">5:35PM</span> <span class="ok">INF</span> generated 6 inject modules and 1 apps in ~/shop/gen, mains in ~/shop/cmd
+<span class="dim">5:35PM</span> <span class="ok">INF</span> generated 5 inject modules and 1 apps in ~/shop/gen, mains in ~/shop/cmd
 
 <span class="pr">$</span> go run ./cmd/api &amp;
 <span class="dim">5:36PM</span> <span class="ok">INF</span> starting Echo Server. https://echo.labstack.com/

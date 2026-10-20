@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/xgodev/boost/examples/stock/internal/pkg/domain/service/stock/reserver"
+	"github.com/xgodev/boost/examples/stock/internal/pkg/server/rest/model"
 )
 
 // Handler reserves one unit of an item.
@@ -19,12 +20,6 @@ func New(svc reserver.Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-// Stock is the body of the response: what is left after the reservation.
-type Stock struct {
-	SKU   string `json:"sku"`
-	Units int64  `json:"units"`
-}
-
 // Handle reserves one unit of the sku in the path.
 // @REST(method=POST, path=/stocks/:sku/reserve)
 func (h *Handler) Handle(c echo.Context) error {
@@ -32,5 +27,5 @@ func (h *Handler) Handle(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, Stock{SKU: left.SKU, Units: left.Units})
+	return c.JSON(http.StatusOK, model.FromEntity(left))
 }

@@ -175,9 +175,19 @@ func TestWorkerConfigChild(t *testing.T) {
 // generated main instead of the tests.
 const mainEnv = "STOCK_EXAMPLE_MAIN"
 
+// otelEnv turns off the otel plugin the @Server of the cloudevents adapter
+// lists (boost.bootstrap.function.adapter.cloudevents.http.plugins.otel.enabled).
+const otelEnv = "BOOST_BOOTSTRAP_FUNCTION_ADAPTER_CLOUDEVENTS_HTTP_PLUGINS_OTEL_ENABLED"
+
 // TestMain_ReservesOverHTTP runs the generated main of app worker on a free
-// port and posts it an order.created CloudEvent until it reserves the item.
+// port and posts it an order.created CloudEvent until it reserves the item,
+// with the plugins of its @Server and with config turning one off.
 func TestMain_ReservesOverHTTP(t *testing.T) {
+	t.Run("with the otel plugin", func(t *testing.T) { reservesOverHTTP(t) })
+	t.Run("with the otel plugin turned off", func(t *testing.T) { reservesOverHTTP(t, otelEnv+"=false") })
+}
+
+func reservesOverHTTP(t *testing.T, env ...string) {
 	lis, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 	port := lis.Addr().(*net.TCPAddr).Port
@@ -185,7 +195,7 @@ func TestMain_ReservesOverHTTP(t *testing.T) {
 
 	out := &syncBuffer{}
 	cmd := exec.Command(os.Args[0], "-test.run=^TestMainChild$")
-	cmd.Env = append(os.Environ(), mainEnv+"=1", "BOOST_BOOTSTRAP_FUNCTION_ADAPTER_CLOUDEVENTS_HTTP_PORT="+strconv.Itoa(port))
+	cmd.Env = append(append(os.Environ(), mainEnv+"=1", "BOOST_BOOTSTRAP_FUNCTION_ADAPTER_CLOUDEVENTS_HTTP_PORT="+strconv.Itoa(port)), env...)
 	cmd.Stdout, cmd.Stderr = out, out
 	require.NoError(t, cmd.Start())
 	exited := make(chan error, 1)

@@ -8,10 +8,10 @@ import (
 	"go.uber.org/fx"
 
 	mcp "github.com/modelcontextprotocol/go-sdk/mcp"
-	gen_mcp_68648b10 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/mcp"
 	gen_finder_0fe506c4 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/mcp/handler/stock/finder"
 	src_finder_0fe506c4 "github.com/xgodev/boost/examples/stock/internal/app/api/mcp/handler/stock/finder"
 	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
+	mcplog "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server/plugins/local/wrapper/log"
 	mcpfx "github.com/xgodev/boost/fx/modules/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
 )
 
@@ -25,8 +25,12 @@ func McpModule() fx.Option {
 	mcpOnce.Do(func() {
 		options = fx.Module("api.mcp",
 			mcpfx.Module(),
+			fx.Provide(func() []mcpserver.Plugin {
+				return []mcpserver.Plugin{
+					mcplog.Register,
+				}
+			}),
 			gen_finder_0fe506c4.NewModule(),
-			gen_mcp_68648b10.PluginsModule(),
 			fx.Invoke(func(srv *mcpserver.Server, h0 *src_finder_0fe506c4.Handler) {
 				mcp.AddTool(srv.Instance(), &mcp.Tool{Name: "find_stock", Description: "Tells how many units of an item are in stock."}, h0.FindStock)
 			}),

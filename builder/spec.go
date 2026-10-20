@@ -56,6 +56,10 @@ type Server struct {
 	// PluginsName is the name Plugins are provided under, empty for the
 	// default value and when there are no Plugins.
 	PluginsName string
+	// Builtin are the plugins the generated door builds the server with, by
+	// their @Server name, in order: the ones its @Server lists or, without
+	// one, the default set of its kind. Empty when Plugins give them.
+	Builtin []string
 }
 
 // Route is a @REST annotation: an HTTP method and path served by a handler.
@@ -101,6 +105,9 @@ type Function struct {
 	// Client is the name of the client the adapters read with, from
 	// client=x; "" for the default client.
 	Client string
+	// Builtin are the plugins of each adapter that takes them, by adapter,
+	// from the @Server of the adapter's type or its default set.
+	Builtin map[string][]string
 }
 
 // Job is a @Job annotation: the function a job app runs once before it exits.

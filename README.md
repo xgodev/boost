@@ -44,9 +44,9 @@ github.com/acme/shop
 ├── doc.go                                        go:generate
 └── internal/
     ├── app/api/rest/
-    │   ├── handler/stock/reserver/handler.go     @REST
-    │   └── plugins.go                            @Provide
+    │   └── handler/stock/reserver/handler.go     @REST
     └── pkg/
+        ├── server/rest/doc.go                    @Server
         ├── domain/
         │   ├── service/stock/reserver/
         │   │   ├── local/service.go              @Middleware
@@ -94,23 +94,14 @@ func (h *Handler) Handle(c echo.Context) error {
 ```
 
 <details>
-<summary><code>internal/app/api/rest/plugins.go</code></summary>
+<summary><code>internal/pkg/server/rest/doc.go</code></summary>
 
 ```go
 // Package rest holds what the rest server of app api needs besides its
-// handlers.
+// handlers: errorHandler turns boost errors into HTTP statuses, so a
+// Conflict answers 409.
+// @Server(type=rest, plugins=[recover, errorHandler])
 package rest
-
-import (
-	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
-	"github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
-)
-
-// Plugins turns boost errors into HTTP statuses: a Conflict answers 409.
-// @Provide(index=0)
-func Plugins() []boostecho.Plugin {
-	return []boostecho.Plugin{error_handler.Register}
-}
 ```
 
 </details>
@@ -295,7 +286,7 @@ package shop
 </details>
 
 
-### Generated (13 files)
+### Generated (12 files)
 
 ```text
 cmd/api/main.go                                   main
@@ -311,8 +302,7 @@ gen/
 │   └── repository_implementation.go              @Default
 ├── internal/
 │   ├── app/api/rest/
-│   │   ├── handler/stock/reserver/new_module.go
-│   │   └── plugins_module.go
+│   │   └── handler/stock/reserver/new_module.go
 │   └── pkg/
 │       ├── domain/service/…/local/new_module.go
 │       └── datastore/stock/
@@ -387,10 +377,11 @@ import (
 
 	"go.uber.org/fx"
 
-	gen_rest_54b9e997 "github.com/acme/shop/gen/internal/app/api/rest"
 	gen_reserver_5a8b66f7 "github.com/acme/shop/gen/internal/app/api/rest/handler/stock/reserver"
 	src_reserver_5a8b66f7 "github.com/acme/shop/internal/app/api/rest/handler/stock/reserver"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
+	echoerrorhandler "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
+	echorecover "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/recover"
 	echofx "github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4"
 )
 
@@ -404,8 +395,13 @@ func RestModule() fx.Option {
 	restOnce.Do(func() {
 		options = fx.Module("api.rest",
 			echofx.Module(),
+			fx.Provide(func() []boostecho.Plugin {
+				return []boostecho.Plugin{
+					echorecover.Register,
+					echoerrorhandler.Register,
+				}
+			}),
 			gen_reserver_5a8b66f7.NewModule(),
-			gen_rest_54b9e997.PluginsModule(),
 			fx.Invoke(func(srv *boostecho.Server, h0 *src_reserver_5a8b66f7.Handler) {
 				srv.Add("POST", "/stock/:sku/reserve", h0.Handle)
 			}),
@@ -669,7 +665,7 @@ The other generated files are in
 ```console
 $ go generate ./...
 5:35PM INF scanning ~/shop (module github.com/acme/shop)
-5:35PM INF generated 6 inject modules and 1 apps in ~/shop/gen, mains in ~/shop/cmd
+5:35PM INF generated 5 inject modules and 1 apps in ~/shop/gen, mains in ~/shop/cmd
 $ go run ./cmd/api &
 5:36PM INF starting Echo Server. https://echo.labstack.com/
 # memory is the @Default datastore: 3 t-shirts in stock
@@ -832,6 +828,7 @@ the app modules and main.
 | `@Job` | runs once and exits · CronJob |
 | `@Middleware` | generated decorator |
 | `@Default` | implementation picked by config |
+| `@Server` | plugins of a server |
 
 ### Functions
 
@@ -874,7 +871,7 @@ services is generated, checked and rewritten on every run.
 
 1. **Annotate.** Mark constructors with `@Provide`, handlers with a door,
    services with `@Middleware`, the default implementation with `@Default`,
-   options with `@Config`.
+   options with `@Config`, the plugins of a server with `@Server`.
 2. **Generate.** Inject and builder run in one pass. A broken graph stops here
    and leaves your output untouched.
 

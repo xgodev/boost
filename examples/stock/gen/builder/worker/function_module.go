@@ -9,6 +9,8 @@ import (
 
 	src_cloudevents_c136a3fd "github.com/cloudevents/sdk-go/v2"
 	bsfunction "github.com/xgodev/boost/bootstrap/function"
+	ceplugin "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http"
+	ceotel "github.com/xgodev/boost/bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http/plugins/contrib/go.opentelemetry.io/contrib/v0"
 	loggermw "github.com/xgodev/boost/bootstrap/function/middleware/logger"
 	recoverymw "github.com/xgodev/boost/bootstrap/function/middleware/recovery"
 	client_nats_37c13606 "github.com/xgodev/boost/examples/stock/gen/client/github.com/nats-io/nats.go"
@@ -75,7 +77,14 @@ func FunctionModule() fx.Option {
 func functionAdapterModule() fx.Option {
 	switch name := config.String(functionAdapterKey); name {
 	case "cloudevents":
-		return cloudeventsfx.Module[[]*src_cloudevents_c136a3fd.Event]()
+		return fx.Options(
+			cloudeventsfx.Module[[]*src_cloudevents_c136a3fd.Event](),
+			fx.Provide(func() []ceplugin.Plugin {
+				return []ceplugin.Plugin{
+					ceotel.Register,
+				}
+			}),
+		)
 	case "nats":
 		return fx.Options(
 			natsfx.ModuleWithoutClient[[]*src_cloudevents_c136a3fd.Event](),

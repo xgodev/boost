@@ -55,3 +55,9 @@ func (b *Entry) IsFunc() bool {
 func (b *Entry) IsMethod() bool {
 	return b.Struct != "" && b.Func.Name != ""
 }
+
+// IsPackage reports whether the entry is the package doc comment of a file,
+// collected only with WithPackageDocs.
+func (b *Entry) IsPackage() bool {
+	return b.Struct == "" && b.Func.Name == ""
+}

@@ -11,6 +11,7 @@ import (
 	gen_fetcher_2b952e75 "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/examples/cobra/gen/internal/app/api/mcp/handler/page/fetcher"
 	src_fetcher_2b952e75 "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/examples/cobra/internal/app/api/mcp/handler/page/fetcher"
 	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
+	mcplog "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server/plugins/local/wrapper/log"
 	mcpfx "github.com/xgodev/boost/fx/modules/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
 )
 
@@ -24,6 +25,11 @@ func McpModule() fx.Option {
 	mcpOnce.Do(func() {
 		options = fx.Module("api.mcp",
 			mcpfx.Module(),
+			fx.Provide(func() []mcpserver.Plugin {
+				return []mcpserver.Plugin{
+					mcplog.Register,
+				}
+			}),
 			gen_fetcher_2b952e75.NewModule(),
 			fx.Invoke(func(srv *mcpserver.Server, h0 *src_fetcher_2b952e75.Handler) {
 				mcp.AddTool(srv.Instance(), &mcp.Tool{Name: "bing", Description: "Calls Bing."}, h0.Bing)
