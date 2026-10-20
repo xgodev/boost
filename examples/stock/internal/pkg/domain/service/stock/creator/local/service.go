@@ -26,6 +26,9 @@ func (s *service) Create(ctx context.Context, st *entity.Stock) error {
 	if st.SKU == "" {
 		return errors.NotValidf("sku is required")
 	}
+	if err := entity.ValidSKU(st.SKU); err != nil {
+		return err
+	}
 	if st.Units < 0 {
 		return errors.NotValidf("units of %s cannot be negative", st.SKU)
 	}

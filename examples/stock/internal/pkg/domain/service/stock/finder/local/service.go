@@ -22,5 +22,8 @@ func New(repo stock.Repository) finder.Service {
 }
 
 func (s *service) Find(ctx context.Context, sku string) (*entity.Stock, error) {
+	if err := entity.ValidSKU(sku); err != nil {
+		return nil, err
+	}
 	return s.repo.Get(ctx, sku)
 }
