@@ -6,6 +6,8 @@ type timeout struct {
 }
 
 // Timeoutf returns an error which satisfies IsTimeout().
+// Its message is the formatted text followed by " timeout", so the format
+// names the thing: Timeoutf("sku %s", sku) says "sku cap timeout".
 func Timeoutf(format string, args ...interface{}) error {
 	return &timeout{wrap(nil, format, " timeout", args...)}
 }

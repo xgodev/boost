@@ -98,6 +98,14 @@ func TestAPI(t *testing.T) {
 		}
 	})
 
+	t.Run("rest says once that an unknown sku is not in stock", func(t *testing.T) {
+		var body struct {
+			Message string `json:"message"`
+		}
+		require.NoError(t, json.Unmarshal(serve(rest, http.MethodGet, "/stocks/nope", "").Body.Bytes(), &body))
+		assert.Equal(t, "nope is not in stock", body.Message)
+	})
+
 	t.Run("rest serves health and metrics", func(t *testing.T) {
 		assert.Equal(t, http.StatusOK, serve(rest, http.MethodGet, "/health", "").Code)
 		assert.Equal(t, http.StatusOK, serve(rest, http.MethodGet, "/metrics", "").Code)
@@ -138,6 +146,7 @@ func TestAPI(t *testing.T) {
 
 		_, err = stockv1.NewStockFinderClient(conn).Find(ctx, &stockv1.FindRequest{Sku: "nope"})
 		assert.Equal(t, codes.NotFound, status.Code(err))
+		assert.Equal(t, "nope is not in stock", status.Convert(err).Message())
 	})
 
 	t.Run("mcp serves the find_stock tool", func(t *testing.T) {
@@ -165,6 +174,8 @@ func TestAPI(t *testing.T) {
 		res, err = session.CallTool(ctx, &mcp.CallToolParams{Name: "find_stock", Arguments: map[string]any{"sku": "nope"}})
 		require.NoError(t, err)
 		assert.True(t, res.IsError, "an unknown sku is a tool error")
+		require.Len(t, res.Content, 1)
+		assert.Equal(t, "nope is not in stock", res.Content[0].(*mcp.TextContent).Text)
 	})
 }
 
