@@ -14,6 +14,7 @@
 // mug=1) and the publisher is noop. Config chooses the rest:
 //
 //	INTERNAL_PKG_DOMAIN_REPOSITORY_STOCK_IMPLEMENTATION=mongodb        stock in MongoDB (boost.factory.mongo.*)
+//	INTERNAL_PKG_DOMAIN_REPOSITORY_STOCK_IMPLEMENTATION=oracle         stock in Oracle (boost.factory.godror.*, needs cgo)
 //	INTERNAL_PKG_DOMAIN_SERVICE_STOCK_RESERVER_IMPLEMENTATION=resty    reserve by calling app api
 //	BOOST_WRAPPER_PUBLISHER_DRIVER_NAME=nats                           announce on NATS (boost.factory.nats.*)
 //	WORKER_FUNCTION_ADAPTER=nats                                       worker reads order.created from NATS

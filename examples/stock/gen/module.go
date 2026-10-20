@@ -5,6 +5,7 @@ package gen
 import (
 	"go.uber.org/fx"
 
+	client_sql_45c63acd "github.com/xgodev/boost/examples/stock/gen/client/database/sql"
 	client_resty_4dadf93c "github.com/xgodev/boost/examples/stock/gen/client/github.com/go-resty/resty/v2"
 	client_mongo_c43e7bd8 "github.com/xgodev/boost/examples/stock/gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
 	client_publisher_bf2f93d5 "github.com/xgodev/boost/examples/stock/gen/client/github.com/xgodev/boost/wrapper/publisher"
@@ -23,6 +24,7 @@ import (
 	gen_reserver_9ef9326a "github.com/xgodev/boost/examples/stock/gen/internal/app/worker/cloudevents/handler/stock/reserver"
 	gen_memory_e61b92bf "github.com/xgodev/boost/examples/stock/gen/internal/pkg/datastore/stock/memory"
 	gen_mongodb_06b6559e "github.com/xgodev/boost/examples/stock/gen/internal/pkg/datastore/stock/mongodb"
+	gen_oracle_34cf544c "github.com/xgodev/boost/examples/stock/gen/internal/pkg/datastore/stock/oracle"
 	gen_local_671ce8b7 "github.com/xgodev/boost/examples/stock/gen/internal/pkg/domain/service/stock/creator/local"
 	gen_local_ecb3acf2 "github.com/xgodev/boost/examples/stock/gen/internal/pkg/domain/service/stock/finder/local"
 	gen_boost_d233c539 "github.com/xgodev/boost/examples/stock/gen/internal/pkg/publisher/stock/reserved/boost"
@@ -47,10 +49,12 @@ func Module() fx.Option {
 		impl_stock_3e1064df.RepositoryImplementationModule(),
 		gen_memory_e61b92bf.OptionsModule(),
 		gen_mongodb_06b6559e.OptionsModule(),
+		gen_oracle_34cf544c.OptionsModule(),
 		gen_local_671ce8b7.NewModule(),
 		gen_local_ecb3acf2.NewModule(),
 		gen_boost_d233c539.NewModule(),
 		gen_boost_d233c539.OptionsModule(),
+		client_sql_45c63acd.DefaultDBModule(),
 		client_resty_4dadf93c.StockClientModule(),
 		client_mongo_c43e7bd8.DefaultConnModule(),
 		client_publisher_bf2f93d5.PublisherModule(),

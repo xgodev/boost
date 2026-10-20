@@ -23,6 +23,7 @@ const (
 	bigtablePath = "cloud.google.com/go/bigtable"
 	gocqlPath    = "github.com/gocql/gocql"
 	gocql2Path   = "github.com/apache/cassandra-gocql-driver/v2"
+	sqlDBKey     = "database/sql.DB"
 )
 
 func TestClientFactory(t *testing.T) {
@@ -100,6 +101,28 @@ func TestClientFactories_PluginNames(t *testing.T) {
 	assert.Equal(t, []string{"health"}, clientFactories[gocql2Path+".Session"].PluginNames())
 	assert.Equal(t, []string{"datadog"},
 		clientFactories["github.com/aws/aws-sdk-go-v2/service/sqs.Client"].PluginNames())
+	assert.Equal(t, []string{"datadog", "health", "otel"}, clientFactories[sqlDBKey].PluginNames())
+	assert.Equal(t, []string{"godror", "pgx"}, clientFactories[sqlDBKey].DriverNames())
+	assert.True(t, clientFactories[sqlDBKey].Close, "the module closes the *sql.DB when the app stops: it holds a pool")
+}
+
+func TestClientFactory_Driver(t *testing.T) {
+	db := clientFactories[sqlDBKey]
+
+	godror, ok := db.Driver("godror")
+	require.True(t, ok)
+	assert.Equal(t, "github.com/xgodev/boost/factory/contrib/godror/godror/v0.NewDBWithConfigPath", godror.Build)
+	assert.Equal(t, "boost.factory.godror", godror.Root)
+
+	pgx, ok := db.Driver("pgx")
+	require.True(t, ok)
+	assert.Equal(t, "github.com/xgodev/boost/factory/contrib/jackc/pgx/v5.NewDBWithConfigPath", pgx.Build)
+	assert.Equal(t, "boost.factory.pgx", pgx.Root)
+
+	_, ok = db.Driver("mysql")
+	assert.False(t, ok)
+	_, ok = clientFactories[restyPath+".Client"].Driver("godror")
+	assert.False(t, ok, "a client of one factory has no drivers")
 }
 
 func TestParsePlugins(t *testing.T) {
@@ -266,6 +289,83 @@ func TestClients_Rules(t *testing.T) {
 	}
 }
 
+// sqlConsumer builds New in package datastore/<pkg>, a constructor taking a
+// *sql.DB.
+func sqlConsumer(pkg string, anns ...annotation.Annotation) annotation.Entry {
+	entry := at("datastore/"+pkg, "New", []string{"*sql.DB"}, []string{"*Repository"}, append(anns, provide("index=0"))...)
+	entry.Imports = map[string]string{"sql": "database/sql"}
+	return entry
+}
+
+func TestClients_SQLDriver(t *testing.T) {
+	clients, err := Clients(newTestGraph(t, []annotation.Entry{
+		sqlConsumer("gold", inject("index=0, name=gold, drivers=[godror], plugins=[health]")),
+		sqlConsumer("report", inject("index=0, name=gold")),
+		sqlConsumer("orders", inject("index=0, drivers=pgx")),
+	}))
+	require.NoError(t, err)
+	require.Len(t, clients, 2)
+
+	def, gold := clients[0], clients[1]
+	assert.Equal(t, "pgx", def.Driver)
+	assert.Equal(t, "boost.factory.pgx", def.Root())
+	assert.Equal(t, "github.com/xgodev/boost/factory/contrib/jackc/pgx/v5", def.Factory.FactoryPath())
+	assert.Equal(t, "client/database/sql/default_db.go", def.File())
+
+	assert.Equal(t, "godror", gold.Driver, "a consumer without drivers takes the declared one")
+	assert.Equal(t, "boost.factory.godror.clients.gold", gold.Root())
+	assert.Equal(t, "boost.factory.godror.clients.gold.plugins.health", gold.PluginRoot("health"))
+	assert.Equal(t, "NewDBWithConfigPath", gold.Factory.Constructor())
+	assert.Equal(t, "GoldDB", gold.Ident())
+	assert.Equal(t, "client/database/sql/gold_db.go", gold.File())
+	assert.Equal(t, []string{testModule + "/datastore/gold.New", testModule + "/datastore/report.New"}, gold.Consumers)
+}
+
+func TestClients_SQLDriverRules(t *testing.T) {
+	provider := at("datastore/oracle", "NewGold", nil, []string{"*sql.DB"}, provide("index=0, name=gold"))
+	provider.Imports = map[string]string{"sql": "database/sql"}
+
+	testCases := []struct {
+		name    string
+		entries []annotation.Entry
+		parts   []string
+	}{
+		{name: "no driver", entries: []annotation.Entry{sqlConsumer("gold", inject("index=0, name=gold"))},
+			parts: []string{"gold client (*database/sql.DB)", testModule + "/datastore/gold.New", "drivers=[godror]", "godror, pgx"}},
+		{name: "unknown driver", entries: []annotation.Entry{sqlConsumer("gold", inject("index=0, drivers=[mysql]"))},
+			parts: []string{"mysql", "godror, pgx"}},
+		{name: "two drivers", entries: []annotation.Entry{sqlConsumer("gold", inject("index=0, drivers=[godror, pgx]"))},
+			parts: []string{"one driver", "[godror, pgx]"}},
+		{name: "empty list", entries: []annotation.Entry{sqlConsumer("gold", inject("index=0, drivers=[]"))},
+			parts: []string{"drivers=[]", "godror, pgx"}},
+		{name: "different drivers", entries: []annotation.Entry{
+			sqlConsumer("gold", inject("index=0, name=gold, drivers=[godror]")),
+			sqlConsumer("report", inject("index=0, name=gold, drivers=[pgx]")),
+		}, parts: []string{testModule + "/datastore/gold.New", testModule + "/datastore/report.New", "godror", "pgx"}},
+		{name: "drivers on a db the app provides", entries: []annotation.Entry{provider, sqlConsumer("gold", inject("index=0, name=gold, drivers=[godror]"))},
+			parts: []string{"drivers", "provided by", provider.Path + ".NewGold"}},
+		{name: "drivers on a client of one factory", entries: []annotation.Entry{restyConsumer("quote", inject("index=0, drivers=[godror]"))},
+			parts: []string{"drivers", "*resty.Client", "*publisher.Publisher", "*database/sql.DB"}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := NewGraphFromEntries(context.Background(), tc.entries)
+			assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
+			errorContains(t, err, tc.parts...)
+		})
+	}
+}
+
+func TestClients_SQLDriverProvidedByTheApp(t *testing.T) {
+	provider := at("datastore/oracle", "NewGold", nil, []string{"*sql.DB"}, provide("index=0, name=gold"))
+	provider.Imports = map[string]string{"sql": "database/sql"}
+
+	clients, err := Clients(newTestGraph(t, []annotation.Entry{provider, sqlConsumer("gold", inject("index=0, name=gold"))}))
+	require.NoError(t, err)
+	assert.Empty(t, clients, "a *sql.DB the app provides needs no driver")
+}
+
 func TestClients_DefaultNameCollides(t *testing.T) {
 	_, err := NewGraphFromEntries(context.Background(), []annotation.Entry{
 		restyConsumer("weather", inject("index=0")),
@@ -331,6 +431,10 @@ func TestGenerator_RenderClosingClients(t *testing.T) {
 			file: "client/github.com/redis/go-redis/v9/cache_client.go"},
 		{name: "redis cluster", pkg: "redis", path: redisPath, tp: "*redis.ClusterClient", inject: "index=0, name=cache",
 			file: "client/github.com/redis/go-redis/v9/cache_clusterclient.go"},
+		{name: "sql godror", pkg: "sql", path: "database/sql", tp: "*sql.DB", inject: "index=0, name=gold, drivers=[godror], plugins=[health, otel]",
+			file: "client/database/sql/gold_db.go"},
+		{name: "sql pgx", pkg: "sql", path: "database/sql", tp: "*sql.DB", inject: "index=0, drivers=[pgx]",
+			file: "client/database/sql/default_db.go", golden: "pgx_default_db.go.golden"},
 	}
 
 	for _, tc := range testCases {
@@ -371,13 +475,22 @@ func TestClientRegistryCompiles(t *testing.T) {
 		keys = append(keys, key)
 	}
 	for i, key := range keys {
-		f := clientFactories[key]
-		for _, c := range []Client{{Factory: f}, {Factory: f, Name: "check", Plugins: f.PluginNames()}} {
-			src, err := ExecuteTemplate(tmpl, "client", clientData(c))
-			require.NoError(t, err, "%s", c)
-			file := filepath.Join(dir, strings.ReplaceAll(key, "/", "_"), filepath.Base(c.File()))
-			require.NoError(t, os.MkdirAll(filepath.Dir(file), os.ModePerm), "%d", i)
-			require.NoError(t, os.WriteFile(file, src, 0o644))
+		// a factory with drivers is rendered once per driver
+		variants := map[string]ClientFactory{"": clientFactories[key]}
+		if names := clientFactories[key].DriverNames(); len(names) > 0 {
+			variants = map[string]ClientFactory{}
+			for _, name := range names {
+				variants[name], _ = clientFactories[key].Driver(name)
+			}
+		}
+		for driver, f := range variants {
+			for _, c := range []Client{{Factory: f, Driver: driver}, {Factory: f, Driver: driver, Name: "check", Plugins: f.PluginNames()}} {
+				src, err := ExecuteTemplate(tmpl, "client", clientData(c))
+				require.NoError(t, err, "%s", c)
+				file := filepath.Join(dir, strings.ReplaceAll(key, "/", "_")+driver, filepath.Base(c.File()))
+				require.NoError(t, os.MkdirAll(filepath.Dir(file), os.ModePerm), "%d", i)
+				require.NoError(t, os.WriteFile(file, src, 0o644))
+			}
 		}
 	}
 
@@ -531,6 +644,38 @@ func TestClientProvider(t *testing.T) {
 	assert.False(t, ok, "the prices client is not the default one")
 	_, ok = ClientProvider(g, natsPath+".Conn", "stock")
 	assert.False(t, ok)
+}
+
+// TestGenerator_DefaultClientWithoutDriver checks a *sql.DB another generator
+// asks for: inject builds it only when a consumer names its driver.
+func TestGenerator_DefaultClientWithoutDriver(t *testing.T) {
+	app := at("app", "New", nil, []string{"*App"}, provide("index=0"))
+
+	for name, opts := range map[string]GeneratorOptions{
+		"default": func() GeneratorOptions {
+			o := testOptions("/mod")
+			o.DefaultClients = []string{sqlDBKey}
+			return o
+		}(),
+		"named": func() GeneratorOptions {
+			o := testOptions("/mod")
+			o.NamedClients = []ClientRef{{ID: sqlDBKey, Name: "gold"}}
+			return o
+		}(),
+	} {
+		t.Run(name, func(t *testing.T) {
+			_, err := NewGenerator(newTestGraph(t, []annotation.Entry{app}), opts).Render(context.Background())
+			assert.True(t, errors.IsNotValid(err), "unexpected error: %v", err)
+			errorContains(t, err, "*database/sql.DB", "drivers=", "godror, pgx")
+		})
+	}
+
+	consumer := sqlConsumer("gold", inject("index=0, name=gold, drivers=[godror]"))
+	opts := testOptions("/mod")
+	opts.NamedClients = []ClientRef{{ID: sqlDBKey, Name: "gold"}}
+	files, err := NewGenerator(newTestGraph(t, []annotation.Entry{consumer}), opts).Render(context.Background())
+	require.NoError(t, err, "a consumer names the driver")
+	assert.NotNil(t, files["client/database/sql/gold_db.go"])
 }
 
 func TestNamedClientModule(t *testing.T) {
