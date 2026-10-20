@@ -241,7 +241,7 @@
 
 <span class="kw">func</span> (d *<span class="ty">datastore</span>) <span class="fn">Take</span>(ctx <span class="ty">context.Context</span>, sku <span class="ty">string</span>) <span class="ty">error</span> {
 	res, err := d.coll.UpdateOne(ctx,
-		<span class="ty">bson.M</span>{<span class="st">&quot;_id&quot;</span>: sku, <span class="st">&quot;units&quot;</span>: <span class="ty">bson.M</span>{<span class="st">&quot;$gt&quot;</span>: <span class="nu">0</span>}},
+		<span class="ty">bson.M</span>{<span class="st">&quot;_id&quot;</span>: <span class="ty">bson.M</span>{<span class="st">&quot;$eq&quot;</span>: sku}, <span class="st">&quot;units&quot;</span>: <span class="ty">bson.M</span>{<span class="st">&quot;$gt&quot;</span>: <span class="nu">0</span>}},
 		<span class="ty">bson.M</span>{<span class="st">&quot;$inc&quot;</span>: <span class="ty">bson.M</span>{<span class="st">&quot;units&quot;</span>: -<span class="nu">1</span>}})
 	<span class="kw">if</span> err != <span class="kw">nil</span> {
 		<span class="kw">return</span> err

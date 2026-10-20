@@ -259,7 +259,7 @@ func New(conn *mongofact.Conn, o *Options) stock.Repository {
 
 func (d *datastore) Take(ctx context.Context, sku string) error {
 	res, err := d.coll.UpdateOne(ctx,
-		bson.M{"_id": sku, "units": bson.M{"$gt": 0}},
+		bson.M{"_id": bson.M{"$eq": sku}, "units": bson.M{"$gt": 0}},
 		bson.M{"$inc": bson.M{"units": -1}})
 	if err != nil {
 		return err
