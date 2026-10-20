@@ -170,6 +170,54 @@ func TestGenerator_RenderKebabApp(t *testing.T) {
 // TestConfigName checks that the config path element of an app is the key
 // boost's env loader reads from its environment variable: hyphens become
 // camelCase, as ORDERS__UPDATER_X reaches ordersUpdater.x.
+// TestGenerator_RenderJob renders app order-sweeper, whose @Job is a method,
+// and app cleanup, whose @Job is a package function: each has a job door
+// and the main every app has.
+func TestGenerator_RenderJob(t *testing.T) {
+	entries := append(jobEntries("app=order-sweeper"),
+		decl("cleanup", "", "Run", []string{"context.Context"}, errResult, ann("Job", "app=cleanup")))
+	spec, err := newTestSpec(t, entries)
+	require.NoError(t, err)
+
+	gen := NewGenerator(spec, testOptions("/src/app"))
+	files, err := gen.Render(context.Background())
+	require.NoError(t, err)
+	mains, err := gen.RenderCmd(context.Background())
+	require.NoError(t, err)
+	for name, src := range mains {
+		files["cmd/"+name] = src
+	}
+
+	assert.Equal(t, []string{
+		"builder/cleanup/job_module.go",
+		"builder/cleanup/modules.go",
+		"builder/order-sweeper/job_module.go",
+		"builder/order-sweeper/modules.go",
+		"cmd/cleanup/main.go",
+		"cmd/order-sweeper/main.go",
+	}, fileNames(files))
+
+	for name, src := range files {
+		assertImportsUsed(t, name, src)
+
+		golden := filepath.Join("testdata", "golden", "job", filepath.FromSlash(name)+".golden")
+		if *update {
+			require.NoError(t, os.MkdirAll(filepath.Dir(golden), 0o755))
+			require.NoError(t, os.WriteFile(golden, src, 0o644))
+			continue
+		}
+		want, err := os.ReadFile(golden)
+		require.NoError(t, err, "run go test ./builder/ -run TestGenerator_RenderJob -update")
+		assert.Equal(t, string(want), string(src), name)
+	}
+
+	door := string(files["builder/order-sweeper/job_module.go"])
+	assert.Contains(t, door, "jobfx.Module()")
+	assert.Contains(t, door, "return h0.Run")
+	assert.NotContains(t, string(files["builder/cleanup/job_module.go"]), "func(h0", "a package function needs no receiver")
+	assert.NotContains(t, string(files["builder/order-sweeper/modules.go"]), "multiserver", "a job app has no server")
+}
+
 func TestConfigName(t *testing.T) {
 	for app, want := range map[string]string{
 		"api":            "api",

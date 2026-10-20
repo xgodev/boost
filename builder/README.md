@@ -2,8 +2,8 @@
 
 `builder` generates the doors of an application on top of
 [`inject`](../inject): a handler declares with an annotation which door serves
-it (a REST route on echo, a gRPC service, an MCP tool or the event
-function), and the
+it (a REST route on echo, a gRPC service, an MCP tool, the event
+function or a job that runs once), and the
 generator writes one fx module per door, a `Modules()` per app and the `main`
 of every app. `@Middleware` on a constructor wraps every method of the
 interface it provides in `extra/middleware` plugins. One command runs inject
@@ -167,6 +167,36 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   `@Provide` constructor that returns it, and generation fails with NotFound
   when there is none (fx would skip the middleware silently).
 
+### `@Job`: an app that runs once and exits
+
+```go
+package stockaudit
+
+// Run checks the stock of the configured items.
+// @Job(app=stock-audit)
+func (a *Auditor) Run(ctx context.Context) error { ... }
+```
+
+| Key | Required | Meaning |
+|---|---|---|
+| `app` | yes | application; a job is a binary of its own |
+
+- The handler is a [`job.Handler`](../bootstrap/job):
+  `func(context.Context) error`, a function or a method. A method needs a
+  provided receiver, as in `@REST`; `@Middleware` on the services it
+  receives applies as in any door.
+- The app is the shape of a Kubernetes CronJob: `boost.Start()`, the graph,
+  the handler once, then the app stops. The door includes
+  [`jobfx.Module()`](../fx/modules/bootstrap/job), which runs the handler on
+  start.
+- Nil exits 0. An error is logged at ERROR (`job failed: <error>`) and exits 1.
+- SIGTERM cancels the handler's context and the app waits for it to return,
+  up to the fx stop timeout (15s by default). Its error (`ctx.Err()` when it
+  gave up) fails the stop and the app exits 1; nil exits 0; a handler still
+  running at the timeout exits 1.
+- An app runs one `@Job` and nothing else: a server door or a `@Function` in
+  the same app fails the generation.
+
 ### `@Middleware`: plugins around every method of a service
 
 ```go
@@ -250,6 +280,7 @@ gen/
   builder/<app>/modules.go           # func Modules() []fx.Option
   builder/<app>/<server>_module.go   # one REST, gRPC or MCP server and its routes/services/tools
   builder/<app>/function_module.go   # the @Function handler and its adapter
+  builder/<app>/job_module.go        # the @Job handler, run once
   builder/middleware/<package path>/<func>_middleware.go # Decorate<Func>(): the @Middleware decorator
 ```
 
@@ -326,6 +357,8 @@ The command fails, without touching the output directory, when:
   to an exported function;
 - an app has two `@Function`, or `adapter` is missing or unknown, or its
   list is empty or repeats a name;
+- `@Job` has no `app`, an app has two `@Job`, or a job app also has a
+  server door or a `@Function`;
 - `middlewares` is not written as `[a, b]`, or lists an empty, unknown or
   repeated name;
 - a server is used by two kinds of door;
@@ -381,7 +414,7 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
 
 ## Example
 
-[`examples/simple`](./examples/simple) has two apps:
+[`examples/simple`](./examples/simple) has three apps:
 
 - `api`: REST `POST /orders` and `GET /orders/:id` on `rest`, `GET`/`HEAD
   /live` on `admin` (built with the `X-Served-By: admin` plugin of
@@ -399,9 +432,14 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
   (`ORDER__WORKER_FUNCTION_ADAPTER`, default `cloudevents`), behind the
   `recovery` and `logger` middlewares; its handler injects the publisher with
   `drivers=[nats, pubsub]`, so the worker links no Kafka client. Its package
-  is `gen/builder/order-worker`, package `orderworker`.
+  is `gen/builder/order-worker`, package `orderworker`;
+- `stock-audit`: the `@Job` of `stockaudit`, which asks `stock.Service` (the
+  decorated memory one by default) for the items of its `@Config Options`
+  (`builder.examples.simple.stockaudit.items`, default `book, pen,
+  sold-out`), logs the sold-out ones and exits.
 
-`cmd/api/main.go` and `cmd/order-worker/main.go` are generated. Its tests call the
+`cmd/api/main.go`, `cmd/order-worker/main.go` and `cmd/stock-audit/main.go`
+are generated. Its tests call the
 routes, the gRPC service and the MCP tool of the generated app, check that the handler
 receives the stock decorator and that prometheus counted its call, boot the
 api with `unlimited` (wired without the decorator), with an unknown name
@@ -415,7 +453,11 @@ a `pstest` fake until it records a CloudEvent and a raw message, stays up
 and exits 0 on SIGTERM, and with no subscription (the boot fails naming it),
 build the worker and check with `go version -m` that it has no
 `confluent-kafka-go`, boot it with the kafka driver (the boot fails listing
-`nats, noop, pubsub`), and fail when `gen/` or a main is stale.
+`nats, noop, pubsub`), run the generated main of `stock-audit` on the memory
+stock (it exits 0 by itself), on the remote stock against a warehouse that
+answers 500 (it logs `job failed` and exits 1) and against one that never
+answers, sending SIGTERM while the job waits (the job context is cancelled
+and it exits 1 within seconds), and fail when `gen/` or a main is stale.
 
 ## Non-goals
 

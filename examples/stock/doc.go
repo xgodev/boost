@@ -6,7 +6,9 @@
 // (echo, :8080), gRPC (:9090, api/proto/stock/v1) and MCP (:8090/mcp, the
 // find_stock tool). App worker reserves the item of each order.created
 // CloudEvent it receives (HTTP on :8081 or NATS). A reservation is announced
-// as a stock.reserved event on boost's publisher (noop by default).
+// as a stock.reserved event on boost's publisher (noop by default). App
+// stock-check is a job: it logs the units of the skus it is given and exits,
+// 1 when a sku is not in stock.
 //
 // Defaults need no infra: the stock is in memory (seeded with tshirt=3 and
 // mug=1) and the publisher is noop. Config chooses the rest:
@@ -21,6 +23,7 @@
 //
 //	CONF=configs/api.yaml go run ./cmd/api
 //	CONF=configs/worker.yaml go run ./cmd/worker
+//	INTERNAL_APP_STOCKCHECK_JOB_STOCK_CHECKER_SKUS=tshirt,mug go run ./cmd/stock-check
 //
 // and call it:
 //

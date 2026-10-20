@@ -19,6 +19,7 @@ import (
 	gen_creator_34324f41 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/rest/handler/stock/creator"
 	gen_finder_773dc854 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/rest/handler/stock/finder"
 	gen_reserver_e8b7ca47 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/rest/handler/stock/reserver"
+	gen_checker_67912e54 "github.com/xgodev/boost/examples/stock/gen/internal/app/stockcheck/job/stock/checker"
 	gen_reserver_9ef9326a "github.com/xgodev/boost/examples/stock/gen/internal/app/worker/cloudevents/handler/stock/reserver"
 	gen_memory_e61b92bf "github.com/xgodev/boost/examples/stock/gen/internal/pkg/datastore/stock/memory"
 	gen_mongodb_06b6559e "github.com/xgodev/boost/examples/stock/gen/internal/pkg/datastore/stock/mongodb"
@@ -39,6 +40,8 @@ func Module() fx.Option {
 		gen_creator_34324f41.NewModule(),
 		gen_finder_773dc854.NewModule(),
 		gen_reserver_e8b7ca47.NewModule(),
+		gen_checker_67912e54.NewModule(),
+		gen_checker_67912e54.OptionsModule(),
 		gen_reserver_9ef9326a.NewModule(),
 		impl_reserver_e3c15ac4.ServiceImplementationModule(),
 		impl_stock_3e1064df.RepositoryImplementationModule(),

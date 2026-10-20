@@ -13,19 +13,20 @@ import (
 	"github.com/xgodev/boost/model/errors"
 )
 
-// NewSpec builds the doors declared by the @REST, @GRPC, @MCP and @Function
-// annotations of entries, and the @Middleware of the constructors each app
+// NewSpec builds the doors declared by the @REST, @GRPC, @MCP, @Function and
+// @Job annotations of entries, and the @Middleware of the constructors each app
 // builds. g is the inject graph of the same entries: it provides the
 // receivers of handler methods and the values of @GRPC constructors. load
 // reads the interfaces @Middleware decorates; it is only called, once, when
 // there is a @Middleware.
 //
-// It returns NotValid for malformed annotations and for handlers that are
-// unexported, in package main or whose signature does not match their door,
+// It returns NotValid for malformed annotations, for handlers that are
+// unexported, in package main or whose signature does not match their door
+// and for an app that runs a @Job and anything else,
 // NotFound when the receiver of a handler method or a value a @Function
 // middleware needs has no provider, and
-// AlreadyExists for a duplicate route, service or tool, for a second @Function in
-// an app, for two @Middleware that decorate the same interface and for a rest,
+// AlreadyExists for a duplicate route, service or tool, for a second @Function or
+// @Job in an app, for two @Middleware that decorate the same interface and for a rest,
 // grpc or mcp server given both a named and an unnamed []Plugin.
 func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component], load PackageLoader) (*Spec, error) {
 	b := &specBuilder{graph: g, apps: map[string]*appState{}, middlewares: map[string]*Middleware{}}
@@ -50,6 +51,8 @@ func NewSpec(entries []annotation.Entry, g *graph.Graph[inject.Component], load 
 				err = b.addTool(entry, ann)
 			case "Function":
 				err = b.addFunction(entry, ann)
+			case "Job":
+				err = b.addJob(entry, ann)
 			case "Middleware":
 				err = b.addMiddleware(entry, ann)
 			}
@@ -74,6 +77,7 @@ type specBuilder struct {
 type appState struct {
 	servers  map[string]*Server
 	function *Function
+	job      *Job
 	served   map[string]bool // routes, services and tools already declared, per server
 }
 
@@ -301,6 +305,38 @@ func (b *specBuilder) addFunction(entry annotation.Entry, ann annotation.Annotat
 	return nil
 }
 
+func (b *specBuilder) addJob(entry annotation.Entry, ann annotation.Annotation) error {
+	where := declName(entry)
+	var args jobArgs
+	if err := decode(ann, where, jobKeys, &args); err != nil {
+		return err
+	}
+	if args.App == "" {
+		return errors.NotValidf("@Job on %s: app is required: a job is a binary of its own", where)
+	}
+	if err := validateNames(ann.Name, where, args.App, ""); err != nil {
+		return err
+	}
+
+	handler, err := b.handler(entry, ann.Name)
+	if err != nil {
+		return err
+	}
+	params, results := entry.Func.Parameters, entry.Func.Results
+	if len(params) != 1 || !isType(entry, params[0].Type, typeRef{Path: "context", Name: "Context"}) ||
+		len(results) != 1 || results[0].Type != "error" {
+		return errors.NotValidf("@Job on %s: the handler must be func(context.Context) error", where)
+	}
+
+	a := b.app(args.App)
+	if a.job != nil {
+		return errors.AlreadyExistsf("@Job on %s: app %s already runs %s and an app runs one @Job; set app= to another app",
+			where, args.App, declName(a.job.Handler.Entry))
+	}
+	a.job = &Job{Handler: handler}
+	return nil
+}
+
 // validateFunctionClient checks client=x of @Function: an adapter reads with
 // a client inject builds, and the name reaches its keys from an environment
 // variable.
@@ -423,7 +459,10 @@ func (b *specBuilder) spec() (*Spec, error) {
 	spec := &Spec{}
 	for _, name := range sortedNames(b.apps) {
 		a := b.apps[name]
-		app := App{Name: name, Function: a.function}
+		if err := a.checkJob(name); err != nil {
+			return nil, err
+		}
+		app := App{Name: name, Function: a.function, Job: a.job}
 		for _, srvName := range sortedNames(a.servers) {
 			srv := *a.servers[srvName]
 			sort.SliceStable(srv.Routes, func(i, j int) bool {
@@ -447,6 +486,25 @@ func (b *specBuilder) spec() (*Spec, error) {
 		spec.Apps = append(spec.Apps, app)
 	}
 	return spec, nil
+}
+
+// checkJob fails when the app runs a @Job and serves a server or runs a
+// @Function: a job runs once and exits, which would stop them.
+func (a *appState) checkJob(app string) error {
+	if a.job == nil {
+		return nil
+	}
+	var other string
+	switch {
+	case len(a.servers) > 0:
+		other = "serves server " + sortedNames(a.servers)[0]
+	case a.function != nil:
+		other = "runs the @Function " + declName(a.function.Handler.Entry)
+	default:
+		return nil
+	}
+	return errors.NotValidf("@Job on %s: app %s also %s, and a job app runs nothing else: it exits when the job returns; set app= to another app",
+		declName(a.job.Handler.Entry), app, other)
 }
 
 // dependencies returns the keys of the providers the component key depends on.
