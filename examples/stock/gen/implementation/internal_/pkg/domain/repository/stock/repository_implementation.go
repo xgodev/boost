@@ -11,13 +11,14 @@ import (
 
 	gen_memory_e61b92bf "github.com/xgodev/boost/examples/stock/gen/internal/pkg/datastore/stock/memory"
 	gen_mongodb_06b6559e "github.com/xgodev/boost/examples/stock/gen/internal/pkg/datastore/stock/mongodb"
+	gen_oracle_34cf544c "github.com/xgodev/boost/examples/stock/gen/internal/pkg/datastore/stock/oracle"
 )
 
 // repositoryImplementationKey chooses the implementation of github.com/xgodev/boost/examples/stock/internal/pkg/domain/repository/stock.Repository.
 const repositoryImplementationKey = "internal.pkg.domain.repository.stock.implementation"
 
 func init() {
-	config.Add(repositoryImplementationKey, "memory", "implementation of github.com/xgodev/boost/examples/stock/internal/pkg/domain/repository/stock.Repository: memory, mongodb")
+	config.Add(repositoryImplementationKey, "memory", "implementation of github.com/xgodev/boost/examples/stock/internal/pkg/domain/repository/stock.Repository: memory, mongodb, oracle")
 }
 
 // RepositoryImplementation returns the name of the implementation of
@@ -29,7 +30,7 @@ func RepositoryImplementation() string {
 var repositoryImplementationOnce sync.Once
 
 // RepositoryImplementationModule wires the implementation of github.com/xgodev/boost/examples/stock/internal/pkg/domain/repository/stock.Repository
-// named by internal.pkg.domain.repository.stock.implementation (memory, mongodb; default memory) and only that one.
+// named by internal.pkg.domain.repository.stock.implementation (memory, mongodb, oracle; default memory) and only that one.
 // An unknown name fails the boot. It returns an empty option after the first
 // call, so every consumer can include it.
 func RepositoryImplementationModule() fx.Option {
@@ -41,8 +42,10 @@ func RepositoryImplementationModule() fx.Option {
 			options = gen_memory_e61b92bf.NewModule()
 		case "mongodb":
 			options = gen_mongodb_06b6559e.NewModule()
+		case "oracle":
+			options = gen_oracle_34cf544c.NewModule()
 		default:
-			options = fx.Error(errors.NotValidf("%s: unknown implementation %q; valid: %s", repositoryImplementationKey, name, "memory, mongodb"))
+			options = fx.Error(errors.NotValidf("%s: unknown implementation %q; valid: %s", repositoryImplementationKey, name, "memory, mongodb, oracle"))
 		}
 	})
 

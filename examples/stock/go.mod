@@ -5,6 +5,7 @@ go 1.26.5
 require (
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/go-resty/resty/v2 v2.17.2
+	github.com/godror/godror v0.51.5
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.16.0
 	github.com/modelcontextprotocol/go-sdk v1.8.0
@@ -20,6 +21,7 @@ require (
 )
 
 require (
+	github.com/VictoriaMetrics/easyproto v1.2.0 // indirect
 	github.com/antithesishq/antithesis-sdk-go v0.6.0-default-no-op // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -28,12 +30,14 @@ require (
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/globocom/echo-prometheus v0.1.2 // indirect
+	github.com/go-logfmt/logfmt v0.6.1 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.2 // indirect
 	github.com/go-playground/universal-translator v0.18.2 // indirect
 	github.com/go-playground/validator/v10 v10.30.5 // indirect
 	github.com/gobeam/stringy v0.0.7 // indirect
+	github.com/godror/knownpb v0.3.0 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
 	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect

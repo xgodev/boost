@@ -117,7 +117,7 @@ type ClientPluginData struct {
 	Name     string // plugin name, the last segment of its config root
 	Alias    string // import alias of the plugin
 	New      string // ...WithConfigPath constructor of the plugin
-	Register string // method of the plugin passed to the factory
+	Register string // method of the plugin passed to the factory, "" to pass the plugin itself
 }
 
 // ImplementationCase is one implementation of a switch and its module call.

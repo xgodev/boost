@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net"
 	"net/http"
@@ -23,6 +24,7 @@ import (
 	"github.com/xgodev/boost"
 	stockv1 "github.com/xgodev/boost/examples/stock/api/proto/stock/v1"
 	"github.com/xgodev/boost/examples/stock/gen/builder/api"
+	sqlclient "github.com/xgodev/boost/examples/stock/gen/client/database/sql"
 	mongoclient "github.com/xgodev/boost/examples/stock/gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
 	"github.com/xgodev/boost/examples/stock/internal/pkg/domain/service/stock/reserver"
 	mongofact "github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
@@ -271,6 +273,8 @@ const (
 	// (internal.pkg.domain.repository.stock.implementation, memory by default).
 	repositoryEnv = "INTERNAL_PKG_DOMAIN_REPOSITORY_STOCK_IMPLEMENTATION"
 	mongoURIEnv   = "BOOST_FACTORY_MONGO_URI"
+	oracleEnv     = "BOOST_FACTORY_GODROR_CONNECTSTRING"
+	oracleTable   = "INTERNAL_PKG_DATASTORE_STOCK_ORACLE_TABLE"
 )
 
 // TestAPIMongo boots app api on the mongodb stock. It needs a MongoDB:
@@ -312,6 +316,66 @@ func TestAPIMongoChild(t *testing.T) {
 	var rest *boostecho.Server
 	app := fx.New(append(api.Modules(), fx.NopLogger, fx.Populate(&rest))...)
 	require.NoError(t, app.Err())
+
+	assert.Equal(t, http.StatusNotFound, serve(rest, http.MethodGet, "/stocks/cap", "").Code)
+	assert.Equal(t, http.StatusCreated, serve(rest, http.MethodPost, "/stocks", `{"sku":"cap","units":1}`).Code)
+	assert.Equal(t, http.StatusConflict, serve(rest, http.MethodPost, "/stocks", `{"sku":"cap","units":1}`).Code)
+	assert.JSONEq(t, `{"sku":"cap","units":0}`, serve(rest, http.MethodPost, "/stocks/cap/reserve", "").Body.String())
+	assert.Equal(t, http.StatusConflict, serve(rest, http.MethodPost, "/stocks/cap/reserve", "").Code)
+	assert.Equal(t, http.StatusNotFound, serve(rest, http.MethodPost, "/stocks/nope/reserve", "").Code)
+}
+
+// TestAPIOracle boots app api on the oracle stock. It needs an Oracle
+// database and its client libraries:
+// BOOST_FACTORY_GODROR_CONNECTSTRING=localhost:1521/FREEPDB1 BOOST_FACTORY_GODROR_USERNAME=stock BOOST_FACTORY_GODROR_PASSWORD=stock go test ./...
+func TestAPIOracle(t *testing.T) {
+	if os.Getenv(oracleEnv) == "" {
+		t.Skip(oracleEnv + " is not set")
+	}
+	child(t, "TestAPIOracleChild", repositoryEnv+"=oracle", oracleTable+"=stock_"+time.Now().Format("20060102150405"))
+	child(t, "TestAPIOracleStopChild")
+}
+
+// TestAPIOracleStopChild runs in the process TestAPIOracle starts: the
+// generated *sql.DB is closed when the app stops.
+func TestAPIOracleStopChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestAPIOracle")
+	}
+
+	var db *sql.DB
+	app := fx.New(sqlclient.DefaultDBModule(), fx.NopLogger, fx.Populate(&db))
+	require.NoError(t, app.Err())
+	ctx := context.Background()
+	require.NoError(t, app.Start(ctx))
+	require.NoError(t, db.PingContext(ctx), "the db is open while the app runs")
+	require.NoError(t, app.Stop(ctx))
+
+	assert.ErrorContains(t, db.PingContext(ctx), "sql: database is closed", "the app closes the db when it stops")
+}
+
+// TestAPIOracleChild runs in the process TestAPIOracle starts, on a table of
+// its own that it creates and drops.
+func TestAPIOracleChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestAPIOracle")
+	}
+
+	var (
+		rest *boostecho.Server
+		db   *sql.DB
+	)
+	app := fx.New(append(api.Modules(), fx.NopLogger, fx.Populate(&rest, &db))...)
+	require.NoError(t, app.Err())
+
+	ctx := context.Background()
+	table := os.Getenv(oracleTable)
+	_, err := db.ExecContext(ctx, "CREATE TABLE "+table+" (sku VARCHAR2(64) PRIMARY KEY, units NUMBER(19) NOT NULL)")
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_, err := db.ExecContext(ctx, "DROP TABLE "+table+" PURGE")
+		assert.NoError(t, err)
+	})
 
 	assert.Equal(t, http.StatusNotFound, serve(rest, http.MethodGet, "/stocks/cap", "").Code)
 	assert.Equal(t, http.StatusCreated, serve(rest, http.MethodPost, "/stocks", `{"sku":"cap","units":1}`).Code)

@@ -211,14 +211,14 @@ func new{{.Ident}}(ctx context.Context{{if .Close}}, lc fx.Lifecycle{{end}}) ({{
 	}
 {{- end}}
 {{- if .Close}}
-	c, err := factory.{{.Build}}(ctx, {{.Var}}Root{{range .Plugins}}, {{.Name}}.{{.Register}}{{end}})
+	c, err := factory.{{.Build}}(ctx, {{.Var}}Root{{range .Plugins}}, {{.Name}}{{with .Register}}.{{.}}{{end}}{{end}})
 	if err != nil {
 		return nil, err
 	}
 	lc.Append(fx.StopHook(c.Close))
 	return c, nil
 {{- else}}
-	return factory.{{.Build}}(ctx, {{.Var}}Root{{range .Plugins}}, {{.Name}}.{{.Register}}{{end}})
+	return factory.{{.Build}}(ctx, {{.Var}}Root{{range .Plugins}}, {{.Name}}{{with .Register}}.{{.}}{{end}}{{end}})
 {{- end}}
 }
 {{end}}
