@@ -40,7 +40,8 @@ factory por componente sob `factory/contrib/`.
   atualizar o README do pacote no mesmo commit.
 - **`examples/stock` é o app de exemplo completo.** Recurso novo no boost
   (factory, plugin, adapter, anotação do builder) entra nele no mesmo PR,
-  com teste em `cmd/<app>/main_test.go`.
+  com teste em `cmd/<app>/main_test.go` e linha no `examples/stock/README.md`
+  (chamada com a resposta real, chave de config, arquivo do recurso).
 - **`README.md` da raiz espelha o site** (`docs/site/index.html`): mesmas
   seções, texto, números, exemplo e versão. Mudou um, muda o outro no mesmo PR.
 - Teste valida comportamento, não só cobre linha. Bug fix → teste vermelho
