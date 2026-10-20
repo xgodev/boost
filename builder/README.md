@@ -307,6 +307,12 @@ package rest
 
 - A `@Provide` `[]Plugin` still builds a server (see [Servers](#servers)):
   that server gets no default set, and a `@Server` for it too fails.
+- A door whose server lists `otel` (or whose `@Function` runs the
+  `opentelemetry` middleware) also includes
+  [`otelfx.Module()`](../fx/modules/factory/contrib/go.opentelemetry.io/otel/v1):
+  it starts the OpenTelemetry providers on boot and shuts them down on stop,
+  so the spans and metrics reach `boost.factory.otel.endpoint` instead of a
+  noop provider. The module runs once per app, however many doors include it.
 
 ### App names
 
@@ -377,7 +383,8 @@ Factory clients too: `@Inject(index=0, name=quote, plugins=[otel])` on a
 godror or pgx) parameter makes
 inject build that client with those plugins and its own config under
 `boost.factory.resty.clients.quote` (see
-[`inject`](../inject#factory-clients)), so the app writes no factory module.
+[`inject`](../inject#factory-clients)), so the app writes no factory module;
+a client with the `otel` plugin starts the OpenTelemetry providers too.
 
 builder owns the main of every app: a `cmd/<app>/main.go` without that header
 fails the generation instead of being overwritten. Other files under `cmd/`

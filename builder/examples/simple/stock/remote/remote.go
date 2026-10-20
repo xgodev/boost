@@ -22,9 +22,10 @@ type item struct {
 
 // New provides a stock service that asks the warehouse whether an item is
 // available (GET /items/{item}); builder builds its client with the log
-// plugin.
+// and otel plugins, and the module of the client starts the OpenTelemetry
+// providers.
 // @Provide(index=0)
-// @Inject(index=0, name=warehouse, plugins=[log])
+// @Inject(index=0, name=warehouse, plugins=[log, otel])
 func New(warehouse *resty.Client) stock.Service {
 	return &service{warehouse: warehouse}
 }

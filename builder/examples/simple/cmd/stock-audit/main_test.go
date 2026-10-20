@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -19,13 +20,34 @@ import (
 	"github.com/xgodev/boost/bootstrap/job"
 	stockaudit "github.com/xgodev/boost/builder/examples/simple/gen/builder/stock-audit"
 	"github.com/xgodev/boost/builder/examples/simple/stock"
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1/oteltest"
 	"go.uber.org/fx"
 )
 
-// TestMain boots boost: the stock and the audit read their config.
+// TestMain boots boost: the stock and the audit read their config. The
+// warehouse client is built with the otel plugin, so every process the tests
+// start exports to a collector of the tests: without one, the providers
+// retry the export when the app stops.
 func TestMain(m *testing.M) {
+	os.Exit(run(m))
+}
+
+func run(m *testing.M) int {
+	collector, err := oteltest.NewCollector()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	defer collector.Close()
+	if os.Getenv(otelEndpointEnv) == "" {
+		if err := os.Setenv(otelEndpointEnv, collector.Endpoint()); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+	}
+
 	boost.Start()
-	os.Exit(m.Run())
+	return m.Run()
 }
 
 // TestAudit builds app stock-audit from the generated Modules() and runs the
@@ -56,6 +78,9 @@ const (
 	// requestTimeoutEnv sets how long the warehouse client waits for an
 	// answer (boost.factory.resty.clients.warehouse.requestTimeout).
 	requestTimeoutEnv = "BOOST_FACTORY_RESTY_CLIENTS_WAREHOUSE_REQUEST__TIMEOUT"
+	// otelEndpointEnv is where the OpenTelemetry providers export
+	// (boost.factory.otel.endpoint).
+	otelEndpointEnv = "BOOST_FACTORY_OTEL_ENDPOINT"
 )
 
 // TestMain_ExitsZeroWhenTheJobSucceeds runs the generated main of app

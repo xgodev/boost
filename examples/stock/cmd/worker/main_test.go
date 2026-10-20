@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	"github.com/xgodev/boost/examples/stock/gen/implementation/internal_/pkg/domain/service/stock/reserver"
 	"github.com/xgodev/boost/examples/stock/internal/pkg/domain/repository/stock"
 	"github.com/xgodev/boost/extra/middleware"
+	"github.com/xgodev/boost/factory/contrib/go.opentelemetry.io/otel/v1/oteltest"
 	functionfx "github.com/xgodev/boost/fx/modules/bootstrap/function"
 	"github.com/xgodev/boost/model/errors"
 	"go.uber.org/fx"
@@ -187,7 +189,32 @@ func TestMain_ReservesOverHTTP(t *testing.T) {
 	t.Run("with the otel plugin turned off", func(t *testing.T) { reservesOverHTTP(t, otelEnv+"=false") })
 }
 
-func reservesOverHTTP(t *testing.T, env ...string) {
+// TestMain_ExportsTheSpanOfAnEvent runs the generated main of app worker
+// exporting to a collector of the test: the @Server of the cloudevents
+// adapter lists the otel plugin, so the generated door starts the
+// OpenTelemetry providers and, on SIGTERM, they export the span of the event.
+func TestMain_ExportsTheSpanOfAnEvent(t *testing.T) {
+	collector, err := oteltest.NewCollector()
+	require.NoError(t, err)
+	t.Cleanup(collector.Close)
+
+	w := reservesOverHTTP(t, otelEndpointEnv+"="+collector.Endpoint())
+	require.NoError(t, w.cmd.Process.Signal(syscall.SIGTERM))
+	require.Eventually(t, func() bool { return len(collector.Spans()) > 0 }, 10*time.Second, 50*time.Millisecond,
+		"the worker exports the span of the event: %s", w.out)
+}
+
+// otelEndpointEnv is where the OpenTelemetry providers export
+// (boost.factory.otel.endpoint).
+const otelEndpointEnv = "BOOST_FACTORY_OTEL_ENDPOINT"
+
+// runningWorker is the process reservesOverHTTP starts.
+type runningWorker struct {
+	cmd *exec.Cmd
+	out *syncBuffer
+}
+
+func reservesOverHTTP(t *testing.T, env ...string) runningWorker {
 	lis, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 	port := lis.Addr().(*net.TCPAddr).Port
@@ -230,6 +257,7 @@ func reservesOverHTTP(t *testing.T, env ...string) {
 		}
 	}
 	assert.Contains(t, out.String(), "listening on :"+strconv.Itoa(port)+"/", "the worker logs the port it listens on")
+	return runningWorker{cmd: cmd, out: out}
 }
 
 // syncBuffer is a bytes.Buffer the child process and the test share.

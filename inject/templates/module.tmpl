@@ -196,6 +196,9 @@ func {{.Ident}}Module() fx.Option {
 	{{.Var}}Once.Do(func() {
 		options = fx.Module("{{.Module}}",
 			contextfx.Module(),
+{{- if .OTel}}
+			otelfx.Module(),
+{{- end}}
 			fx.Provide({{.Target}}),
 		)
 	})

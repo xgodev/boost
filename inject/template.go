@@ -79,6 +79,7 @@ type ClientData struct {
 	Plugins    []ClientPluginData // in the declared order
 	Names      string             // plugin names, comma separated
 	Close      bool               // the module closes the client when the app stops
+	OTel       bool               // a plugin reports to the OpenTelemetry providers: the module starts them
 	Imports    []ImportData       // client type, factory, context module and plugins
 }
 

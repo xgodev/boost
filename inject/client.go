@@ -45,9 +45,16 @@ type ClientPlugin struct {
 	New      string // ...WithConfigPath constructor of the plugin
 	Register string // method passed to the factory, "" for Register
 	Value    bool   // the factory takes the value itself (a sql.Plugin), not a method
+	// OTel is set for a plugin that reports to the OpenTelemetry providers:
+	// the client module starts them, or the plugin reports to the noop
+	// provider.
+	OTel bool
 }
 
 const boostFactories = "github.com/xgodev/boost/factory/contrib/"
+
+// otelFxPath is the fx module that starts the OpenTelemetry providers.
+const otelFxPath = "github.com/xgodev/boost/fx/modules/factory/contrib/go.opentelemetry.io/otel/v1"
 
 // clientFactories are the clients inject builds, by Path + "." + Type.
 var clientFactories = map[string]ClientFactory{}
@@ -57,7 +64,7 @@ func init() {
 	addClientFactory("github.com/go-resty/resty/v2", "Client", "resty", resty, "NewClientWithConfigPath", "boost.factory.resty", map[string]ClientPlugin{
 		"log":        {Path: resty + "/plugins/local/wrapper/log", New: "NewLogWithConfigPath"},
 		"health":     {Path: resty + "/plugins/local/extra/health", New: "NewHealthWithConfigPath"},
-		"otel":       {Path: resty + "/plugins/contrib/dubonzi/otelresty/v1", New: "NewOtelrestyWithConfigPath"},
+		"otel":       {Path: resty + "/plugins/contrib/dubonzi/otelresty/v1", New: "NewOtelrestyWithConfigPath", OTel: true},
 		"datadog":    {Path: resty + "/plugins/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath"},
 		"prometheus": {Path: resty + "/plugins/contrib/prometheus/client_golang/v1", New: "NewPrometheusWithConfigPath"},
 		"retry":      {Path: resty + "/plugins/extra/retry", New: "NewRetryWithConfigPath"},
@@ -68,7 +75,7 @@ func init() {
 	redisPlugins := func(health, others string) map[string]ClientPlugin {
 		return map[string]ClientPlugin{
 			"health":     {Path: redis + "/plugins/local/extra/health", New: health},
-			"otel":       {Path: redis + "/plugins/native/otel/v9", New: others},
+			"otel":       {Path: redis + "/plugins/native/otel/v9", New: others, OTel: true},
 			"datadog":    {Path: redis + "/plugins/contrib/datadog/dd-trace-go/v1", New: others},
 			"prometheus": {Path: redis + "/plugins/contrib/prometheus/client_golang/v1", New: others},
 		}
@@ -82,7 +89,7 @@ func init() {
 		mongo := boostFactories + "go.mongodb.org/mongo-driver/" + version
 		addClosingClientFactory(mongo, "Conn", "mongo", mongo, "NewConnWithConfigPath", "boost.factory.mongo", map[string]ClientPlugin{
 			"health":     {Path: mongo + "/plugins/local/health", New: "NewHealthWithConfigPath"},
-			"otel":       {Path: mongo + "/plugins/contrib/go.opentelemetry.io/contrib/v0", New: "NewOtelMongoWithConfigPath"},
+			"otel":       {Path: mongo + "/plugins/contrib/go.opentelemetry.io/contrib/v0", New: "NewOtelMongoWithConfigPath", OTel: true},
 			"datadog":    {Path: mongo + "/plugins/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath"},
 			"prometheus": {Path: mongo + "/plugins/contrib/prometheus/client_golang/v1", New: "NewPrometheusWithConfigPath"},
 		})
@@ -133,7 +140,7 @@ func init() {
 		},
 		Plugins: map[string]ClientPlugin{
 			"health":  {Path: sqlPlugins + "/local/health", New: "NewHealthPluginWithConfigPath", Value: true},
-			"otel":    {Path: sqlPlugins + "/contrib/xsam/otelsql/v0", New: "NewOTelWithConfigPath", Value: true},
+			"otel":    {Path: sqlPlugins + "/contrib/xsam/otelsql/v0", New: "NewOTelWithConfigPath", Value: true, OTel: true},
 			"datadog": {Path: sqlPlugins + "/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath", Value: true},
 		}}
 	clientFactories[db.Path+"."+db.Type] = db
@@ -594,6 +601,10 @@ func clientData(c Client) ClientData {
 		}
 		data.Plugins = append(data.Plugins, ClientPluginData{Name: name, Alias: alias, New: plugin.New, Register: register})
 		data.Imports = append(data.Imports, ImportData{Alias: alias, Path: plugin.Path})
+		data.OTel = data.OTel || plugin.OTel
+	}
+	if data.OTel {
+		data.Imports = append(data.Imports, ImportData{Alias: "otelfx", Path: otelFxPath})
 	}
 	return data
 }
