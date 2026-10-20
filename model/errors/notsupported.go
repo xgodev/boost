@@ -6,6 +6,8 @@ type notSupported struct {
 }
 
 // NotSupportedf returns an error which satisfies IsNotSupported().
+// Its message is the formatted text followed by " not supported", so the format
+// names the thing: NotSupportedf("sku %s", sku) says "sku cap not supported".
 func NotSupportedf(format string, args ...interface{}) error {
 	return &notSupported{wrap(nil, format, " not supported", args...)}
 }

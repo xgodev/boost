@@ -48,7 +48,7 @@ func (d *datastore) Get(ctx context.Context, sku string) (*entity.Stock, error) 
 	var doc document
 	err := d.coll.FindOne(ctx, bson.M{"_id": sku}).Decode(&doc)
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		return nil, errors.NotFoundf("%s is not in stock", sku)
+		return nil, errors.NewNotFound(nil, sku+" is not in stock")
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, errors.Internalf("error reading the stock of %s", sku))

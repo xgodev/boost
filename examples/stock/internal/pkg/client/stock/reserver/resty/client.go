@@ -47,7 +47,7 @@ func (c *client) Reserve(ctx context.Context, sku string) (*entity.Stock, error)
 	case http.StatusOK:
 		return &entity.Stock{SKU: left.SKU, Units: left.Units}, nil
 	case http.StatusNotFound:
-		return nil, errors.NotFoundf("%s is not in stock", sku)
+		return nil, errors.NewNotFound(nil, sku+" is not in stock")
 	case http.StatusConflict:
 		return nil, errors.Conflictf("%s is sold out", sku)
 	default:

@@ -6,6 +6,8 @@ type notValid struct {
 }
 
 // NotValidf returns an error which satisfies IsNotValid().
+// Its message is the formatted text followed by " not valid", so the format
+// names the thing: NotValidf("sku %s", sku) says "sku cap not valid".
 func NotValidf(format string, args ...interface{}) error {
 	return &notValid{wrap(nil, format, " not valid", args...)}
 }

@@ -49,7 +49,8 @@ func (d *datastore) Get(_ context.Context, sku string) (*entity.Stock, error) {
 	defer d.mu.Unlock()
 	units, ok := d.units[sku]
 	if !ok {
-		return nil, errors.NotFoundf("%s is not in stock", sku)
+		// NewNotFound keeps the message as written; NotFoundf would add " not found".
+		return nil, errors.NewNotFound(nil, sku+" is not in stock")
 	}
 	return &entity.Stock{SKU: sku, Units: units}, nil
 }
@@ -59,7 +60,7 @@ func (d *datastore) Take(_ context.Context, sku string) (*entity.Stock, error) {
 	defer d.mu.Unlock()
 	units, ok := d.units[sku]
 	if !ok {
-		return nil, errors.NotFoundf("%s is not in stock", sku)
+		return nil, errors.NewNotFound(nil, sku+" is not in stock")
 	}
 	if units == 0 {
 		return nil, errors.Conflictf("%s is sold out", sku)
