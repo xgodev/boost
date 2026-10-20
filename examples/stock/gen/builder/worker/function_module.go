@@ -22,6 +22,7 @@ import (
 	natsfx "github.com/xgodev/boost/fx/modules/bootstrap/function/adapter/contrib/nats-io/nats.go/v1"
 	loggerfx "github.com/xgodev/boost/fx/modules/bootstrap/function/middleware/logger"
 	recoveryfx "github.com/xgodev/boost/fx/modules/bootstrap/function/middleware/recovery"
+	otelfx "github.com/xgodev/boost/fx/modules/factory/contrib/go.opentelemetry.io/otel/v1"
 	errors "github.com/xgodev/boost/model/errors"
 	config "github.com/xgodev/boost/wrapper/config"
 )
@@ -79,6 +80,7 @@ func functionAdapterModule() fx.Option {
 	case "cloudevents":
 		return fx.Options(
 			cloudeventsfx.Module[[]*src_cloudevents_c136a3fd.Event](),
+			otelfx.Module(),
 			fx.Provide(func() []ceplugin.Plugin {
 				return []ceplugin.Plugin{
 					ceotel.Register,

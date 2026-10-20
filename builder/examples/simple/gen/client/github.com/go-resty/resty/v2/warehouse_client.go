@@ -10,8 +10,10 @@ import (
 
 	client "github.com/go-resty/resty/v2"
 	factory "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2"
+	otelplugin "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/contrib/dubonzi/otelresty/v1"
 	logplugin "github.com/xgodev/boost/factory/contrib/go-resty/resty/v2/plugins/local/wrapper/log"
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
+	otelfx "github.com/xgodev/boost/fx/modules/factory/contrib/go.opentelemetry.io/otel/v1"
 )
 
 // warehouseClientRoot is the config root of the warehouse client (*github.com/go-resty/resty/v2.Client);
@@ -21,12 +23,13 @@ const warehouseClientRoot = "boost.factory.resty.clients.warehouse"
 func init() {
 	factory.ConfigAdd(warehouseClientRoot)
 	logplugin.ConfigAdd(warehouseClientRoot + ".plugins.log")
+	otelplugin.ConfigAdd(warehouseClientRoot + ".plugins.otel")
 }
 
 var warehouseClientOnce sync.Once
 
 // WarehouseClientModule provides the warehouse client (*github.com/go-resty/resty/v2.Client), built from the keys under
-// boost.factory.resty.clients.warehouse with the plugins log.
+// boost.factory.resty.clients.warehouse with the plugins log, otel.
 // It returns an empty option after the first call, so every consumer can
 // include it.
 func WarehouseClientModule() fx.Option {
@@ -35,6 +38,7 @@ func WarehouseClientModule() fx.Option {
 	warehouseClientOnce.Do(func() {
 		options = fx.Module("github.com/go-resty/resty/v2.WarehouseClient",
 			contextfx.Module(),
+			otelfx.Module(),
 			fx.Provide(fx.Annotate(newWarehouseClient, fx.ResultTags(`name:"warehouse"`))),
 		)
 	})
@@ -47,5 +51,9 @@ func newWarehouseClient(ctx context.Context) (*client.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return factory.NewClientWithConfigPath(ctx, warehouseClientRoot, log.Register)
+	otel, err := otelplugin.NewOtelrestyWithConfigPath(warehouseClientRoot + ".plugins.otel")
+	if err != nil {
+		return nil, err
+	}
+	return factory.NewClientWithConfigPath(ctx, warehouseClientRoot, log.Register, otel.Register)
 }

@@ -115,6 +115,7 @@ Every switch is a config key; the env var is the key in upper case with `_`.
 | `BOOST_WRAPPER_PUBLISHER_DRIVER_NAME=nats` | announce `stock.reserved` on NATS (`BOOST_FACTORY_NATS_URL`) |
 | `WORKER_FUNCTION_ADAPTER=nats` | the worker reads `order.created` from NATS (`BOOST_BOOTSTRAP_FUNCTION_ADAPTER_NATS_SUBJECTS`) |
 | `BOOST_FACTORY_ECHO_PLUGINS_PROMETHEUS_ENABLED=false` | turns one plugin of a server off; the others stay |
+| `BOOST_FACTORY_OTEL_ENDPOINT=collector:4317` | where the worker exports its traces and metrics (default `localhost:4317`): the `otel` plugin of its cloudevents `@Server` starts the OpenTelemetry providers |
 | `INTERNAL_APP_STOCKCHECK_JOB_STOCK_CHECKER_SKUS=tshirt,mug` | the skus the job checks |
 
 ## Where each resource is

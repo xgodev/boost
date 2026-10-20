@@ -74,6 +74,9 @@ type functionMiddleware struct {
 	// Needs are the unnamed values the middleware is built with, provided
 	// by the app.
 	Needs []typeRef
+	// OTel is set for a middleware that reports to the OpenTelemetry
+	// providers: the function door starts them.
+	OTel bool
 }
 
 var (
@@ -115,6 +118,7 @@ var (
 			Module: inject.ImportData{Alias: "opentelemetryfx", Path: fxMiddlewareRoot + "/opentelemetry"},
 			Pkg:    inject.ImportData{Alias: "opentelemetrymw", Path: middlewareRoot + "/go.opentelemetry.io/otel/v1"},
 			Type:   "OpenTelemetry",
+			OTel:   true,
 		},
 		"prometheus": {
 			Module: inject.ImportData{Alias: "prometheusfx", Path: fxMiddlewareRoot + "/prometheus"},
