@@ -146,7 +146,8 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   that reads with a client (`nats`, `cenats`, `pubsub`), else `NotValid`.
   The pubsub v1 adapter keeps its own client.
 - With a list, `adapter=[pubsub, nats]`, config chooses the adapter:
-  `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`), default the first
+  `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`; see
+  [App names](#app-names) for a kebab-case app), default the first
   name. The door includes only the chosen adapter module, so the others and
   their clients are never built; an unknown name fails the boot with
   `NotValid` naming the key, the value and the valid names. The adapters'
@@ -208,9 +209,25 @@ func New() Service { return &memory{} }
   every implementation may carry its own `@Middleware` of the same
   interface.
 
-App and server names match `^[a-z][a-z0-9]*$` (they become a package, a file,
-a function and a config path); an app is not a Go keyword, `main` or
-`middleware`, and a server is not `function`.
+### App names
+
+An app name is kebab case, as deploys are named: it matches
+`^[a-z][a-z0-9]*(-[a-z0-9]+)*$`, is not `middleware` and, without its
+hyphens, is not a Go keyword or `main`. It maps to:
+
+| App | `cmd/` and `gen/builder/` directory, binary | Go package | Config path element | Env prefix |
+|---|---|---|---|---|
+| `api` | `api` | `api` | `api` | `API_` |
+| `orders-updater` | `orders-updater` | `ordersupdater` | `ordersUpdater` | `ORDERS__UPDATER_` |
+
+The config element is camelCase because the env loader reads a `__` as the
+hyphen of a camelCase word: `ORDERS__UPDATER_FUNCTION_ADAPTER=nats` sets
+`ordersUpdater.function.adapter`, `ORDERS__UPDATER_SERVER_ADMIN_PORT` sets
+`ordersUpdater.server.admin.port`. The generated main imports the package
+under the alias `app`.
+
+A server name matches `^[a-z][a-z0-9]*$` (it becomes a file, a function and
+a config path element) and is not `function`.
 
 ## Generating
 
@@ -377,22 +394,23 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
   sold-out items from its `@Config Options`
   (`builder.examples.simple.stock.memory.soldOut`, env
   `BUILDER_EXAMPLES_SIMPLE_STOCK_MEMORY_SOLD__OUT`, default `sold-out`);
-- `worker`: the `ordercreated` function on the cloudevents, the nats or the
-  pubsub adapter, chosen by `worker.function.adapter` (`WORKER_FUNCTION_ADAPTER`,
-  default `cloudevents`), behind the `recovery` and `logger` middlewares; its
-  handler injects the publisher with `drivers=[nats, pubsub]`, so the worker
-  links no Kafka client.
+- `order-worker`: the `ordercreated` function on the cloudevents, the nats or
+  the pubsub adapter, chosen by `orderWorker.function.adapter`
+  (`ORDER__WORKER_FUNCTION_ADAPTER`, default `cloudevents`), behind the
+  `recovery` and `logger` middlewares; its handler injects the publisher with
+  `drivers=[nats, pubsub]`, so the worker links no Kafka client. Its package
+  is `gen/builder/order-worker`, package `orderworker`.
 
-`cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
+`cmd/api/main.go` and `cmd/order-worker/main.go` are generated. Its tests call the
 routes, the gRPC service and the MCP tool of the generated app, check that the handler
 receives the stock decorator and that prometheus counted its call, boot the
 api with `unlimited` (wired without the decorator), with an unknown name
 (the boot fails) and with `SOLD__OUT=book,pen` (the env replaces the
 default list), run the function handler, boot the worker with each adapter
 (nats on an embedded server) and with an unknown one (the boot fails), run
-the generated main with only `WORKER_FUNCTION_ADAPTER=nats` until it records
+the generated main with only `ORDER__WORKER_FUNCTION_ADAPTER=nats` until it records
 an order published on NATS and then send it SIGTERM (it exits 0 within a
-second), run it with only `WORKER_FUNCTION_ADAPTER=pubsub`, v2 and v1, against
+second), run it with only `ORDER__WORKER_FUNCTION_ADAPTER=pubsub`, v2 and v1, against
 a `pstest` fake until it records a CloudEvent and a raw message, stays up
 and exits 0 on SIGTERM, and with no subscription (the boot fails naming it),
 build the worker and check with `go version -m` that it has no

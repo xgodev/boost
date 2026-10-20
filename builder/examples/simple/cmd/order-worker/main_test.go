@@ -24,7 +24,7 @@ import (
 	natsadapter "github.com/xgodev/boost/bootstrap/function/adapter/contrib/nats-io/nats.go/v1"
 	"github.com/xgodev/boost/bootstrap/function/middleware/logger"
 	"github.com/xgodev/boost/bootstrap/function/middleware/recovery"
-	"github.com/xgodev/boost/builder/examples/simple/gen/builder/worker"
+	orderworker "github.com/xgodev/boost/builder/examples/simple/gen/builder/order-worker"
 	"github.com/xgodev/boost/builder/examples/simple/order"
 	"github.com/xgodev/boost/builder/examples/simple/ordercreated"
 	"github.com/xgodev/boost/extra/middleware"
@@ -52,7 +52,7 @@ func event(t *testing.T, data any) cloudevents.Event {
 	return in
 }
 
-// TestWorker builds app worker from the generated Modules() and calls the
+// TestWorker builds app order-worker from the generated Modules() and calls the
 // function handler it provides, as the adapter does for each event.
 func TestWorker(t *testing.T) {
 	var (
@@ -60,7 +60,7 @@ func TestWorker(t *testing.T) {
 		svc         *order.Service
 		middlewares []middleware.AnyErrorMiddleware[*cloudevents.Event]
 	)
-	app := fx.New(append(worker.Modules(), fx.NopLogger, fx.Populate(&handle, &svc),
+	app := fx.New(append(orderworker.Modules(), fx.NopLogger, fx.Populate(&handle, &svc),
 		fx.Invoke(fx.Annotate(
 			func(m []middleware.AnyErrorMiddleware[*cloudevents.Event]) { middlewares = m },
 			fx.ParamTags(`name:"`+functionfx.MiddlewaresName+`"`),
@@ -85,9 +85,10 @@ func TestWorker(t *testing.T) {
 }
 
 const (
-	// adapterEnv chooses the adapter of the @Function of app worker
-	// (worker.function.adapter, generated for adapter=[cloudevents, nats, pubsub]).
-	adapterEnv = "WORKER_FUNCTION_ADAPTER"
+	// adapterEnv chooses the adapter of the @Function of app order-worker
+	// (orderWorker.function.adapter, generated for adapter=[cloudevents, nats,
+	// pubsub]): the "__" of the variable is the hyphen of the app name (#242).
+	adapterEnv = "ORDER__WORKER_FUNCTION_ADAPTER"
 	// driverEnv chooses the driver of the publisher the handler announces
 	// with (boost.wrapper.publisher.clients.orders.driver.name): the
 	// publisher and the function share the orders clients.
@@ -101,7 +102,7 @@ const (
 	childEnv     = "BUILDER_EXAMPLE_CHILD"
 )
 
-// TestWorkerAdapter boots app worker in a new process per adapter and
+// TestWorkerAdapter boots app order-worker in a new process per adapter and
 // publisher driver: config is read once per process. The function reads
 // from the broker the handler announces to, or from another one; the nats
 // and pubsub clients connect to a NATS server and a Pub/Sub fake this test
@@ -140,7 +141,7 @@ func TestWorkerAdapter(t *testing.T) {
 // main instead of the tests.
 const mainEnv = "BUILDER_EXAMPLE_MAIN"
 
-// TestMain_BadConfigExitsWithTheReason runs the generated main of app worker
+// TestMain_BadConfigExitsWithTheReason runs the generated main of app order-worker
 // with an unknown adapter and every log level at its default: the process
 // exits non-zero and says why, so a pod that restarts shows its reason.
 func TestMain_BadConfigExitsWithTheReason(t *testing.T) {
@@ -151,11 +152,11 @@ func TestMain_BadConfigExitsWithTheReason(t *testing.T) {
 	var exit *exec.ExitError
 	require.ErrorAs(t, err, &exit, "the main must fail: %s", out)
 	assert.NotZero(t, exit.ExitCode())
-	assert.Contains(t, string(out), "worker.function.adapter")
+	assert.Contains(t, string(out), "orderWorker.function.adapter")
 	assert.Contains(t, string(out), `unknown adapter "nope"`)
 }
 
-// TestMain_LinksOnlyTheDriversItUses builds the generated main of app worker,
+// TestMain_LinksOnlyTheDriversItUses builds the generated main of app order-worker,
 // whose handler injects the publisher with drivers=[nats, pubsub] (#207): the
 // binary has no confluent-kafka-go, so it needs no librdkafka nor cgo for it.
 func TestMain_LinksOnlyTheDriversItUses(t *testing.T) {
@@ -185,15 +186,15 @@ func TestMain_UnknownDriverListsTheGenerated(t *testing.T) {
 	assert.Contains(t, string(out), `unknown driver "kafka"; valid: nats, noop, pubsub`)
 }
 
-// TestMain_RunsTheChosenAdapter runs the generated main of app worker with
-// only WORKER_FUNCTION_ADAPTER=nats set (#203): no CLI argument and no
+// TestMain_RunsTheChosenAdapter runs the generated main of app order-worker with
+// only ORDER__WORKER_FUNCTION_ADAPTER=nats set (#203): no CLI argument and no
 // boost.bootstrap.function.default. The worker subscribes and records the
 // order this test publishes.
 func TestMain_RunsTheChosenAdapter(t *testing.T) {
 	recordOrder(t)
 }
 
-// TestMain_StopsOnSIGTERM sends SIGTERM to the generated main of app worker
+// TestMain_StopsOnSIGTERM sends SIGTERM to the generated main of app order-worker
 // after it recorded an order (#204): the nats adapter drains and returns, so
 // the worker exits 0 within a second instead of waiting the fx stop timeout.
 func TestMain_StopsOnSIGTERM(t *testing.T) {
@@ -208,8 +209,8 @@ func TestMain_StopsOnSIGTERM(t *testing.T) {
 	}
 }
 
-// recordOrder runs the generated main of app worker with only
-// WORKER_FUNCTION_ADAPTER=nats on an embedded server, publishes an order until
+// recordOrder runs the generated main of app order-worker with only
+// ORDER__WORKER_FUNCTION_ADAPTER=nats on an embedded server, publishes an order until
 // the worker records it, and returns the running worker, its output and the
 // channel its exit goes to.
 func recordOrder(t *testing.T) (*exec.Cmd, *syncBuffer, <-chan error) {
@@ -284,8 +285,8 @@ func pubsubFake(t *testing.T, sub string) (*pstest.Server, *pubsub.Topic) {
 	return fake, topic
 }
 
-// startPubsubWorker runs the generated main of app worker with only
-// WORKER_FUNCTION_ADAPTER=pubsub (plus env) against fake, and returns it,
+// startPubsubWorker runs the generated main of app order-worker with only
+// ORDER__WORKER_FUNCTION_ADAPTER=pubsub (plus env) against fake, and returns it,
 // its output and the channel its exit goes to.
 func startPubsubWorker(t *testing.T, fake *pstest.Server, env ...string) (*exec.Cmd, *syncBuffer, <-chan error) {
 	t.Helper()
@@ -301,7 +302,7 @@ func startPubsubWorker(t *testing.T, fake *pstest.Server, env ...string) (*exec.
 	return cmd, out, exited
 }
 
-// TestMain_HandlesPubSubMessages runs the generated main of app worker on
+// TestMain_HandlesPubSubMessages runs the generated main of app order-worker on
 // the pubsub adapter, v2 and v1 (#205): it boots, stays up, records the
 // order of a CloudEvent and of a raw message (wrapped as the event data),
 // and exits 0 on SIGTERM.
@@ -417,7 +418,7 @@ func TestWorkerAdapterChild(t *testing.T) {
 		adapters []function.CmdFunc[*cloudevents.Event]
 		handle   function.Handler[*cloudevents.Event]
 	)
-	app := fx.New(append(worker.Modules(), fx.NopLogger, fx.Populate(&handle),
+	app := fx.New(append(orderworker.Modules(), fx.NopLogger, fx.Populate(&handle),
 		fx.Invoke(fx.Annotate(
 			func(a []function.CmdFunc[*cloudevents.Event]) { adapters = a },
 			fx.ParamTags(`group:"`+functionfx.BSFunctionAdaptersGroupKey+`"`),
@@ -435,7 +436,7 @@ func TestWorkerAdapterChild(t *testing.T) {
 	default:
 		require.Error(t, app.Err(), "an unknown adapter fails the boot")
 		assert.True(t, errors.IsNotValid(app.Err()), "got %v", app.Err())
-		assert.Contains(t, app.Err().Error(), "worker.function.adapter")
+		assert.Contains(t, app.Err().Error(), "orderWorker.function.adapter")
 		assert.Contains(t, app.Err().Error(), `"`+value+`"`)
 		assert.Contains(t, app.Err().Error(), "cloudevents, nats, pubsub")
 	}

@@ -8,6 +8,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/gobeam/stringy"
 	"github.com/xgodev/boost/annotation"
 	"github.com/xgodev/boost/inject"
 	"github.com/xgodev/boost/model/errors"
@@ -136,8 +137,13 @@ var (
 	// names, reached from an environment variable.
 	clientName = regexp.MustCompile(`^[a-z][a-zA-Z0-9]*$`)
 
-	// identName is the form of app and server names: they become a package,
-	// a file and a function name and a config path element.
+	// appName is the form of app names, kebab case as deploys are named:
+	// the directory of cmd/<app> and gen/builder/<app>; without the hyphens
+	// it is the package name (appPackage), in camelCase the config path
+	// element (configName).
+	appName = regexp.MustCompile(`^[a-z][a-z0-9]*(-[a-z0-9]+)*$`)
+	// identName is the form of server names: they become a file and a
+	// function name and a config path element.
 	identName = regexp.MustCompile(`^[a-z][a-z0-9]*$`)
 	// toolName is the form of an MCP tool name.
 	toolName = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,128}$`)
@@ -193,14 +199,29 @@ func parseList(raw, where, key string) ([]string, error) {
 }
 
 func validateNames(ann, where, app, server string) error {
-	// the app name is the package name of gen/builder/<app>
-	if !identName.MatchString(app) || token.IsKeyword(app) || app == "main" || app == middlewareDir {
-		return errors.NotValidf("@%s on %s: app name %q must match %s and not be a Go keyword, main or %s", ann, where, app, identName, middlewareDir)
+	// without its hyphens, the app name is the package name of gen/builder/<app>
+	if pkg := appPackage(app); !appName.MatchString(app) || token.IsKeyword(pkg) || pkg == "main" || app == middlewareDir {
+		return errors.NotValidf("@%s on %s: app name %q must match %s, not be %s and, without its hyphens, not be a Go keyword or main",
+			ann, where, app, appName, middlewareDir)
 	}
 	if server != "" && (!identName.MatchString(server) || server == functionFile) {
 		return errors.NotValidf("@%s on %s: server name %q must match %s and not be %q", ann, where, server, identName, functionFile)
 	}
 	return nil
+}
+
+// appPackage is the Go package of gen/builder/<app>: the app name without
+// its hyphens, orders-updater is ordersupdater.
+func appPackage(app string) string {
+	return strings.ReplaceAll(app, "-", "")
+}
+
+// configName is the config path element of an app: orders-updater is
+// ordersUpdater, the key boost's env loader reads ORDERS__UPDATER_X into
+// (wrapper/config/contrib/knadh/koanf/v1 camel-cases a "__" word the same
+// way). A hyphenated key could not be set by an environment variable.
+func configName(app string) string {
+	return stringy.New(stringy.New(app).CamelCase().Get()).LcFirst()
 }
 
 // snakeCase turns a Go name into a tool name: CheckStock is check_stock and

@@ -114,6 +114,73 @@ func TestGenerator_RenderIsStable(t *testing.T) {
 	assert.Equal(t, first, second, "the order of the annotations does not change the output")
 }
 
+// TestGenerator_RenderKebabApp checks an app named in kebab case, as deploys
+// are (#242): cmd/<app> and gen/builder/<app> keep the hyphens, the Go
+// package drops them and the config path element is camelCase, the key an
+// environment variable reaches (ORDERS__UPDATER_FUNCTION_ADAPTER is
+// ordersUpdater.function.adapter).
+func TestGenerator_RenderKebabApp(t *testing.T) {
+	entries := []annotation.Entry{
+		decl("probe", "", "Live", echoHandler, errResult, ann("REST", "method=GET, path=/live, server=admin, app=orders-updater")),
+		decl("events", "", "New", nil, []string{"Handler"}, ann("Provide", "index=0")),
+		decl("events", "Handler", "Handle", eventParams, eventResults, ann("Function", "adapter=[pubsub, nats], app=orders-updater")),
+	}
+	spec, err := newTestSpec(t, entries)
+	require.NoError(t, err)
+	require.Len(t, spec.Apps, 1)
+	assert.Equal(t, "orders-updater", spec.Apps[0].Name)
+
+	gen := NewGenerator(spec, testOptions("/src/app"))
+	files, err := gen.Render(context.Background())
+	require.NoError(t, err)
+	mains, err := gen.RenderCmd(context.Background())
+	require.NoError(t, err)
+	for name, src := range mains {
+		files["cmd/"+name] = src
+	}
+
+	assert.Equal(t, []string{
+		"builder/orders-updater/admin_module.go",
+		"builder/orders-updater/function_module.go",
+		"builder/orders-updater/modules.go",
+		"cmd/orders-updater/main.go",
+	}, fileNames(files))
+
+	for name, src := range files {
+		assertImportsUsed(t, name, src)
+		if strings.HasPrefix(name, "builder/") {
+			assert.Contains(t, string(src), "\npackage ordersupdater\n", name)
+		}
+
+		golden := filepath.Join("testdata", "golden", "kebab", path.Base(name)+".golden")
+		if *update {
+			require.NoError(t, os.MkdirAll(filepath.Dir(golden), 0o755))
+			require.NoError(t, os.WriteFile(golden, src, 0o644))
+			continue
+		}
+		want, err := os.ReadFile(golden)
+		require.NoError(t, err, "run go test ./builder/ -run TestGenerator_RenderKebabApp -update")
+		assert.Equal(t, string(want), string(src), name)
+	}
+	assert.Contains(t, string(files["builder/orders-updater/admin_module.go"]), `"ordersUpdater.server.admin"`)
+	assert.Contains(t, string(files["builder/orders-updater/function_module.go"]), `"ordersUpdater.function.adapter"`)
+	assert.Contains(t, string(files["cmd/orders-updater/main.go"]), `app "example.com/app/gen/builder/orders-updater"`)
+}
+
+// TestConfigName checks that the config path element of an app is the key
+// boost's env loader reads from its environment variable: hyphens become
+// camelCase, as ORDERS__UPDATER_X reaches ordersUpdater.x.
+func TestConfigName(t *testing.T) {
+	for app, want := range map[string]string{
+		"api":            "api",
+		"orders-updater": "ordersUpdater",
+		"orders-v2-api":  "ordersV2Api",
+		"orders-2":       "orders2",
+	} {
+		assert.Equal(t, want, configName(app), app)
+	}
+}
+
 // TestGenerator_RenderFunctionAdapterList checks the function door of an
 // adapter list: the key that chooses the adapter and the switch that wires
 // only the chosen one. A single adapter renders as in TestGenerator_Render.

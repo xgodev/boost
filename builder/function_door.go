@@ -57,7 +57,7 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 	// a list of adapters: config chooses one, and only its module is wired
 	names := fn.Adapters()
 	sw := &adapterSwitch{
-		Key:    app + "." + functionFile + ".adapter",
+		Key:    configName(app) + "." + functionFile + ".adapter",
 		Names:  strings.Join(names, ", "),
 		Config: imps.add("config", wrapperConfigPath),
 		Errors: imps.add("errors", errorsPath),

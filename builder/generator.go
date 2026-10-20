@@ -161,7 +161,7 @@ func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 
 	files := map[string][]byte{}
 	for _, app := range g.spec.Apps {
-		mods := modulesData{Header: generatedHeader, Package: app.Name, Servers: len(app.Servers) > 0}
+		mods := modulesData{Header: generatedHeader, App: app.Name, Package: appPackage(app.Name), Servers: len(app.Servers) > 0}
 
 		var doors []doorData
 		for _, srv := range app.Servers {
@@ -224,7 +224,8 @@ func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 func door(app, name, doc string) doorData {
 	return doorData{
 		Header:  generatedHeader,
-		Package: app,
+		App:     app,
+		Package: appPackage(app),
 		Var:     name,
 		Func:    strings.ToUpper(name[:1]) + name[1:],
 		Doc:     doc,
@@ -251,7 +252,7 @@ func isDefault(srv Server) bool {
 
 // configPath is the config path of a named server.
 func configPath(srv Server) string {
-	return srv.App + ".server." + srv.Name
+	return configName(srv.App) + ".server." + srv.Name
 }
 
 func serverDoor(base string, srv Server) (doorData, error) {
