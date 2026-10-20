@@ -12,11 +12,12 @@ generated main, whose `boost.Start` loads the config and sets the logger.
 
 [`stock`](stock) is the complete one: a stock with reservation that uses
 every resource it can — REST, gRPC and MCP doors, a CloudEvents/NATS
-function, service middlewares (log, prometheus), a memory or MongoDB
-repository, a resty client, the publisher and `@Config` options, each
-switched by config. A resource that lands in boost is added to it in the
-same PR. Open `examples/stock` in GoLand and run `cmd/api` and `cmd/worker`
-as its `doc.go` says.
+function, a job, `@Server` plugins, service middlewares (log, prometheus), a
+memory, MongoDB or Oracle repository, a resty client, the publisher and
+`@Config` options, each switched by config. A resource that lands in boost
+is added to it in the same PR. Its [`README.md`](stock/README.md) says how to
+run each app, the calls with what they answer, the config switches and which
+file shows each resource.
 
 ## Where they are
 
@@ -43,6 +44,7 @@ model) is infrastructure and lives under `internal/pkg/server/<transport>/`.
 
 ```
 doc.go                       # the package doc, how to run it, //go:generate
+README.md                    # when the example is one to hand over: run, call, config, files
 configs/config.yaml          # when the example needs settings
 cmd/<app>/main.go            # generated
 cmd/<app>/main_test.go       # runs the app in process

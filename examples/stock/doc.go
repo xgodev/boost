@@ -26,7 +26,7 @@
 //	CONF=configs/worker.yaml go run ./cmd/worker
 //	INTERNAL_APP_STOCKCHECK_JOB_STOCK_CHECKER_SKUS=tshirt,mug go run ./cmd/stock-check
 //
-// and call it:
+// and call it (README.md shows what each call answers):
 //
 //	curl localhost:8080/stocks/tshirt
 //	curl -XPOST localhost:8080/stocks -d '{"sku":"cap","units":2}' -H 'Content-Type: application/json'
