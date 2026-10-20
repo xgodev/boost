@@ -36,6 +36,8 @@ const (
 	contextFxPath     = "github.com/xgodev/boost/fx/modules/core/context"
 	functionPath      = "github.com/xgodev/boost/bootstrap/function"
 	functionFxPath    = "github.com/xgodev/boost/fx/modules/bootstrap/function"
+	jobPath           = "github.com/xgodev/boost/bootstrap/job"
+	jobFxPath         = "github.com/xgodev/boost/fx/modules/bootstrap/job"
 	publisherPath     = "github.com/xgodev/boost/wrapper/publisher"
 	wrapperConfigPath = "github.com/xgodev/boost/wrapper/config"
 	errorsPath        = "github.com/xgodev/boost/model/errors"
@@ -52,7 +54,7 @@ type Options struct {
 }
 
 // Generator writes, under OutputDir/builder/<app>, one fx module per door of
-// the app (a REST or gRPC server, or the function) and a modules.go whose
+// the app (a REST, gRPC or MCP server, the function or the job) and a modules.go whose
 // Modules() returns all of them and the decorators of the app's
 // @Middleware, written under OutputDir/builder/middleware/<import path>, and
 // under CmdDir/<app> the main that runs them.
@@ -173,6 +175,13 @@ func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 		}
 		if app.Function != nil {
 			door, err := functionDoor(base, app.Name, *app.Function)
+			if err != nil {
+				return nil, err
+			}
+			doors = append(doors, door)
+		}
+		if app.Job != nil {
+			door, err := jobDoor(base, app.Name, *app.Job)
 			if err != nil {
 				return nil, err
 			}

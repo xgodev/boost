@@ -24,6 +24,7 @@ const (
 	defaultGRPCServer = "grpc"
 	defaultMCPServer  = "mcp"
 	functionFile      = "function"   // the function door of an app is function_module.go
+	jobFile           = "job"        // the job door of an app is job_module.go
 	middlewareDir     = "middleware" // gen/builder/middleware holds the decorators, so no app takes the name
 )
 
@@ -57,6 +58,11 @@ type functionArgs struct {
 	App         string `attr:"app"`
 	Middlewares string `attr:"middlewares"`
 	Client      string `attr:"client"`
+}
+
+// jobArgs are the arguments of @Job(app=sweeper).
+type jobArgs struct {
+	App string `attr:"app"`
 }
 
 // functionMiddleware is a middleware of @Function: the fx module that
@@ -132,6 +138,7 @@ var (
 	grpcKeys     = []string{"register", "server", "app"}
 	mcpKeys      = []string{"name", "server", "app"}
 	functionKeys = []string{"adapter", "app", "middlewares", "client"}
+	jobKeys      = []string{"app"}
 
 	// clientName is the form of the client of @Function: inject's client
 	// names, reached from an environment variable.

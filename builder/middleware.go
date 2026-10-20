@@ -366,6 +366,9 @@ func appRoots(app App) []inject.Component {
 	if app.Function != nil {
 		receiver(app.Function.Handler)
 	}
+	if app.Job != nil {
+		receiver(app.Job.Handler)
+	}
 	return roots
 }
 

@@ -158,6 +158,25 @@ func TestNewSpec_Middleware(t *testing.T) {
 	assert.Empty(t, worker.Middlewares, "worker never builds resty.New")
 }
 
+// TestNewSpec_MiddlewareOfAJob: the receiver of a @Job consumes
+// quote.Service, so its app gets the decorator.
+func TestNewSpec_MiddlewareOfAJob(t *testing.T) {
+	entries := []annotation.Entry{
+		decl("resty", "", "New", nil, []string{"quote.Service"}, ann("Provide", "index=0"), ann("Middleware", "log")),
+		decl("sweep", "", "New", []string{"quote.Service"}, []string{"*Sweeper"}, ann("Provide", "index=0")),
+		decl("sweep", "Sweeper", "Run", []string{"context.Context"}, errResult, ann("Job", "app=quote-sweeper")),
+	}
+	for i := range entries {
+		entries[i].Imports = map[string]string{"quote": quotePath, "context": "context"}
+	}
+
+	spec, err := newMiddlewareSpec(t, entries, middlewareSources)
+	require.NoError(t, err)
+	require.Len(t, spec.Apps, 1)
+	require.Len(t, spec.Apps[0].Middlewares, 1, "the job builds the receiver that consumes quote.Service")
+	assert.Equal(t, restyPath+".New", spec.Apps[0].Middlewares[0].Provider.Key())
+}
+
 func TestNewSpec_MiddlewareWithoutLoader(t *testing.T) {
 	spec, err := newTestSpec(t, validEntries())
 	require.NoError(t, err, "without @Middleware no loader is needed")
