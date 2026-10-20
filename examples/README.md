@@ -38,7 +38,8 @@ as its `doc.go` says.
 
 The layout is the one of an xgodev service: the handler calls a service, the
 service a repository or client, and the domain imports neither transport nor
-persistence.
+persistence. What a server needs besides its handlers (its plugins, the REST
+model) is infrastructure and lives under `internal/pkg/server/<transport>/`.
 
 ```
 doc.go                       # the package doc, how to run it, //go:generate
@@ -48,6 +49,8 @@ cmd/<app>/main_test.go       # runs the app in process
 gen/                         # generated, committed
 gen_test.go                  # fails when gen/ is stale
 internal/app/<app>/<transport>/handler/<entity>/<agent>/handler.go
+internal/pkg/server/<transport>/doc.go                 # @Server: the plugins of the server
+internal/pkg/server/rest/model/<entity>.go             # the JSON model the REST handlers share
 internal/pkg/domain/model/entity/
 internal/pkg/domain/service/<entity>/<agent>/          # interface
 internal/pkg/domain/service/<entity>/<agent>/local/    # implementation

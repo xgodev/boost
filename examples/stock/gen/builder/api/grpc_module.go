@@ -8,12 +8,13 @@ import (
 	"go.uber.org/fx"
 
 	src_stockv1_435579d5 "github.com/xgodev/boost/examples/stock/api/proto/stock/v1"
-	gen_grpc_4613e401 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/grpc"
 	gen_finder_e709eb60 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/grpc/handler/stock/finder"
 	gen_reserver_7a871829 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/grpc/handler/stock/reserver"
 	src_finder_e709eb60 "github.com/xgodev/boost/examples/stock/internal/app/api/grpc/handler/stock/finder"
 	src_reserver_7a871829 "github.com/xgodev/boost/examples/stock/internal/app/api/grpc/handler/stock/reserver"
 	grpcserver "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
+	grpcprometheus "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server/plugins/contrib/prometheus/client_golang/v1"
+	grpclog "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server/plugins/local/wrapper/log"
 	grpcfx "github.com/xgodev/boost/fx/modules/factory/contrib/google.golang.org/grpc/v1/server"
 )
 
@@ -27,9 +28,14 @@ func GrpcModule() fx.Option {
 	grpcOnce.Do(func() {
 		options = fx.Module("api.grpc",
 			grpcfx.Module(),
+			fx.Provide(func() []grpcserver.Plugin {
+				return []grpcserver.Plugin{
+					grpclog.Register,
+					grpcprometheus.Register,
+				}
+			}),
 			gen_finder_e709eb60.NewModule(),
 			gen_reserver_7a871829.NewModule(),
-			gen_grpc_4613e401.PluginsModule(),
 			fx.Invoke(func(srv *grpcserver.Server, s0 *src_finder_e709eb60.Handler, s1 *src_reserver_7a871829.Handler) {
 				src_stockv1_435579d5.RegisterStockFinderServer(srv.ServiceRegistrar(), s0)
 				src_stockv1_435579d5.RegisterStockReserverServer(srv.ServiceRegistrar(), s1)

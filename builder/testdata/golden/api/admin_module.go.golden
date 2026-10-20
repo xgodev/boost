@@ -11,6 +11,11 @@ import (
 	src_probe_abc16892 "example.com/app/probe"
 	multiserver "github.com/xgodev/boost/extra/multiserver"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
+	echoerrorhandler "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
+	echohealth "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
+	echologger "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/wrapper/log"
+	echorecover "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/recover"
+	echorequestid "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/requestid"
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
 )
 
@@ -42,6 +47,20 @@ func AdminModule() fx.Option {
 					},
 					fx.ParamTags(`name:"admin"`),
 					fx.ResultTags(`group:"extra.multiserver.servers"`),
+				),
+			),
+			fx.Provide(
+				fx.Annotate(
+					func() []boostecho.Plugin {
+						return []boostecho.Plugin{
+							echorecover.Register,
+							echorequestid.Register,
+							echologger.Register,
+							echoerrorhandler.Register,
+							echohealth.Register,
+						}
+					},
+					fx.ResultTags(`name:"admin"`),
 				),
 			),
 			fx.Invoke(fx.Annotate(

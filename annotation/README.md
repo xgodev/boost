@@ -60,13 +60,14 @@ for _, entry := range collector.EntriesWith("RestRouter") {
 |---|---|
 | `WithPath(dir)` | Scans the packages under `dir` as `go list ./...` sees them from there: hidden (`.`), `_`, `testdata` and `vendor` directories are skipped. The packages they import are scanned too. |
 | `WithFilters(names...)` | Keeps only annotations whose name starts with one of the filters: `Rest` keeps `@Rest`, `@RestRouter` and `@RestResponse`. Without it, every annotation is kept. |
+| `WithPackageDocs()` | Also collects the annotations of package doc comments: one entry per file whose package doc has one. Without it, only declarations are collected. |
 | `WithPackages(paths...)` | Scans only these import paths and the packages below them, both under the path and among their imports. The imports of a package that is not scanned are not followed. Without it, every non-standard-library package reached is scanned. |
 
 Standard library packages are never scanned.
 
 ### Entries
 
-Each `Entry` is an annotated struct type, method or function:
+Each `Entry` is an annotated struct type, method, function or package doc:
 
 - `IsStruct()`: a struct type. Interfaces and other non-struct types are not reported.
   `Fields` lists its fields in order, one per name (`A, B string` is two), with
@@ -75,6 +76,9 @@ Each `Entry` is an annotated struct type, method or function:
 - `IsMethod()`: a method, with `Struct` set to its receiver type (`T`, `*T` or a
   generic `T[K]`), wherever in the package the type is declared.
 - `IsFunc()`: a package-level function.
+- `IsPackage()`: the package doc comment of a file (`// Package x ...` above
+  `package x`), only with `WithPackageDocs()`. `Struct` and `Func` are empty and
+  `Header.Title` drops the leading `Package x`.
 
 `Path` is the import path, `Package` the package name, `Module` the module path
 and `File` the base name of the file that declares it. `Header.Title` is the first

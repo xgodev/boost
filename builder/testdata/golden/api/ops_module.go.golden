@@ -12,6 +12,7 @@ import (
 	mcp "github.com/modelcontextprotocol/go-sdk/mcp"
 	multiserver "github.com/xgodev/boost/extra/multiserver"
 	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
+	mcplog "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server/plugins/local/wrapper/log"
 	contextfx "github.com/xgodev/boost/fx/modules/core/context"
 )
 
@@ -43,6 +44,16 @@ func OpsModule() fx.Option {
 					},
 					fx.ParamTags(`name:"ops"`),
 					fx.ResultTags(`group:"extra.multiserver.servers"`),
+				),
+			),
+			fx.Provide(
+				fx.Annotate(
+					func() []mcpserver.Plugin {
+						return []mcpserver.Plugin{
+							mcplog.Register,
+						}
+					},
+					fx.ResultTags(`name:"ops"`),
 				),
 			),
 			fx.Invoke(fx.Annotate(

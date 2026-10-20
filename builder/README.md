@@ -239,6 +239,75 @@ func New() Service { return &memory{} }
   every implementation may carry its own `@Middleware` of the same
   interface.
 
+### `@Server`: the plugins of a server
+
+```go
+// Package rest holds what the REST server of the app is built with.
+// @Server(type=rest, plugins=[recover, requestId, logger, errorHandler, health, prometheus])
+package rest
+```
+
+- It goes in a package doc, above the `package` clause (a `doc.go`):
+  everything of a server lives in its own package,
+  `internal/pkg/server/<transport>/`. On a declaration it fails.
+- `type` (required) is the server type, one of `rest`, `grpc`, `mcp` and
+  `cloudevents` (the http adapter of `@Function`). Each type has its own
+  plugins; a new server type is a new row of this table, not a new
+  annotation.
+- `name` is the server (default: `rest`, `grpc` or `mcp`, the type's shipped
+  server; any other is a named server, see [Servers](#servers)) and `app`
+  its app (default `api`). `cloudevents` takes no `name`: its plugins go to
+  the `@Function` of `app` when it runs with that adapter.
+- `plugins` lists the plugins in order, none twice; `plugins=[]` builds the
+  server without any. Without `plugins`, and for a server with no `@Server`
+  at all, it gets the default set (the plugins marked below).
+- The door imports each plugin and provides the `[]Plugin` of the server
+  (the unnamed one of the shipped module, or the one named after the
+  server), so the app writes no plugin code. Config only turns one off:
+  `<plugins root>.<name>.enabled` (default `true`), as
+  `boost.factory.echo.plugins.prometheus.enabled`.
+
+| `rest` | Plugin (`boost.factory.echo.plugins.<name>`) | Default |
+|---|---|---|
+| `recover` | [`native/recover`](../factory/contrib/labstack/echo/v4/plugins/native/recover) | yes |
+| `requestId` | [`native/requestid`](../factory/contrib/labstack/echo/v4/plugins/native/requestid) | yes |
+| `logger` | [`local/wrapper/log`](../factory/contrib/labstack/echo/v4/plugins/local/wrapper/log) | yes |
+| `errorHandler` | [`extra/error_handler`](../factory/contrib/labstack/echo/v4/plugins/extra/error_handler) | yes |
+| `health` | [`local/extra/health`](../factory/contrib/labstack/echo/v4/plugins/local/extra/health) | yes |
+| `prometheus` | [`contrib/prometheus/client_golang/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1) |  |
+| `otel` | [`contrib/go.opentelemetry.io/contrib/v0`](../factory/contrib/labstack/echo/v4/plugins/contrib/go.opentelemetry.io/contrib/v0) |  |
+| `datadog` | [`contrib/datadog/dd-trace-go/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/datadog/dd-trace-go/v1) |  |
+| `pprof` | [`contrib/hiko1129/echo-pprof/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/hiko1129/echo-pprof/v1) |  |
+| `swagger` | [`contrib/swaggo/echo-swagger/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/swaggo/echo-swagger/v1) |  |
+| `cors` | [`native/cors`](../factory/contrib/labstack/echo/v4/plugins/native/cors) |  |
+| `gzip` | [`native/gzip`](../factory/contrib/labstack/echo/v4/plugins/native/gzip) |  |
+| `bodyLimit` | [`native/bodylimit`](../factory/contrib/labstack/echo/v4/plugins/native/bodylimit) |  |
+| `bodydump` | [`native/bodydump`](../factory/contrib/labstack/echo/v4/plugins/native/bodydump) |  |
+| `semaphore` | [`extra/semaphore`](../factory/contrib/labstack/echo/v4/plugins/extra/semaphore) |  |
+| `status` | [`local/model/restresponse`](../factory/contrib/labstack/echo/v4/plugins/local/model/restresponse) |  |
+| `multiServer` | [`local/extra/multi-server`](../factory/contrib/labstack/echo/v4/plugins/local/extra/multi-server) |  |
+| `bytedanceSonic` | [`contrib/bytedance/sonic/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/bytedance/sonic/v1) |  |
+| `goccyGoJson` | [`contrib/goccy/go-json/v0`](../factory/contrib/labstack/echo/v4/plugins/contrib/goccy/go-json/v0) |  |
+
+| `grpc` | Plugin (`boost.factory.grpc.server.plugins.<name>`) | Default |
+|---|---|---|
+| `log` | [`local/wrapper/log`](../factory/contrib/google.golang.org/grpc/v1/server/plugins/local/wrapper/log) | yes |
+| `prometheus` | [`contrib/prometheus/client_golang/v1`](../factory/contrib/google.golang.org/grpc/v1/server/plugins/contrib/prometheus/client_golang/v1) |  |
+| `datadog` | [`contrib/datadog/dd-trace-go/v1`](../factory/contrib/google.golang.org/grpc/v1/server/plugins/contrib/datadog/dd-trace-go/v1) |  |
+| `compressor` | [`native/compressor`](../factory/contrib/google.golang.org/grpc/v1/server/plugins/native/compressor) |  |
+
+| `mcp` | Plugin (`boost.factory.mcp.server.plugins.<name>`) | Default |
+|---|---|---|
+| `log` | [`local/wrapper/log`](../factory/contrib/modelcontextprotocol/go-sdk/v1/server/plugins/local/wrapper/log) | yes |
+| `otel` | [`contrib/go.opentelemetry.io/otel/v1`](../factory/contrib/modelcontextprotocol/go-sdk/v1/server/plugins/contrib/go.opentelemetry.io/otel/v1) |  |
+
+| `cloudevents` | Plugin (`boost.bootstrap.function.adapter.cloudevents.http.plugins.<name>`) | Default |
+|---|---|---|
+| `otel` | [`contrib/go.opentelemetry.io/contrib/v0`](../bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http/plugins/contrib/go.opentelemetry.io/contrib/v0) |  |
+
+- A `@Provide` `[]Plugin` still builds a server (see [Servers](#servers)):
+  that server gets no default set, and a `@Server` for it too fails.
+
 ### App names
 
 An app name is kebab case, as deploys are named: it matches
@@ -325,7 +394,9 @@ fails the generation instead of being overwritten. Other files under `cmd/`
 - Any other name is a separate server configured under
   `<app>.server.<name>` (`api.server.admin.port`): give it its own port.
 - A server name serves one kind of door: REST, gRPC or MCP.
-- Plugins are optional and come from `@Provide`: a `[]boostecho.Plugin`
+- Plugins come from the server's [`@Server`](#server-the-plugins-of-a-server)
+  or, without one, from its default set. A plugin of your own comes from
+  `@Provide` instead: a `[]boostecho.Plugin`
   (REST) or `[]server.Plugin` (gRPC,
   [`grpc/v1/server`](../factory/contrib/google.golang.org/grpc/v1/server);
   MCP, [`go-sdk/v1/server`](../factory/contrib/modelcontextprotocol/go-sdk/v1/server))
@@ -365,6 +436,11 @@ The command fails, without touching the output directory, when:
 - a server is used by two kinds of door;
 - `rest`, `grpc` or `mcp` gets both a `[]Plugin` with `name=<server>` and
   one without `name`: provide one of them;
+- `@Server` is not in a package doc, has no `type`, an unknown one, an
+  unknown or repeated plugin, `name` on `cloudevents`, names a server of
+  another type or one no app has (or an app whose `@Function` does not run
+  `cloudevents`), is repeated for a server, or meets a `@Provide []Plugin`
+  of the same server;
 - an app or server name is invalid, or an annotation has an unknown key;
 - the handler is unexported or in package `main`;
 - `@Middleware` lists no plugin, an unknown one or one twice, is repeated,

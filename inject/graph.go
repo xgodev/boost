@@ -217,6 +217,10 @@ type parsedAnnotation struct {
 // newComponent parses the inject annotations of an entry. It returns false
 // when the entry does not take part in injection.
 func newComponent(entry annotation.Entry) (Component, bool, error) {
+	// a package doc (builder's @Server) holds no constructor nor config
+	if entry.IsPackage() {
+		return Component{}, false, nil
+	}
 	parsed, err := parseAnnotations(entry)
 	if err != nil || len(parsed) == 0 {
 		return Component{}, false, err

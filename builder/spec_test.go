@@ -110,7 +110,7 @@ func TestNewSpec(t *testing.T) {
 	require.Len(t, api.Servers, 5)
 	admin, grpcSrv, mcpSrv, ops, rest := api.Servers[0], api.Servers[1], api.Servers[2], api.Servers[3], api.Servers[4]
 
-	assert.Equal(t, Server{App: "api", Name: "admin", Kind: KindREST, Routes: admin.Routes}, admin)
+	assert.Equal(t, Server{App: "api", Name: "admin", Kind: KindREST, Routes: admin.Routes, Builtin: admin.Builtin}, admin)
 	assert.Equal(t, []string{"GET /live probe.Live", "HEAD /live probe.Live"}, routeNames(admin.Routes))
 	assert.Nil(t, admin.Routes[0].Handler.Receiver, "a package function needs no provider")
 

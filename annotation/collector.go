@@ -23,7 +23,9 @@ type Collector struct {
 	filters  []string
 	pkgs     []string
 	basePath string
-	entries  []Entry
+	// packageDocs also collects the annotations of package doc comments.
+	packageDocs bool
+	entries     []Entry
 	// names maps the import path of every package seen while walking the
 	// import graph to its package name.
 	names map[string]string
@@ -231,7 +233,12 @@ func (c *Collector) filterFiles(p *packages.Package) (entries []Entry) {
 		fileName := filepath.Base(p.Fset.File(file.Pos()).Name())
 		imports := c.fileImports(file)
 
-		for _, ens := range declarations(file) {
+		decls := declarations(file)
+		if c.packageDocs && file.Doc != nil {
+			// the package doc goes first: it is above every declaration
+			decls = append([]Entry{{Comments: getComments(file.Doc)}}, decls...)
+		}
+		for _, ens := range decls {
 			ans, ok := c.getAnnotations(ens.Comments)
 			if !ok {
 				continue
@@ -242,6 +249,9 @@ func (c *Collector) filterFiles(p *packages.Package) (entries []Entry) {
 			}
 			ens.File = fileName
 			ens.Header = parseHeader(name, ens.Comments)
+			if ens.IsPackage() {
+				ens.Header = parseHeader(p.Name, packageDocLines(ens.Comments))
+			}
 			ens.Path = p.PkgPath
 			ens.Module = modName
 			ens.Package = p.Name
@@ -252,6 +262,22 @@ func (c *Collector) filterFiles(p *packages.Package) (entries []Entry) {
 	}
 
 	return entries
+}
+
+// packageDocLines drops the leading "Package" of a package doc, so its
+// title loses the package name like the doc of a declaration loses its name.
+func packageDocLines(cmts []string) []string {
+	lines := append([]string(nil), cmts...)
+	for i, cmt := range lines {
+		if strings.HasPrefix(cmt, annotationPrefix) {
+			continue
+		}
+		if rest, ok := strings.CutPrefix(strings.TrimSpace(strings.TrimPrefix(cmt, "//")), "Package "); ok {
+			lines[i] = "// " + rest
+		}
+		break
+	}
+	return lines
 }
 
 // fileImports maps the name each import has in the file to its path.

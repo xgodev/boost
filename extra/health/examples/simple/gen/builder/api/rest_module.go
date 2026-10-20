@@ -10,6 +10,11 @@ import (
 	gen_checker_96f8be6a "github.com/xgodev/boost/extra/health/examples/simple/gen/internal/app/api/rest/handler/health/checker"
 	src_checker_96f8be6a "github.com/xgodev/boost/extra/health/examples/simple/internal/app/api/rest/handler/health/checker"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
+	echoerrorhandler "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
+	echohealth "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
+	echologger "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/wrapper/log"
+	echorecover "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/recover"
+	echorequestid "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/requestid"
 	echofx "github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4"
 )
 
@@ -23,6 +28,15 @@ func RestModule() fx.Option {
 	restOnce.Do(func() {
 		options = fx.Module("api.rest",
 			echofx.Module(),
+			fx.Provide(func() []boostecho.Plugin {
+				return []boostecho.Plugin{
+					echorecover.Register,
+					echorequestid.Register,
+					echologger.Register,
+					echoerrorhandler.Register,
+					echohealth.Register,
+				}
+			}),
 			gen_checker_96f8be6a.NewModule(),
 			fx.Invoke(func(srv *boostecho.Server, h0 *src_checker_96f8be6a.Handler) {
 				srv.Add("GET", "/health", h0.Handle)

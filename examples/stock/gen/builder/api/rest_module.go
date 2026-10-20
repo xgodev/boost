@@ -7,7 +7,6 @@ import (
 
 	"go.uber.org/fx"
 
-	gen_rest_96067aa4 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/rest"
 	gen_creator_34324f41 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/rest/handler/stock/creator"
 	gen_finder_773dc854 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/rest/handler/stock/finder"
 	gen_reserver_e8b7ca47 "github.com/xgodev/boost/examples/stock/gen/internal/app/api/rest/handler/stock/reserver"
@@ -15,6 +14,12 @@ import (
 	src_finder_773dc854 "github.com/xgodev/boost/examples/stock/internal/app/api/rest/handler/stock/finder"
 	src_reserver_e8b7ca47 "github.com/xgodev/boost/examples/stock/internal/app/api/rest/handler/stock/reserver"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
+	echoprometheus "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1"
+	echoerrorhandler "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
+	echohealth "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
+	echologger "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/wrapper/log"
+	echorecover "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/recover"
+	echorequestid "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/requestid"
 	echofx "github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4"
 )
 
@@ -28,10 +33,19 @@ func RestModule() fx.Option {
 	restOnce.Do(func() {
 		options = fx.Module("api.rest",
 			echofx.Module(),
+			fx.Provide(func() []boostecho.Plugin {
+				return []boostecho.Plugin{
+					echorecover.Register,
+					echorequestid.Register,
+					echologger.Register,
+					echoerrorhandler.Register,
+					echohealth.Register,
+					echoprometheus.Register,
+				}
+			}),
 			gen_creator_34324f41.NewModule(),
 			gen_finder_773dc854.NewModule(),
 			gen_reserver_e8b7ca47.NewModule(),
-			gen_rest_96067aa4.PluginsModule(),
 			fx.Invoke(func(srv *boostecho.Server, h0 *src_creator_34324f41.Handler, h1 *src_finder_773dc854.Handler, h2 *src_reserver_e8b7ca47.Handler) {
 				srv.Add("POST", "/stocks", h0.Handle)
 				srv.Add("GET", "/stocks/:sku", h1.Handle)
