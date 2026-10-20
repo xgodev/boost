@@ -93,7 +93,8 @@ $ curl localhost:8081 -H 'Ce-Id: 1' -H 'Ce-Source: shop' -H 'Ce-Type: order.crea
 ```
 
 Its log says `reserved one tshirt for event 1, 1 left`, and app `api` now
-answers `{"sku":"tshirt","units":1}`.
+answers `{"sku":"tshirt","units":1}`. Ctrl-C (SIGTERM) stops the worker at
+once with exit 0, after it answers the events in hand.
 
 The job:
 
@@ -153,6 +154,8 @@ go test ./...
 `gen/` and `cmd/*/main.go` are generated and committed; `gen_test.go` fails
 when they are stale. `api/proto/stock/v1` is regenerated with the `protoc`
 line of its `doc.go`. The tests run each app in process on the defaults and
-on each switch above; the MongoDB and Oracle ones skip unless
+on each switch above, and send SIGTERM to the generated main of `worker`
+after it reserved over HTTP: it exits 0 within two seconds, with and without
+its `otel` plugin; the MongoDB and Oracle ones skip unless
 `BOOST_FACTORY_MONGO_URI` or `BOOST_FACTORY_GODROR_CONNECTSTRING` points at a
 database.

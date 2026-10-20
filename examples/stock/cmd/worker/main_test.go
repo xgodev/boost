@@ -199,9 +199,24 @@ func TestMain_ExportsTheSpanOfAnEvent(t *testing.T) {
 	t.Cleanup(collector.Close)
 
 	w := reservesOverHTTP(t, otelEndpointEnv+"="+collector.Endpoint())
-	require.NoError(t, w.cmd.Process.Signal(syscall.SIGTERM))
-	require.Eventually(t, func() bool { return len(collector.Spans()) > 0 }, 10*time.Second, 50*time.Millisecond,
-		"the worker exports the span of the event: %s", w.out)
+	w.stops(t)
+	assert.NotEmpty(t, collector.Spans(), "the worker exports the span of the event: %s", w.out)
+}
+
+// TestMain_StopsOnSIGTERM sends SIGTERM to the generated main of app worker
+// after it reserved an item (#262): the cloudevents http adapter shuts its
+// server down and returns, so the worker exits 0 at once instead of waiting
+// the fx stop timeout, with the plugins of its @Server and with config
+// turning one off. The OpenTelemetry providers export to a collector of the
+// test: with none, their shutdown waits one export timeout (#257).
+func TestMain_StopsOnSIGTERM(t *testing.T) {
+	collector, err := oteltest.NewCollector()
+	require.NoError(t, err)
+	t.Cleanup(collector.Close)
+	export := otelEndpointEnv + "=" + collector.Endpoint()
+
+	t.Run("with the otel plugin", func(t *testing.T) { reservesOverHTTP(t, export).stops(t) })
+	t.Run("with the otel plugin turned off", func(t *testing.T) { reservesOverHTTP(t, export, otelEnv+"=false").stops(t) })
 }
 
 // otelEndpointEnv is where the OpenTelemetry providers export
@@ -210,8 +225,22 @@ const otelEndpointEnv = "BOOST_FACTORY_OTEL_ENDPOINT"
 
 // runningWorker is the process reservesOverHTTP starts.
 type runningWorker struct {
-	cmd *exec.Cmd
-	out *syncBuffer
+	cmd    *exec.Cmd
+	out    *syncBuffer
+	exited <-chan error
+}
+
+// stops sends SIGTERM to the worker and requires it to exit 0 within two
+// seconds: well before the fx stop timeout (15s).
+func (w runningWorker) stops(t *testing.T) {
+	t.Helper()
+	require.NoError(t, w.cmd.Process.Signal(syscall.SIGTERM))
+	select {
+	case err := <-w.exited:
+		require.NoError(t, err, "the worker did not exit 0: %s", w.out)
+	case <-time.After(2 * time.Second):
+		t.Fatalf("the worker did not stop within two seconds of SIGTERM: %s", w.out)
+	}
 }
 
 func reservesOverHTTP(t *testing.T, env ...string) runningWorker {
@@ -257,7 +286,7 @@ func reservesOverHTTP(t *testing.T, env ...string) runningWorker {
 		}
 	}
 	assert.Contains(t, out.String(), "listening on :"+strconv.Itoa(port)+"/", "the worker logs the port it listens on")
-	return runningWorker{cmd: cmd, out: out}
+	return runningWorker{cmd: cmd, out: out, exited: exited}
 }
 
 // syncBuffer is a bytes.Buffer the child process and the test share.
