@@ -27,6 +27,9 @@ func New(repo stock.Repository, pub reserved.Publisher) reserver.Service {
 }
 
 func (s *service) Reserve(ctx context.Context, sku string) (*entity.Stock, error) {
+	if err := entity.ValidSKU(sku); err != nil {
+		return nil, err
+	}
 	left, err := s.repo.Take(ctx, sku)
 	if err != nil {
 		return nil, err

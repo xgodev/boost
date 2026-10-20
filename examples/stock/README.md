@@ -47,6 +47,9 @@ $ curl -XPOST localhost:8080/stocks/tshirt/reserve
 $ curl localhost:8080/stocks/nope
 {"httpStatusCode":404,"errorCode":"404","message":"nope is not in stock"}
 
+$ curl 'localhost:8080/stocks/$gt'
+{"httpStatusCode":400,"errorCode":"400","message":"$gt is not a sku: use 1 to 64 of a-z, 0-9 and -"}
+
 $ curl -XPOST localhost:8080/stocks -H 'Content-Type: application/json' -d '{"sku":"cap","units":1}'
 {"sku":"cap","units":1}
 
@@ -134,7 +137,10 @@ Every switch is a config key; the env var is the key in upper case with `_`.
 | Options | the `options.go` next to each of them | `@Config` |
 
 The domain (`internal/pkg/domain`) imports neither transport nor persistence:
-the handler calls a service, the service a repository or client.
+the handler calls a service, the service a repository or client. Each
+service checks the sku first (`entity.ValidSKU`: 1 to 64 of a-z, 0-9 and
+`-`), so no door hands any other text to a datastore, and the MongoDB one
+matches it with `$eq`.
 
 ## Generate and test
 

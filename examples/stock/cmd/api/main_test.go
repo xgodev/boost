@@ -89,6 +89,12 @@ func TestAPI(t *testing.T) {
 		}{
 			{"unknown sku", http.MethodGet, "/stocks/nope", "", http.StatusNotFound},
 			{"blank sku", http.MethodPost, "/stocks", `{"sku":"","units":1}`, http.StatusBadRequest},
+			{"sku that is not a sku, created", http.MethodPost, "/stocks", `{"sku":"$gt","units":1}`, http.StatusBadRequest},
+			{"sku that is not a sku, found", http.MethodGet, "/stocks/$gt", "", http.StatusBadRequest},
+			{"sku that is not a sku, reserved", http.MethodPost, "/stocks/$ne/reserve", "", http.StatusBadRequest},
+			{"sku in upper case", http.MethodGet, "/stocks/TSHIRT", "", http.StatusBadRequest},
+			{"sku with a space", http.MethodGet, "/stocks/t%20shirt", "", http.StatusBadRequest},
+			{"sku longer than 64", http.MethodGet, "/stocks/" + strings.Repeat("a", 65), "", http.StatusBadRequest},
 			{"negative units", http.MethodPost, "/stocks", `{"sku":"hat","units":-1}`, http.StatusBadRequest},
 			{"body that is not json", http.MethodPost, "/stocks", `{`, http.StatusBadRequest},
 			{"sku already in stock", http.MethodPost, "/stocks", `{"sku":"tshirt","units":1}`, http.StatusConflict},
@@ -150,6 +156,11 @@ func TestAPI(t *testing.T) {
 		_, err = stockv1.NewStockFinderClient(conn).Find(ctx, &stockv1.FindRequest{Sku: "nope"})
 		assert.Equal(t, codes.NotFound, status.Code(err))
 		assert.Equal(t, "nope is not in stock", status.Convert(err).Message())
+
+		_, err = stockv1.NewStockFinderClient(conn).Find(ctx, &stockv1.FindRequest{Sku: "$gt"})
+		assert.Equal(t, codes.InvalidArgument, status.Code(err), "a sku outside [a-z0-9-] never reaches the stock")
+		_, err = stockv1.NewStockReserverClient(conn).Reserve(ctx, &stockv1.ReserveRequest{Sku: "$ne"})
+		assert.Equal(t, codes.InvalidArgument, status.Code(err))
 	})
 
 	t.Run("mcp serves the find_stock tool", func(t *testing.T) {
@@ -179,6 +190,12 @@ func TestAPI(t *testing.T) {
 		assert.True(t, res.IsError, "an unknown sku is a tool error")
 		require.Len(t, res.Content, 1)
 		assert.Equal(t, "nope is not in stock", res.Content[0].(*mcp.TextContent).Text)
+
+		res, err = session.CallTool(ctx, &mcp.CallToolParams{Name: "find_stock", Arguments: map[string]any{"sku": "$gt"}})
+		require.NoError(t, err)
+		assert.True(t, res.IsError, "a sku outside [a-z0-9-] is a tool error")
+		require.Len(t, res.Content, 1)
+		assert.Equal(t, "$gt is not a sku: use 1 to 64 of a-z, 0-9 and -", res.Content[0].(*mcp.TextContent).Text)
 	})
 }
 
