@@ -110,7 +110,7 @@ func TestNewSpec(t *testing.T) {
 	require.Len(t, api.Servers, 5)
 	admin, grpcSrv, mcpSrv, ops, rest := api.Servers[0], api.Servers[1], api.Servers[2], api.Servers[3], api.Servers[4]
 
-	assert.Equal(t, Server{App: "api", Name: "admin", Kind: KindREST, Routes: admin.Routes}, admin)
+	assert.Equal(t, Server{App: "api", Name: "admin", Kind: KindREST, Routes: admin.Routes, Builtin: admin.Builtin}, admin)
 	assert.Equal(t, []string{"GET /live probe.Live", "HEAD /live probe.Live"}, routeNames(admin.Routes))
 	assert.Nil(t, admin.Routes[0].Handler.Receiver, "a package function needs no provider")
 
@@ -210,6 +210,32 @@ func TestNewSpec_ReceiverProvidedByAnotherPackage(t *testing.T) {
 	assert.Equal(t, "*Handler", recv.Type)
 }
 
+// jobEntries declare a job of the app the @Job value names, run by a
+// method whose receiver New provides.
+func jobEntries(value string) []annotation.Entry {
+	return []annotation.Entry{
+		decl("sweep", "", "New", nil, []string{"*Sweeper"}, ann("Provide", "index=0")),
+		decl("sweep", "Sweeper", "Run", []string{"context.Context"}, errResult, ann("Job", value)),
+	}
+}
+
+func TestNewSpec_Job(t *testing.T) {
+	spec, err := newTestSpec(t, append(validEntries(), jobEntries("app=order-sweeper")...))
+	require.NoError(t, err)
+
+	require.Len(t, spec.Apps, 3)
+	api, sweeper := spec.Apps[0], spec.Apps[1]
+	assert.Equal(t, "order-sweeper", sweeper.Name)
+	require.NotNil(t, sweeper.Job)
+	assert.Equal(t, "Run", sweeper.Job.Handler.Entry.Func.Name)
+	require.NotNil(t, sweeper.Job.Handler.Receiver)
+	assert.Equal(t, "*Sweeper", sweeper.Job.Handler.Receiver.Type)
+	assert.Equal(t, testModule+"/sweep.New", sweeper.Job.Handler.Receiver.Provider.Key())
+	assert.Empty(t, sweeper.Servers)
+	assert.Nil(t, sweeper.Function)
+	assert.Nil(t, api.Job)
+}
+
 func TestNewSpec_Errors(t *testing.T) {
 	live := func(anns ...annotation.Annotation) annotation.Entry {
 		return decl("probe", "", "Live", echoHandler, errResult, anns...)
@@ -225,6 +251,13 @@ func TestNewSpec_Errors(t *testing.T) {
 		return decl("probe", "", "Status", params, results, a)
 	}
 	const toolSignature = "func(context.Context, *mcp.CallToolRequest, In) (*mcp.CallToolResult, Out, error)"
+	job := func(v string) annotation.Entry {
+		return decl("sweep", "", "Run", []string{"context.Context"}, errResult, ann("Job", v))
+	}
+	jobFunc := func(params, results []string) annotation.Entry {
+		return decl("sweep", "", "Run", params, results, ann("Job", "app=sweeper"))
+	}
+	const jobSignature = "func(context.Context) error"
 
 	testCases := []struct {
 		name    string
@@ -262,7 +295,11 @@ func TestNewSpec_Errors(t *testing.T) {
 		}()}, errors.IsNotValid, "package main"},
 		{"invalid server name", []annotation.Entry{live(rest("method=GET, path=/live, server=Admin"))}, errors.IsNotValid, "server name"},
 		{"reserved server name", []annotation.Entry{live(rest("method=GET, path=/live, server=function"))}, errors.IsNotValid, "server name"},
-		{"invalid app name", []annotation.Entry{live(rest("method=GET, path=/live, app=my-app"))}, errors.IsNotValid, "app name"},
+		{"invalid app name", []annotation.Entry{live(rest("method=GET, path=/live, app=my_app"))}, errors.IsNotValid, "app name"},
+		{"app name ending in a hyphen", []annotation.Entry{live(rest("method=GET, path=/live, app=my-"))}, errors.IsNotValid, "app name"},
+		{"app name with two hyphens in a row", []annotation.Entry{live(rest("method=GET, path=/live, app=my--app"))}, errors.IsNotValid, "app name"},
+		{"app package is a Go keyword", []annotation.Entry{live(rest("method=GET, path=/live, app=g-o"))}, errors.IsNotValid, "app name"},
+		{"app package main", []annotation.Entry{live(rest("method=GET, path=/live, app=ma-in"))}, errors.IsNotValid, "app name"},
 		{"app name is a Go keyword", []annotation.Entry{live(rest("method=GET, path=/live, app=go"))}, errors.IsNotValid, "app name"},
 		{"app name main", []annotation.Entry{live(rest("method=GET, path=/live, app=main"))}, errors.IsNotValid, "app name"},
 		{"server used by two kinds", []annotation.Entry{live(rest("method=GET, path=/live, server=grpc")), grpcSvc("register=healthpb.RegisterHealthServer")}, errors.IsNotValid, "grpc"},
@@ -309,6 +346,18 @@ func TestNewSpec_Errors(t *testing.T) {
 		{"empty function middleware", []annotation.Entry{function("adapter=nats, middlewares=[logger, ]")}, errors.IsNotValid, "empty"},
 		{"publisher without driver", []annotation.Entry{function("adapter=nats, middlewares=[publisher]")}, errors.IsNotFound, "publisher.Driver"},
 		{"client of an adapter without client", []annotation.Entry{function("adapter=[lambda, kafka], client=prices")}, errors.IsNotValid, "client=prices"},
+		{"job without app", []annotation.Entry{job("")}, errors.IsNotValid, "app is required"},
+		{"job unknown key", []annotation.Entry{job("app=sweeper, adapter=nats")}, errors.IsNotValid, "adapter"},
+		{"job invalid app name", []annotation.Entry{job("app=Sweeper")}, errors.IsNotValid, "app name"},
+		{"job without params", []annotation.Entry{jobFunc(nil, errResult)}, errors.IsNotValid, jobSignature},
+		{"job params", []annotation.Entry{jobFunc([]string{"context.Context", "string"}, errResult)}, errors.IsNotValid, jobSignature},
+		{"job results", []annotation.Entry{jobFunc([]string{"context.Context"}, []string{"int", "error"})}, errors.IsNotValid, jobSignature},
+		{"job result not an error", []annotation.Entry{jobFunc([]string{"context.Context"}, []string{"bool"})}, errors.IsNotValid, jobSignature},
+		{"job receiver without provider", []annotation.Entry{decl("sweep", "Sweeper", "Run", []string{"context.Context"}, errResult, ann("Job", "app=sweeper"))}, errors.IsNotFound, "Sweeper"},
+		{"two jobs in an app", []annotation.Entry{job("app=sweeper"), decl("sweep", "", "Other", []string{"context.Context"}, errResult, ann("Job", "app=sweeper"))}, errors.IsAlreadyExists, "@Job"},
+		{"job and a server in an app", []annotation.Entry{job("app=api"), live(rest("method=GET, path=/live"))}, errors.IsNotValid, "runs nothing else"},
+		{"server and a job in an app", []annotation.Entry{live(rest("method=GET, path=/live")), job("app=api")}, errors.IsNotValid, "runs nothing else"},
+		{"job and a function in an app", []annotation.Entry{job("app=worker"), function("adapter=nats, app=worker")}, errors.IsNotValid, "runs nothing else"},
 		{"client name an environment variable does not reach", []annotation.Entry{function("adapter=nats, client=order_prices")}, errors.IsNotValid, "order_prices"},
 	}
 

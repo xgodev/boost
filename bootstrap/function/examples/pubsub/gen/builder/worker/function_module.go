@@ -9,6 +9,7 @@ import (
 
 	src_cloudevents_c136a3fd "github.com/cloudevents/sdk-go/v2"
 	bsfunction "github.com/xgodev/boost/bootstrap/function"
+	client_pubsub_9386bbe4 "github.com/xgodev/boost/bootstrap/function/examples/pubsub/gen/client/cloud.google.com/go/pubsub/v2"
 	gen_pubsub_d0698dae "github.com/xgodev/boost/bootstrap/function/examples/pubsub/gen/internal/app/worker/pubsub"
 	gen_replier_3c662f05 "github.com/xgodev/boost/bootstrap/function/examples/pubsub/gen/internal/app/worker/pubsub/handler/message/replier"
 	src_replier_3c662f05 "github.com/xgodev/boost/bootstrap/function/examples/pubsub/internal/app/worker/pubsub/handler/message/replier"
@@ -55,7 +56,8 @@ func FunctionModule() fx.Option {
 			)),
 			functionfx.Module[*src_cloudevents_c136a3fd.Event](nil),
 			pubsubv1fx.Module[*src_cloudevents_c136a3fd.Event](),
-			pubsubv2fx.Module[*src_cloudevents_c136a3fd.Event](),
+			pubsubv2fx.ModuleWithoutClient[*src_cloudevents_c136a3fd.Event](),
+			client_pubsub_9386bbe4.DefaultClientModule(),
 		)
 	})
 

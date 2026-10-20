@@ -6,6 +6,8 @@ type notProvisioned struct {
 }
 
 // NotProvisionedf returns an error which satisfies IsNotProvisioned().
+// Its message is the formatted text followed by " not provisioned", so the format
+// names the thing: NotProvisionedf("sku %s", sku) says "sku cap not provisioned".
 func NotProvisionedf(format string, args ...interface{}) error {
 	return &notProvisioned{wrap(nil, format, " not provisioned", args...)}
 }

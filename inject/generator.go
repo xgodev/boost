@@ -262,6 +262,9 @@ func (p *Generator) defaultClients(clients []Client) ([]Client, error) {
 			return nil, errors.NotValidf("inject builds no client of type *%s; it builds %s", id, strings.Join(supportedClients(), ", "))
 		}
 		if _, ok := defaultClient(slices.Concat(clients, extra), id); !ok {
+			if err := needsNoDriver(Client{Factory: f}); err != nil {
+				return nil, err
+			}
 			extra = append(extra, Client{Factory: f})
 		}
 	}
@@ -274,10 +277,23 @@ func (p *Generator) defaultClients(clients []Client) ([]Client, error) {
 			return nil, errors.NotValidf("client name %s of *%s must match %s so an environment variable reaches its keys", ref.Name, ref.ID, envSegment)
 		}
 		if _, ok := clientOf(slices.Concat(clients, extra), ref.ID, ref.Name); !ok {
+			if err := needsNoDriver(Client{Factory: f, Name: ref.Name}); err != nil {
+				return nil, err
+			}
 			extra = append(extra, Client{Factory: f, Name: ref.Name})
 		}
 	}
 	return extra, nil
+}
+
+// needsNoDriver is NotValid for a client asked by another generator whose
+// type is built by one of several drivers: only an @Inject names the driver.
+func needsNoDriver(c Client) error {
+	if len(c.Factory.Drivers) == 0 {
+		return nil
+	}
+	return errors.NotValidf("the %s is built by the driver its @Inject names (drivers=[%s]), and no consumer injects it; its drivers are %s",
+		c, c.Factory.DriverNames()[0], strings.Join(c.Factory.DriverNames(), ", "))
 }
 
 // renderClients adds the file of each client inject builds to files. It is

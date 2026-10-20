@@ -10,6 +10,7 @@ import (
 	gen_health_6c8ad5fb "example.com/app/gen/health"
 	src_health_6c8ad5fb "example.com/app/health"
 	grpcserver "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
+	grpclog "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server/plugins/local/wrapper/log"
 	grpcfx "github.com/xgodev/boost/fx/modules/factory/contrib/google.golang.org/grpc/v1/server"
 	src_healthpb_33efe7c5 "google.golang.org/grpc/health/grpc_health_v1"
 )
@@ -24,6 +25,11 @@ func GrpcModule() fx.Option {
 	grpcOnce.Do(func() {
 		options = fx.Module("api.grpc",
 			grpcfx.Module(),
+			fx.Provide(func() []grpcserver.Plugin {
+				return []grpcserver.Plugin{
+					grpclog.Register,
+				}
+			}),
 			gen_health_6c8ad5fb.NewServerModule(),
 			fx.Invoke(func(srv *grpcserver.Server, s0 *src_health_6c8ad5fb.Server) {
 				src_healthpb_33efe7c5.RegisterHealthServer(srv.ServiceRegistrar(), s0)

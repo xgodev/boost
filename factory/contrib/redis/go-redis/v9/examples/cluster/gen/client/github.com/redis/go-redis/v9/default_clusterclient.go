@@ -26,7 +26,7 @@ func init() {
 var defaultClusterClientOnce sync.Once
 
 // DefaultClusterClientModule provides the default client (*github.com/redis/go-redis/v9.ClusterClient), built from the keys under
-// boost.factory.redis with the plugins health.
+// boost.factory.redis with the plugins health, and closes it when the app stops.
 // It returns an empty option after the first call, so every consumer can
 // include it.
 func DefaultClusterClientModule() fx.Option {
@@ -42,10 +42,15 @@ func DefaultClusterClientModule() fx.Option {
 	return options
 }
 
-func newDefaultClusterClient(ctx context.Context) (*client.ClusterClient, error) {
+func newDefaultClusterClient(ctx context.Context, lc fx.Lifecycle) (*client.ClusterClient, error) {
 	health, err := healthplugin.NewClusterHealthWithConfigPath(defaultClusterClientRoot + ".plugins.health")
 	if err != nil {
 		return nil, err
 	}
-	return factory.NewClusterClientWithConfigPath(ctx, defaultClusterClientRoot, health.Register)
+	c, err := factory.NewClusterClientWithConfigPath(ctx, defaultClusterClientRoot, health.Register)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
 }

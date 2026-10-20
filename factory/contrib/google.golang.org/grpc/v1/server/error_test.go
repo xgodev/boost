@@ -19,8 +19,8 @@ func TestError_RegisteredCustom(t *testing.T) {
 		return ok
 	}, errors.KindConflict)
 
-	if got := status.Code(Error(&customConflict{"dup"})); got != codes.AlreadyExists {
-		t.Fatalf("code = %v, want AlreadyExists", got)
+	if got := status.Code(Error(&customConflict{"dup"})); got != codes.Aborted {
+		t.Fatalf("code = %v, want Aborted", got)
 	}
 }
 

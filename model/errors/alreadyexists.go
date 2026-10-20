@@ -6,6 +6,8 @@ type alreadyExists struct {
 }
 
 // AlreadyExistsf returns an error which satisfies IsAlreadyExists().
+// Its message is the formatted text followed by " already exists", so the format
+// names the thing: AlreadyExistsf("sku %s", sku) says "sku cap already exists".
 func AlreadyExistsf(format string, args ...interface{}) error {
 	return &alreadyExists{wrap(nil, format, " already exists", args...)}
 }

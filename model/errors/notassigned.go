@@ -7,6 +7,8 @@ type notAssigned struct {
 }
 
 // NotAssignedf returns an error which satisfies IsNotAssigned().
+// Its message is the formatted text followed by " not assigned", so the format
+// names the thing: NotAssignedf("sku %s", sku) says "sku cap not assigned".
 func NotAssignedf(format string, args ...interface{}) error {
 	return &notAssigned{wrap(nil, format, " not assigned", args...)}
 }

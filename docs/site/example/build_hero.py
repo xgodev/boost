@@ -88,8 +88,9 @@ SRC = [
     (2, "api/rest/", None, "", ""),
     (3, "handler/stock/reserver/", None, "", ""),
     (4, "handler.go", "internal/app/api/rest/handler/stock/reserver/handler.go", "@REST", "a"),
-    (3, "plugins.go", "internal/app/api/rest/plugins.go", "@Provide", "a"),
     (1, "pkg/", None, "", ""),
+    (2, "server/rest/", None, "", ""),
+    (3, "doc.go", "internal/pkg/server/rest/doc.go", "@Server", "a"),
     (2, "domain/", None, "", ""),
     (3, "service/stock/reserver/", None, "", ""),
     (4, "local/", None, "", ""),
@@ -102,10 +103,11 @@ SRC = [
     (4, "datastore.go", "internal/pkg/datastore/stock/memory/datastore.go", "@Default", "a"),
     (3, "mongodb/", None, "", ""),
     (4, "config.go", "internal/pkg/datastore/stock/mongodb/config.go", "@Config", "a"),
-    (4, "datastore.go", "internal/pkg/datastore/stock/mongodb/datastore.go", "@Provide", "a"),
+    (4, "datastore.go", "internal/pkg/datastore/stock/mongodb/datastore.go", "@Inject", "a"),
     (0, "doc.go", "doc.go", "go:generate", ""),
 ]
 MID = "gen/builder/middleware/internal_/pkg/domain/service/stock/reserver/local/new_middleware.go"
+CONN = "gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2/default_conn.go"
 IMPL = "gen/implementation/internal_/pkg/domain/repository/stock/repository_implementation.go"
 G = "gen/internal/"
 GEN = [
@@ -118,6 +120,8 @@ GEN = [
     (3, "rest_module.go", "gen/builder/api/rest_module.go", "@REST", "a"),
     (2, "middleware/…/local/", None, "", ""),
     (3, "new_middleware.go", MID, "@Middleware", "a"),
+    (1, "client/…/mongo-driver/v2/", None, "", ""),
+    (2, "default_conn.go", CONN, "@Inject", "a"),
     (1, "implementation/…/stock/", None, "", ""),
     (2, "repository_implementation.go", IMPL, "@Default", "a"),
     (1, "internal/", None, "", ""),
@@ -125,7 +129,6 @@ GEN = [
     (3, "api/rest/", None, "", ""),
     (4, "handler/stock/reserver/", None, "", ""),
     (5, "new_module.go", G + "app/api/rest/handler/stock/reserver/new_module.go", "", ""),
-    (4, "plugins_module.go", G + "app/api/rest/plugins_module.go", "", ""),
     (2, "pkg/", None, "", ""),
     (3, "domain/service/…/local/", None, "", ""),
     (4, "new_module.go", G + "pkg/domain/service/stock/reserver/local/new_module.go", "", ""),
@@ -138,7 +141,7 @@ GEN = [
 
 RUN = """<span class="pr">$</span> go generate ./...
 <span class="dim">5:35PM</span> <span class="ok">INF</span> scanning ~/shop (module github.com/acme/shop)
-<span class="dim">5:35PM</span> <span class="ok">INF</span> generated 6 inject modules and 1 apps in ~/shop/gen, mains in ~/shop/cmd
+<span class="dim">5:35PM</span> <span class="ok">INF</span> generated 5 inject modules and 1 apps in ~/shop/gen, mains in ~/shop/cmd
 
 <span class="pr">$</span> go run ./cmd/api &amp;
 <span class="dim">5:36PM</span> <span class="ok">INF</span> starting Echo Server. https://echo.labstack.com/

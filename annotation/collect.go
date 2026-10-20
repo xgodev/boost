@@ -123,6 +123,16 @@ func WithPackages(pkgs ...string) Option {
 	}
 }
 
+// WithPackageDocs also collects the annotations of package doc comments,
+// each file's as an entry whose IsPackage is true. Without it, only
+// declarations are collected.
+func WithPackageDocs() Option {
+	return func(c *Collector) error {
+		c.packageDocs = true
+		return nil
+	}
+}
+
 // WithPath sets the directory to scan. It must be inside a Go module.
 func WithPath(path string) Option {
 	return func(c *Collector) error {

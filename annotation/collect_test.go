@@ -69,6 +69,11 @@ import (
 // @Rest(method=PUT)
 func (s *Service) Put() { _ = strings.ToUpper(d2.Hello()); Sprint() }
 `,
+		"app/doc.go": `// Package app serves the fixture.
+// @Boost(kind=pkg)
+// @Other
+package app
+`,
 		"app/options.go": `package app
 
 import "time"
@@ -215,6 +220,23 @@ func TestCollect_StructFields(t *testing.T) {
 	}, options[0].Fields, "one field per name, in order; an embedded field has no name")
 
 	assert.Empty(t, find(entries, "Service", "")[0].Fields, "an empty struct has no fields")
+}
+
+func TestCollect_PackageDocsOnlyWhenAsked(t *testing.T) {
+	root := fixtureModule(t)
+
+	assert.Empty(t, find(collectEntries(t, WithPath(root)), "", ""), "package docs are left out by default")
+
+	pkg := find(collectEntries(t, WithPath(root), WithPackageDocs()), "", "")
+	require.Len(t, pkg, 1)
+	assert.True(t, pkg[0].IsPackage())
+	assert.False(t, pkg[0].IsFunc() || pkg[0].IsStruct() || pkg[0].IsMethod())
+	assert.Equal(t, "example.com/fixture/app", pkg[0].Path)
+	assert.Equal(t, "app", pkg[0].Package)
+	assert.Equal(t, "doc.go", pkg[0].File)
+	assert.Equal(t, "serves the fixture.", pkg[0].Header.Title, "the title drops the leading \"Package app\"")
+	require.Len(t, pkg[0].Annotations, 1, "the filters apply to package docs too")
+	assert.Equal(t, "pkg", pkg[0].Annotations[0].Map["kind"])
 }
 
 func TestCollect_FiltersMatchTheAnnotationName(t *testing.T) {

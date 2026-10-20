@@ -25,6 +25,16 @@ type ClientFactory struct {
 	Plugins    map[string]ClientPlugin // by name: the last segment of the plugin's config root
 	Constraint string                  // build constraint the client needs ("cgo"), "" when it builds anywhere
 	Close      bool                    // the generated module closes the client when the app stops
+	// Drivers are the factories that build the type, by name, when there is
+	// more than one (*sql.DB through godror or pgx): the @Inject of the
+	// client names one with drivers=, which sets Build and Root.
+	Drivers map[string]ClientDriver
+}
+
+// ClientDriver is one of the factories of a client type built by several.
+type ClientDriver struct {
+	Build string // factory import path + "." + the ...WithConfigPath constructor
+	Root  string // config root of the factory
 }
 
 // ClientPlugin is a plugin of a client factory. The value of its constructor
@@ -34,6 +44,7 @@ type ClientPlugin struct {
 	Path     string // import path of the plugin
 	New      string // ...WithConfigPath constructor of the plugin
 	Register string // method passed to the factory, "" for Register
+	Value    bool   // the factory takes the value itself (a sql.Plugin), not a method
 }
 
 const boostFactories = "github.com/xgodev/boost/factory/contrib/"
@@ -62,14 +73,14 @@ func init() {
 			"prometheus": {Path: redis + "/plugins/contrib/prometheus/client_golang/v1", New: others},
 		}
 	}
-	addClientFactory("github.com/redis/go-redis/v9", "Client", "redis", redis, "NewClientWithConfigPath", "boost.factory.redis",
+	addClosingClientFactory("github.com/redis/go-redis/v9", "Client", "redis", redis, "NewClientWithConfigPath", "boost.factory.redis",
 		redisPlugins("NewClientHealthWithConfigPath", "NewClientWithConfigPath"))
-	addClientFactory("github.com/redis/go-redis/v9", "ClusterClient", "redis", redis, "NewClusterClientWithConfigPath", "boost.factory.redis",
+	addClosingClientFactory("github.com/redis/go-redis/v9", "ClusterClient", "redis", redis, "NewClusterClientWithConfigPath", "boost.factory.redis",
 		redisPlugins("NewClusterHealthWithConfigPath", "NewClusterWithConfigPath"))
 
 	for _, version := range []string{"v1", "v2"} {
 		mongo := boostFactories + "go.mongodb.org/mongo-driver/" + version
-		addClientFactory(mongo, "Conn", "mongo", mongo, "NewConnWithConfigPath", "boost.factory.mongo", map[string]ClientPlugin{
+		addClosingClientFactory(mongo, "Conn", "mongo", mongo, "NewConnWithConfigPath", "boost.factory.mongo", map[string]ClientPlugin{
 			"health":     {Path: mongo + "/plugins/local/health", New: "NewHealthWithConfigPath"},
 			"otel":       {Path: mongo + "/plugins/contrib/go.opentelemetry.io/contrib/v0", New: "NewOtelMongoWithConfigPath"},
 			"datadog":    {Path: mongo + "/plugins/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath"},
@@ -112,6 +123,21 @@ func init() {
 		})
 	}
 
+	// *sql.DB is built by the factory of the driver its @Inject names; the
+	// sql plugins wrap the connector of any of them
+	sqlPlugins := "github.com/xgodev/boost/factory/core/database/sql/plugins"
+	db := ClientFactory{Path: "database/sql", Type: "DB", Package: "sql", Close: true,
+		Drivers: map[string]ClientDriver{
+			"godror": {Build: boostFactories + "godror/godror/v0.NewDBWithConfigPath", Root: "boost.factory.godror"},
+			"pgx":    {Build: boostFactories + "jackc/pgx/v5.NewDBWithConfigPath", Root: "boost.factory.pgx"},
+		},
+		Plugins: map[string]ClientPlugin{
+			"health":  {Path: sqlPlugins + "/local/health", New: "NewHealthPluginWithConfigPath", Value: true},
+			"otel":    {Path: sqlPlugins + "/contrib/xsam/otelsql/v0", New: "NewOTelWithConfigPath", Value: true},
+			"datadog": {Path: sqlPlugins + "/contrib/datadog/dd-trace-go/v1", New: "NewDatadogWithConfigPath", Value: true},
+		}}
+	clientFactories[db.Path+"."+db.Type] = db
+
 	// the client of the kafka publisher driver (see publisherDrivers);
 	// confluent-kafka-go binds librdkafka through cgo
 	kafka := ClientFactory{Path: "github.com/confluentinc/confluent-kafka-go/v2/kafka", Type: "Producer", Package: "kafka",
@@ -132,6 +158,19 @@ func addClosingClientFactory(path, tp, pkg, factory, build, root string, plugins
 	clientFactories[path+"."+tp] = f
 }
 
+// driverClients returns the client types built by one of several drivers,
+// sorted.
+func driverClients() []string {
+	var types []string
+	for key, f := range clientFactories {
+		if len(f.Drivers) > 0 {
+			types = append(types, "*"+key)
+		}
+	}
+	sort.Strings(types)
+	return types
+}
+
 // supportedClients returns the client types inject builds, sorted.
 func supportedClients() []string {
 	types := make([]string, 0, len(clientFactories))
@@ -150,6 +189,27 @@ func (f ClientFactory) PluginNames() []string {
 	}
 	sort.Strings(names)
 	return names
+}
+
+// DriverNames returns the names of the factory's drivers, sorted; none when
+// one factory builds the type.
+func (f ClientFactory) DriverNames() []string {
+	names := make([]string, 0, len(f.Drivers))
+	for name := range f.Drivers {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
+
+// Driver returns the factory built through its driver name.
+func (f ClientFactory) Driver(name string) (ClientFactory, bool) {
+	d, ok := f.Drivers[name]
+	if !ok {
+		return ClientFactory{}, false
+	}
+	f.Build, f.Root = d.Build, d.Root
+	return f, true
 }
 
 // FactoryPath returns the import path of the factory.
@@ -202,6 +262,22 @@ func parsePlugins(raw string) ([]string, error) {
 	return parseList("plugins", raw)
 }
 
+// parseClientDriver reads the drivers attribute of the @Inject of a client
+// built by several factories: exactly one of them.
+func parseClientDriver(f ClientFactory, raw string) (string, error) {
+	names, err := parseList("drivers", raw)
+	if err != nil {
+		return "", err
+	}
+	if len(names) != 1 {
+		return "", errors.NotValidf("drivers=%s: *%s.%s is built by one driver, one of %s", pluginList(names), f.Path, f.Type, strings.Join(f.DriverNames(), ", "))
+	}
+	if _, ok := f.Drivers[names[0]]; !ok {
+		return "", errors.NotValidf("*%s.%s has no driver %s; its drivers are %s", f.Path, f.Type, names[0], strings.Join(f.DriverNames(), ", "))
+	}
+	return names[0], nil
+}
+
 // parseList reads the list attribute attr of an annotation: "[a, b]" or a
 // single name. It returns nil when raw is empty and a non-nil empty list for
 // "[]".
@@ -242,6 +318,7 @@ func parseList(attr, raw string) ([]string, error) {
 // and name asked by @Inject parameters that no annotated function provides.
 type Client struct {
 	Factory   ClientFactory
+	Driver    string   // driver of a factory with Drivers, "" for the others
 	Name      string   // fx name of the client, "" for the default client
 	Plugins   []string // in the declared order, nil when no consumer lists them
 	Consumers []string // keys of the components injecting the client, sorted
@@ -251,13 +328,16 @@ type Client struct {
 // consumer without plugins takes the client as another consumer declares it.
 // It is NotValid when plugins are listed for a client the application
 // provides, a name is not reachable from an environment variable or two
-// consumers of a client list different plugins, and AlreadyExists when two
+// consumers of a client list different plugins. A client built by several
+// factories takes the one its consumers name with drivers=; it is NotValid
+// when none or two of them are named. It is AlreadyExists when two
 // clients share a file (a client named "default" and the unnamed one).
 func Clients(g *graph.Graph[Component]) ([]Client, error) {
 	provided := providedValues(g)
 
 	clients := map[string]*Client{}
 	declaredBy := map[string]string{} // client id -> key of the consumer listing its plugins
+	driverBy := map[string]string{}   // client id -> key of the consumer naming its driver
 	for _, key := range g.SortedKeys() {
 		comp := g.Vertices[key].Value
 		for _, idx := range sortedIndexes(comp.Injects) {
@@ -271,6 +351,10 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 			if provider, ok := provided[injectID(comp.Entry, tp, ann)]; ok {
 				if ann.Plugins != "" {
 					return nil, errors.NotValidf("@Inject on %s parameter %d has plugins, but %s is provided by %s: plugins apply only to a client inject builds",
+						key, idx, tp, provider)
+				}
+				if ann.Drivers != "" {
+					return nil, errors.NotValidf("@Inject on %s parameter %d has drivers, but %s is provided by %s: drivers apply only to a client inject builds",
 						key, idx, tp, provider)
 				}
 				continue
@@ -290,6 +374,18 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 			if !ok {
 				c = &Client{Factory: f, Name: ann.Name}
 				clients[id] = c
+			}
+			if ann.Drivers != "" {
+				driver, err := parseClientDriver(f, ann.Drivers)
+				if err != nil {
+					return nil, errors.NewNotValid(err, fmt.Sprintf("@Inject on %s parameter %d", key, idx))
+				}
+				if c.Driver != "" && c.Driver != driver {
+					return nil, errors.NotValidf("%s asks for the %s with driver %s, but %s asks for it with %s: the consumers of a client name the same driver, or only one names it",
+						driverBy[id], c, c.Driver, key, driver)
+				}
+				c.Driver = driver
+				driverBy[id] = key
 			}
 			if plugins != nil {
 				if c.Plugins != nil && !slices.Equal(c.Plugins, plugins) {
@@ -319,6 +415,18 @@ func Clients(g *graph.Graph[Component]) ([]Client, error) {
 		}
 		return list[i].Name < list[j].Name
 	})
+
+	for i, c := range list {
+		if len(c.Factory.Drivers) == 0 {
+			continue
+		}
+		f, ok := c.Factory.Driver(c.Driver)
+		if !ok {
+			return nil, errors.NotValidf("no consumer of the %s names its driver (%s): add drivers=[%s] to the @Inject of one of them; the drivers are %s",
+				c, strings.Join(c.Consumers, ", "), c.Factory.DriverNames()[0], strings.Join(c.Factory.DriverNames(), ", "))
+		}
+		list[i].Factory = f
+	}
 
 	files := map[string]Client{}
 	for _, c := range list {
@@ -481,7 +589,7 @@ func clientData(c Client) ClientData {
 		plugin := c.Factory.Plugins[name]
 		alias := name + "plugin"
 		register := plugin.Register
-		if register == "" {
+		if register == "" && !plugin.Value {
 			register = "Register"
 		}
 		data.Plugins = append(data.Plugins, ClientPluginData{Name: name, Alias: alias, New: plugin.New, Register: register})

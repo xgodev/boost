@@ -1,0 +1,23 @@
+# app worker next to app api on one machine: its HTTP door on 8081, and its
+# reservations made by calling app api (the resty reserver).
+boost:
+  factory:
+    zerolog:
+      level: DEBUG
+    resty:
+      clients:
+        stock:
+          host: http://localhost:8080
+  bootstrap:
+    function:
+      adapter:
+        cloudevents:
+          http:
+            port: 8081
+internal:
+  pkg:
+    domain:
+      service:
+        stock:
+          reserver:
+            implementation: resty

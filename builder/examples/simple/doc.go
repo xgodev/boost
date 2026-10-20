@@ -1,7 +1,8 @@
 // Package simple is an application whose doors come from builder
 // annotations: app api serves REST routes on two echo servers (rest and
-// admin), a gRPC health service and the check_stock MCP tool; app worker
-// records the orders of order.created events.
+// admin), a gRPC health service and the check_stock MCP tool; app order-worker
+// records the orders of order.created events; app stock-audit is a job that
+// checks the stock of a list of items once and exits.
 //
 // Regenerate gen/ with:
 //

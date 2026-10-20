@@ -36,6 +36,8 @@ const (
 	contextFxPath     = "github.com/xgodev/boost/fx/modules/core/context"
 	functionPath      = "github.com/xgodev/boost/bootstrap/function"
 	functionFxPath    = "github.com/xgodev/boost/fx/modules/bootstrap/function"
+	jobPath           = "github.com/xgodev/boost/bootstrap/job"
+	jobFxPath         = "github.com/xgodev/boost/fx/modules/bootstrap/job"
 	publisherPath     = "github.com/xgodev/boost/wrapper/publisher"
 	wrapperConfigPath = "github.com/xgodev/boost/wrapper/config"
 	errorsPath        = "github.com/xgodev/boost/model/errors"
@@ -52,7 +54,7 @@ type Options struct {
 }
 
 // Generator writes, under OutputDir/builder/<app>, one fx module per door of
-// the app (a REST or gRPC server, or the function) and a modules.go whose
+// the app (a REST, gRPC or MCP server, the function or the job) and a modules.go whose
 // Modules() returns all of them and the decorators of the app's
 // @Middleware, written under OutputDir/builder/middleware/<import path>, and
 // under CmdDir/<app> the main that runs them.
@@ -161,7 +163,7 @@ func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 
 	files := map[string][]byte{}
 	for _, app := range g.spec.Apps {
-		mods := modulesData{Header: generatedHeader, Package: app.Name, Servers: len(app.Servers) > 0}
+		mods := modulesData{Header: generatedHeader, App: app.Name, Package: appPackage(app.Name), Servers: len(app.Servers) > 0}
 
 		var doors []doorData
 		for _, srv := range app.Servers {
@@ -173,6 +175,13 @@ func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 		}
 		if app.Function != nil {
 			door, err := functionDoor(base, app.Name, *app.Function)
+			if err != nil {
+				return nil, err
+			}
+			doors = append(doors, door)
+		}
+		if app.Job != nil {
+			door, err := jobDoor(base, app.Name, *app.Job)
 			if err != nil {
 				return nil, err
 			}
@@ -224,7 +233,8 @@ func (g *Generator) Render(context.Context) (map[string][]byte, error) {
 func door(app, name, doc string) doorData {
 	return doorData{
 		Header:  generatedHeader,
-		Package: app,
+		App:     app,
+		Package: appPackage(app),
 		Var:     name,
 		Func:    strings.ToUpper(name[:1]) + name[1:],
 		Doc:     doc,
@@ -251,7 +261,7 @@ func isDefault(srv Server) bool {
 
 // configPath is the config path of a named server.
 func configPath(srv Server) string {
-	return srv.App + ".server." + srv.Name
+	return configName(srv.App) + ".server." + srv.Name
 }
 
 func serverDoor(base string, srv Server) (doorData, error) {
@@ -326,9 +336,18 @@ func serverDoor(base string, srv Server) (doorData, error) {
 		}
 	}
 
-	// the server is built with the plugins its constructors provide
+	// the server is built with the plugins its constructors provide, or
+	// with the ones its @Server lists
 	for _, plugin := range srv.Plugins {
 		include(plugin)
+	}
+	var builtin string
+	if len(srv.Builtin) > 0 {
+		name := srv.Name
+		if isDefault(srv) {
+			name = ""
+		}
+		builtin = builtinOption(imps, string(srv.Kind), srv.Builtin, name)
 	}
 
 	invoke := "func(srv *" + serverPkg + ".Server" + joinPrefixed(params) + ") {\n" + strings.Join(body, "\n") + "\n}"
@@ -337,6 +356,9 @@ func serverDoor(base string, srv Server) (doorData, error) {
 		def := defaultServers[srv.Kind]
 		fxModule := imps.add(def.alias, def.fxPath)
 		d.Options = append(d.Options, fxModule+".Module()")
+		if builtin != "" {
+			d.Options = append(d.Options, builtin)
+		}
 		if srv.PluginsName != "" {
 			// the shipped module takes the default []Plugin: give it the
 			// value provided under the server's name
@@ -376,6 +398,9 @@ func serverDoor(base string, srv Server) (doorData, error) {
 			"fx.ParamTags("+named+"),\n"+
 			"fx.ResultTags("+goTag(`group:"`+multiserver.ServersGroupKey+`"`)+"),\n),\n)",
 	)
+	if builtin != "" {
+		d.Options = append(d.Options, builtin)
+	}
 	d.Options = append(d.Options, modules...)
 	d.Options = append(d.Options, "fx.Invoke(fx.Annotate(\n"+invoke+",\nfx.ParamTags("+named+"),\n))")
 	d.Imports = imps.sorted()

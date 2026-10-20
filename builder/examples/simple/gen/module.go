@@ -14,6 +14,7 @@ import (
 	gen_ordercreated_37848569 "github.com/xgodev/boost/builder/examples/simple/gen/ordercreated"
 	gen_probe_a7e6caf2 "github.com/xgodev/boost/builder/examples/simple/gen/probe"
 	gen_memory_109e67b9 "github.com/xgodev/boost/builder/examples/simple/gen/stock/memory"
+	gen_stockaudit_25c493b5 "github.com/xgodev/boost/builder/examples/simple/gen/stockaudit"
 	gen_stocktool_d9696083 "github.com/xgodev/boost/builder/examples/simple/gen/stocktool"
 )
 
@@ -29,6 +30,8 @@ func Module() fx.Option {
 		gen_probe_a7e6caf2.RestPluginsModule(),
 		impl_stock_9c4bcef0.ServiceImplementationModule(),
 		gen_memory_109e67b9.OptionsModule(),
+		gen_stockaudit_25c493b5.NewModule(),
+		gen_stockaudit_25c493b5.OptionsModule(),
 		gen_stocktool_d9696083.NewModule(),
 		client_resty_6382930f.WarehouseClientModule(),
 		client_orders_285e8251.PublisherModule(),

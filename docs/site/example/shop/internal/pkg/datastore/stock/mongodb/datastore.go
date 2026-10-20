@@ -15,19 +15,17 @@ type datastore struct {
 	coll *mongo.Collection
 }
 
-// New connects through boost's mongo factory (boost.factory.mongo.*).
+// New keeps the stock on the conn inject builds from boost.factory.mongo.*,
+// which the app closes when it stops.
 // @Provide(index=0)
-func New(ctx context.Context, o *Options) (stock.Repository, error) {
-	conn, err := mongofact.NewConn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return &datastore{coll: conn.Database.Collection(o.Collection)}, nil
+// @Inject(index=0, plugins=[health, prometheus])
+func New(conn *mongofact.Conn, o *Options) stock.Repository {
+	return &datastore{coll: conn.Database.Collection(o.Collection)}
 }
 
 func (d *datastore) Take(ctx context.Context, sku string) error {
 	res, err := d.coll.UpdateOne(ctx,
-		bson.M{"_id": sku, "units": bson.M{"$gt": 0}},
+		bson.M{"_id": bson.M{"$eq": sku}, "units": bson.M{"$gt": 0}},
 		bson.M{"$inc": bson.M{"units": -1}})
 	if err != nil {
 		return err

@@ -1,5 +1,5 @@
 // Package ordercreated records the orders of order.created events in app
-// worker.
+// order-worker.
 package ordercreated
 
 import (
@@ -36,7 +36,7 @@ type payload struct {
 }
 
 // Handle records the order of the event, announces it and replies with it.
-// @Function(adapter=[cloudevents, nats, pubsub], app=worker, client=orders, middlewares=[recovery, logger])
+// @Function(adapter=[cloudevents, nats, pubsub], app=order-worker, client=orders, middlewares=[recovery, logger])
 func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevents.Event, error) {
 	var p payload
 	if err := in.DataAs(&p); err != nil || p.Item == "" {

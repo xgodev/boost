@@ -11,6 +11,7 @@ import (
 	gen_stocktool_d9696083 "github.com/xgodev/boost/builder/examples/simple/gen/stocktool"
 	src_stocktool_d9696083 "github.com/xgodev/boost/builder/examples/simple/stocktool"
 	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
+	mcplog "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server/plugins/local/wrapper/log"
 	mcpfx "github.com/xgodev/boost/fx/modules/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
 )
 
@@ -24,6 +25,11 @@ func McpModule() fx.Option {
 	mcpOnce.Do(func() {
 		options = fx.Module("api.mcp",
 			mcpfx.Module(),
+			fx.Provide(func() []mcpserver.Plugin {
+				return []mcpserver.Plugin{
+					mcplog.Register,
+				}
+			}),
 			gen_stocktool_d9696083.NewModule(),
 			fx.Invoke(func(srv *mcpserver.Server, h0 *src_stocktool_d9696083.Handler) {
 				mcp.AddTool(srv.Instance(), &mcp.Tool{Name: "check_stock", Description: "Tells whether an item can be ordered."}, h0.CheckStock)

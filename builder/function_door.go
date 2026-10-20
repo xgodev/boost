@@ -57,7 +57,7 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 	// a list of adapters: config chooses one, and only its module is wired
 	names := fn.Adapters()
 	sw := &adapterSwitch{
-		Key:    app + "." + functionFile + ".adapter",
+		Key:    configName(app) + "." + functionFile + ".adapter",
 		Names:  strings.Join(names, ", "),
 		Config: imps.add("config", wrapperConfigPath),
 		Errors: imps.add("errors", errorsPath),
@@ -78,7 +78,8 @@ func functionDoor(base, app string, fn Function) (doorData, error) {
 	return d, nil
 }
 
-// adapterOptions returns the fx modules that run the named adapter of fn.
+// adapterOptions returns the fx modules that run the named adapter of fn and
+// the plugins it is built with.
 // An adapter reading with a client inject builds takes the app's client of
 // that type, the default one or the one client=x names: the module of its
 // inject constructor, or the one inject generates.
@@ -107,6 +108,10 @@ func adapterOptions(base string, imps *imports, result string, fn Function, name
 			module = alias + ".ModuleWithNamedClient[" + result + "](" + strconv.Quote(fn.Client) + ")"
 		}
 		options = append(options, module, call)
+	}
+	// the adapter is built with the plugins its @Server lists
+	if plugins := fn.Builtin[name]; len(plugins) > 0 {
+		options = append(options, builtinOption(imps, name, plugins, ""))
 	}
 	return options, nil
 }

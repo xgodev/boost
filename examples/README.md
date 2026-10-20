@@ -10,6 +10,15 @@ all.
 [`boot`](boot) is the smallest one: one handler, one service and the
 generated main, whose `boost.Start` loads the config and sets the logger.
 
+[`stock`](stock) is the complete one: a stock with reservation that uses
+every resource it can — REST, gRPC and MCP doors, a CloudEvents/NATS
+function, a job, `@Server` plugins, service middlewares (log, prometheus), a
+memory, MongoDB or Oracle repository, a resty client, the publisher and
+`@Config` options, each switched by config. A resource that lands in boost
+is added to it in the same PR. Its [`README.md`](stock/README.md) says how to
+run each app, the calls with what they answer, the config switches and which
+file shows each resource.
+
 ## Where they are
 
 | Package | Examples |
@@ -23,22 +32,27 @@ generated main, whose `boost.Start` loads the config and sets the logger.
 | [`wrapper/cache`](../wrapper/cache/examples) | freecache, freecache-binary, multi, plugin |
 | [`wrapper/config`](../wrapper/config/examples) | env, env_file |
 | [`builder`](../builder/examples) | simple: two apps with rest, grpc, mcp and function doors |
+| [`examples/stock`](stock) | the complete app: every resource boost has |
 | [`docs/site/example/shop`](../docs/site/example/shop) | the app of the site |
 
 ## Shape of an example
 
 The layout is the one of an xgodev service: the handler calls a service, the
 service a repository or client, and the domain imports neither transport nor
-persistence.
+persistence. What a server needs besides its handlers (its plugins, the REST
+model) is infrastructure and lives under `internal/pkg/server/<transport>/`.
 
 ```
 doc.go                       # the package doc, how to run it, //go:generate
+README.md                    # when the example is one to hand over: run, call, config, files
 configs/config.yaml          # when the example needs settings
 cmd/<app>/main.go            # generated
 cmd/<app>/main_test.go       # runs the app in process
 gen/                         # generated, committed
 gen_test.go                  # fails when gen/ is stale
 internal/app/<app>/<transport>/handler/<entity>/<agent>/handler.go
+internal/pkg/server/<transport>/doc.go                 # @Server: the plugins of the server
+internal/pkg/server/rest/model/<entity>.go             # the JSON model the REST handlers share
 internal/pkg/domain/model/entity/
 internal/pkg/domain/service/<entity>/<agent>/          # interface
 internal/pkg/domain/service/<entity>/<agent>/local/    # implementation

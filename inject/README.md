@@ -18,6 +18,7 @@ function plus a root `Module()` that wires the whole application.
 | `@Inject(group=X, index=N)` | `@Provide`/`@Invoke` function | parameter `N` (a slice `[]T`) receives every `T` of group `X` |
 | `@Inject(name=X, index=N, plugins=[a, b])` | `@Provide`/`@Invoke` function | parameter `N`, a factory client (`*resty.Client`, `*nats.Conn`, `*gocql.Session`, ...), is built by the generator with the plugins `a` and `b` (see below) |
 | `@Inject(index=N, drivers=[a, b])` | `@Provide`/`@Invoke` function | parameter `N`, a `*publisher.Publisher`, is built by the generator with only the drivers `a` and `b` (see [Publisher](#publisher)) |
+| `@Inject(name=X, index=N, drivers=[d])` | `@Provide`/`@Invoke` function | parameter `N`, a `*sql.DB`, is built by the generator through the factory of driver `d` (`godror`, `pgx`; see [SQL databases](#sql-databases)) |
 | `@Invoke` | function | the function runs when the application starts (`fx.Invoke`) |
 | `@Default` | `@Provide` constructor | default implementation of a value with two or more providers; config picks one (see below) |
 | `@Config` | struct | the struct's fields are config keys; the generator registers them and provides `*Struct` (see below) |
@@ -268,9 +269,11 @@ func newQuoteClient(ctx context.Context) (*resty.Client, error) {
 | `*gocql.Session` (`github.com/apache/cassandra-gocql-driver/v2`) | `factory/contrib/apache/cassandra-gocql-driver/v2` | `health` |
 | `*sns.Client`, `*sqs.Client`, `*kinesis.Client` (`github.com/aws/aws-sdk-go-v2/service/...`) | `factory/contrib/aws/aws-sdk-go-v2/v1/client/<service>` (root `boost.factory.aws`) | `datadog` |
 | `*kafka.Producer` (`github.com/confluentinc/confluent-kafka-go/v2/kafka`, needs cgo) | `factory/contrib/confluentinc/confluent-kafka-go/v2` | none |
+| `*sql.DB` (`database/sql`), with `drivers=[godror]` or `drivers=[pgx]` | `factory/contrib/godror/godror/v0` (root `boost.factory.godror`, needs cgo) or `factory/contrib/jackc/pgx/v5` (root `boost.factory.pgx`) | `health`, `otel`, `datadog` (`factory/core/database/sql/plugins`) |
 
-NATS, Pub/Sub, Bigtable, gocql and kafka clients hold connections, so their constructor also
-takes `fx.Lifecycle` and closes the client when the app stops:
+Redis, MongoDB, NATS, Pub/Sub, Bigtable, gocql, kafka and SQL clients hold connections, so their
+constructor also takes `fx.Lifecycle` and closes the client when the app stops (`*mongo.Conn`
+through `Conn.Close`, which disconnects its `*mongo.Client`):
 
 ```go
 func newEventsConn(ctx context.Context, lc fx.Lifecycle) (*nats.Conn, error) {
@@ -305,6 +308,49 @@ func newEventsConn(ctx context.Context, lc fx.Lifecycle) (*nats.Conn, error) {
   `<Name>ClientModule()`. fx builds the client only when a consumer is
   built, so a client of an implementation that config did not choose is
   never built.
+
+### SQL databases
+
+A `*sql.DB` is built by the factory of the driver its `@Inject` names, so
+only that driver is imported (godror needs cgo, and the Oracle client
+libraries at run time):
+
+```go
+package oracle // example.com/app/internal/pkg/datastore/gold/oracle
+
+// @Provide(index=0)
+// @Inject(index=0, name=gold, drivers=[godror], plugins=[health, otel])
+func New(db *sql.DB) gold.Repository { ... }
+```
+
+The generator writes `gen/client/database/sql/gold_db.go`, which provides
+the `*sql.DB` `name:"gold"` from the keys under
+`boost.factory.godror.clients.gold` (`connectString`, `username`,
+`password`, ...; env `BOOST_FACTORY_GODROR_CLIENTS_GOLD_CONNECTSTRING`) and
+closes it when the app stops:
+
+```go
+func newGoldDB(ctx context.Context, lc fx.Lifecycle) (*sql.DB, error) {
+	health, err := healthplugin.NewHealthPluginWithConfigPath(goldDBRoot + ".plugins.health")
+	...
+	c, err := factory.NewDBWithConfigPath(ctx, goldDBRoot, health, otel)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
+}
+```
+
+- **One driver.** `drivers` names exactly one: `godror` (Oracle) or `pgx`
+  (PostgreSQL). Consumers of one `*sql.DB` name the same driver, or only one
+  names it and the others take it; a `*sql.DB` no consumer names a driver
+  for fails the generation.
+- **The app wins.** A `*sql.DB` the app provides needs no driver, and
+  `drivers` on its consumers fails the generation.
+- The plugins are passed to the factory as they are (`health`, `otel`),
+  since they are `sql.Plugin` values; the pool keys stay under
+  `boost.factory.sql`.
 
 ## Publisher
 
@@ -399,8 +445,11 @@ The generator fails, without touching the output directory, when:
 - `plugins` is on a `@Provide`, on a parameter that is not a factory client
   or that the app provides, or with `group`; lists an unknown or repeated
   plugin; or differs between two consumers of one client;
-- `drivers` is on a `@Provide` or on a parameter that is not
-  `*publisher.Publisher`, is empty, or lists an unknown or repeated driver;
+- `drivers` is on a `@Provide` or on a parameter that is neither
+  `*publisher.Publisher` nor `*sql.DB`, is empty, or lists an unknown or
+  repeated driver;
+- a `*sql.DB` inject builds has no driver, `drivers` names more than one,
+  two consumers of it name different drivers, or the app provides it;
 - a client name is not lowerCamel, or two clients would be written to the
   same file (`name=default` and the unnamed client);
 - the dependencies have a cycle, or a function depends on what it provides;

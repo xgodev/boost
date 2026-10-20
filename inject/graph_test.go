@@ -229,6 +229,10 @@ func (suite *NewGraphFromEntriesTestSuite) TestIgnoresEntriesWithoutInjectAnnota
 		fn("NewA", nil, []string{"*A"}, provide("index=0")),
 		fn("Other", nil, nil, annotation.NewAnnotation("MyAnnotation", "")),
 		{Path: "x/p", Package: "p", Struct: "S", Annotations: []annotation.Annotation{provide("index=0")}},
+		// a package doc, collected with annotation.WithPackageDocs, is not a component
+		{Path: "x/p", Package: "p", File: "doc.go", Annotations: []annotation.Annotation{
+			provide("index=0"), annotation.NewAnnotation("Config", ""),
+		}},
 	}
 
 	g, err := NewGraphFromEntries(context.Background(), entries)

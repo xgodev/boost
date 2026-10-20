@@ -8,6 +8,11 @@ import (
 	"go.uber.org/fx"
 
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
+	echoerrorhandler "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
+	echohealth "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
+	echologger "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/wrapper/log"
+	echorecover "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/recover"
+	echorequestid "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/requestid"
 	gen_greeter_ebf8938b "github.com/xgodev/boost/factory/local/extra/middleware/examples/error/gen/internal/app/api/rest/handler/greeting/greeter"
 	src_greeter_ebf8938b "github.com/xgodev/boost/factory/local/extra/middleware/examples/error/internal/app/api/rest/handler/greeting/greeter"
 	echofx "github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4"
@@ -23,6 +28,15 @@ func RestModule() fx.Option {
 	restOnce.Do(func() {
 		options = fx.Module("api.rest",
 			echofx.Module(),
+			fx.Provide(func() []boostecho.Plugin {
+				return []boostecho.Plugin{
+					echorecover.Register,
+					echorequestid.Register,
+					echologger.Register,
+					echoerrorhandler.Register,
+					echohealth.Register,
+				}
+			}),
 			gen_greeter_ebf8938b.NewModule(),
 			fx.Invoke(func(srv *boostecho.Server, h0 *src_greeter_ebf8938b.Handler) {
 				srv.Add("GET", "/greetings/:name", h0.Handle)

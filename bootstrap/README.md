@@ -20,6 +20,14 @@ The `function` subpackage provides structures and utilities for working with fun
 The cloudevents nats adapter has no responder: the event a function returns
 goes to its middlewares, like `publisher`, and never back on the subject.
 
+### Job
+
+The `job` subpackage is a function an app runs once and then exits, the shape
+of a Kubernetes CronJob: `job.Handler`, `func(context.Context) error`.
+[`fx/modules/bootstrap/job`](../fx/modules/bootstrap/job) runs it and exits 0
+on nil, 1 on an error; SIGTERM cancels its context. builder generates the app
+from `@Job(app=<name>)`.
+
 ### Examples
 
 `function/examples` holds one builder app per adapter and middleware

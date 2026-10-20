@@ -6,6 +6,8 @@ type notFound struct {
 }
 
 // NotFoundf returns an error which satisfies IsNotFound().
+// Its message is the formatted text followed by " not found", so the format
+// names the thing: NotFoundf("sku %s", sku) says "sku cap not found".
 func NotFoundf(format string, args ...interface{}) error {
 	return &notFound{wrap(nil, format, " not found", args...)}
 }

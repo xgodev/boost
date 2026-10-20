@@ -10,24 +10,29 @@ import (
 	"go.uber.org/fx"
 )
 
-var once sync.Once
-
 type clusterParams struct {
 	fx.In
 	Plugins []redis.ClusterPlugin `optional:"true"`
 }
 
-// ClusterModule fx module for redis cluster client.
+var clusterOnce sync.Once
+
+// ClusterModule fx module for redis cluster client. The client closes on app stop.
 func ClusterModule() fx.Option {
 	options := fx.Options()
 
-	once.Do(func() {
+	clusterOnce.Do(func() {
 
 		options = fx.Options(
 			contextfx.Module(),
 			fx.Provide(
-				func(ctx context.Context, p clusterParams) (*r.ClusterClient, error) {
-					return redis.NewClusterClient(ctx, p.Plugins...)
+				func(ctx context.Context, lc fx.Lifecycle, p clusterParams) (*r.ClusterClient, error) {
+					client, err := redis.NewClusterClient(ctx, p.Plugins...)
+					if err != nil {
+						return nil, err
+					}
+					lc.Append(fx.StopHook(client.Close))
+					return client, nil
 				},
 			),
 		)
@@ -41,17 +46,24 @@ type clientParams struct {
 	Plugins []redis.Plugin `optional:"true"`
 }
 
-// ClientModule fx module for redis client.
+var clientOnce sync.Once
+
+// ClientModule fx module for redis client. The client closes on app stop.
 func ClientModule() fx.Option {
 	options := fx.Options()
 
-	once.Do(func() {
+	clientOnce.Do(func() {
 
 		options = fx.Options(
 			contextfx.Module(),
 			fx.Provide(
-				func(ctx context.Context, p clientParams) (*r.Client, error) {
-					return redis.NewClient(ctx, p.Plugins...)
+				func(ctx context.Context, lc fx.Lifecycle, p clientParams) (*r.Client, error) {
+					client, err := redis.NewClient(ctx, p.Plugins...)
+					if err != nil {
+						return nil, err
+					}
+					lc.Append(fx.StopHook(client.Close))
+					return client, nil
 				},
 			),
 		)

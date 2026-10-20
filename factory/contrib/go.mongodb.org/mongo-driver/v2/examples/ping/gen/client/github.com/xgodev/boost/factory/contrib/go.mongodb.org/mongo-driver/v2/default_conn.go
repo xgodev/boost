@@ -23,7 +23,7 @@ func init() {
 var defaultConnOnce sync.Once
 
 // DefaultConnModule provides the default client (*github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2.Conn), built from the keys under
-// boost.factory.mongo without plugins.
+// boost.factory.mongo without plugins, and closes it when the app stops.
 // It returns an empty option after the first call, so every consumer can
 // include it.
 func DefaultConnModule() fx.Option {
@@ -39,6 +39,11 @@ func DefaultConnModule() fx.Option {
 	return options
 }
 
-func newDefaultConn(ctx context.Context) (*factory.Conn, error) {
-	return factory.NewConnWithConfigPath(ctx, defaultConnRoot)
+func newDefaultConn(ctx context.Context, lc fx.Lifecycle) (*factory.Conn, error) {
+	c, err := factory.NewConnWithConfigPath(ctx, defaultConnRoot)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
 }

@@ -2,8 +2,8 @@
 
 `builder` generates the doors of an application on top of
 [`inject`](../inject): a handler declares with an annotation which door serves
-it (a REST route on echo, a gRPC service, an MCP tool or the event
-function), and the
+it (a REST route on echo, a gRPC service, an MCP tool, the event
+function or a job that runs once), and the
 generator writes one fx module per door, a `Modules()` per app and the `main`
 of every app. `@Middleware` on a constructor wraps every method of the
 interface it provides in `extra/middleware` plugins. One command runs inject
@@ -146,7 +146,8 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   that reads with a client (`nats`, `cenats`, `pubsub`), else `NotValid`.
   The pubsub v1 adapter keeps its own client.
 - With a list, `adapter=[pubsub, nats]`, config chooses the adapter:
-  `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`), default the first
+  `<app>.function.adapter` (env `<APP>_FUNCTION_ADAPTER`; see
+  [App names](#app-names) for a kebab-case app), default the first
   name. The door includes only the chosen adapter module, so the others and
   their clients are never built; an unknown name fails the boot with
   `NotValid` naming the key, the value and the valid names. The adapters'
@@ -165,6 +166,36 @@ func (h *Handler) Handle(ctx context.Context, in cloudevents.Event) (*cloudevent
   `publisher` needs the app's unnamed `publisher.Driver`: the door builds the
   `@Provide` constructor that returns it, and generation fails with NotFound
   when there is none (fx would skip the middleware silently).
+
+### `@Job`: an app that runs once and exits
+
+```go
+package stockaudit
+
+// Run checks the stock of the configured items.
+// @Job(app=stock-audit)
+func (a *Auditor) Run(ctx context.Context) error { ... }
+```
+
+| Key | Required | Meaning |
+|---|---|---|
+| `app` | yes | application; a job is a binary of its own |
+
+- The handler is a [`job.Handler`](../bootstrap/job):
+  `func(context.Context) error`, a function or a method. A method needs a
+  provided receiver, as in `@REST`; `@Middleware` on the services it
+  receives applies as in any door.
+- The app is the shape of a Kubernetes CronJob: `boost.Start()`, the graph,
+  the handler once, then the app stops. The door includes
+  [`jobfx.Module()`](../fx/modules/bootstrap/job), which runs the handler on
+  start.
+- Nil exits 0. An error is logged at ERROR (`job failed: <error>`) and exits 1.
+- SIGTERM cancels the handler's context and the app waits for it to return,
+  up to the fx stop timeout (15s by default). Its error (`ctx.Err()` when it
+  gave up) fails the stop and the app exits 1; nil exits 0; a handler still
+  running at the timeout exits 1.
+- An app runs one `@Job` and nothing else: a server door or a `@Function` in
+  the same app fails the generation.
 
 ### `@Middleware`: plugins around every method of a service
 
@@ -208,9 +239,94 @@ func New() Service { return &memory{} }
   every implementation may carry its own `@Middleware` of the same
   interface.
 
-App and server names match `^[a-z][a-z0-9]*$` (they become a package, a file,
-a function and a config path); an app is not a Go keyword, `main` or
-`middleware`, and a server is not `function`.
+### `@Server`: the plugins of a server
+
+```go
+// Package rest holds what the REST server of the app is built with.
+// @Server(type=rest, plugins=[recover, requestId, logger, errorHandler, health, prometheus])
+package rest
+```
+
+- It goes in a package doc, above the `package` clause (a `doc.go`):
+  everything of a server lives in its own package,
+  `internal/pkg/server/<transport>/`. On a declaration it fails.
+- `type` (required) is the server type, one of `rest`, `grpc`, `mcp` and
+  `cloudevents` (the http adapter of `@Function`). Each type has its own
+  plugins; a new server type is a new row of this table, not a new
+  annotation.
+- `name` is the server (default: `rest`, `grpc` or `mcp`, the type's shipped
+  server; any other is a named server, see [Servers](#servers)) and `app`
+  its app (default `api`). `cloudevents` takes no `name`: its plugins go to
+  the `@Function` of `app` when it runs with that adapter.
+- `plugins` lists the plugins in order, none twice; `plugins=[]` builds the
+  server without any. Without `plugins`, and for a server with no `@Server`
+  at all, it gets the default set (the plugins marked below).
+- The door imports each plugin and provides the `[]Plugin` of the server
+  (the unnamed one of the shipped module, or the one named after the
+  server), so the app writes no plugin code. Config only turns one off:
+  `<plugins root>.<name>.enabled` (default `true`), as
+  `boost.factory.echo.plugins.prometheus.enabled`.
+
+| `rest` | Plugin (`boost.factory.echo.plugins.<name>`) | Default |
+|---|---|---|
+| `recover` | [`native/recover`](../factory/contrib/labstack/echo/v4/plugins/native/recover) | yes |
+| `requestId` | [`native/requestid`](../factory/contrib/labstack/echo/v4/plugins/native/requestid) | yes |
+| `logger` | [`local/wrapper/log`](../factory/contrib/labstack/echo/v4/plugins/local/wrapper/log) | yes |
+| `errorHandler` | [`extra/error_handler`](../factory/contrib/labstack/echo/v4/plugins/extra/error_handler) | yes |
+| `health` | [`local/extra/health`](../factory/contrib/labstack/echo/v4/plugins/local/extra/health) | yes |
+| `prometheus` | [`contrib/prometheus/client_golang/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1) |  |
+| `otel` | [`contrib/go.opentelemetry.io/contrib/v0`](../factory/contrib/labstack/echo/v4/plugins/contrib/go.opentelemetry.io/contrib/v0) |  |
+| `datadog` | [`contrib/datadog/dd-trace-go/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/datadog/dd-trace-go/v1) |  |
+| `pprof` | [`contrib/hiko1129/echo-pprof/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/hiko1129/echo-pprof/v1) |  |
+| `swagger` | [`contrib/swaggo/echo-swagger/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/swaggo/echo-swagger/v1) |  |
+| `cors` | [`native/cors`](../factory/contrib/labstack/echo/v4/plugins/native/cors) |  |
+| `gzip` | [`native/gzip`](../factory/contrib/labstack/echo/v4/plugins/native/gzip) |  |
+| `bodyLimit` | [`native/bodylimit`](../factory/contrib/labstack/echo/v4/plugins/native/bodylimit) |  |
+| `bodydump` | [`native/bodydump`](../factory/contrib/labstack/echo/v4/plugins/native/bodydump) |  |
+| `semaphore` | [`extra/semaphore`](../factory/contrib/labstack/echo/v4/plugins/extra/semaphore) |  |
+| `status` | [`local/model/restresponse`](../factory/contrib/labstack/echo/v4/plugins/local/model/restresponse) |  |
+| `multiServer` | [`local/extra/multi-server`](../factory/contrib/labstack/echo/v4/plugins/local/extra/multi-server) |  |
+| `bytedanceSonic` | [`contrib/bytedance/sonic/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/bytedance/sonic/v1) |  |
+| `goccyGoJson` | [`contrib/goccy/go-json/v0`](../factory/contrib/labstack/echo/v4/plugins/contrib/goccy/go-json/v0) |  |
+
+| `grpc` | Plugin (`boost.factory.grpc.server.plugins.<name>`) | Default |
+|---|---|---|
+| `log` | [`local/wrapper/log`](../factory/contrib/google.golang.org/grpc/v1/server/plugins/local/wrapper/log) | yes |
+| `prometheus` | [`contrib/prometheus/client_golang/v1`](../factory/contrib/google.golang.org/grpc/v1/server/plugins/contrib/prometheus/client_golang/v1) |  |
+| `datadog` | [`contrib/datadog/dd-trace-go/v1`](../factory/contrib/google.golang.org/grpc/v1/server/plugins/contrib/datadog/dd-trace-go/v1) |  |
+| `compressor` | [`native/compressor`](../factory/contrib/google.golang.org/grpc/v1/server/plugins/native/compressor) |  |
+
+| `mcp` | Plugin (`boost.factory.mcp.server.plugins.<name>`) | Default |
+|---|---|---|
+| `log` | [`local/wrapper/log`](../factory/contrib/modelcontextprotocol/go-sdk/v1/server/plugins/local/wrapper/log) | yes |
+| `otel` | [`contrib/go.opentelemetry.io/otel/v1`](../factory/contrib/modelcontextprotocol/go-sdk/v1/server/plugins/contrib/go.opentelemetry.io/otel/v1) |  |
+
+| `cloudevents` | Plugin (`boost.bootstrap.function.adapter.cloudevents.http.plugins.<name>`) | Default |
+|---|---|---|
+| `otel` | [`contrib/go.opentelemetry.io/contrib/v0`](../bootstrap/function/adapter/contrib/cloudevents/sdk-go/v2/core/http/plugins/contrib/go.opentelemetry.io/contrib/v0) |  |
+
+- A `@Provide` `[]Plugin` still builds a server (see [Servers](#servers)):
+  that server gets no default set, and a `@Server` for it too fails.
+
+### App names
+
+An app name is kebab case, as deploys are named: it matches
+`^[a-z][a-z0-9]*(-[a-z0-9]+)*$`, is not `middleware` and, without its
+hyphens, is not a Go keyword or `main`. It maps to:
+
+| App | `cmd/` and `gen/builder/` directory, binary | Go package | Config path element | Env prefix |
+|---|---|---|---|---|
+| `api` | `api` | `api` | `api` | `API_` |
+| `orders-updater` | `orders-updater` | `ordersupdater` | `ordersUpdater` | `ORDERS__UPDATER_` |
+
+The config element is camelCase because the env loader reads a `__` as the
+hyphen of a camelCase word: `ORDERS__UPDATER_FUNCTION_ADAPTER=nats` sets
+`ordersUpdater.function.adapter`, `ORDERS__UPDATER_SERVER_ADMIN_PORT` sets
+`ordersUpdater.server.admin.port`. The generated main imports the package
+under the alias `app`.
+
+A server name matches `^[a-z][a-z0-9]*$` (it becomes a file, a function and
+a config path element) and is not `function`.
 
 ## Generating
 
@@ -233,6 +349,7 @@ gen/
   builder/<app>/modules.go           # func Modules() []fx.Option
   builder/<app>/<server>_module.go   # one REST, gRPC or MCP server and its routes/services/tools
   builder/<app>/function_module.go   # the @Function handler and its adapter
+  builder/<app>/job_module.go        # the @Job handler, run once
   builder/middleware/<package path>/<func>_middleware.go # Decorate<Func>(): the @Middleware decorator
 ```
 
@@ -256,7 +373,8 @@ key per field and provides `*Struct` to the constructors that receive it (see
 [`inject`](../inject#config)). A door that reaches such a constructor
 includes the config module, so the package never imports `wrapper/config`.
 Factory clients too: `@Inject(index=0, name=quote, plugins=[otel])` on a
-`*resty.Client` (redis, mongo, NATS, Pub/Sub, gocql, AWS) parameter makes
+`*resty.Client` (redis, mongo, NATS, Pub/Sub, gocql, AWS, `*sql.DB` through
+godror or pgx) parameter makes
 inject build that client with those plugins and its own config under
 `boost.factory.resty.clients.quote` (see
 [`inject`](../inject#factory-clients)), so the app writes no factory module.
@@ -276,7 +394,9 @@ fails the generation instead of being overwritten. Other files under `cmd/`
 - Any other name is a separate server configured under
   `<app>.server.<name>` (`api.server.admin.port`): give it its own port.
 - A server name serves one kind of door: REST, gRPC or MCP.
-- Plugins are optional and come from `@Provide`: a `[]boostecho.Plugin`
+- Plugins come from the server's [`@Server`](#server-the-plugins-of-a-server)
+  or, without one, from its default set. A plugin of your own comes from
+  `@Provide` instead: a `[]boostecho.Plugin`
   (REST) or `[]server.Plugin` (gRPC,
   [`grpc/v1/server`](../factory/contrib/google.golang.org/grpc/v1/server);
   MCP, [`go-sdk/v1/server`](../factory/contrib/modelcontextprotocol/go-sdk/v1/server))
@@ -309,11 +429,18 @@ The command fails, without touching the output directory, when:
   to an exported function;
 - an app has two `@Function`, or `adapter` is missing or unknown, or its
   list is empty or repeats a name;
+- `@Job` has no `app`, an app has two `@Job`, or a job app also has a
+  server door or a `@Function`;
 - `middlewares` is not written as `[a, b]`, or lists an empty, unknown or
   repeated name;
 - a server is used by two kinds of door;
 - `rest`, `grpc` or `mcp` gets both a `[]Plugin` with `name=<server>` and
   one without `name`: provide one of them;
+- `@Server` is not in a package doc, has no `type`, an unknown one, an
+  unknown or repeated plugin, `name` on `cloudevents`, names a server of
+  another type or one no app has (or an app whose `@Function` does not run
+  `cloudevents`), is repeated for a server, or meets a `@Provide []Plugin`
+  of the same server;
 - an app or server name is invalid, or an annotation has an unknown key;
 - the handler is unexported or in package `main`;
 - `@Middleware` lists no plugin, an unknown one or one twice, is repeated,
@@ -364,7 +491,7 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
 
 ## Example
 
-[`examples/simple`](./examples/simple) has two apps:
+[`examples/simple`](./examples/simple) has three apps:
 
 - `api`: REST `POST /orders` and `GET /orders/:id` on `rest`, `GET`/`HEAD
   /live` on `admin` (built with the `X-Served-By: admin` plugin of
@@ -377,27 +504,37 @@ mains, _ := doors.RenderCmd(ctx) // <app>/main.go relative to CmdDir
   sold-out items from its `@Config Options`
   (`builder.examples.simple.stock.memory.soldOut`, env
   `BUILDER_EXAMPLES_SIMPLE_STOCK_MEMORY_SOLD__OUT`, default `sold-out`);
-- `worker`: the `ordercreated` function on the cloudevents, the nats or the
-  pubsub adapter, chosen by `worker.function.adapter` (`WORKER_FUNCTION_ADAPTER`,
-  default `cloudevents`), behind the `recovery` and `logger` middlewares; its
-  handler injects the publisher with `drivers=[nats, pubsub]`, so the worker
-  links no Kafka client.
+- `order-worker`: the `ordercreated` function on the cloudevents, the nats or
+  the pubsub adapter, chosen by `orderWorker.function.adapter`
+  (`ORDER__WORKER_FUNCTION_ADAPTER`, default `cloudevents`), behind the
+  `recovery` and `logger` middlewares; its handler injects the publisher with
+  `drivers=[nats, pubsub]`, so the worker links no Kafka client. Its package
+  is `gen/builder/order-worker`, package `orderworker`;
+- `stock-audit`: the `@Job` of `stockaudit`, which asks `stock.Service` (the
+  decorated memory one by default) for the items of its `@Config Options`
+  (`builder.examples.simple.stockaudit.items`, default `book, pen,
+  sold-out`), logs the sold-out ones and exits.
 
-`cmd/api/main.go` and `cmd/worker/main.go` are generated. Its tests call the
+`cmd/api/main.go`, `cmd/order-worker/main.go` and `cmd/stock-audit/main.go`
+are generated. Its tests call the
 routes, the gRPC service and the MCP tool of the generated app, check that the handler
 receives the stock decorator and that prometheus counted its call, boot the
 api with `unlimited` (wired without the decorator), with an unknown name
 (the boot fails) and with `SOLD__OUT=book,pen` (the env replaces the
 default list), run the function handler, boot the worker with each adapter
 (nats on an embedded server) and with an unknown one (the boot fails), run
-the generated main with only `WORKER_FUNCTION_ADAPTER=nats` until it records
+the generated main with only `ORDER__WORKER_FUNCTION_ADAPTER=nats` until it records
 an order published on NATS and then send it SIGTERM (it exits 0 within a
-second), run it with only `WORKER_FUNCTION_ADAPTER=pubsub`, v2 and v1, against
+second), run it with only `ORDER__WORKER_FUNCTION_ADAPTER=pubsub`, v2 and v1, against
 a `pstest` fake until it records a CloudEvent and a raw message, stays up
 and exits 0 on SIGTERM, and with no subscription (the boot fails naming it),
 build the worker and check with `go version -m` that it has no
 `confluent-kafka-go`, boot it with the kafka driver (the boot fails listing
-`nats, noop, pubsub`), and fail when `gen/` or a main is stale.
+`nats, noop, pubsub`), run the generated main of `stock-audit` on the memory
+stock (it exits 0 by itself), on the remote stock against a warehouse that
+answers 500 (it logs `job failed` and exits 1) and against one that never
+answers, sending SIGTERM while the job waits (the job context is cancelled
+and it exits 1 within seconds), and fail when `gen/` or a main is stale.
 
 ## Non-goals
 

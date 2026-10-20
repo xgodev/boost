@@ -7,6 +7,8 @@ type notImplemented struct {
 }
 
 // NotImplementedf returns an error which satisfies IsNotImplemented().
+// Its message is the formatted text followed by " not implemented", so the format
+// names the thing: NotImplementedf("sku %s", sku) says "sku cap not implemented".
 func NotImplementedf(format string, args ...interface{}) error {
 	return &notImplemented{wrap(nil, format, " not implemented", args...)}
 }

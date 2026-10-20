@@ -7,10 +7,11 @@ import (
 
 	"go.uber.org/fx"
 
-	gen_rest_54b9e997 "github.com/acme/shop/gen/internal/app/api/rest"
 	gen_reserver_5a8b66f7 "github.com/acme/shop/gen/internal/app/api/rest/handler/stock/reserver"
 	src_reserver_5a8b66f7 "github.com/acme/shop/internal/app/api/rest/handler/stock/reserver"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
+	echoerrorhandler "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
+	echorecover "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/native/recover"
 	echofx "github.com/xgodev/boost/fx/modules/factory/contrib/labstack/echo/v4"
 )
 
@@ -24,8 +25,13 @@ func RestModule() fx.Option {
 	restOnce.Do(func() {
 		options = fx.Module("api.rest",
 			echofx.Module(),
+			fx.Provide(func() []boostecho.Plugin {
+				return []boostecho.Plugin{
+					echorecover.Register,
+					echoerrorhandler.Register,
+				}
+			}),
 			gen_reserver_5a8b66f7.NewModule(),
-			gen_rest_54b9e997.PluginsModule(),
 			fx.Invoke(func(srv *boostecho.Server, h0 *src_reserver_5a8b66f7.Handler) {
 				srv.Add("POST", "/stock/:sku/reserve", h0.Handle)
 			}),

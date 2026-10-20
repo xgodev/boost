@@ -217,6 +217,10 @@ type parsedAnnotation struct {
 // newComponent parses the inject annotations of an entry. It returns false
 // when the entry does not take part in injection.
 func newComponent(entry annotation.Entry) (Component, bool, error) {
+	// a package doc (builder's @Server) holds no constructor nor config
+	if entry.IsPackage() {
+		return Component{}, false, nil
+	}
 	parsed, err := parseAnnotations(entry)
 	if err != nil || len(parsed) == 0 {
 		return Component{}, false, err
@@ -336,7 +340,7 @@ func validateProvides(entry annotation.Entry, provides map[int]Annotation) error
 			return errors.NotValidf("@Provide on %s result %d cannot have plugins: plugins go on the @Inject of a client parameter", gid(entry), idx)
 		}
 		if ann.Drivers != "" {
-			return errors.NotValidf("@Provide on %s result %d cannot have drivers: drivers go on the @Inject of a *publisher.Publisher parameter", gid(entry), idx)
+			return errors.NotValidf("@Provide on %s result %d cannot have drivers: drivers go on the @Inject of a *publisher.Publisher or %s parameter", gid(entry), idx, strings.Join(driverClients(), ", "))
 		}
 	}
 	return nil
@@ -377,15 +381,23 @@ func validateInjects(entry annotation.Entry, injects map[int]Annotation) error {
 }
 
 // validateDrivers checks the drivers of an @Inject: the parameter is a
-// *publisher.Publisher and every driver is one inject generates.
+// *publisher.Publisher and every driver is one inject generates, or a client
+// built by several drivers (*sql.DB) and it names one of them.
 func validateDrivers(entry annotation.Entry, idx int, ann Annotation) error {
 	if ann.Drivers == "" {
 		return nil
 	}
 
 	tp := entry.Func.Parameters[idx].Type
+	if f, ok := clientFactory(entry, tp); ok && len(f.Drivers) > 0 {
+		if _, err := parseClientDriver(f, ann.Drivers); err != nil {
+			return errors.NewNotValid(err, fmt.Sprintf("@Inject on %s parameter %d", gid(entry), idx))
+		}
+		return nil
+	}
 	if !isPublisher(entry, tp) {
-		return errors.NotValidf("@Inject on %s parameter %d has drivers, but %s is not *publisher.Publisher", gid(entry), idx, tp)
+		return errors.NotValidf("@Inject on %s parameter %d has drivers, but %s is neither *publisher.Publisher nor a client built by one of several drivers (%s)",
+			gid(entry), idx, tp, strings.Join(driverClients(), ", "))
 	}
 
 	drivers, err := parseDrivers(ann.Drivers)

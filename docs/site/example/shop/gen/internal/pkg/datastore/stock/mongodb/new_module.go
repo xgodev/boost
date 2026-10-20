@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/fx"
 
+	client_mongo_d932eadb "github.com/acme/shop/gen/client/github.com/xgodev/boost/factory/contrib/go.mongodb.org/mongo-driver/v2"
 	src_mongodb_1bacb721 "github.com/acme/shop/internal/pkg/datastore/stock/mongodb"
 )
 
@@ -21,6 +22,7 @@ func NewModule() fx.Option {
 	NewOnce.Do(func() {
 		options = fx.Module("github.com/acme/shop/internal/pkg/datastore/stock/mongodb.New",
 			OptionsModule(),
+			client_mongo_d932eadb.DefaultConnModule(),
 			fx.Provide(src_mongodb_1bacb721.New),
 		)
 	})

@@ -26,7 +26,7 @@ func init() {
 var defaultClientOnce sync.Once
 
 // DefaultClientModule provides the default client (*github.com/redis/go-redis/v9.Client), built from the keys under
-// boost.factory.redis with the plugins health.
+// boost.factory.redis with the plugins health, and closes it when the app stops.
 // It returns an empty option after the first call, so every consumer can
 // include it.
 func DefaultClientModule() fx.Option {
@@ -42,10 +42,15 @@ func DefaultClientModule() fx.Option {
 	return options
 }
 
-func newDefaultClient(ctx context.Context) (*client.Client, error) {
+func newDefaultClient(ctx context.Context, lc fx.Lifecycle) (*client.Client, error) {
 	health, err := healthplugin.NewClientHealthWithConfigPath(defaultClientRoot + ".plugins.health")
 	if err != nil {
 		return nil, err
 	}
-	return factory.NewClientWithConfigPath(ctx, defaultClientRoot, health.Register)
+	c, err := factory.NewClientWithConfigPath(ctx, defaultClientRoot, health.Register)
+	if err != nil {
+		return nil, err
+	}
+	lc.Append(fx.StopHook(c.Close))
+	return c, nil
 }
