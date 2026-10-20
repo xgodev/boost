@@ -24,6 +24,7 @@ factory por componente sob `factory/contrib/`.
 - API pública alterada sem teste e sem nota de compat
 - `git push` sem quality-gate verde (suspenso por enquanto, ver `docs/development/quality-gate.md`)
 - Issue ou PR ausentes (ver `docs/development/gitflow.md`)
+- Mudança sem README/site atualizados ou sem issue no `xgodev/claude-plugin`
 - Tag, GitHub Release, PR `develop` → `main` ou bump de versão do site/README
   sem o mantenedor mandar lançar. Issue para no merge em `develop`; release
   só por `release/X.Y.Z` (minor/major) ou `bugfix/X.Y.Z` / `hotfix/X.Y.Z`
@@ -36,8 +37,12 @@ factory por componente sob `factory/contrib/`.
 - **Single source of truth** — config keys e defaults declarados uma vez no
   `config.go` do componente.
 - **Separação de concerns** — factory constrói, wrapper abstrai, app consome.
-- Documentação é parte da tarefa: mudou componente/config key/comportamento →
-  atualizar o README do pacote no mesmo commit.
+- **Premissa: toda mudança leva a doc junto.** Coisa nova, alterada ou
+  removida (componente, config key, anotação, comportamento) → no mesmo PR,
+  o README do pacote, o `README.md` da raiz e o site quando eles mostram
+  aquilo; e uma issue no `xgodev/claude-plugin` pedindo a atualização da
+  skill do boost (ver [Doc do plugin](#doc-do-plugin-fora-deste-repo)).
+  Sem as três, a issue não está pronta.
 - **`examples/stock` é o app de exemplo completo.** Recurso novo no boost
   (factory, plugin, adapter, anotação do builder) entra nele no mesmo PR,
   com teste em `cmd/<app>/main_test.go` e linha no `examples/stock/README.md`
@@ -51,9 +56,11 @@ factory por componente sob `factory/contrib/`.
 
 A doc de consumo do boost e o Quality Gate são distribuídos pelo plugin
 **`claude-plugin@xgodev`** (repo `xgodev/claude-plugin`). Este repo (`boost`)
-**não é marketplace, não contém skills do plugin e não sincroniza doc de
-plugin** — isso é responsabilidade do `xgodev/claude-plugin`, fora do escopo
-daqui.
+**não é marketplace, não contém skills do plugin e não edita o plugin.**
+Toda mudança no boost abre uma issue no `xgodev/claude-plugin` (label
+`documentation`) dizendo o que mudou, com link para a issue/PR do boost e
+para o README que tem os detalhes; quem atualiza a skill é o
+`xgodev/claude-plugin`.
 
 Instalação do plugin:
 

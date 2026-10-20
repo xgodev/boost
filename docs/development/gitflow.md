@@ -43,7 +43,10 @@ título de PR e de GitHub Release usam `X.Y.Z` (`1.6.2`). `{N}` é o número da 
    [`quality-gate.md`](quality-gate.md)); religado, vermelho → corrige a causa
    raiz → roda de novo → só então push.
 9. **Issue pronta = PR mergeado em `develop`** (`gh pr merge N --merge`), sem
-   esperar review. Depois do merge, apagar a branch remota.
+   esperar review. Depois do merge, apagar a branch remota. O PR já leva o
+   README do pacote, o `README.md` da raiz e o site atualizados, e a issue
+   tem o link da issue aberta no `xgodev/claude-plugin` pedindo a
+   atualização da skill do boost (o boost não edita o plugin).
 
 ## Versão (release)
 
