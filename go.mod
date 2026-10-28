@@ -72,7 +72,7 @@ require (
 	github.com/labstack/echo-contrib/v5 v5.0.1
 	github.com/labstack/echo-otel/v5 v5.0.0
 	github.com/labstack/echo/v4 v4.16.0
-	github.com/labstack/echo/v5 v5.4.0
+	github.com/labstack/echo/v5 v5.4.1
 	github.com/labstack/gommon v0.5.0
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
 	github.com/lovoo/goka v1.1.17
