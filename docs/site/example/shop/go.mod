@@ -3,7 +3,7 @@ module github.com/acme/shop
 go 1.26.5
 
 require (
-	github.com/labstack/echo/v4 v4.16.0
+	github.com/labstack/echo/v4 v4.16.1
 	github.com/stretchr/testify v1.12.1
 	github.com/xgodev/boost v0.0.0
 	go.mongodb.org/mongo-driver/v2 v2.9.2
