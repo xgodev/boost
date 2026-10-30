@@ -931,7 +931,7 @@ srv.<span class="fn">Serve</span>(ctx)</pre>
     </div>
     <div class="walk">
       <ol class="steps">
-        <li><div><h3>Annotate</h3><p>Mark constructors with <span class="mono" style="color:var(--ann)">@Provide</span>, handlers with a door, services with <span class="mono" style="color:var(--ann)">@Middleware</span>, the default implementation with <span class="mono" style="color:var(--ann)">@Default</span>, options with <span class="mono" style="color:var(--ann)">@Config</span>, the plugins of a server with <span class="mono" style="color:var(--ann)">@Server</span>.</p></div></li>
+        <li><div><h3>Annotate</h3><p>Mark constructors with <span class="mono" style="color:var(--ann)">@Provide</span>, the clients they receive with <span class="mono" style="color:var(--ann)">@Inject</span>, handlers with a door, services with <span class="mono" style="color:var(--ann)">@Middleware</span>, the default implementation with <span class="mono" style="color:var(--ann)">@Default</span>, options with <span class="mono" style="color:var(--ann)">@Config</span>, the plugins of a server with <span class="mono" style="color:var(--ann)">@Server</span>.</p></div></li>
         <li><div><h3>Generate</h3><p>Inject and builder run in one pass. A broken graph stops here and leaves your output untouched.</p><code class="cmd">go generate ./...</code></div></li>
         <li><div><h3>Run</h3><p>Each app gets its own <code class="mono">main</code>, with the servers and plugins it declared.</p><code class="cmd">go run ./cmd/api</code></div></li>
       </ol>
@@ -945,6 +945,8 @@ gen/
 │   │   └── rest_module.go     <span class="note">// @REST POST /stock/:sku/reserve</span>
 │   └── middleware/…/local/
 │       └── new_middleware.go  <span class="note">// @Middleware(log, prometheus)</span>
+├── client/…/mongo-driver/v2/
+│   └── default_conn.go        <span class="note">// @Inject: the mongo conn</span>
 ├── implementation/…/stock/
 │   └── repository_implementation.go
 │                              <span class="note">// @Default: memory | mongodb</span>

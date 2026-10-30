@@ -869,9 +869,10 @@ srv.Serve(ctx)
 You write handlers, services and annotations. Everything that repeats between
 services is generated, checked and rewritten on every run.
 
-1. **Annotate.** Mark constructors with `@Provide`, handlers with a door,
-   services with `@Middleware`, the default implementation with `@Default`,
-   options with `@Config`, the plugins of a server with `@Server`.
+1. **Annotate.** Mark constructors with `@Provide`, the clients they receive
+   with `@Inject`, handlers with a door, services with `@Middleware`, the
+   default implementation with `@Default`, options with `@Config`, the plugins
+   of a server with `@Server`.
 2. **Generate.** Inject and builder run in one pass. A broken graph stops here
    and leaves your output untouched.
 
@@ -897,6 +898,8 @@ gen/
 │   │   └── rest_module.go     // @REST POST /stock/:sku/reserve
 │   └── middleware/…/local/
 │       └── new_middleware.go  // @Middleware(log, prometheus)
+├── client/…/mongo-driver/v2/
+│   └── default_conn.go        // @Inject: the mongo conn
 ├── implementation/…/stock/
 │   └── repository_implementation.go
 │                              // @Default: memory | mongodb
