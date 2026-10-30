@@ -13,7 +13,7 @@ Boot, config, logs, 58 factories, middleware, health and code generation in one 
 <p align="center">
   <a href="https://github.com/xgodev/boost/releases/latest"><img src="https://img.shields.io/github/v/release/xgodev/boost?label=release" alt="release"></a>
   <a href="https://github.com/xgodev/boost/actions/workflows/go.yml"><img src="https://github.com/xgodev/boost/actions/workflows/go.yml/badge.svg" alt="Go"></a>
-  <img src="https://img.shields.io/badge/go-1.18%2B-00ADD8" alt="go 1.18+">
+  <img src="https://img.shields.io/badge/go-1.26.5%2B-00ADD8" alt="go 1.26.5+">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
 </p>
 
