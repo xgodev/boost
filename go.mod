@@ -22,6 +22,7 @@ require (
 	github.com/DataDog/dd-trace-go/contrib/labstack/echo.v5/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/contrib/redis/go-redis.v9/v2 v2.11.2
 	github.com/DataDog/dd-trace-go/v2 v2.11.2
+	github.com/MicahParks/keyfunc/v3 v3.9.2
 	github.com/XSAM/otelsql v0.44.0
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/allegro/bigcache/v3 v3.2.0
@@ -55,6 +56,7 @@ require (
 	github.com/gocql/gocql v1.7.0
 	github.com/godror/godror v0.51.5
 	github.com/gofiber/fiber/v2 v2.52.15
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/graphql-go/graphql v0.8.1
 	github.com/graphql-go/handler v0.2.4
@@ -176,6 +178,7 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.61.0 // indirect
 	github.com/IBM/sarama v1.61.1 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
+	github.com/MicahParks/jwkset v0.11.4 // indirect
 	github.com/Microsoft/go-winio v0.6.4 // indirect
 	github.com/VictoriaMetrics/easyproto v1.2.0 // indirect
 	github.com/andybalholm/brotli v1.2.2 // indirect
@@ -249,7 +252,6 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/godror/knownpb v0.3.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/flatbuffers v25.12.19+incompatible // indirect

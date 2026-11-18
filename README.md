@@ -27,7 +27,7 @@ Boot, config, logs, 58 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 58 | 46 | 107 | 221 |
+| 58 | 46 | 108 | 221 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -739,7 +739,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**58** factories · **46** upstream libraries · **107** plugins
+**58** factories · **46** upstream libraries · **108** plugins
 
 ### Plugins
 
@@ -748,7 +748,7 @@ srv.Serve(ctx)
 Behaviour you opt into per factory, applied in the order you list it.
 
 `cors` `requestid` `gzip` `log` `health` `recover` `bodylimit` `prometheus`
-`otel` `datadog` `swaggo` `semaphore`
+`otel` `datadog` `swaggo` `semaphore` `jwt`
 
 ### Wrappers
 

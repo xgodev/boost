@@ -64,6 +64,7 @@ var serverTypes = map[string]serverType{
 			"goccyGoJson":    echoPlugins + "/contrib/goccy/go-json/v0",
 			"gzip":           echoPlugins + "/native/gzip",
 			"health":         echoPlugins + "/local/extra/health",
+			"jwt":            echoPlugins + "/contrib/golang-jwt/jwt/v5",
 			"logger":         echoPlugins + "/local/wrapper/log",
 			"multiServer":    echoPlugins + "/local/extra/multi-server",
 			"otel":           echoPlugins + "/contrib/go.opentelemetry.io/contrib/v0",
