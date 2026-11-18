@@ -116,6 +116,7 @@ Every switch is a config key; the env var is the key in upper case with `_`.
 | `BOOST_WRAPPER_PUBLISHER_DRIVER_NAME=nats` | announce `stock.reserved` on NATS (`BOOST_FACTORY_NATS_URL`) |
 | `WORKER_FUNCTION_ADAPTER=nats` | the worker reads `order.created` from NATS (`BOOST_BOOTSTRAP_FUNCTION_ADAPTER_NATS_SUBJECTS`) |
 | `BOOST_FACTORY_ECHO_PLUGINS_PROMETHEUS_ENABLED=false` | turns one plugin of a server off; the others stay |
+| `BOOST_FACTORY_ECHO_PLUGINS_JWT_ENABLED=true` | the rest server needs `Authorization: Bearer <token>` signed by a key of `BOOST_FACTORY_ECHO_PLUGINS_JWT_JWKS__URL`, with `_ISSUER` and `_AUDIENCE`; without it `curl localhost:8080/stocks/tshirt` answers `401 {"httpStatusCode":401,"errorCode":"401","message":"missing bearer token"}`, `/health` stays open |
 | `BOOST_FACTORY_OTEL_ENDPOINT=collector:4317` | where the worker exports its traces and metrics (default `localhost:4317`): the `otel` plugin of its cloudevents `@Server` starts the OpenTelemetry providers |
 | `INTERNAL_APP_STOCKCHECK_JOB_STOCK_CHECKER_SKUS=tshirt,mug` | the skus the job checks |
 
@@ -129,6 +130,7 @@ Every switch is a config key; the env var is the key in upper case with `_`.
 | CloudEvents / NATS function | `internal/app/worker/cloudevents/handler/stock/reserver/handler.go` | `@Function(adapter=[cloudevents, nats])` |
 | Job | `internal/app/stockcheck/job/stock/checker/handler.go` | `@Job` |
 | Server plugins | `internal/pkg/server/{rest,grpc,mcp,cloudevents}/doc.go` | `@Server` |
+| JWT authentication (off by default) | `internal/pkg/server/rest/doc.go` | `@Server(plugins=[..., jwt])` |
 | REST model | `internal/pkg/server/rest/model/stock.go` | -- |
 | Service middlewares (log, prometheus) | `internal/pkg/domain/service/stock/*/local/service.go` | `@Middleware` |
 | Implementation by config | `internal/pkg/datastore/stock/memory/datastore.go`, `.../reserver/local/service.go` | `@Default` |

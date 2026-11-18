@@ -14,6 +14,7 @@ import (
 	src_finder_773dc854 "github.com/xgodev/boost/examples/stock/internal/app/api/rest/handler/stock/finder"
 	src_reserver_e8b7ca47 "github.com/xgodev/boost/examples/stock/internal/app/api/rest/handler/stock/reserver"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
+	echojwt "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/contrib/golang-jwt/jwt/v5"
 	echoprometheus "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1"
 	echoerrorhandler "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/extra/error_handler"
 	echohealth "github.com/xgodev/boost/factory/contrib/labstack/echo/v4/plugins/local/extra/health"
@@ -41,6 +42,7 @@ func RestModule() fx.Option {
 					echoerrorhandler.Register,
 					echohealth.Register,
 					echoprometheus.Register,
+					echojwt.Register,
 				}
 			}),
 			gen_creator_34324f41.NewModule(),

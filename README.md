@@ -13,7 +13,7 @@ Boot, config, logs, 58 factories, middleware, health and code generation in one 
 <p align="center">
   <a href="https://github.com/xgodev/boost/releases/latest"><img src="https://img.shields.io/github/v/release/xgodev/boost?label=release" alt="release"></a>
   <a href="https://github.com/xgodev/boost/actions/workflows/go.yml"><img src="https://github.com/xgodev/boost/actions/workflows/go.yml/badge.svg" alt="Go"></a>
-  <img src="https://img.shields.io/badge/go-1.18%2B-00ADD8" alt="go 1.18+">
+  <img src="https://img.shields.io/badge/go-1.26.5%2B-00ADD8" alt="go 1.26.5+">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
 </p>
 
@@ -27,7 +27,7 @@ Boot, config, logs, 58 factories, middleware, health and code generation in one 
 go get github.com/xgodev/boost
 ```
 
-| 58 | 46 | 107 | 221 |
+| 58 | 46 | 108 | 221 |
 |:---:|:---:|:---:|:---:|
 | factories | libraries | plugins | releases since 2024 |
 
@@ -739,7 +739,7 @@ srv.GET("/stock/:sku", Get)
 srv.Serve(ctx)
 ```
 
-**58** factories · **46** upstream libraries · **107** plugins
+**58** factories · **46** upstream libraries · **108** plugins
 
 ### Plugins
 
@@ -748,7 +748,7 @@ srv.Serve(ctx)
 Behaviour you opt into per factory, applied in the order you list it.
 
 `cors` `requestid` `gzip` `log` `health` `recover` `bodylimit` `prometheus`
-`otel` `datadog` `swaggo` `semaphore`
+`otel` `datadog` `swaggo` `semaphore` `jwt`
 
 ### Wrappers
 
@@ -869,9 +869,10 @@ srv.Serve(ctx)
 You write handlers, services and annotations. Everything that repeats between
 services is generated, checked and rewritten on every run.
 
-1. **Annotate.** Mark constructors with `@Provide`, handlers with a door,
-   services with `@Middleware`, the default implementation with `@Default`,
-   options with `@Config`, the plugins of a server with `@Server`.
+1. **Annotate.** Mark constructors with `@Provide`, the clients they receive
+   with `@Inject`, handlers with a door, services with `@Middleware`, the
+   default implementation with `@Default`, options with `@Config`, the plugins
+   of a server with `@Server`.
 2. **Generate.** Inject and builder run in one pass. A broken graph stops here
    and leaves your output untouched.
 
@@ -897,6 +898,8 @@ gen/
 │   │   └── rest_module.go     // @REST POST /stock/:sku/reserve
 │   └── middleware/…/local/
 │       └── new_middleware.go  // @Middleware(log, prometheus)
+├── client/…/mongo-driver/v2/
+│   └── default_conn.go        // @Inject: the mongo conn
 ├── implementation/…/stock/
 │   └── repository_implementation.go
 │                              // @Default: memory | mongodb
@@ -936,7 +939,7 @@ same or get better, never worse.
 
  require (
 -	github.com/xgodev/boost v1.1.1
-+	github.com/xgodev/boost v1.7.1
++	github.com/xgodev/boost v1.8.0
  )
 ```
 
@@ -947,7 +950,7 @@ ok  github.com/acme/shop/...
 
 1 line changed in go.mod, **0 lines changed in your code**.
 
-Releases: 2024-07 → `v1.1.0` → `v1.1.1` → **`v1.7.1`**
+Releases: 2024-07 → `v1.1.0` → `v1.1.1` → **`v1.8.0`**
 ([all releases](https://github.com/xgodev/boost/releases)).
 
 ## There's a factory for that.
