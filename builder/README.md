@@ -274,6 +274,7 @@ package rest
 | `logger` | [`local/wrapper/log`](../factory/contrib/labstack/echo/v4/plugins/local/wrapper/log) | yes |
 | `errorHandler` | [`extra/error_handler`](../factory/contrib/labstack/echo/v4/plugins/extra/error_handler) | yes |
 | `health` | [`local/extra/health`](../factory/contrib/labstack/echo/v4/plugins/local/extra/health) | yes |
+| `jwt` | [`contrib/golang-jwt/jwt/v5`](../factory/contrib/labstack/echo/v4/plugins/contrib/golang-jwt/jwt/v5) (off until `.enabled=true`) |  |
 | `prometheus` | [`contrib/prometheus/client_golang/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/prometheus/client_golang/v1) |  |
 | `otel` | [`contrib/go.opentelemetry.io/contrib/v0`](../factory/contrib/labstack/echo/v4/plugins/contrib/go.opentelemetry.io/contrib/v0) |  |
 | `datadog` | [`contrib/datadog/dd-trace-go/v1`](../factory/contrib/labstack/echo/v4/plugins/contrib/datadog/dd-trace-go/v1) |  |

@@ -6,6 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/godror/godror v0.51.5
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.16.0
 	github.com/modelcontextprotocol/go-sdk v1.8.0
@@ -21,6 +22,8 @@ require (
 )
 
 require (
+	github.com/MicahParks/jwkset v0.11.4 // indirect
+	github.com/MicahParks/keyfunc/v3 v3.9.2 // indirect
 	github.com/VictoriaMetrics/easyproto v1.2.0 // indirect
 	github.com/antithesishq/antithesis-sdk-go v0.6.0-default-no-op // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

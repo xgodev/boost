@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
+	"math/big"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	jwtgo "github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -31,6 +36,7 @@ import (
 	grpcserver "github.com/xgodev/boost/factory/contrib/google.golang.org/grpc/v1/server"
 	boostecho "github.com/xgodev/boost/factory/contrib/labstack/echo/v4"
 	mcpserver "github.com/xgodev/boost/factory/contrib/modelcontextprotocol/go-sdk/v1/server"
+	"github.com/xgodev/boost/wrapper/config"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
@@ -258,6 +264,64 @@ func TestAPIPluginOffChild(t *testing.T) {
 
 	assert.Equal(t, http.StatusNotFound, serve(rest, http.MethodGet, "/metrics", "").Code, "prometheus is off")
 	assert.Equal(t, http.StatusOK, serve(rest, http.MethodGet, "/health", "").Code, "health stays")
+}
+
+// jwtEnv turns on the jwt plugin the @Server of the rest server lists
+// (boost.factory.echo.plugins.jwt.enabled, off by default).
+const jwtEnv = "BOOST_FACTORY_ECHO_PLUGINS_JWT_ENABLED"
+
+// TestAPIJWT boots app api with the jwt plugin on: a route outside the skip
+// paths needs a Bearer token signed by a key of the JWKS.
+func TestAPIJWT(t *testing.T) {
+	child(t, "TestAPIJWTChild", jwtEnv+"=true")
+}
+
+// TestAPIJWTChild runs in the process TestAPIJWT starts. It serves the JWKS
+// of one RSA key on httptest and points the plugin at it.
+func TestAPIJWTChild(t *testing.T) {
+	if os.Getenv(childEnv) != "1" {
+		t.Skip("run by TestAPIJWT")
+	}
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	b64 := base64.RawURLEncoding.EncodeToString
+	jwks := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		assert.NoError(t, json.NewEncoder(w).Encode(map[string]any{"keys": []map[string]string{{
+			"kty": "RSA", "kid": "k1", "alg": "RS256", "use": "sig",
+			"n": b64(key.N.Bytes()), "e": b64(big.NewInt(int64(key.E)).Bytes()),
+		}}}))
+	}))
+	defer jwks.Close()
+	t.Setenv("BOOST_FACTORY_ECHO_PLUGINS_JWT_JWKS__URL", jwks.URL)
+	t.Setenv("BOOST_FACTORY_ECHO_PLUGINS_JWT_ISSUER", "https://login.stock")
+	t.Setenv("BOOST_FACTORY_ECHO_PLUGINS_JWT_AUDIENCE", "stock-api")
+	config.Load()
+
+	var rest *boostecho.Server
+	app := fx.New(append(api.Modules(), fx.NopLogger, fx.Populate(&rest))...)
+	require.NoError(t, app.Err())
+
+	tok := jwtgo.NewWithClaims(jwtgo.SigningMethodRS256, jwtgo.MapClaims{
+		"sub": "account-42", "iss": "https://login.stock", "aud": "stock-api",
+		"exp": time.Now().Add(time.Hour).Unix(),
+	})
+	tok.Header["kid"] = "k1"
+	signed, err := tok.SignedString(key)
+	require.NoError(t, err)
+
+	withToken := func(target, token string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodGet, target, nil)
+		req.Header.Set(echo.HeaderAuthorization, "Bearer "+token)
+		rec := httptest.NewRecorder()
+		rest.Instance().ServeHTTP(rec, req)
+		return rec
+	}
+
+	assert.Equal(t, http.StatusUnauthorized, serve(rest, http.MethodGet, "/stocks/tshirt", "").Code, "no token")
+	assert.Equal(t, http.StatusUnauthorized, withToken("/stocks/tshirt", signed+"x").Code, "bad signature")
+	assert.JSONEq(t, `{"sku":"tshirt","units":3}`, withToken("/stocks/tshirt", signed).Body.String())
+	assert.Equal(t, http.StatusOK, serve(rest, http.MethodGet, "/health", "").Code, "/health needs no token")
 }
 
 const (

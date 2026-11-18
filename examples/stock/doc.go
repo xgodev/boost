@@ -18,6 +18,7 @@
 //	INTERNAL_PKG_DOMAIN_SERVICE_STOCK_RESERVER_IMPLEMENTATION=resty    reserve by calling app api
 //	BOOST_WRAPPER_PUBLISHER_DRIVER_NAME=nats                           announce on NATS (boost.factory.nats.*)
 //	WORKER_FUNCTION_ADAPTER=nats                                       worker reads order.created from NATS
+//	BOOST_FACTORY_ECHO_PLUGINS_JWT_ENABLED=true                        rest needs a Bearer token (boost.factory.echo.plugins.jwt.*)
 //
 // Run, from this directory (in GoLand: a Go Build configuration on the
 // package, working directory here, and the CONF variable):

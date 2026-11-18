@@ -134,6 +134,7 @@ Boost-specific integrations:
 Third-party integrations:
 
 - **Echo-Pprof**: Profiling endpoints
+- **JWT**: Bearer token authentication against a JWKS, for services outside a mesh ([`contrib/golang-jwt/jwt/v5`](plugins/contrib/golang-jwt/jwt/v5))
 - **Prometheus**: Metrics collection
 - **Swagger**: API documentation
 
