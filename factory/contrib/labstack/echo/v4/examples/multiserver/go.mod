@@ -3,7 +3,7 @@ module github.com/xgodev/boost/factory/contrib/labstack/echo/v4/examples/multise
 go 1.26.5
 
 require (
-	github.com/labstack/echo/v4 v4.16.0
+	github.com/labstack/echo/v4 v4.16.1
 	github.com/stretchr/testify v1.12.1
 	github.com/xgodev/boost v0.0.0
 	go.uber.org/fx v1.24.0
