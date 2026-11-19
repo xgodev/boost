@@ -17,6 +17,7 @@ const (
 	minSessions         = ".minSessions"
 	maxSessionsPerShard = ".maxSessionsPerShard"
 	sessionIncrement    = ".sessionIncrement"
+	ping                = ".ping"
 	PluginsRoot         = root + ".plugins"
 )
 
@@ -35,4 +36,5 @@ func ConfigAdd(path string) {
 	config.Add(path+minSessions, 1, "sets the minimum sessions to the database")
 	config.Add(path+sessionIncrement, 1, "sets the session increment")
 	config.Add(path+maxSessionsPerShard, 0, "sets the max sessions per shard")
+	config.Add(path+ping, true, "pings the database while building the *sql.DB; false defers the first connection (and its error) to the first query")
 }

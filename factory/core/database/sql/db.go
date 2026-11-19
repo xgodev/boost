@@ -57,7 +57,11 @@ func NewDBWithOptions(
 	}
 
 	// 4) Ping & retorna
+	if options.SkipPing {
+		return db, nil
+	}
 	if err := db.PingContext(ctx); err != nil {
+		_ = db.Close()
 		return nil, err
 	}
 	return db, nil

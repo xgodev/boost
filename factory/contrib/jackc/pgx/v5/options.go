@@ -8,7 +8,10 @@ import (
 type Options struct {
 	ConnectString string
 	Username      string
-	Password      string
+	// Ping pings the database while building the *sql.DB. False skips it:
+	// sql.Open is lazy, so a connection error shows up on the first query.
+	Ping     bool
+	Password string
 }
 
 // NewOptions returns options from config file or environment vars.

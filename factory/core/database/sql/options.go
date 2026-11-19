@@ -11,6 +11,9 @@ type Options struct {
 	ConnMaxIdletime time.Duration
 	MaxIdletime     int
 	MaxOpenConns    int
+	// SkipPing skips the ping after opening the *sql.DB. sql.OpenDB is lazy,
+	// so with it a connection error shows up on the first query instead.
+	SkipPing bool
 }
 
 // NewOptions returns options from config file or environment vars.
