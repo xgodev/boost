@@ -24,18 +24,9 @@ func NewDBWithOptions(ctx context.Context, o *Options, plugins ...sqll.Plugin) (
 
 	logger := log.FromContext(ctx)
 
-	// Parse DSN into a Connector
-	cfg, err := pgx.ParseConfig(o.ConnectString)
+	cfg, err := NewConnConfig(o)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse DSN: %w", err)
-	}
-
-	if cfg.User == "" {
-		cfg.User = o.Username
-	}
-
-	if cfg.Password == "" {
-		cfg.Password = o.Password
+		return nil, err
 	}
 
 	connector := stdlib.GetConnector(*cfg)
@@ -65,4 +56,25 @@ func NewDB(ctx context.Context, plugins ...sqll.Plugin) (*sql.DB, error) {
 	}
 
 	return NewDBWithOptions(ctx, o, plugins...)
+}
+
+// NewConnConfig parses the connect string and applies the username and password from options.
+// A non-empty Username or Password overrides the one in the connect string, and also the
+// PGUSER/PGPASSWORD env vars and OS user that pgx.ParseConfig falls back to; empty ones keep
+// what the connect string resolved.
+func NewConnConfig(o *Options) (*pgx.ConnConfig, error) {
+	cfg, err := pgx.ParseConfig(o.ConnectString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse DSN: %w", err)
+	}
+
+	if o.Username != "" {
+		cfg.User = o.Username
+	}
+
+	if o.Password != "" {
+		cfg.Password = o.Password
+	}
+
+	return cfg, nil
 }
