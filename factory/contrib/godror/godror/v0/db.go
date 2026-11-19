@@ -41,13 +41,20 @@ func NewDBWithOptions(ctx context.Context, o *Options, plugins ...sqll.Plugin) (
 
 	connector := godror.NewConnector(params)
 
-	db, err = sqll.NewDB(ctx, connector, plugins...)
+	sqlOpts, err := sqll.NewOptions()
+	if err != nil {
+		return nil, err
+	}
+	sqlOpts.SkipPing = !o.Ping
+
+	db, err = sqll.NewDBWithOptions(ctx, connector, sqlOpts, plugins...)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = db.Ping(); err != nil {
-		return nil, err
+	if !o.Ping {
+		logger.Info("Oracle (godror) pool created; ping skipped (ping=false)")
+		return db, nil
 	}
 
 	logger.Info("Connected to Oracle (godror) server")

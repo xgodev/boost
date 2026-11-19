@@ -7,8 +7,11 @@ import (
 
 // Options represents a godror options.
 type Options struct {
-	ConnectString       string
-	Username            string
+	ConnectString string
+	Username      string
+	// Ping pings the database while building the *sql.DB. False skips it:
+	// sql.Open is lazy, so a connection error shows up on the first query.
+	Ping                bool
 	Password            string
 	MaxLifetime         time.Duration
 	SessionTimeout      time.Duration

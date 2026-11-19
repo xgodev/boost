@@ -353,6 +353,12 @@ func newGoldDB(ctx context.Context, lc fx.Lifecycle) (*sql.DB, error) {
   for fails the generation.
 - **The app wins.** A `*sql.DB` the app provides needs no driver, and
   `drivers` on its consumers fails the generation.
+- **Ping at boot.** The factory pings the database while it builds the
+  `*sql.DB`, so a database that is down fails the boot before any `@Job` or
+  handler runs. With `ping=false` under the client root
+  (`BOOST_FACTORY_GODROR_CLIENTS_GOLD_PING=false`) the boot does not
+  connect, and the error shows up on the first query, where the app can
+  handle it (an alert, a retry).
 - The plugins are passed to the factory as they are (`health`, `otel`),
   since they are `sql.Plugin` values; the pool keys stay under
   `boost.factory.sql`.
